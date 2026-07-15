@@ -1,0 +1,15 @@
+# Binary & runtime artifacts
+models/
+**/bin/
+**/obj/
+*.user
+.DS_Store
+
+# IDE
+.vs/
+.vscode/settings.json
+*.suo
+
+# Secrets (never commit)
+appsettings.*.json
+!appsettings.json

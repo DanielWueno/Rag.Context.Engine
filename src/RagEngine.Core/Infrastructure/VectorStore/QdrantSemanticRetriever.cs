@@ -4,6 +4,8 @@ using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Diagnostics;
+using Polly;
+using Polly.Registry;
 
 namespace RagEngine.Core.Infrastructure.VectorStore;
 
@@ -18,17 +20,20 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
+    private readonly ResiliencePipeline _resiliencePipeline;
 
     public QdrantSemanticRetriever(
         QdrantClient client,
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
-        ILogger<QdrantSemanticRetriever> logger)
+        ILogger<QdrantSemanticRetriever> logger,
+        ResiliencePipelineProvider<string> pipelineProvider)
     {
         _client = client;
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
         _logger = logger;
+        _resiliencePipeline = pipelineProvider.GetPipeline("qdrant");
     }
 
     /// <inheritdoc />
@@ -69,29 +74,32 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             ulong fetchLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
             var payloadSelector = new WithPayloadSelector { Enable = true };
 
-            var searchResults = await _client.QueryAsync(
-                collectionName: options.CollectionName,
-                query: new Query { Fusion = Fusion.Rrf },
-                prefetch: new[]
-                {
-                    new PrefetchQuery
+            var searchResults = await _resiliencePipeline.ExecuteAsync(async ct => 
+            {
+                return await _client.QueryAsync(
+                    collectionName: options.CollectionName,
+                    query: new Query { Fusion = Fusion.Rrf },
+                    prefetch: new[]
                     {
-                        Query = queryVector,
-                        Using = QdrantVectorStore.DenseVectorName,
-                        Filter = filter,
-                        Limit = fetchLimit
+                        new PrefetchQuery
+                        {
+                            Query = queryVector,
+                            Using = QdrantVectorStore.DenseVectorName,
+                            Filter = filter,
+                            Limit = fetchLimit
+                        },
+                        new PrefetchQuery
+                        {
+                            Query = (sparseValues, sparseIndices),
+                            Using = QdrantVectorStore.SparseVectorName,
+                            Filter = filter,
+                            Limit = fetchLimit
+                        }
                     },
-                    new PrefetchQuery
-                    {
-                        Query = (sparseValues, sparseIndices),
-                        Using = QdrantVectorStore.SparseVectorName,
-                        Filter = filter,
-                        Limit = fetchLimit
-                    }
-                },
-                limit: fetchLimit,
-                payloadSelector: payloadSelector,
-                cancellationToken: cancellationToken);
+                    limit: fetchLimit,
+                    payloadSelector: payloadSelector,
+                    cancellationToken: ct);
+            }, cancellationToken);
 
             // 4. Map to domain entities
             var results = searchResults

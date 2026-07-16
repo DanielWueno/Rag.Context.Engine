@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Infrastructure.Chunking;
@@ -50,6 +53,27 @@ public static class ServiceCollectionExtensions
 
         // ──── 4. Vector Store: Singleton (wraps the Singleton QdrantClient) ──────────
         services.AddSingleton<QdrantVectorStore>();
+
+        // ──── Add Polly Resilience ──────────────────────────────────────────
+        services.AddResiliencePipeline("qdrant", builder =>
+        {
+            builder.AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromSeconds(2),
+                BackoffType = DelayBackoffType.Exponential
+            });
+
+            builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                FailureRatio = 0.5,
+                SamplingDuration = TimeSpan.FromSeconds(30),
+                MinimumThroughput = 5,
+                BreakDuration = TimeSpan.FromSeconds(15)
+            });
+        });
 
         // ── 5. Chunking Strategies: Auto-Discovery ────────────────────────────
         services.AddSingleton<FallbackChunkingStrategy>();

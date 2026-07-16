@@ -44,12 +44,10 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
 
         _logger.LogInformation("Loading ONNX model from {ModelPath}", _options.ModelPath);
 
-        var sessionOptions = new SessionOptions
+        using var sessionOptions = new SessionOptions
         {
             EnableCpuMemArena = true,
-            GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL,
-            InterOpNumThreads = Environment.ProcessorCount,
-            IntraOpNumThreads = Environment.ProcessorCount
+            GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL
         };
 
         _session = new InferenceSession(_options.ModelPath, sessionOptions);

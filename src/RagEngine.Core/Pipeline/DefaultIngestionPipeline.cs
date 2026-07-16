@@ -24,6 +24,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly IIngestionScanner _scanner;
     private readonly ChunkingStrategyRouter _chunkRouter;
     private readonly IVectorizationBrain _brain;
+    private readonly ISparseTokenizer _sparseTokenizer;
     private readonly QdrantVectorStore _vectorStore;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
 
@@ -31,12 +32,14 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         IIngestionScanner scanner,
         ChunkingStrategyRouter chunkRouter,
         IVectorizationBrain brain,
+        ISparseTokenizer sparseTokenizer,
         QdrantVectorStore vectorStore,
         ILogger<DefaultIngestionPipeline> logger)
     {
         _scanner = scanner;
         _chunkRouter = chunkRouter;
         _brain = brain;
+        _sparseTokenizer = sparseTokenizer;
         _vectorStore = vectorStore;
         _logger = logger;
     }
@@ -202,14 +205,14 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         PipelineStats stats,
         CancellationToken ct)
     {
-        // Vectorize (using EnrichedContent for better embedding quality)
         var texts = batch.Select(c => c.EnrichedContent).ToList();
 
-        float[][] vectors;
+        // 1. Generate Dense Embeddings (ONNX)
+        float[][] denseVectors;
         try
         {
             var result = await _brain.GenerateBatchEmbeddingsAsync(texts, ct);
-            vectors = result.ToArray();
+            denseVectors = result.ToArray();
         }
         catch (Exception ex)
         {
@@ -217,13 +220,30 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             return;
         }
 
-        var pairs = batch
-            .Zip(vectors, (chunk, vec) => (Chunk: chunk, Vector: vec))
+        // 2. Generate Sparse Vectors (TF/BM25)
+        IReadOnlyList<IReadOnlyList<SparseEntry>> sparseVectors;
+        try
+        {
+            sparseVectors = await Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Sparse tokenization failed for {Count} chunks.", batch.Count);
+            return;
+        }
+
+        // 3. Zip and Upsert
+        var triples = batch
+            .Select((chunk, i) => (
+                Chunk: chunk, 
+                DenseVector: denseVectors[i], 
+                SparseVector: sparseVectors[i]
+            ))
             .ToList();
 
         try
         {
-            await _vectorStore.UpsertBatchAsync(collectionName, pairs, ct);
+            await _vectorStore.UpsertBatchAsync(collectionName, triples, ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
 
             progress?.Report(new IngestionProgress(

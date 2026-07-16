@@ -1,43 +1,58 @@
 namespace RagEngine.Core.Domain;
 
 /// <summary>
-/// Represents a discrete, semantically meaningful fragment of source code
-/// produced by the chunking stage of the ingestion pipeline.
+/// A semantically coherent fragment of source code, ready for vectorization.
+/// Contains the raw text AND the enriched text (raw + structural context header)
+/// that gets embedded into the vector space.
+/// The ID is a deterministic UUID v5 derived from file path + start line + content hash,
+/// enabling idempotent re-indexing without duplicates.
 /// </summary>
 public sealed record CodeChunk
 {
     /// <summary>
-    /// Deterministic UUID v5 derived from the file path + content hash.
-    /// Enables idempotent re-indexing without duplicates.
+    /// Deterministic UUID v5 (filePath + startLine + contentHash).
+    /// Same chunk content at the same location always produces the same ID.
     /// </summary>
     public required Guid Id { get; init; }
 
-    /// <summary>The raw text content of this chunk.</summary>
+    /// <summary>The raw source text of this chunk (stored in Qdrant payload).</summary>
     public required string Content { get; init; }
 
-    /// <summary>Absolute path of the source file this chunk belongs to.</summary>
-    public required string FilePath { get; init; }
-
-    /// <summary>Programming language identifier (e.g., "csharp", "typescript", "sql").</summary>
-    public required string Language { get; init; }
-
-    /// <summary>1-based line number where this chunk starts in the source file.</summary>
-    public required int StartLine { get; init; }
-
-    /// <summary>1-based line number where this chunk ends in the source file.</summary>
-    public required int EndLine { get; init; }
-
     /// <summary>
-    /// Structural label for the chunk's role (e.g., "Method", "Class", "Interface", "Block").
+    /// Enriched text = context header + raw content.
+    /// This is what gets embedded by the ONNX model for higher-quality retrieval.
+    /// Example header:
+    ///   // Repository: MyApp
+    ///   // File: src/Services/OrderService.cs
+    ///   // Namespace: MyApp.Services
+    ///   // class: OrderService : IOrderService
+    ///   // method: GetOrderAsync(int id) → Task&lt;Order&gt;
     /// </summary>
-    public string ChunkType { get; init; } = "Block";
+    public required string EnrichedContent { get; init; }
 
-    /// <summary>Optional parent symbol name (e.g., the class containing a method chunk).</summary>
-    public string? ParentSymbol { get; init; }
+    /// <summary>Structural metadata: file path, language, class name, method name, etc.</summary>
+    public required CodeChunkMetadata Metadata { get; init; }
 
-    /// <summary>SHA-256 hash of <see cref="Content"/> for change detection.</summary>
+    /// <summary>The structural type of this chunk (Method, Class, Interface, etc.).</summary>
+    public required ChunkType Type { get; init; }
+
+    /// <summary>SHA-256 hash of Content, used for incremental change detection.</summary>
     public required string ContentHash { get; init; }
+}
 
-    /// <summary>UTC timestamp when this chunk was created.</summary>
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+/// <summary>
+/// Structural classification of a code chunk.
+/// </summary>
+public enum ChunkType
+{
+    Method,             // A complete method body
+    Class,              // Class header + fields (without methods)
+    Interface,          // Full interface definition
+    Property,           // A grouped block of properties
+    Constructor,        // A class constructor
+    XamlControl,        // A XAML UI control with its properties
+    XamlDataTemplate,   // A XAML DataTemplate block
+    SqlProcedure,       // A complete SQL stored procedure
+    DocumentSection,    // A Markdown section (between headings)
+    PlainTextWindow     // A sliding-window chunk for unstructured text
 }

@@ -2,31 +2,24 @@ namespace RagEngine.Core.Abstractions;
 
 /// <summary>
 /// Runs the ONNX embedding model in-process to produce dense vector representations.
-/// Supports batch processing, Mean Pooling and L2 normalization.
+/// Supports batch processing, Mean Pooling and L2 normalization. Zero network calls.
 /// </summary>
 public interface IVectorizationBrain
 {
     /// <summary>
-    /// Generates a normalized embedding vector for a single text input.
+    /// Dimensionality of the output vector space (384 for all-MiniLM-L6-v2).
+    /// Required for Qdrant collection configuration.
     /// </summary>
-    /// <param name="text">The input text to embed.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A normalized float array of dimension 384 (all-MiniLM-L6-v2).</returns>
-    Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default);
+    int EmbeddingDimensions { get; }
+
+    /// <summary>Generates a normalized embedding vector for a single text input.</summary>
+    Task<float[]> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Generates normalized embeddings for a batch of texts.
-    /// More efficient than calling EmbedAsync in a loop.
+    /// 5-10x more efficient than individual calls due to ONNX batch inference.
     /// </summary>
-    /// <param name="texts">The collection of input texts to embed.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A list of normalized float arrays, one per input text.</returns>
-    Task<IReadOnlyList<float[]>> EmbedBatchAsync(
-        IReadOnlyList<string> texts,
+    Task<IReadOnlyList<float[]>> GenerateBatchEmbeddingsAsync(
+        IEnumerable<string> texts,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// The dimensionality of the output vector. Derived from the loaded ONNX model.
-    /// </summary>
-    int EmbeddingDimension { get; }
 }

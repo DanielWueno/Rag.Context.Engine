@@ -1,29 +1,67 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Qdrant.Client;
+using RagEngine.Core.Abstractions;
+using RagEngine.Core.Infrastructure.Chunking;
+using RagEngine.Core.Infrastructure.Scanning;
+using RagEngine.Core.Infrastructure.Vectorization;
+using RagEngine.Core.Infrastructure.VectorStore;
+using RagEngine.Core.Pipeline;
 
 namespace RagEngine.Core.Extensions;
 
 /// <summary>
-/// Shared IServiceCollection extension for registering RagEngine.Core services.
-/// Used by both the CLI host and any future Minimal API host.
+/// Shared IServiceCollection extension for registering all RagEngine.Core services.
+/// Called from both the CLI host and any future Minimal API host.
+/// This is the single registration point \u2014 host projects remain thin.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers all RagEngine core services with their default implementations.
-    /// Call this from Program.cs in any host project.
+    /// Registers all RagEngine core services with their appropriate lifetimes.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
-    /// <returns>The same service collection for chaining.</returns>
-    public static IServiceCollection AddRagEngineCore(this IServiceCollection services)
+    /// <param name="configuration">The host configuration (for binding options).</param>
+    public static IServiceCollection AddRagEngineCore(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        // Implementations will be registered here as they are built in S1–S4.
-        // This method acts as the single registration point to keep hosts thin.
+        // \u2500\u2500 1. Typed Options \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        services.Configure<OnnxBrainOptions>(
+            configuration.GetSection(OnnxBrainOptions.SectionName));
 
-        // Example (will be uncommented when implementations exist):
-        // services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();
-        // services.AddSingleton<ISemanticRetriever, QdrantSemanticRetriever>();
-        // services.AddSingleton<IIngestionScanner, FileSystemIngestionScanner>();
-        // services.AddSingleton<IIngestionPipeline, ChannelIngestionPipeline>();
+        services.Configure<QdrantOptions>(
+            configuration.GetSection(QdrantOptions.SectionName));
+
+        // \u2500\u2500 2. ONNX Brain: Singleton (expensive to initialize \u2014 one InferenceSession) \u2500\u2500
+        services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();
+
+        // \u2500\u2500 3. Qdrant Client: Singleton (reuse gRPC connection) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        services.AddSingleton(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
+            return new QdrantClient(opts.Host, opts.GrpcPort);
+        });
+
+        // \u2500\u2500 4. Vector Store: Singleton (wraps the Singleton QdrantClient) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        services.AddSingleton<QdrantVectorStore>();
+
+        // \u2500\u2500 5. Chunking Strategies: Singleton (stateless, safe to share) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        services.AddSingleton<RoslynCSharpChunkingStrategy>();
+        services.AddSingleton<FallbackChunkingStrategy>();
+
+        // Register all language-specific strategies as IChunkingStrategy
+        // for injection into ChunkingStrategyRouter
+        services.AddSingleton<IChunkingStrategy>(sp =>
+            sp.GetRequiredService<RoslynCSharpChunkingStrategy>());
+
+        services.AddSingleton<ChunkingStrategyRouter>();
+
+        // \u2500\u2500 6. Scoped Services: one instance per CLI command execution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        services.AddScoped<IIngestionScanner, FileSystemIngestionScanner>();
+        services.AddScoped<ISemanticRetriever, QdrantSemanticRetriever>();
+        services.AddScoped<IIngestionPipeline, DefaultIngestionPipeline>();
 
         return services;
     }

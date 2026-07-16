@@ -3,24 +3,21 @@ using RagEngine.Core.Domain;
 namespace RagEngine.Core.Abstractions;
 
 /// <summary>
-/// Performs semantic vector search against Qdrant using gRPC.
-/// Supports filtered retrieval and hybrid dense+sparse (BM25) search.
+/// Executes semantic searches against the Qdrant vector database.
+/// Vectorizes the natural-language query via IVectorizationBrain, then
+/// retrieves the most semantically similar code chunks using HNSW search.
 /// </summary>
 public interface ISemanticRetriever
 {
     /// <summary>
-    /// Searches for the most semantically similar chunks to the given query vector.
+    /// Searches for the top-K most semantically relevant chunks for the given query.
     /// </summary>
-    /// <param name="queryVector">The embedding of the query text.</param>
-    /// <param name="collectionName">The Qdrant collection to search.</param>
-    /// <param name="topK">Maximum number of results to return.</param>
-    /// <param name="filter">Optional metadata filter (e.g., by language or file path).</param>
+    /// <param name="query">Natural-language question or code description.</param>
+    /// <param name="options">Search parameters (TopK, score threshold, language filter).</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Ranked list of retrieved code chunks with similarity scores.</returns>
-    Task<IReadOnlyList<ScoredChunk>> SearchAsync(
-        float[] queryVector,
-        string collectionName,
-        int topK = 10,
-        RetrievalFilter? filter = null,
+    /// <returns>Ranked list of retrieved results ready to inject into an LLM context.</returns>
+    Task<IReadOnlyList<RetrievalResult>> SearchAsync(
+        string query,
+        RetrievalOptions options,
         CancellationToken cancellationToken = default);
 }

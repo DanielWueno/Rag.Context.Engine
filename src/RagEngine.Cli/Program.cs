@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Qdrant.Client;
 using RagEngine.Cli.Commands;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Extensions;
@@ -19,10 +18,14 @@ var host = Host.CreateDefaultBuilder(args)
         // Core services: ONNX brain, Qdrant store, chunking pipeline
         services.AddRagEngineCore(ctx.Configuration);
 
+        // Generation pipeline: Semantic Kernel + Ollama connector + RagGenerationService
+        services.AddRagEngineGeneration(ctx.Configuration);
+
         // CLI commands registered for DI
         services.AddTransient<IngestCommand>();
         services.AddTransient<SearchCommand>();
         services.AddTransient<StatusCommand>();
+        services.AddTransient<AskCommand>();
     })
     .Build();
 
@@ -32,7 +35,7 @@ var app = new CommandApp(new SpectreHostTypeRegistrar(host.Services));
 app.Configure(config =>
 {
     config.SetApplicationName("rag");
-    config.SetApplicationVersion("1.0.0-sprint2");
+    config.SetApplicationVersion("1.0.0-sprint4");
 
     config.AddCommand<IngestCommand>("ingest")
         .WithDescription("Indexa un repositorio de código en la base vectorial Qdrant.")
@@ -50,6 +53,12 @@ app.Configure(config =>
         .WithExample(["status"])
         .WithExample(["status", "--collection", "mi-proyecto"])
         .WithExample(["status", "--all"]);
+
+    config.AddCommand<AskCommand>("ask")
+        .WithDescription("Realiza una pregunta en lenguaje natural y obtiene una respuesta generada por el LLM local (Ollama).")
+        .WithExample(["ask", "\"¿Cómo funciona el pipeline de ingestión?\""])
+        .WithExample(["ask", "\"Explica AuthController\"", "--collection", "mi-proyecto", "--top-k", "8"])
+        .WithExample(["ask", "\"¿Dónde se registra QdrantClient?\"", "--no-stream"]);
 
     config.SetExceptionHandler((ex, _) =>
     {

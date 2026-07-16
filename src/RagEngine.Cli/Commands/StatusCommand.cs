@@ -80,55 +80,43 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         {
             info = await _qdrant.GetCollectionInfoAsync(collectionName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            AnsiConsole.MarkupLine($"[red]✗ Error obteniendo info de '{collectionName}':[/] " +
-                                   Markup.Escape(ex.Message));
+            AnsiConsole.MarkupLine($"[red]La colección '{Markup.Escape(collectionName)}' no existe o no se pudo acceder.[/]");
             return;
         }
 
         var pointCount  = info.PointsCount;
-        var vectorsCount = info.VectorsCount;
         var status      = info.Status.ToString();
         var statusColor = info.Status == CollectionStatus.Green ? "green"
                         : info.Status == CollectionStatus.Yellow ? "yellow"
                         : "red";
 
-        // Disk size from optimizer status
-        var diskBytes = info.OptimizerStatus is not null
-            ? 0L   // not directly exposed; show N/A
-            : 0L;
-
-        // Build the info table
+        // Creamos una tabla sin bordes exteriores para meterla en un Panel
         var table = new Table()
-            .Border(TableBorder.Rounded)
-            .BorderColor(Color.Grey)
-            .AddColumn(new TableColumn("[dim]Métrica[/]").LeftAligned())
-            .AddColumn(new TableColumn("[bold]Valor[/]").RightAligned());
+            .Border(TableBorder.None)
+            .HideHeaders()
+            .AddColumn(new TableColumn("Propiedad").LeftAligned())
+            .AddColumn(new TableColumn("Valor").LeftAligned());
 
-        table.AddRow("Colección",       $"[bold cyan]{Markup.Escape(collectionName)}[/]");
-        table.AddRow("Estado",          $"[{statusColor} bold]{status}[/]");
-        table.AddRow("Puntos totales",  $"[white]{pointCount:N0}[/]");
-        table.AddRow("Vectores totales",$"[white]{vectorsCount:N0}[/]");
+        table.AddRow("[dim]Estado[/]", $"[{statusColor}]{status}[/]");
+        table.AddRow("[dim]Puntos totales[/]", $"[white]{pointCount:N0}[/]");
 
-        // Vector config
+        // Extraer configuración de vectores
         if (info.Config?.Params?.VectorsConfig?.ConfigCase == VectorsConfig.ConfigOneofCase.Params)
         {
             var vp = info.Config.Params.VectorsConfig.Params;
-            table.AddRow("Dimensión vector", $"[white]{vp.Size}[/]");
-            table.AddRow("Métrica",          $"[white]{vp.Distance}[/]");
+            table.AddRow("[dim]Dimensiones vector[/]", $"[white]{vp.Size}[/]");
         }
 
-        // Segments count
-        var segmentCount = info.SegmentsCount;
-        table.AddRow("Segmentos",        $"[dim]{segmentCount}[/]");
+        var panel = new Panel(table)
+        {
+            Header = new PanelHeader($" Colección: [bold cyan]{Markup.Escape(collectionName)}[/] ", Justify.Left),
+            Border = BoxBorder.Square,
+            Padding = new Padding(2, 0),
+            Expand = false
+        };
 
-        AnsiConsole.Write(
-            new Panel(table)
-            {
-                Header = new PanelHeader($" 📊 [bold]{Markup.Escape(collectionName)}[/] "),
-                Border = BoxBorder.Rounded,
-                BorderStyle = Style.Parse(statusColor)
-            });
+        AnsiConsole.Write(panel);
     }
 }

@@ -468,17 +468,29 @@ Meta: Plugin oficial de Semantic Kernel que expone el retriever como herramienta
         }));
     ──────
 
-## 🏁 Sprint 5 — Hardening y Observabilidad (3–4 días)
+## 🏁 Sprint 5 — Advanced Retrieval & Hybrid Search (3-4 días)
+
+Meta: Implementar búsqueda híbrida local pura (Dense + Sparse) usando Reciprocal Rank Fusion (RRF).
+
+ID │ Tarea │ Detalles
+────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────
+S5-T1 │ Tokenizador Local (SparseTokenizer) │ Eliminación de stop-words y cálculo de TF en C#
+S5-T2 │ Evolución del Esquema en Qdrant │ Configuración dual: Vectores Densos + Vectores Dispersos (Sparse)
+S5-T3 │ Indexación Dual (DefaultIngestionPipeline) │ Procesamiento paralelo para enviar ambos dominios a Qdrant
+S5-T4 │ Búsqueda Híbrida (HybridRetriever) │ Uso de Qdrant Prefetch y Fusion.Rrf (QueryAsync)
+    ──────
+
+## 🏁 Sprint 6 — Hardening y Observabilidad (3–4 días)
 
 Meta: El sistema es robusto para uso diario. Logs estructurados, métricas, circuit breakers.
 
 ID │ Tarea │ Detalles
 ────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────
-S5-T1 │ Structured logging con Serilog │ JSON sink + Seq local para explorar logs
-S5-T2 │ Métricas con System.Diagnostics.Metrics │ Counters: chunks/seg, errores, latencia P99
-S5-T3 │ Polly para resiliencia en Qdrant │ Retry exponencial + Circuit Breaker
-S5-T4 │ Comando rag doctor │ Valida conectividad Qdrant, modelo ONNX, espacio en disco
-S5-T5 │ Unit tests críticos │ Chunking Roslyn, TokenEstimator, ContextAssembler
+S6-T1 │ Structured logging con Serilog │ JSON sink + Seq local para explorar logs
+S6-T2 │ Métricas con System.Diagnostics.Metrics │ Counters: chunks/seg, errores, latencia P99
+S6-T3 │ Polly para resiliencia en Qdrant │ Retry exponencial + Circuit Breaker
+S6-T4 │ Comando rag doctor │ Valida conectividad Qdrant, modelo ONNX, espacio en disco
+S6-T5 │ Unit tests críticos │ Chunking Roslyn, TokenEstimator, ContextAssembler
 
 Comando rag doctor :
 
@@ -493,21 +505,21 @@ Comando rag doctor :
 
 ## Tabla Resumen del Roadmap
 
-    SEMANA     S0          S1          S2          S3          S4          S5
-               ────────    ────────    ────────    ────────    ────────    ────────
-    Días        1–4         5–11        12–16       17–20       21–25       26–29
+    SEMANA     S0          S1          S2          S3          S4          S5          S6
+               ────────    ────────    ────────    ────────    ────────    ────────    ────────
+    Días        1–4         5–11        12–16       17–20       21–25       26–29       30-33
 
-    Output    Scaffolding  Ingest E2E  Search CLI  Multi-lang  SK Plugin   Hardening
-               + Docker    + Roslyn    + Spectre   + Incremental+ Agent    + Tests
+    Output    Scaffolding  Ingest E2E  Search CLI  Multi-lang  SK Plugin   Hybrid      Hardening
+               + Docker    + Roslyn    + Spectre   + Incremental+ Agent    Search      + Tests
 
-    Comando     —          rag ingest  rag search  rag status  SK Agent    rag doctor
+    Comando     —          rag ingest  rag search  rag status  rag ask     (interno)   rag doctor
                            rag ingest  rag search
                            --force     --output md
     ──────
 
 ## Entregables Acumulados al Finalizar el POC
 
-Al cerrar el Sprint 5, el equipo tendrá:
+Al cerrar el Sprint 6, el equipo tendrá:
 
 Entregable │ Descripción
 ──────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────

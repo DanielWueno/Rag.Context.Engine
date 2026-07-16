@@ -15,15 +15,18 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
 {
     private readonly QdrantClient _client;
     private readonly IVectorizationBrain _brain;
+    private readonly ISparseTokenizer _sparseTokenizer;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
 
     public QdrantSemanticRetriever(
         QdrantClient client,
         IVectorizationBrain brain,
+        ISparseTokenizer sparseTokenizer,
         ILogger<QdrantSemanticRetriever> logger)
     {
         _client = client;
         _brain = brain;
+        _sparseTokenizer = sparseTokenizer;
         _logger = logger;
     }
 
@@ -37,25 +40,47 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             "Semantic search: '{Query}' | Collection: {Col} | TopK: {K}",
             query, options.CollectionName, options.TopK);
 
-        // 1. Vectorize query
+        // 1. Vectorize query (Dense)
         var queryVector = await _brain.GenerateEmbeddingAsync(query, cancellationToken);
 
-        // 2. Build Qdrant filter from RetrievalOptions
+        // 2. Tokenize query (Sparse)
+        var sparseEntries = _sparseTokenizer.Tokenize(query);
+        float[] sparseValues = new float[sparseEntries.Count];
+        uint[] sparseIndices = new uint[sparseEntries.Count];
+        for (int i = 0; i < sparseEntries.Count; i++)
+        {
+            sparseIndices[i] = sparseEntries[i].TermIndex;
+            sparseValues[i] = sparseEntries[i].Weight;
+        }
+
+        // 3. Build Qdrant filter from RetrievalOptions
         var filter = BuildFilter(options);
 
-        // 3. Execute HNSW vector search
-        // Over-fetch if re-ranking is enabled (will trim after)
+        // 4. Execute Hybrid Search using Prefetch and RRF Fusion
         ulong fetchLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
-
-        // SearchAsync: payloadSelector parameter (not 'withPayload')
         var payloadSelector = new WithPayloadSelector { Enable = true };
 
-        var searchResults = await _client.SearchAsync(
+        var searchResults = await _client.QueryAsync(
             collectionName: options.CollectionName,
-            vector: queryVector,
-            filter: filter,
+            query: new Query { Fusion = Fusion.Rrf },
+            prefetch: new[]
+            {
+                new PrefetchQuery
+                {
+                    Query = queryVector,
+                    Using = QdrantVectorStore.DenseVectorName,
+                    Filter = filter,
+                    Limit = fetchLimit
+                },
+                new PrefetchQuery
+                {
+                    Query = (sparseValues, sparseIndices),
+                    Using = QdrantVectorStore.SparseVectorName,
+                    Filter = filter,
+                    Limit = fetchLimit
+                }
+            },
             limit: fetchLimit,
-            scoreThreshold: options.MinimumSimilarityScore,
             payloadSelector: payloadSelector,
             cancellationToken: cancellationToken);
 

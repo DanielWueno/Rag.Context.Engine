@@ -44,24 +44,33 @@ public static class ServiceCollectionExtensions
             return new QdrantClient(opts.Host, opts.GrpcPort);
         });
 
-        // \u2500\u2500 4. Vector Store: Singleton (wraps the Singleton QdrantClient) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // ──── 4. Vector Store: Singleton (wraps the Singleton QdrantClient) ──────────
         services.AddSingleton<QdrantVectorStore>();
 
-        // \u2500\u2500 5. Chunking Strategies: Singleton (stateless, safe to share) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-        services.AddSingleton<RoslynCSharpChunkingStrategy>();
+        // ── 5. Chunking Strategies: Auto-Discovery ────────────────────────────
         services.AddSingleton<FallbackChunkingStrategy>();
 
-        // Register all language-specific strategies as IChunkingStrategy
-        // for injection into ChunkingStrategyRouter
-        services.AddSingleton<IChunkingStrategy>(sp =>
-            sp.GetRequiredService<RoslynCSharpChunkingStrategy>());
+        var strategyTypes = typeof(IChunkingStrategy).Assembly.GetTypes()
+            .Where(t => !t.IsAbstract && 
+                        !t.IsInterface && 
+                        typeof(IChunkingStrategy).IsAssignableFrom(t) &&
+                        t != typeof(FallbackChunkingStrategy));
+
+        foreach (var type in strategyTypes)
+        {
+            services.AddSingleton(type);
+            services.AddSingleton(typeof(IChunkingStrategy), sp => sp.GetRequiredService(type));
+        }
 
         services.AddSingleton<ChunkingStrategyRouter>();
 
-        // \u2500\u2500 6. Scoped Services: one instance per CLI command execution \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // ──── 6. Scoped Services: one instance per CLI command execution ────────
         services.AddScoped<IIngestionScanner, FileSystemIngestionScanner>();
         services.AddScoped<ISemanticRetriever, QdrantSemanticRetriever>();
         services.AddScoped<IIngestionPipeline, DefaultIngestionPipeline>();
+
+        // ── 7. Pipeline utilities ──────────────────────────────────────────────
+        services.AddSingleton<ContextAssembler>();
 
         return services;
     }

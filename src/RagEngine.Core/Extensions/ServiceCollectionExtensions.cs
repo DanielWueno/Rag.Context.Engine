@@ -28,16 +28,20 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         // \u2500\u2500 1. Typed Options \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // ──── 1. Typed Options ─────────────────────────────────────────────────────────
         services.Configure<OnnxBrainOptions>(
             configuration.GetSection(OnnxBrainOptions.SectionName));
 
         services.Configure<QdrantOptions>(
             configuration.GetSection(QdrantOptions.SectionName));
 
-        // \u2500\u2500 2. ONNX Brain: Singleton (expensive to initialize \u2014 one InferenceSession) \u2500\u2500
+        // ── 2. ONNX Brain: Singleton (expensive to initialize — one InferenceSession) ──
         services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();
 
-        // \u2500\u2500 3. Qdrant Client: Singleton (reuse gRPC connection) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // ── 3. Sparse Tokenizer: Singleton (stateless, thread-safe, zero I/O) ────────
+        services.AddSingleton<ISparseTokenizer, SparseTokenizer>();
+
+        // ──── 3. Qdrant Client: Singleton (reuse gRPC connection) ──────────────────
         services.AddSingleton(sp =>
         {
             var opts = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;

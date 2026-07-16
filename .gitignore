@@ -13,3 +13,4 @@ models/
 # Secrets (never commit)
 appsettings.*.json
 !appsettings.json
+logs/

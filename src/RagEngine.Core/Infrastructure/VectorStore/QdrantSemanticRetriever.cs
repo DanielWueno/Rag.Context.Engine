@@ -3,6 +3,7 @@ using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Diagnostics;
 
 namespace RagEngine.Core.Infrastructure.VectorStore;
 
@@ -36,61 +37,84 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         RetrievalOptions options,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
-            "Semantic search: '{Query}' | Collection: {Col} | TopK: {K}",
-            query, options.CollectionName, options.TopK);
+        var correlationId = Guid.NewGuid().ToString("N");
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-        // 1. Vectorize query (Dense)
-        var queryVector = await _brain.GenerateEmbeddingAsync(query, cancellationToken);
+        using var _logContext1 = Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId);
+        using var _logContext2 = Serilog.Context.LogContext.PushProperty("Collection", options.CollectionName);
 
-        // 2. Tokenize query (Sparse)
-        var sparseEntries = _sparseTokenizer.Tokenize(query);
-        float[] sparseValues = new float[sparseEntries.Count];
-        uint[] sparseIndices = new uint[sparseEntries.Count];
-        for (int i = 0; i < sparseEntries.Count; i++)
+        try
         {
-            sparseIndices[i] = sparseEntries[i].TermIndex;
-            sparseValues[i] = sparseEntries[i].Weight;
-        }
+            _logger.LogInformation(
+                "Semantic search: '{Query}' | Collection: {Col} | TopK: {K} | Rerank: {UseReRanking}",
+                query, options.CollectionName, options.TopK, options.UseReRanking);
 
-        // 3. Build Qdrant filter from RetrievalOptions
-        var filter = BuildFilter(options);
+            // 1. Vectorize query (Dense)
+            var queryVector = await _brain.GenerateEmbeddingAsync(query, cancellationToken);
 
-        // 4. Execute Hybrid Search using Prefetch and RRF Fusion
-        ulong fetchLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
-        var payloadSelector = new WithPayloadSelector { Enable = true };
-
-        var searchResults = await _client.QueryAsync(
-            collectionName: options.CollectionName,
-            query: new Query { Fusion = Fusion.Rrf },
-            prefetch: new[]
+            // 2. Tokenize query (Sparse)
+            var sparseEntries = _sparseTokenizer.Tokenize(query);
+            float[] sparseValues = new float[sparseEntries.Count];
+            uint[] sparseIndices = new uint[sparseEntries.Count];
+            for (int i = 0; i < sparseEntries.Count; i++)
             {
-                new PrefetchQuery
+                sparseIndices[i] = sparseEntries[i].TermIndex;
+                sparseValues[i] = sparseEntries[i].Weight;
+            }
+
+            // 3. Build Qdrant filter from RetrievalOptions
+            var filter = BuildFilter(options);
+
+            // 4. Execute Hybrid Search using Prefetch and RRF Fusion
+            ulong fetchLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
+            var payloadSelector = new WithPayloadSelector { Enable = true };
+
+            var searchResults = await _client.QueryAsync(
+                collectionName: options.CollectionName,
+                query: new Query { Fusion = Fusion.Rrf },
+                prefetch: new[]
                 {
-                    Query = queryVector,
-                    Using = QdrantVectorStore.DenseVectorName,
-                    Filter = filter,
-                    Limit = fetchLimit
+                    new PrefetchQuery
+                    {
+                        Query = queryVector,
+                        Using = QdrantVectorStore.DenseVectorName,
+                        Filter = filter,
+                        Limit = fetchLimit
+                    },
+                    new PrefetchQuery
+                    {
+                        Query = (sparseValues, sparseIndices),
+                        Using = QdrantVectorStore.SparseVectorName,
+                        Filter = filter,
+                        Limit = fetchLimit
+                    }
                 },
-                new PrefetchQuery
-                {
-                    Query = (sparseValues, sparseIndices),
-                    Using = QdrantVectorStore.SparseVectorName,
-                    Filter = filter,
-                    Limit = fetchLimit
-                }
-            },
-            limit: fetchLimit,
-            payloadSelector: payloadSelector,
-            cancellationToken: cancellationToken);
+                limit: fetchLimit,
+                payloadSelector: payloadSelector,
+                cancellationToken: cancellationToken);
 
-        // 4. Map to domain entities
-        var results = searchResults
-            .Select(MapToRetrievalResult)
-            .ToList();
+            // 4. Map to domain entities
+            var results = searchResults
+                .Select(MapToRetrievalResult)
+                .ToList();
 
-        _logger.LogInformation("Search returned {Count} results.", results.Count);
-        return results.AsReadOnly();
+            sw.Stop();
+            var bestScore = results.FirstOrDefault()?.SimilarityScore ?? 0f;
+
+            RagEngineMetrics.SearchLatencyMs.Record(sw.ElapsedMilliseconds, 
+                new KeyValuePair<string, object?>("collection", options.CollectionName));
+
+            _logger.LogInformation("Search completed in {ElapsedMs}ms. Results: {Count}. Best fusion score: {BestScore}", 
+                sw.ElapsedMilliseconds, results.Count, bestScore);
+            return results.AsReadOnly();
+        }
+        catch (Exception ex)
+        {
+            RagEngineMetrics.SearchErrorsTotal.Add(1, 
+                new KeyValuePair<string, object?>("collection", options.CollectionName));
+            _logger.LogError(ex, "Critical failure during hybrid search for query: {Query}", query);
+            throw;
+        }
     }
 
     private static Filter? BuildFilter(RetrievalOptions options)

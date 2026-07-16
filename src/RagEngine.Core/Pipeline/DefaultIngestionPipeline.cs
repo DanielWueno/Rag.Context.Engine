@@ -6,6 +6,7 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.VectorStore;
+using RagEngine.Core.Diagnostics;
 
 namespace RagEngine.Core.Pipeline;
 
@@ -128,6 +129,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 }
                 catch (Exception ex)
                 {
+                    RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "read_file"));
                     _logger.LogWarning(ex, "Failed to read {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
                     continue;
@@ -156,6 +158,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 }
                 catch (Exception ex)
                 {
+                    RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "chunking"));
                     _logger.LogWarning(ex, "Failed to chunk {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
                 }
@@ -216,6 +219,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
         catch (Exception ex)
         {
+            RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "onnx_embedding"));
             _logger.LogError(ex, "ONNX batch embedding failed for {Count} chunks.", batch.Count);
             return;
         }
@@ -228,6 +232,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
         catch (Exception ex)
         {
+            RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "sparse_tokenization"));
             _logger.LogError(ex, "Sparse tokenization failed for {Count} chunks.", batch.Count);
             return;
         }
@@ -245,6 +250,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             await _vectorStore.UpsertBatchAsync(collectionName, triples, ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
+            RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
 
             progress?.Report(new IngestionProgress(
                 FilesProcessed: stats.FilesScanned,
@@ -256,6 +262,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
         catch (Exception ex)
         {
+            RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "qdrant_upsert"));
             _logger.LogError(ex, "Qdrant upsert failed for batch of {Count} chunks.", batch.Count);
         }
     }

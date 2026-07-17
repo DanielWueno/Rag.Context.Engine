@@ -210,30 +210,32 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     {
         var texts = batch.Select(c => c.EnrichedContent).ToList();
 
-        // 1. Generate Dense Embeddings (ONNX)
-        float[][] denseVectors;
-        try
-        {
-            var result = await _brain.GenerateBatchEmbeddingsAsync(texts, ct);
-            denseVectors = result.ToArray();
-        }
-        catch (Exception ex)
-        {
-            RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "onnx_embedding"));
-            _logger.LogError(ex, "ONNX batch embedding failed for {Count} chunks.", batch.Count);
-            return;
-        }
+        // 1. Iniciar Vectorización Densa y Dispersa en paralelo
+        var denseTask = _brain.GenerateBatchEmbeddingsAsync(texts, ct);
+        var sparseTask = Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
 
-        // 2. Generate Sparse Vectors (TF/BM25)
+        float[][] denseVectors;
         IReadOnlyList<IReadOnlyList<SparseEntry>> sparseVectors;
+
         try
         {
-            sparseVectors = await Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
+            await Task.WhenAll(denseTask, sparseTask);
+            
+            denseVectors = (await denseTask).ToArray();
+            sparseVectors = await sparseTask;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "sparse_tokenization"));
-            _logger.LogError(ex, "Sparse tokenization failed for {Count} chunks.", batch.Count);
+            if (denseTask.IsFaulted)
+            {
+                RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "onnx_embedding"));
+                _logger.LogError(denseTask.Exception?.InnerException ?? denseTask.Exception, "ONNX batch embedding failed for {Count} chunks.", batch.Count);
+            }
+            if (sparseTask.IsFaulted)
+            {
+                RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "sparse_tokenization"));
+                _logger.LogError(sparseTask.Exception?.InnerException ?? sparseTask.Exception, "Sparse tokenization failed for {Count} chunks.", batch.Count);
+            }
             return;
         }
 

@@ -98,6 +98,21 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
     // ─────────────────────────────────────────────────────────────────────────
 
     /// <summary>
+    /// Stop words explícitas para mitigar ruido semántico en RAG (Español e Inglés).
+    /// Utiliza OrdinalIgnoreCase para máxima velocidad en lookups.
+    /// </summary>
+    private static readonly HashSet<string> _stopWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        // Español
+        "que", "qué", "es", "un", "una", "el", "la", "los", "las", "de", "del", 
+        "para", "por", "con", "como", "cómo", "en", "a", "al", "su", "sus",
+        
+        // Inglés
+        "what", "is", "a", "an", "the", "of", "for", "by", "with", "how", 
+        "in", "to", "on", "and"
+    };
+
+    /// <summary>
     /// Tier 1 — Hard-eliminated terms.
     /// These tokens appear in virtually every chunk and contribute zero
     /// discriminative power. Removing them reduces the sparse vector size
@@ -185,6 +200,10 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
                 var term = sub.ToLowerInvariant();
 
                 if (term.Length < MinTermLength) continue;
+
+                // Filtrado de Stop Words para evitar ruido semántico
+                if (_stopWords.Contains(term)) continue;
+
                 if (EliminatedTerms.Contains(term)) continue;
                 if (IsNumericNoise(term)) continue;
 

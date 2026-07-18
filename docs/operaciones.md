@@ -28,10 +28,14 @@ grep -h "Search completed"  logs/rag-engine-*.json | tail -10
 
 ### "I cannot find enough information…" en `rag ask`
 
-Grounding estricto: el contexto recuperado no contiene la respuesta. En orden:
+Grounding estricto: el contexto recuperado no contiene la respuesta, **o el LLM local (7B) no
+supo sintetizarla desde el contexto**. En orden:
 1. ¿La colección se ingestó con el motor actual? (ver [matriz de re-ingesta](configuracion.md#cuándo-re-ingestar))
-2. Sube `-k` (p. ej. 10) y verifica con `rag search ... -o markdown` qué contexto llega realmente.
-3. Reformula usando los sustantivos del dominio (los identificadores anclan la rama dispersa).
+2. Sube `-k` (p. ej. 10) y verifica con `rag search ... -o markdown` qué contexto llega realmente. Si el contexto SÍ contiene la respuesta y el modelo se rehúsa, es un límite de síntesis del LLM: reformula hacia lo concreto ("¿qué valor tiene el atributo Persistent de X?" en vez de "¿en qué tabla se guarda X?").
+3. Reformula con el [patrón verificado](guia-cli.md#cómo-formular-buenas-preguntas-patrón-verificado-empíricamente): entidades nombradas + relaciones/reglas, en el idioma de los identificadores del corpus.
+
+> Palanca futura para este límite: re-ranker cross-encoder (el flag `--rerank` ya reserva el
+> pool 3×) o un LLM local de síntesis más grande.
 
 ### 0 resultados en `rag search`
 

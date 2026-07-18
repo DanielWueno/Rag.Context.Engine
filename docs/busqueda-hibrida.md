@@ -49,6 +49,11 @@ Vector disperso BM25-style calculado en C# puro (sin modelo, sin red), zero-allo
 | rule, rules | `rule` |
 | ingesta ↔ ingest | `ingest` (convergencia cross-lingüe) |
 
+> **Límite conocido de la convergencia cross-lingüe:** solo ocurre cuando las raíces coinciden
+> tras el stemming. `import` (EN) ≠ `importar` (ES) — una pregunta en inglés sobre la clase
+> `ImportarAuditoria` no ancla la rama dispersa. Regla práctica: pregunta en el idioma de los
+> identificadores del corpus, o incluye el identificador exacto en la pregunta.
+
 **Pesado — TF saturado:** `peso = tf/(tf+1) × penalización_IDF` con `tf = min(count, 10)`. La saturación mide *presencia* con rendimientos decrecientes. La fórmula proporcional anterior (`count/totalTerms`) sesgaba el ranking hacia micro-chunks: en un constructor de una línea, "auditoria" pesaba 0.33; en la clase de 200 términos que contenía la respuesta, 0.005. Las penalizaciones IDF estáticas castigan términos genéricos de código (`task`, `result`, `service`…); los sets se re-stemmean al inicializar para operar sobre términos ya normalizados.
 
 ## Fusión y umbrales — `QdrantSemanticRetriever`

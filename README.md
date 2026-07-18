@@ -1,87 +1,83 @@
-# Universal Local RAG Context Engine
+# RagEngine — Universal Local RAG Context Engine
 
-> **100% local, offline, privacy-first** semantic context retrieval for massive enterprise repositories.
+> Motor de contexto semántico **100% local, offline y privacy-first** para repositorios de código enterprise.
+> Búsqueda híbrida (densa + dispersa) multilingüe **ES/EN**, con respuestas generadas por un LLM local.
 
-## Stack
-
-| Layer | Technology |
+| | |
 |---|---|
-| Language | C# 12/13 (.NET 10) |
-| AI Orchestrator | Microsoft Semantic Kernel 1.36.0 |
-| Embedding Engine | ONNX Runtime 1.21.0 + all-MiniLM-L6-v2 |
-| Vector DB | Qdrant 1.14.1 (Docker) |
-| CLI UI | Spectre.Console 0.49.1 + System.CommandLine |
+| **Runtime** | .NET 10 · C# 13 |
+| **Embeddings** | ONNX Runtime + `paraphrase-multilingual-MiniLM-L12-v2` (int8, 384 dims, 50+ idiomas) |
+| **Vector DB** | Qdrant (Docker, gRPC) — esquema dual denso + disperso con fusión RRF |
+| **Generación** | Semantic Kernel + Ollama (`qwen2.5-coder`) |
+| **CLI** | Spectre.Console |
+
+---
 
 ## Quick Start
 
-### 1. Start Qdrant
+**Requisitos:** .NET 10 SDK · Docker · ~1 GB de disco para el modelo · (opcional para `rag ask`) [Ollama](https://ollama.com) con `qwen2.5-coder`.
 
 ```bash
+# 1. Levantar Qdrant
 docker compose -f infra/docker-compose.yml up -d
-```
 
-### 2. Download the embedding model
-
-```bash
-chmod +x infra/download-model.sh
+# 2. Descargar el modelo de embeddings (multilingüe, por defecto)
 bash infra/download-model.sh
-```
 
-### 3. Build the solution
-
-```bash
+# 3. Compilar
 dotnet build
+
+# 4. Indexar un repositorio
+dotnet run --project src/RagEngine.Cli -- ingest /ruta/a/tu/repo --collection mi-repo
+
+# 5. Buscar y preguntar (funciona en español e inglés)
+dotnet run --project src/RagEngine.Cli -- search "¿cómo se validan los pedidos?" -c mi-repo
+dotnet run --project src/RagEngine.Cli -- ask "¿Qué reglas aplican al guardar una orden?" -c mi-repo
 ```
 
-### 4. Run the CLI (Sprint 1+)
+> ⚠️ **Nota sobre `--min-score`:** el umbral se aplica a la similitud coseno de la rama densa.
+> Con el modelo multilingüe, los pares pregunta↔código relevantes puntúan **~0.12–0.25**;
+> el default es `0.10`. No uses valores "clásicos" como 0.65 — vaciarías el retrieval.
 
-```bash
-dotnet run --project src/RagEngine.Cli -- rag ingest /path/to/repo
-dotnet run --project src/RagEngine.Cli -- rag search "how is authentication handled"
+## Comandos
+
+| Comando | Descripción |
+|---|---|
+| `rag ingest <path>` | Indexa un repositorio en Qdrant (denso + disperso) |
+| `rag search <query>` | Búsqueda híbrida semántica; salida rich/markdown/json |
+| `rag ask <query>` | Pregunta en lenguaje natural → respuesta del LLM local con citas |
+| `rag status` | Estadísticas de las colecciones |
+| `rag doctor` | Diagnóstico de dependencias (Qdrant, ONNX, disco) |
+
+Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
+
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| [docs/arquitectura.md](docs/arquitectura.md) | Componentes del núcleo, capas, mapa de dependencias |
+| [docs/busqueda-hibrida.md](docs/busqueda-hibrida.md) | Rama densa multilingüe, tokenización dispersa, fusión RRF y semántica de scores |
+| [docs/pipeline-de-ingesta.md](docs/pipeline-de-ingesta.md) | Flujo scanner → chunking → vectorización → Qdrant; concurrencia y rendimiento |
+| [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |
+| [docs/configuracion.md](docs/configuracion.md) | `appsettings.json`, gestión de modelos, cuándo re-ingestar |
+| [docs/operaciones.md](docs/operaciones.md) | Logs, métricas, troubleshooting y runbook |
+
+## Estructura de la solución
+
 ```
-
-## Solution Structure
-
-```
-rag.context.engine/
-├── RagEngine.slnx                  # .NET 10 solution (XML format)
-├── infra/
-│   ├── docker-compose.yml          # Qdrant container
-│   └── download-model.sh           # ONNX model downloader
-├── models/                         # (gitignored) ONNX model files
-│   └── all-MiniLM-L6-v2/
-│       ├── model.onnx
-│       ├── tokenizer.json
-│       └── ...
+Rag.Context.Engine/
+├── infra/                  # docker-compose (Qdrant) + descarga de modelos
+├── docs/                   # Documentación formal del sistema
+├── Fase 1..5 - *.md        # Plan de proyecto interno (diseño, roadmap, riesgos)
 └── src/
-    ├── RagEngine.Core/             # Class library — all business logic
-    │   ├── Abstractions/           # IIngestionScanner, IVectorizationBrain, etc.
-    │   ├── Domain/                 # CodeChunk, ScoredChunk, IngestionResult, etc.
-    │   ├── Infrastructure/
-    │   │   ├── Scanning/           # FileSystemIngestionScanner (S1)
-    │   │   ├── Vectorization/      # OnnxVectorizationBrain (S1)
-    │   │   └── VectorStore/        # QdrantSemanticRetriever (S1)
-    │   ├── Pipeline/               # ChannelIngestionPipeline (S1)
-    │   └── Extensions/             # AddRagEngineCore() DI registration
-    └── RagEngine.Cli/              # Console entry point
-        ├── Commands/               # IngestCommand, SearchCommand (S1/S2)
-        └── Program.cs
+    ├── RagEngine.Core/     # Toda la lógica: abstracciones, dominio, pipeline,
+    │                       # chunking (Roslyn/TS/Markdown), vectorización, Qdrant
+    └── RagEngine.Cli/      # Entry point: comandos Spectre.Console
 ```
 
-## Sprint Roadmap
+## Principios
 
-| Sprint | Days | Goal |
-|--------|------|------|
-| **S0** | ~4 | ✅ Walking Skeleton (this commit) |
-| **S1** | ~7 | `rag ingest <path>` with Spectre.Console UI |
-| **S2** | ~5 | `rag search <query>` with Markdown/JSON output |
-| **S3** | ~4 | Multi-language, incremental re-index, `rag status` |
-| **S4** | ~5 | `RagContextPlugin` for Semantic Kernel agents |
-| **S5** | ~4 | Hardening: Serilog, Polly, metrics, `rag doctor` |
-
-## Security Note
-
-`Microsoft.SemanticKernel.Core` has an open advisory (GHSA-2ww3-72rp-wpp4).
-This engine operates 100% offline with no LLM API calls from the Core library,
-so the attack surface is effectively zero for local-only deployments.
-Monitor the upstream SK repository for a patched release.
+1. **Local-first:** ningún dato sale de tu máquina; sin llamadas a APIs externas.
+2. **Multilingüe simétrico:** consulta en español o inglés contra cualquier corpus — la normalización léxica y el modelo denso tratan ambos idiomas por igual.
+3. **Determinista:** IDs de chunk basados en contenido; re-ingestas idempotentes.
+4. **Observable:** logs estructurados (Serilog JSON), métricas y `rag doctor`.

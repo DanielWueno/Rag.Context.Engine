@@ -95,9 +95,17 @@ public sealed class QdrantVectorStore
     /// <summary>
     /// Upserts a batch of points containing both dense and sparse vectors.
     /// </summary>
+    /// <param name="waitForCommit">
+    /// true (default): bloquea hasta que Qdrant aplica la operación a los índices.
+    /// false: retorna al persistirse en el WAL (status "acknowledged") — la
+    /// durabilidad se conserva, solo se difiere la aplicación al segmento.
+    /// Recomendado para ingesta masiva, donde la latencia de aplicación de los
+    /// índices dual (HNSW + invertido disperso) saldría de la ruta crítica.
+    /// </param>
     public async Task<int> UpsertBatchAsync(
         string collectionName,
         IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector)> batch,
+        bool waitForCommit = true,
         CancellationToken ct = default)
     {
         if (batch.Count == 0) return 0;
@@ -150,7 +158,7 @@ public sealed class QdrantVectorStore
             return point;
         }).ToList();
 
-        await _client.UpsertAsync(collectionName, points, cancellationToken: ct);
+        await _client.UpsertAsync(collectionName, points, wait: waitForCommit, cancellationToken: ct);
 
         _logger.LogDebug("Upserted {Count} points to collection '{Collection}'.",
             batch.Count, collectionName);

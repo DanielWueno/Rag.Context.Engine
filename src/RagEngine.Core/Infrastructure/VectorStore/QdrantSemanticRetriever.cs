@@ -71,32 +71,44 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             var filter = BuildFilter(options);
 
             // 4. Execute Hybrid Search using Prefetch and RRF Fusion
-            ulong fetchLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
+            // El pool de candidatos de cada rama (prefetch) debe ser varias veces
+            // más ancho que el corte final: RRF premia el consenso entre ramas, y
+            // con listas de tamaño TopK solo puede intercalar dos listas cortas.
+            ulong finalLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
+            ulong prefetchLimit = Math.Max(finalLimit * 4, 40);
             var payloadSelector = new WithPayloadSelector { Enable = true };
 
-            var searchResults = await _resiliencePipeline.ExecuteAsync(async ct => 
+            // MinimumSimilarityScore se aplica SOLO al prefetch denso, donde el score
+            // sigue siendo similitud coseno [0..1]. No se aplica al prefetch disperso
+            // (sus scores son dot-products TF sin escala comparable) ni al score RRF
+            // final (que es función del ranking, no de la similitud).
+            var densePrefetch = new PrefetchQuery
+            {
+                Query = queryVector,
+                Using = QdrantVectorStore.DenseVectorName,
+                Filter = filter,
+                Limit = prefetchLimit
+            };
+            if (options.MinimumSimilarityScore > 0f)
+                densePrefetch.ScoreThreshold = options.MinimumSimilarityScore;
+
+            var searchResults = await _resiliencePipeline.ExecuteAsync(async ct =>
             {
                 return await _client.QueryAsync(
                     collectionName: options.CollectionName,
                     query: new Query { Fusion = Fusion.Rrf },
                     prefetch: new[]
                     {
-                        new PrefetchQuery
-                        {
-                            Query = queryVector,
-                            Using = QdrantVectorStore.DenseVectorName,
-                            Filter = filter,
-                            Limit = fetchLimit
-                        },
+                        densePrefetch,
                         new PrefetchQuery
                         {
                             Query = (sparseValues, sparseIndices),
                             Using = QdrantVectorStore.SparseVectorName,
                             Filter = filter,
-                            Limit = fetchLimit
+                            Limit = prefetchLimit
                         }
                     },
-                    limit: fetchLimit,
+                    limit: finalLimit,
                     payloadSelector: payloadSelector,
                     cancellationToken: ct);
             }, cancellationToken);

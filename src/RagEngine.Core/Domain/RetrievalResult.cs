@@ -20,10 +20,13 @@ public sealed record RetrievalOptions
     public int TopK { get; init; } = 10;
 
     /// <summary>
-    /// Minimum similarity score threshold. Results below this are discarded.
-    /// 0.65 is a good starting point for source code.
+    /// Umbral mínimo de similitud coseno, aplicado al prefetch DENSO de la
+    /// búsqueda híbrida (la rama dispersa y el score RRF final no se filtran).
+    /// Con paraphrase-multilingual-MiniLM-L12-v2, la similitud pregunta↔código
+    /// relevante ronda 0.12–0.25 y el ruido queda por debajo de ~0.08, por lo
+    /// que 0.10 actúa como piso de ruido sin sacrificar recall.
     /// </summary>
-    public float MinimumSimilarityScore { get; init; } = 0.65f;
+    public float MinimumSimilarityScore { get; init; } = 0.10f;
 
     /// <summary>Filter results to a specific programming language.</summary>
     public SourceLanguage? FilterByLanguage { get; init; }

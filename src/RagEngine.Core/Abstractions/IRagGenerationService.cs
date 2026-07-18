@@ -24,7 +24,7 @@ public interface IRagGenerationService
     /// </param>
     /// <param name="minimumScore">
     ///   Minimum cosine-similarity threshold. Chunks below this score are discarded
-    ///   before building the context window. Defaults to 0.65.
+    ///   before building the context window. Defaults to 0.10 (dense cosine noise floor for the multilingual model).
     /// </param>
     /// <param name="cancellationToken">Token to cancel the streaming operation.</param>
     /// <returns>
@@ -35,6 +35,6 @@ public interface IRagGenerationService
         string query,
         string collectionName,
         int topK = 5,
-        float minimumScore = 0.65f,
+        float minimumScore = 0.10f,
         CancellationToken cancellationToken = default);
 }

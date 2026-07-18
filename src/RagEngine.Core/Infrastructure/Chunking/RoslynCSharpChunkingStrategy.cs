@@ -174,11 +174,20 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         var span = typeDecl.GetLocation().GetLineSpan();
         int startLine = span.StartLinePosition.Line + 1;
 
-        // Class header = everything up to the opening brace + fields/props only
+        // Class header = attributes + full declaration line + fields (sin cuerpos).
+        // Se reconstruye desde el AST en lugar de tomar la "primera línea no vacía"
+        // de ToFullString(): en clases con atributos ([DefaultClassOptions], reglas
+        // XAF, etc.) esa primera línea es el atributo y se perdía la declaración
+        // completa, dejando chunks de clase casi vacíos.
         var headerLines = new List<string>();
-        headerLines.Add(typeDecl.ToFullString()
-            .Split('\n')
-            .First(l => !string.IsNullOrWhiteSpace(l)));
+
+        foreach (var attrList in typeDecl.AttributeLists)
+            headerLines.Add(attrList.ToString().Trim());
+
+        var declaration =
+            $"{typeDecl.Modifiers} {typeDecl.Keyword} {typeDecl.Identifier}" +
+            $"{typeDecl.TypeParameterList}{typeDecl.BaseList}";
+        headerLines.Add(declaration.Trim());
 
         // Add field declarations only (not methods)
         foreach (var field in typeDecl.Members.OfType<FieldDeclarationSyntax>())

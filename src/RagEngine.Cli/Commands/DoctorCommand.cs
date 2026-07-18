@@ -79,7 +79,7 @@ public sealed class DoctorCommand : AsyncCommand
 
     private bool CheckOnnxModel()
     {
-        var modelPath = _config["OnnxBrain:ModelPath"] ?? "models/all-MiniLM-L6-v2/model.onnx";
+        var modelPath = _config["OnnxBrain:ModelPath"] ?? "models/paraphrase-multilingual-MiniLM-L12-v2/model.onnx";
         var tokenizerPath = _config["OnnxBrain:TokenizerPath"] ?? "models/all-MiniLM-L6-v2/tokenizer.json";
         
         var modelOk = File.Exists(modelPath);

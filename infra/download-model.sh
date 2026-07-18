@@ -1,28 +1,57 @@
 #!/usr/bin/env bash
 # =============================================================================
 # download-model.sh
-# Downloads the all-MiniLM-L6-v2 ONNX model and tokenizer files
-# from the Hugging Face Hub for use with Microsoft.ML.OnnxRuntime.
+# Downloads the ONNX embedding model + tokenizer files from Hugging Face Hub
+# for use with Microsoft.ML.OnnxRuntime.
 #
-# Usage: bash infra/download-model.sh
-# Output: models/all-MiniLM-L6-v2/
+# Usage:
+#   bash infra/download-model.sh                # multilingual (default)
+#   bash infra/download-model.sh english        # legacy all-MiniLM-L6-v2
+#
+# Models:
+#   multilingual → paraphrase-multilingual-MiniLM-L12-v2
+#                  (50+ idiomas, 384 dims, tokenizer SentencePiece/XLM-R)
+#   english      → all-MiniLM-L6-v2
+#                  (monolingüe inglés, 384 dims, tokenizer WordPiece)
 # =============================================================================
 
 set -euo pipefail
 
-MODEL_DIR="models/all-MiniLM-L6-v2"
-HF_BASE="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main"
+VARIANT="${1:-multilingual}"
+
+case "$VARIANT" in
+  multilingual)
+    MODEL_NAME="paraphrase-multilingual-MiniLM-L12-v2"
+    FILES=(
+      "onnx/model.onnx"
+      "onnx/model_qint8_arm64.onnx"   # int8 para Apple Silicon: ~2.3x más rápido, calidad casi idéntica
+      "sentencepiece.bpe.model"
+      "tokenizer.json"
+      "tokenizer_config.json"
+      "config.json"
+    )
+    ;;
+  english)
+    MODEL_NAME="all-MiniLM-L6-v2"
+    FILES=(
+      "onnx/model.onnx"
+      "tokenizer.json"
+      "tokenizer_config.json"
+      "vocab.txt"
+      "special_tokens_map.json"
+    )
+    ;;
+  *)
+    echo "❌ Unknown variant '$VARIANT' (expected: multilingual | english)" >&2
+    exit 1
+    ;;
+esac
+
+MODEL_DIR="models/$MODEL_NAME"
+HF_BASE="https://huggingface.co/sentence-transformers/$MODEL_NAME/resolve/main"
 
 echo "📦 Creating model directory: $MODEL_DIR"
 mkdir -p "$MODEL_DIR"
-
-FILES=(
-  "onnx/model.onnx"
-  "tokenizer.json"
-  "tokenizer_config.json"
-  "vocab.txt"
-  "special_tokens_map.json"
-)
 
 for FILE in "${FILES[@]}"; do
   DEST="$MODEL_DIR/$(basename $FILE)"
@@ -48,3 +77,7 @@ fi
 
 echo ""
 echo "✔  Model download complete. Files in: $MODEL_DIR"
+echo ""
+echo "ℹ️  Recuerda que 'OnnxBrain' en appsettings.json debe apuntar a este modelo"
+echo "   (ModelPath/VocabPath/TokenizerType) y que cambiar de modelo denso exige"
+echo "   re-ingestar las colecciones (rag ingest --force)."

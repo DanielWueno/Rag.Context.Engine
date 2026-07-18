@@ -12,9 +12,10 @@ namespace RagEngine.Core.Abstractions;
 /// </param>
 /// <param name="Weight">
 ///   TF-IDF-inspired weight for the term in this document:
-///   <c>TF(t,d) = rawCount / totalTerms</c>  ×  log₂(1 + 1/DF_proxy)
-///   where DF_proxy is a pre-computed static penalty for high-frequency stop terms.
-///   Pure TF is used when IDF data is unavailable (single-document context).
+///   <c>TF_sat(t,d) = tf / (tf + 1)</c>  ×  penalización IDF estática,
+///   con tf = min(rawCount, 10). La saturación (estilo BM25) mide presencia
+///   con rendimientos decrecientes en lugar de proporción sobre el total de
+///   términos, evitando que los chunks diminutos dominen el ranking disperso.
 /// </param>
 public readonly record struct SparseEntry(uint TermIndex, float Weight);
 

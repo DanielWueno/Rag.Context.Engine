@@ -160,6 +160,14 @@ llamadas de red.
 
 ### Implementación Concreta: OnnxVectorizationBrain
 
+> 📌 **Actualización (julio 2026):** el diseño de abajo asumía un único tokenizador BERT
+> (`all-MiniLM-L6-v2`, monolingüe inglés). La implementación actual es **multilingüe**
+> (`paraphrase-multilingual-MiniLM-L12-v2`, int8 ARM64, mismos 384 dims) y soporta dos
+> familias de tokenización vía `OnnxTokenizerKind`: WordPiece (BERT) y SentencePiece
+> Unigram (XLM-R, con remapeo fairseq de IDs). Los inputs del grafo se construyen
+> dinámicamente desde `InputMetadata` y el padding es dinámico por lote. Cambiar de modelo
+> denso exige re-ingestar las colecciones. Detalle: `docs/busqueda-hibrida.md`.
+
     // RagEngine.Core/Infrastructure/OnnxVectorizationBrain.cs
 
     namespace RagEngine.Core.Infrastructure;
@@ -368,6 +376,15 @@ listos para inyectar en el contexto del LLM.
     }
 
 ### Implementación Concreta: QdrantSemanticRetriever
+
+> 📌 **Actualización (julio 2026):** desde el Sprint 5 la búsqueda es **híbrida**
+> (`QueryAsync` con dos `PrefetchQuery` — denso y disperso — fusionados por RRF), y desde el
+> Sprint 7 aplican tres reglas que el diseño original no contemplaba:
+> `MinimumSimilarityScore` se aplica como `ScoreThreshold` **solo del prefetch denso** (única
+> rama con score coseno acotado); el pool de candidatos por rama es **4× el corte final**
+> (mín. 40) para que el RRF fusione consenso y no intercale listas cortas; y el score que se
+> expone al consumidor es **RRF (tope ~0.5), no coseno** — la escala útil del umbral con el
+> modelo multilingüe es 0.10–0.25, no 0.65. Detalle: `docs/busqueda-hibrida.md`.
 
     // RagEngine.Core/Infrastructure/QdrantSemanticRetriever.cs
 

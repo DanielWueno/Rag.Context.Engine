@@ -200,6 +200,16 @@ Esta es la pieza técnica más sofisticada del sistema. Usa Microsoft.CodeAnalys
 
 ### El Corazón: Construcción de Chunks con Contexto Enriquecido
 
+> 📌 **Actualización (julio 2026) — lección aprendida en el chunk de clase:** la primera
+> implementación de `BuildClassHeaderChunk` tomaba "la primera línea no vacía" del
+> `ToFullString()` del tipo. En clases decoradas con atributos (patrón dominante en corpus
+> XAF/DevExpress, donde las **reglas de negocio viven en atributos**), esa primera línea es el
+> atributo — un chunk que abarcaba 62 líneas quedaba reducido a `[DefaultClassOptions]`
+> (21 chars) y el LLM recibía cáscaras vacías. La cabecera se reconstruye ahora **desde el
+> AST**: listas de atributos completas + declaración (modificadores, identificador, base list)
+> + campos. Regla general: al extraer texto de nodos Roslyn para chunks, componer desde las
+> propiedades tipadas del nodo, nunca desde heurísticas sobre el texto plano.
+
         /// <summary>
         /// Construye el chunk para un método, incluyendo el "contexto padre" inyectado.
         /// El EnrichedContent es lo que realmente se vectoriza: combina el método
@@ -615,3 +625,11 @@ SQL │ Regex + delimitadores GO │ Stored Procedure / View / Function │ Sche
 Markdown │ Split por ## headers │ Sección (H2/H3) │ Título del documento + Breadcrumb
 Texto plano │ Ventana deslizante │ N líneas con solapamiento │ Nombre de archivo + posición
 ──────
+
+> 📌 **Criterio transversal (julio 2026) — contenido mínimo indexable:** independientemente de
+> la estrategia, el pipeline descarta chunks cuyo contenido (sin encabezado) mida **< 60
+> caracteres**: constructores boilerplate de una línea, interfaces marcador, cáscaras
+> `public static class X`. No contienen información respondible, pero su `EnrichedContent`
+> —casi puro encabezado con el nombre de la entidad— produce embeddings artificialmente
+> cercanos a cualquier consulta que mencione esa entidad, contaminando el ranking híbrido.
+> En un corpus real de 21k chunks el filtro eliminó ~1,100 cáscaras (5%).

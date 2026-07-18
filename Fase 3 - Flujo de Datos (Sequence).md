@@ -16,6 +16,11 @@ Flujo │ Trigger │ Frecuencia │ Objetivo
 
 ## 🔵 Flujo 1: Ingestion Pipeline — Paso a Paso
 
+> 📌 **Actualización (julio 2026):** el flujo descrito abajo sigue vigente con dos evoluciones:
+> el lado consumidor son ahora **2–4 tareas concurrentes** (no una), y cada lote vectoriza
+> denso + disperso en paralelo antes del upsert dual con `wait:false`. Ver el apartado
+> "Gestión de Concurrencia" al final de este documento y `docs/pipeline-de-ingesta.md`.
+
 ### Diagrama de Secuencia Completo
 
     Developer / CI Job
@@ -463,22 +468,34 @@ Este es el artefacto que el LLM recibe. El formato es deliberado para maximizar 
 
 El patrón Channel<T> de System.Threading.Channels es la pieza clave de resiliencia:
 
-    PRODUCER SIDE                          CONSUMER SIDE
-    ─────────────                          ──────────────
-    Scanner (I/O bound)                    Vectorizer (CPU bound)
+    PRODUCER SIDE                          CONSUMER SIDE (×2–4 concurrentes)
+    ─────────────                          ──────────────────────────────────
+    Scanner (I/O bound)                    Consumer 1..N (Clamp(cores/4, 2, 4))
         │                                       ▲
         │ FileSystemIngestionScanner            │
         ▼                                       │
     Chunker (CPU: Roslyn)         Channel<CodeChunk>
         │                         capacity: 512
-        │                                       │
+        │  [filtro: contenido ≥ 60 chars]       │
         └──────────── Write ────────────────────┘
                                                 │
-                                         Batch Accumulator
+                                         Batch Accumulator (batch=32)
                                                 │
-                                         ONNX Runtime (batch=32)
+                                  ┌─────────────┴─────────────┐
+                                  │ Task.WhenAll (en paralelo)│
+                                  │  ONNX denso │ Sparse TF   │
+                                  └─────────────┬─────────────┘
                                                 │
-                                         QdrantClient.UpsertAsync()
+                                  QdrantClient.UpsertAsync(wait:false)
+
+> 📌 **Actualización (julio 2026):** el diseño original usaba **un** consumidor; con el esquema
+> dual del Sprint 5, la latencia del upsert (HNSW + índice invertido disperso) entraba íntegra
+> a la ruta crítica entre lote y lote. Hoy 2–4 consumidores compiten por el mismo Channel
+> (`SingleReader = false`): mientras uno espera el upsert, otro está en inferencia ONNX. Los
+> upserts de ingesta masiva usan `wait: false` — Qdrant confirma al persistir en WAL
+> (durabilidad garantizada) y aplica los índices asíncronamente. El productor descarta chunks
+> con contenido < 60 chars (constructores boilerplate, interfaces marcador), que contaminaban
+> el ranking de ambas ramas con embeddings de puro encabezado.
 
 Beneficios de este diseño:
 
@@ -490,17 +507,21 @@ Cancelación cooperativa │ CancellationToken propagado en cada await . Ctrl+C 
 Idempotencia │ UpsertAsync en Qdrant permite re-ejecutar el pipeline sin duplicar datos.
 ──────
 
-## Métricas de Rendimiento Esperadas (Estimación POC)
+## Métricas de Rendimiento — Medidas Reales (Sprint 7)
 
-│ Basado en hardware de desarrollador: Intel i7-12th gen, 32GB RAM, SSD NVMe.
+│ Hardware de referencia: Apple Silicon, Qdrant local en Docker, modelo multilingüe int8 ARM64, batch 32, 2–4 consumidores.
 
-Operación │ Throughput Estimado │ Cuello de Botella
-────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────
-Scanner (I/O) │ ~2,000 archivos/seg │ Velocidad del SSD
-Chunking Roslyn (C#) │ ~150–300 archivos/seg │ Parsing AST CPU
-ONNX Vectorización (batch=32) │ ~200–400 chunks/seg │ CPU math (AVX2)
-Qdrant Upsert │ ~1,000–3,000 puntos/seg │ gRPC + almacenamiento
-Pipeline completo │ ~100–200 archivos/seg │ Roslyn + ONNX
+Corpus │ Volumen │ Duración medida │ Cuello de botella
+────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────
+RagEngine (este repo) │ 57 archivos → ~430 chunks │ ~4 s │ Inferencia ONNX
+BusinessSuite.Xaf │ 2,148 archivos → ~20,000 chunks │ 2m 26s (~137 chunks/seg e2e) │ Inferencia ONNX (~150 ms/lote int8)
+Búsqueda híbrida (rag search) │ 1 consulta, colección de 20k puntos │ ~130–150 ms │ Embedding de la consulta + RRF
 
-│ Un repositorio enterprise de 10,000 archivos C# → ingesta inicial estimada en ~50–100 minutos. Re-indexaciones incrementales (solo archivos modificados) → minutos.
+│ Proyección: un repositorio enterprise de 10,000 archivos C# → ingesta inicial en ~12–15 minutos (las estimaciones originales del POC preveían 50–100 min con un solo consumidor y sin cuantización). Re-ingestas idempotentes; la tokenización dispersa es despreciable (~1 ms/lote, en paralelo con ONNX).
 ──────
+
+> 📌 **Nota histórica:** la tabla original de este apartado contenía estimaciones pre-POC sobre
+> Intel i7 (pipeline completo ~100–200 archivos/seg, 10k archivos ≈ 50–100 min). Se reemplazó
+> por mediciones reales tras la paralelización del consumidor y la cuantización int8 del
+> Sprint 7. Fuente de los números: logs estructurados (`logs/rag-engine-*.json`, evento
+> "Ingestion complete") — ver `docs/pipeline-de-ingesta.md`.

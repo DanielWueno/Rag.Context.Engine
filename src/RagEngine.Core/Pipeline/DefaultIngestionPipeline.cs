@@ -22,6 +22,25 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 {
     private const int ChannelCapacity = 512;
 
+    /// <summary>
+    /// Número de consumidores concurrentes (vectorización + upsert).
+    /// Con un solo consumidor, la latencia del upsert a Qdrant entra íntegra a la
+    /// ruta crítica entre lote y lote; con varios, el upsert del lote N se solapa
+    /// con la inferencia ONNX del lote N+1. Se acota para no saturar la sesión
+    /// ONNX (que ya paraleliza internamente) ni el gRPC local de Qdrant.
+    /// </summary>
+    private static readonly int ConsumerCount = Math.Clamp(Environment.ProcessorCount / 4, 2, 4);
+
+    /// <summary>
+    /// Longitud mínima (en caracteres) del contenido de un chunk para ser indexado.
+    /// Los micro-chunks (constructores boilerplate de una línea, interfaces
+    /// marcador vacías, cáscaras "public static class X") no contienen información
+    /// respondible, pero su EnrichedContent —casi puro encabezado con el nombre de
+    /// la clase— produce embeddings artificialmente cercanos a cualquier consulta
+    /// que mencione esa entidad, ensuciando el ranking de ambas ramas híbridas.
+    /// </summary>
+    private const int MinIndexableContentChars = 60;
+
     private readonly IIngestionScanner _scanner;
     private readonly ChunkingStrategyRouter _chunkRouter;
     private readonly IVectorizationBrain _brain;
@@ -77,12 +96,16 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var producerTask = ProduceChunksAsync(
             request, channel.Writer, progress, stats, cancellationToken);
 
-        var consumerTask = ConsumeAndIndexAsync(
-            request.CollectionName, channel.Reader,
-            request.Options.BatchSize, progress, stats, cancellationToken);
+        // Varios consumidores compiten por el mismo Channel (SingleReader = false):
+        // mientras uno espera el upsert de Qdrant, otro vectoriza el siguiente lote.
+        var consumerTasks = Enumerable.Range(0, ConsumerCount)
+            .Select(_ => ConsumeAndIndexAsync(
+                request.CollectionName, channel.Reader,
+                request.Options.BatchSize, progress, stats, cancellationToken))
+            .ToArray();
 
-        // Run both tasks concurrently; propagate any exception
-        await Task.WhenAll(producerTask, consumerTask);
+        // Run producer and consumers concurrently; propagate any exception
+        await Task.WhenAll(consumerTasks.Append(producerTask));
 
         sw.Stop();
 
@@ -144,6 +167,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     await foreach (var chunk in strategy.ChunkAsync(
                         artifact, content, request.Options, ct))
                     {
+                        if (chunk.Content.AsSpan().Trim().Length < MinIndexableContentChars)
+                            continue;
+
                         await writer.WriteAsync(chunk, ct);
                         Interlocked.Increment(ref stats.ChunksGenerated);
 
@@ -250,7 +276,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         try
         {
-            await _vectorStore.UpsertBatchAsync(collectionName, triples, ct);
+            // waitForCommit: false — el WAL de Qdrant garantiza durabilidad; diferir
+            // la aplicación de los índices saca ~300 ms/lote de la ruta crítica.
+            await _vectorStore.UpsertBatchAsync(collectionName, triples, waitForCommit: false, ct: ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
             RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
 

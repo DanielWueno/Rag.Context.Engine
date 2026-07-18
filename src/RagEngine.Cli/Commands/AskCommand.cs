@@ -34,8 +34,8 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
         public int TopK { get; init; } = 5;
 
         [CommandOption("--min-score|-s")]
-        [System.ComponentModel.Description("Minimum similarity threshold for retrieved chunks (default: 0.65).")]
-        public float MinScore { get; init; } = 0.65f;
+        [System.ComponentModel.Description("Minimum dense cosine threshold for retrieved chunks (default: 0.10; relevant question↔code pairs score ~0.12-0.25 with the multilingual model).")]
+        public float MinScore { get; init; } = 0.10f;
 
         [CommandOption("--no-stream")]
         [System.ComponentModel.Description("Buffer the full response and print it at once instead of streaming.")]

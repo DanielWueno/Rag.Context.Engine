@@ -32,7 +32,7 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         public int TopK { get; init; } = 10;
 
         [CommandOption("--min-score|-s")]
-        public float MinScore { get; init; } = 0.65f;
+        public float MinScore { get; init; } = 0.10f;
 
         [CommandOption("--language|-l")]
         public SourceLanguage? Language { get; init; }

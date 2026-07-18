@@ -539,6 +539,14 @@ profundidad); coseno ES↔EN en pares equivalentes **0.92/0.89**; la consulta ca
 sobre reglas de auditoría pasó de la negativa del LLM a una respuesta fundamentada y citada.
 Detalle técnico: `docs/busqueda-hibrida.md` y `docs/pipeline-de-ingesta.md`.
 
+Cierre del sprint — validación empírica con baterías de preguntas reales sobre bsuite-repo:
+se identificó el patrón de pregunta ganador (entidades nombradas + relaciones/reglas, en el
+idioma de los identificadores; ver `docs/guia-cli.md`) y se reforzó el system prompt para que
+el LLM traduzca la semántica de los atributos declarativos ([Persistent] → tabla,
+[RuleRequiredField] → validación, [Appearance] → campos deshabilitados), resolviendo el fraseo
+abstracto que el modelo 7B no sintetizaba. Próximo hito propuesto (Sprint 8): re-ranker
+cross-encoder sobre el pool 3× que `--rerank` ya reserva.
+
 ## Tabla Resumen del Roadmap
 
     SEMANA     S0          S1          S2          S3          S4          S5          S6          S7

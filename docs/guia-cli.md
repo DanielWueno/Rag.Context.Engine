@@ -58,6 +58,21 @@ rag ask "Explain the ingestion pipeline" -c rag-engine --no-stream
 
 La respuesta llega **en el idioma de la pregunta**, citando archivo y rango de líneas. Si el contexto recuperado no contiene la respuesta, el LLM lo dice explícitamente (grounding estricto) — en ese caso prueba a reformular, subir `-k`, o verificar que la colección esté ingestada con el motor actual.
 
+### Cómo formular buenas preguntas (patrón verificado empíricamente)
+
+1. **Nombra las entidades por su identificador** (`AuditoriaResultadoHallazgo`, no "los registros de problemas") — el nombre exacto ancla la rama léxica dispersa.
+2. **Pregunta por relaciones, reglas, condiciones o flujos** — es la información que viven en atributos declarativos y asociaciones, y que el prompt del sistema enseña al LLM a traducir (`[Persistent]` → tabla, `[RuleRequiredField]` → validación al guardar, `[Appearance]` → campos/acciones deshabilitados).
+3. **Pregunta en el idioma de los identificadores del corpus** — la convergencia cross-lingüe del stemming solo ocurre cuando las raíces coinciden (`ingest`/`ingesta` sí; `import`/`importar` no), así que "the import process" no ancla la clase `ImportarAuditoria`.
+
+```bash
+# ⭐ Patrón ganador: entidades nombradas + relación/flujo
+rag ask "¿Cuál es la relación entre AuditoriaResultado, AuditoriaResultadoHallazgo y AuditoriaResultadoHallazgoAccionCorrectiva? Describe el flujo." -c bsuite-repo -k 12
+
+# ✅ Metadata declarativa (el atributo ES la respuesta)
+rag ask "¿En qué tablas se persisten los hallazgos de auditoría y sus evidencias?" -c bsuite-repo
+rag ask "¿Qué acciones o campos se deshabilitan cuando un hallazgo está Cancelado?" -c bsuite-repo
+```
+
 ## `rag status` — Estadísticas de colecciones
 
 ```bash

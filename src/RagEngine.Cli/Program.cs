@@ -20,6 +20,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("System.Net.Http.HttpClient", Serilog.Events.LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console(
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning,
         outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}")
     .WriteTo.File(
         formatter: new CompactJsonFormatter(),
@@ -98,7 +99,29 @@ app.Configure(config =>
     });
 });
 
-    return await app.RunAsync(args);
+    int exitCode;
+    try
+    {
+        exitCode = await app.RunAsync(args);
+    }
+    finally
+    {
+        // 1. Destrucción asíncrona y determinista del contenedor de dependencias
+        if (host is IAsyncDisposable asyncHost)
+        {
+            await asyncHost.DisposeAsync();
+        }
+        else
+        {
+            host.Dispose();
+        }
+
+        // 2. Mecanismo para dar tiempo a los hilos nativos de C++ a liberar sus bloqueos antes del cierre
+        // (Previene 'mutex lock failed: Invalid argument' en Apple Silicon ARM64)
+        await Task.Delay(300);
+    }
+
+    return exitCode;
 }
 catch (Exception ex)
 {

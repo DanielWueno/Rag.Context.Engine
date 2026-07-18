@@ -15,6 +15,16 @@ namespace RagEngine.Core.Infrastructure.Vectorization;
 /// - Uses SearchValues<string> for blazing fast SIMD evaluations of Stop Words.
 /// - Uses Dictionary.GetAlternateLookup<ReadOnlySpan<char>>() to eliminate string allocations on dictionary lookups.
 /// - Custom span-based parser entirely replaces Regex, eliminating the GC overhead from strings and string.Split.
+///
+/// Normalización léxica ES/EN (aplicada simétricamente en ingesta y consulta):
+/// - Folding de acentos tras el lowercase ("código" → "codigo"), alineando la
+///   consulta en lenguaje natural con los identificadores del código fuente.
+/// - Stemming ligero (plural -s y vocal temática final a/o/e, estilo
+///   SpanishLightStemmer de Lucene): "auditoria" y "auditorias" convergen al
+///   mismo stem "auditori" antes del hash, por lo que el matching exacto de
+///   MurmurHash3 sobrevive a la morfología del español y al plural inglés.
+///   La precisión lingüística importa menos que la CONSISTENCIA: ambos lados
+///   del índice aplican exactamente la misma transformación.
 /// </summary>
 public sealed partial class SparseTokenizer : ISparseTokenizer
 {
@@ -49,7 +59,10 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
             "also", "any", "can", "will", "all", "when", "used", "use"
         );
 
-    private static readonly FrozenSet<string> HeavyPenaltyTermsSet = FrozenSet.Create(StringComparer.OrdinalIgnoreCase,
+    // Los sets de penalización se consultan DESPUÉS de la normalización léxica,
+    // por lo que sus entradas deben almacenarse en forma stemmeada (CreateStemmedSet
+    // aplica la misma transformación que el hot path: lowercase + fold + stem).
+    private static readonly FrozenSet<string> HeavyPenaltyTermsSet = CreateStemmedSet(
             "task", "list", "array", "type", "name", "value", "data", "item",
             "items", "result", "results", "response", "request", "context",
             "config", "options", "service", "services", "model", "models",
@@ -59,12 +72,33 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
             "init", "load", "save", "read", "write", "send", "receive"
         );
 
-    private static readonly FrozenSet<string> ModeratePenaltyTermsSet = FrozenSet.Create(StringComparer.OrdinalIgnoreCase,
+    private static readonly FrozenSet<string> ModeratePenaltyTermsSet = CreateStemmedSet(
             "async", "await", "handler", "factory", "builder", "manager",
             "provider", "repository", "controller", "middleware", "pipeline",
             "client", "server", "host", "register", "resolve", "inject",
             "scope", "singleton", "transient", "event", "callback", "action"
         );
+
+    /// <summary>
+    /// Construye un FrozenSet cuyas entradas pasaron por la misma normalización
+    /// (lowercase + accent folding + light stem) que los términos del hot path.
+    /// Solo se ejecuta una vez en la inicialización estática.
+    /// </summary>
+    private static FrozenSet<string> CreateStemmedSet(params string[] terms)
+    {
+        var stemmed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        Span<char> buffer = stackalloc char[64];
+
+        foreach (var term in terms)
+        {
+            int len = term.AsSpan().ToLowerInvariant(buffer);
+            var lowered = buffer[..len];
+            FoldAccentsInPlace(lowered);
+            stemmed.Add(StemLight(lowered).ToString());
+        }
+
+        return stemmed.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    }
 
     // Contenedor mutable para evitar actualizaciones de structs inmutables en el diccionario
     private sealed class RefCount
@@ -179,16 +213,21 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
                         int len = word.ToLowerInvariant(lowerBuffer);
                         var lowerWord = lowerBuffer.Slice(0, len);
 
+                        // Normalización léxica ES/EN: fold de acentos in-place y
+                        // stemming ligero (recorte de span, sin asignaciones).
+                        FoldAccentsInPlace(lowerWord);
+                        ReadOnlySpan<char> normalized = StemLight(lowerWord);
+
                         // TryGetValue sin asignación de heap gracias a AlternateLookup
-                        if (lookup.TryGetValue(lowerWord, out var counter))
+                        if (lookup.TryGetValue(normalized, out var counter))
                         {
                             counter.Value++;
                         }
                         else
                         {
-                            // ÚNICA ASIGNACIÓN DE MEMORIA: Solo reservamos el string de aquellos términos 
+                            // ÚNICA ASIGNACIÓN DE MEMORIA: Solo reservamos el string de aquellos términos
                             // que pasaron exitosamente los filtros de tokenización y no existían en el scope actual.
-                            termCounts.Add(lowerWord.ToString(), new RefCount { Value = 1 });
+                            termCounts.Add(normalized.ToString(), new RefCount { Value = 1 });
                         }
                     }
                 }
@@ -201,15 +240,14 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
         if (termCounts.Count == 0)
             return Array.Empty<SparseEntry>();
 
-        // ── TF weighting + static IDF penalty ────────────────────────────────
-        int totalTerms = 0;
-        foreach (var kv in termCounts)
-            totalTerms += Math.Min(kv.Value.Value, MaxRawCount);
-
-        if (totalTerms == 0)
-            return Array.Empty<SparseEntry>();
-
-        float totalTermsF = (float)totalTerms;
+        // ── TF weighting (saturación BM25-style) + static IDF penalty ────────
+        // El TF proporcional (count/totalTerms) sesgaba brutalmente el ranking
+        // hacia chunks diminutos: en un constructor de una línea, "auditoria"
+        // pesaba 0.33; en la clase rica de 200 términos que SÍ contiene la
+        // respuesta, 0.005. La saturación tf/(tf+1) mide PRESENCIA con
+        // rendimientos decrecientes, sin castigar la longitud del documento:
+        // el ranking disperso pasa a dominarlo cuántos términos de la consulta
+        // coinciden (dot product), no qué tan corto es el chunk.
         var entries = new List<SparseEntry>(termCounts.Count);
 
         foreach (var kv in termCounts)
@@ -217,9 +255,10 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
             string term = kv.Key;
             int rawCount = kv.Value.Value;
 
-            float tf = Math.Min(rawCount, MaxRawCount) / totalTermsF;
+            float tf = Math.Min(rawCount, MaxRawCount);
+            float saturatedTf = tf / (tf + 1f);
             float idfMultiplier = GetStaticIdfMultiplier(term);
-            float weight = tf * idfMultiplier;
+            float weight = saturatedTf * idfMultiplier;
 
             if (weight < 1e-6f) continue;
 
@@ -230,6 +269,53 @@ public sealed partial class SparseTokenizer : ISparseTokenizer
         // Qdrant exige estar ordenado por TermIndex ascendente
         entries.Sort(static (a, b) => a.TermIndex.CompareTo(b.TermIndex));
         return MergeCollisions(entries);
+    }
+
+    /// <summary>
+    /// Reemplaza vocales acentuadas, diéresis, ñ y ç por su letra base ASCII.
+    /// Los identificadores de código se escriben sin tildes ("codigo", "anio"),
+    /// mientras que las consultas en lenguaje natural sí las llevan; sin este
+    /// folding, "código" y "codigo" producirían hashes distintos.
+    /// Opera in-place sobre el buffer ya en minúsculas — cero asignaciones.
+    /// </summary>
+    private static void FoldAccentsInPlace(Span<char> text)
+    {
+        for (int i = 0; i < text.Length; i++)
+        {
+            text[i] = text[i] switch
+            {
+                'á' or 'à' or 'ä' or 'â' or 'ã' => 'a',
+                'é' or 'è' or 'ë' or 'ê'        => 'e',
+                'í' or 'ì' or 'ï' or 'î'        => 'i',
+                'ó' or 'ò' or 'ö' or 'ô' or 'õ' => 'o',
+                'ú' or 'ù' or 'ü' or 'û'        => 'u',
+                'ñ'                              => 'n',
+                'ç'                              => 'c',
+                _ => text[i]
+            };
+        }
+    }
+
+    /// <summary>
+    /// Stemmer ligero unificado ES/EN (inspirado en SpanishLightStemmer de Lucene):
+    ///   1. Recorta el plural final "-s" (evitando "-ss": class, process).
+    ///   2. Recorta la vocal temática final a/o/e (género español, -e muda inglesa).
+    /// Con longitud mínima 5 por regla, singular y plural convergen al mismo stem:
+    ///   auditoria/auditorias → auditori · condicion/condiciones → condicion
+    ///   regla/reglas → regl · rule/rules → rule · finding/findings → finding
+    /// No busca corrección lingüística sino determinismo simétrico: el índice y la
+    /// consulta aplican la misma función antes de MurmurHash3.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ReadOnlySpan<char> StemLight(ReadOnlySpan<char> word)
+    {
+        if (word.Length >= 5 && word[^1] == 's' && word[^2] != 's')
+            word = word[..^1];
+
+        if (word.Length >= 5 && word[^1] is 'a' or 'o' or 'e')
+            word = word[..^1];
+
+        return word;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

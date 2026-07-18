@@ -255,6 +255,13 @@ inaceptable para uso diario.
 
 ### Mitigación: Estrategia de Ejecución Adaptativa
 
+> 📌 **Estado (julio 2026) — mitigado y verificado por otra vía:** antes que detectar GPUs, las
+> dos palancas que resultaron decisivas en CPU fueron (a) la **cuantización int8**
+> (`model_qint8_arm64.onnx`: 2.3× más rápido que fp32 con coseno ES↔EN 0.91 vs 0.92) y
+> (b) el **padding dinámico por lote** (rellenar hasta la secuencia más larga real, no hasta
+> `MaxSequenceLength` fijo). Medido: 21k chunks en 2m26s con un modelo de 12 capas. El
+> detector adaptativo de abajo sigue siendo válido como evolución futura para GPU.
+
     // RagEngine.Core/Infrastructure/OnnxCapabilityDetector.cs
 
     public static class OnnxCapabilityDetector
@@ -423,6 +430,21 @@ SaveChangesAsync" ) o para código con acrónimos de empresa (ej: "ERPv3 FiscalY
 
 ### Mitigación: Estrategia de Búsqueda Híbrida (Dense + Sparse)
 
+> 📌 **Estado (julio 2026) — implementado (Sprint 5) y refinado (Sprint 7).** La híbrida
+> funcionó, pero la implementación real enseñó dos lecciones que este análisis no anticipó:
+>
+> 1. **Los scores RRF no son umbralizables como similitudes.** `Σ 1/(k + rank)` es función del
+>    ranking (tope ~0.5): el vecino #1 de una consulta absurda puntúa igual que el de una
+>    perfecta. Cualquier control de calidad por umbral debe aplicarse *dentro* de la rama
+>    densa (`ScoreThreshold` del prefetch), nunca sobre el score fusionado.
+> 2. **El TF disperso necesita saturación.** El peso proporcional (`count/totalTerms`)
+>    convertía a los micro-chunks en imanes del ranking; la forma BM25 `tf/(tf+1)` mide
+>    presencia sin castigar la longitud del documento.
+>
+> Además, para corpus con identificadores en español la híbrida solo rinde con
+> **normalización léxica simétrica** (folding de acentos + stemming ligero ES/EN) antes del
+> hash — ver RIESGO 8 y `docs/busqueda-hibrida.md`.
+
     // RagEngine.Core/Abstractions/IHybridRetriever.cs
 
     /// <summary>
@@ -549,18 +571,58 @@ Un solo archivo problemático NO debe detener la ingesta de los 14,999 restantes
     }
     ──────
 
+## RIESGO 8 — Asimetría de Idioma entre Consulta y Corpus
+
+Probabilidad: 🔴 Alta (materializado) | Impacto: ⚠️ Alto
+
+### Descripción del Problema
+
+Riesgo **materializado en producción** antes de ser catalogado — se documenta con su autopsia.
+Con un corpus de dominio en español (clases `Auditoria`, `Hallazgo`) las consultas en español
+devolvían "0 resultados" mientras su traducción al inglés recuperaba resultados precisos.
+
+### Síntoma Observable
+
+`rag ask` responde sistemáticamente "I cannot find enough information..." para consultas en un
+idioma, mientras la misma intención traducida funciona. El retrieval devuelve chunks (los logs
+muestran Count > 0), pero irrelevantes.
+
+### Causa Raíz (cuatro capas alineadas)
+
+1. **Modelo denso monolingüe:** all-MiniLM-L6-v2 (entrenado en inglés) producía embeddings
+   cuasi-aleatorios para consultas en español → vecinos irrelevantes.
+2. **Matching disperso sin morfología:** hash exacto sobre términos sin normalizar →
+   `auditoría` ≠ `auditoria` ≠ `auditorias` (acentos y plurales rompían el recall léxico).
+3. **Umbral fantasma:** `min-score` era un no-op tras la migración a RRF, ocultando que el
+   problema era de relevancia y no de filtrado.
+4. **Chunks vacíos:** el bug de `BuildClassHeaderChunk` entregaba cáscaras al LLM, que
+   respondía honestamente que no encontraba información.
+
+### Mitigación: Simetría Multilingüe en Ambas Ramas (implementada, Sprint 7)
+
+- Rama densa: modelo multilingüe (`paraphrase-multilingual-MiniLM-L12-v2`) — 50+ idiomas en
+  el mismo espacio vectorial de 384 dims.
+- Rama dispersa: normalización léxica **idéntica en ingesta y consulta** — folding de acentos
+  + stemming ligero ES/EN (`auditoría`/`auditorias` → `auditori`).
+- Verificación de regresión: coseno entre pares de consultas equivalentes ES↔EN debe
+  mantenerse > 0.85 (medido: 0.92/0.89). Si se cambia de modelo denso, repetir la medición
+  y recalibrar `min-score` (ver `docs/configuracion.md`).
+
+──────
+
 ## Matriz de Riesgos Consolidada
 
-# │ Riesgo │ Prob. │ Impacto │ Estrategia │ Sprint
+# │ Riesgo │ Prob. │ Impacto │ Estrategia │ Sprint │ Estado
 
-─────────────────────────────┼───────────────────────────────────────┼─────────────────────────────┼─────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────
-R1 │ Truncamiento silencioso de tokens │ 🔴 Alta │ 💀 Crítico │ TokenBudgetGuard + SafeTruncate │ S1
-R2 │ OOM en ingesta masiva │ 🔴 Alta │ ⚠️ Alto │ BoundedChannel + GC explícito │ S1
-R3 │ Deriva semántica por cambio de modelo │ 🟡 Media │ 💀 Crítico │ CollectionManifest + hash validation │ S1
-R4 │ Latencia ONNX en hardware bajo │ 🟡 Media │ ⚠️ Alto │ OnnxCapabilityDetector + fallback remoto │ S0
-R5 │ Duplicados por re-indexación │ 🟡 Media │ 📌 Medio │ UUID v5 + OrphanChunkCleaner │ S3
-R6 │ Baja precisión en queries técnicos │ 🟡 Media │ ⚠️ Alto │ Búsqueda híbrida dense+sparse (RRF) │ S4
-R7 │ Ruptura por archivos malformados │ 🔴 Alta │ 📌 Medio │ Error isolation por artefacto │ S1
+─────────────────────────────┼───────────────────────────────────────┼─────────────────────────────┼─────────────────────────────┼────────────────────────────────────────────┼─────────────────────────────┼─────────────────────────────
+R1 │ Truncamiento silencioso de tokens │ 🔴 Alta │ 💀 Crítico │ TokenBudgetGuard + SafeTruncate │ S1 │ Mitigado
+R2 │ OOM en ingesta masiva │ 🔴 Alta │ ⚠️ Alto │ BoundedChannel + GC explícito │ S1 │ Mitigado
+R3 │ Deriva semántica por cambio de modelo │ 🟡 Media │ 💀 Crítico │ CollectionManifest + hash validation │ S1 │ Parcial (manifest sin validación activa; regla operativa: re-ingestar al cambiar vectorización)
+R4 │ Latencia ONNX en hardware bajo │ 🟡 Media │ ⚠️ Alto │ Cuantización int8 + padding dinámico (detector GPU: futuro) │ S0/S7 │ Mitigado y medido
+R5 │ Duplicados por re-indexación │ 🟡 Media │ 📌 Medio │ UUID v5 + OrphanChunkCleaner │ S3 │ Mitigado
+R6 │ Baja precisión en queries técnicos │ 🟡 Media │ ⚠️ Alto │ Búsqueda híbrida dense+sparse (RRF) + TF saturado │ S5/S7 │ Mitigado y refinado
+R7 │ Ruptura por archivos malformados │ 🔴 Alta │ 📌 Medio │ Error isolation por artefacto │ S1 │ Mitigado
+R8 │ Asimetría de idioma consulta↔corpus │ 🔴 Alta │ ⚠️ Alto │ Modelo multilingüe + normalización léxica simétrica │ S7 │ Materializado → corregido y verificado
 ──────
 
 ## Lista de Verificación Pre-Producción (Checklist)

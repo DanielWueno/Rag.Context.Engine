@@ -480,6 +480,20 @@ S5-T3 │ Indexación Dual (DefaultIngestionPipeline) │ Procesamiento paralelo
 S5-T4 │ Búsqueda Híbrida (HybridRetriever) │ Uso de Qdrant Prefetch y Fusion.Rrf (QueryAsync)
     ──────
 
+> 📌 **Retrospectiva post-implementación (julio 2026):** el sprint cumplió su meta, pero dejó
+> tres deudas latentes que se detectaron y corrigieron en el Sprint 7:
+>
+> 1. **`min-score` quedó como no-op:** la migración de `SearchAsync` a `QueryAsync`+RRF eliminó
+>    el `scoreThreshold` que se pasaba a Qdrant, y ningún componente volvió a leer
+>    `MinimumSimilarityScore`. Además, el score post-fusión es RRF (función del ranking, tope
+>    ~0.5), no coseno — el default 0.65 era incomparable con la nueva escala.
+> 2. **TF proporcional sesgado a micro-chunks:** el peso `count/totalTerms` del `SparseTokenizer`
+>    hacía que un constructor de una línea dominara el ranking disperso frente al chunk rico
+>    que contenía la respuesta.
+> 3. **Regresión de rendimiento en ingesta (2s → 6s en el repo de ejemplo):** el upsert dual
+>    (HNSW + índice invertido) entró íntegro a la ruta crítica del consumidor único; la
+>    tokenización dispersa resultó irrelevante en costo (~1 ms/lote, en paralelo con ONNX).
+
 ## 🏁 Sprint 6 — Hardening y Observabilidad (3–4 días)
 
 Meta: El sistema es robusto para uso diario. Logs estructurados, métricas, circuit breakers.
@@ -497,38 +511,63 @@ Comando rag doctor :
      Checking RagEngine dependencies...
 
      ✅ Qdrant         localhost:6334   [Connected | v1.9.2]
-     ✅ ONNX Model     models/all-MiniLM-L6-v2/model.onnx   [Loaded | 384 dims]
-     ✅ Tokenizer      models/all-MiniLM-L6-v2/tokenizer.json   [OK]
+     ✅ ONNX Model     models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx   [Loaded | 384 dims]
+     ✅ Tokenizer      models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model   [OK]
      ✅ Disk Space     qdrant_storage/   [2.1 GB used | 180 GB free]
      ⚠️  Colecciones   0 colecciones encontradas → Ejecuta 'rag ingest'
     ──────
 
+## 🏁 Sprint 7 — Multilingüe y Optimización de Retrieval (completado)
+
+Meta: consultas en español al mismo nivel que en inglés, y recuperar el rendimiento de ingesta
+perdido en el Sprint 5. Sprint nacido del análisis de dos comportamientos observados en
+producción: la ingesta 3× más lenta tras la búsqueda híbrida, y consultas en español que
+devolvían "0 resultados" mientras su traducción al inglés funcionaba.
+
+ID │ Tarea │ Detalles
+────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────
+S7-T1 │ Cerebro denso multilingüe │ paraphrase-multilingual-MiniLM-L12-v2 int8 ARM64 (mismos 384 dims); estrategia dual de tokenizer (WordPiece/SentencePiece XLM-R con remapeo fairseq); padding dinámico por lote
+S7-T2 │ Normalización léxica ES/EN (SparseTokenizer) │ Folding de acentos + stemming ligero simétrico (auditoría/auditorias → auditori); TF saturado tf/(tf+1) contra el sesgo a micro-chunks
+S7-T3 │ Restauración de min-score │ Aplicado como ScoreThreshold del prefetch denso (coseno); pool RRF 4× el corte final; defaults recalibrados 0.65 → 0.10 (escala medida: relevante ≈ 0.12–0.25)
+S7-T4 │ Paralelización real de la ingesta │ 2–4 consumidores sobre el Channel + upserts wait:false (durabilidad vía WAL); filtro de contenido mínimo indexable (60 chars)
+S7-T5 │ Fix de chunking Roslyn │ Cabecera de clase reconstruida desde el AST (atributos + declaración + campos); antes se reducía a la primera línea no vacía (el atributo)
+S7-T6 │ Fix de ensamblado de contexto │ Chunk sobredimensionado ya no trunca la cola del contexto (continue, no break); prompt responde en el idioma de la pregunta
+    ──────
+
+Resultados medidos: ingesta BusinessSuite.Xaf 4m21s → **2m26s** (con modelo del doble de
+profundidad); coseno ES↔EN en pares equivalentes **0.92/0.89**; la consulta canónica en español
+sobre reglas de auditoría pasó de la negativa del LLM a una respuesta fundamentada y citada.
+Detalle técnico: `docs/busqueda-hibrida.md` y `docs/pipeline-de-ingesta.md`.
+
 ## Tabla Resumen del Roadmap
 
-    SEMANA     S0          S1          S2          S3          S4          S5          S6
-               ────────    ────────    ────────    ────────    ────────    ────────    ────────
-    Días        1–4         5–11        12–16       17–20       21–25       26–29       30-33
+    SEMANA     S0          S1          S2          S3          S4          S5          S6          S7
+               ────────    ────────    ────────    ────────    ────────    ────────    ────────    ────────
+    Días        1–4         5–11        12–16       17–20       21–25       26–29       30-33       34–37
 
-    Output    Scaffolding  Ingest E2E  Search CLI  Multi-lang  SK Plugin   Hybrid      Hardening
-               + Docker    + Roslyn    + Spectre   + Incremental+ Agent    Search      + Tests
+    Output    Scaffolding  Ingest E2E  Search CLI  Multi-lang  SK Plugin   Hybrid      Hardening   Multilingüe
+               + Docker    + Roslyn    + Spectre   + Incremental+ Agent    Search      + Tests     + Retrieval QA
 
-    Comando     —          rag ingest  rag search  rag status  rag ask     (interno)   rag doctor
+    Comando     —          rag ingest  rag search  rag status  rag ask     (interno)   rag doctor  (interno)
                            rag ingest  rag search
                            --force     --output md
     ──────
 
 ## Entregables Acumulados al Finalizar el POC
 
-Al cerrar el Sprint 6, el equipo tendrá:
+Al cerrar el Sprint 7, el equipo tendrá:
 
 Entregable │ Descripción
 ──────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────
 rag ingest <path> │ Indexa cualquier repositorio .NET/TS con barra de progreso
-rag search <query> │ Búsqueda semántica con filtros y múltiples formatos de salida
+rag search <query> │ Búsqueda híbrida (densa + dispersa, RRF) con filtros y múltiples formatos de salida
+rag ask <query> │ Pregunta en lenguaje natural (ES/EN) con respuesta citada del LLM local
 rag status │ Dashboard de estado de colecciones
 rag doctor │ Auto-diagnóstico de dependencias
 RagContextPlugin │ Plugin listo para Semantic Kernel agents
+Búsqueda multilingüe ES/EN │ Modelo denso multilingüe + normalización léxica simétrica en la rama dispersa
 Suite de tests │ Unit + Integration + E2E para el núcleo
 docker-compose.yml │ Qdrant listo con un comando
 appsettings.json documentado │ Configuración lista para adaptar a otros equipos
+Documentación formal (docs/) │ Arquitectura, búsqueda híbrida, pipeline, CLI, configuración y runbook de operaciones
 ──────

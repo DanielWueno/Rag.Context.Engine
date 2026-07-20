@@ -26,6 +26,10 @@ public interface IRagGenerationService
     ///   Minimum cosine-similarity threshold. Chunks below this score are discarded
     ///   before building the context window. Defaults to 0.10 (dense cosine noise floor for the multilingual model).
     /// </param>
+    /// <param name="useReRanking">
+    ///   If true, the retriever widens the candidate pool (3×topK) and re-scores it
+    ///   with the Cross-Encoder before injecting the final topK into the LLM context.
+    /// </param>
     /// <param name="cancellationToken">Token to cancel the streaming operation.</param>
     /// <returns>
     ///   An async stream of text fragments produced by the LLM, suitable for
@@ -36,5 +40,6 @@ public interface IRagGenerationService
         string collectionName,
         int topK = 5,
         float minimumScore = 0.10f,
+        bool useReRanking = false,
         CancellationToken cancellationToken = default);
 }

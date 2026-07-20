@@ -19,6 +19,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly QdrantClient _client;
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
+    private readonly IReRanker _reRanker;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
     private readonly ResiliencePipeline _resiliencePipeline;
 
@@ -26,12 +27,14 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         QdrantClient client,
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
+        IReRanker reRanker,
         ILogger<QdrantSemanticRetriever> logger,
         ResiliencePipelineProvider<string> pipelineProvider)
     {
         _client = client;
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
+        _reRanker = reRanker;
         _logger = logger;
         _resiliencePipeline = pipelineProvider.GetPipeline("qdrant");
     }
@@ -113,10 +116,20 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
                     cancellationToken: ct);
             }, cancellationToken);
 
-            // 4. Map to domain entities
-            var results = searchResults
+            // 5. Map to domain entities
+            IReadOnlyList<RetrievalResult> results = searchResults
                 .Select(MapToRetrievalResult)
                 .ToList();
+
+            // 6. Optional Cross-Encoder re-ranking over the widened pool.
+            // El pool 3×TopK que dejó la fusión RRF se re-puntúa par a par
+            // (query ↔ chunk) y solo entonces se corta al TopK final. Los
+            // scores resultantes son sigmoides del cross-encoder [0..1], no RRF.
+            if (options.UseReRanking && results.Count > 0)
+            {
+                results = await _reRanker.ReRankAsync(
+                    query, results, options.TopK, cancellationToken);
+            }
 
             sw.Stop();
             var bestScore = results.FirstOrDefault()?.SimilarityScore ?? 0f;
@@ -124,9 +137,9 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             RagEngineMetrics.SearchLatencyMs.Record(sw.ElapsedMilliseconds, 
                 new KeyValuePair<string, object?>("collection", options.CollectionName));
 
-            _logger.LogInformation("Search completed in {ElapsedMs}ms. Results: {Count}. Best fusion score: {BestScore}", 
-                sw.ElapsedMilliseconds, results.Count, bestScore);
-            return results.AsReadOnly();
+            _logger.LogInformation("Search completed in {ElapsedMs}ms. Results: {Count}. Best {ScoreKind} score: {BestScore}",
+                sw.ElapsedMilliseconds, results.Count, options.UseReRanking ? "cross-encoder" : "fusion", bestScore);
+            return results;
         }
         catch (Exception ex)
         {

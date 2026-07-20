@@ -37,7 +37,10 @@ public sealed class DoctorCommand : AsyncCommand
 
         // 2. ONNX & Tokenizer Check
         allClear &= CheckOnnxModel();
-        
+
+        // 2b. Cross-Encoder re-ranker (optional — warning only)
+        CheckCrossEncoderModel();
+
         // 3. Disk Space Check
         allClear &= CheckDiskSpace();
 
@@ -96,6 +99,22 @@ public sealed class DoctorCommand : AsyncCommand
             AnsiConsole.MarkupLine($"[red]❌ Tokenizer[/]      {tokenizerPath}   [red](Not Found)[/]");
 
         return modelOk && tokenOk;
+    }
+
+    /// <summary>
+    /// El cross-encoder es opcional (solo lo exige --rerank), por lo que su
+    /// ausencia se reporta como advertencia y nunca hace fallar el doctor.
+    /// </summary>
+    private void CheckCrossEncoderModel()
+    {
+        var modelPath = _config["CrossEncoder:ModelPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx";
+        var vocabPath = _config["CrossEncoder:VocabPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model";
+
+        if (File.Exists(modelPath) && File.Exists(vocabPath))
+            AnsiConsole.MarkupLine($"[green]✅ Re-Ranker[/]      {modelPath}   [dim](OK — disponible para --rerank)[/]");
+        else
+            AnsiConsole.MarkupLine($"[yellow]⚠️ Re-Ranker[/]      {modelPath}   " +
+                                   "[yellow](Not Found — '--rerank' fallará; ejecuta 'bash infra/download-model.sh reranker')[/]");
     }
 
     private bool CheckDiskSpace()

@@ -60,11 +60,21 @@ Los vectores y términos almacenados quedan desalineados con las consultas cuand
 | `min-score`, TopK, opciones de búsqueda | ❌ No — son parámetros de consulta |
 | Modelo o configuración de `CrossEncoder` (`--rerank`) | ❌ No — re-puntúa en tiempo de consulta, no toca vectores almacenados |
 | Prompt del LLM, Ollama, contexto | ❌ No |
+| Contenido editado de un archivo ya ingestado (código o docs) | ✅ Sí, con `--force` — ver nota abajo |
 
 ```bash
 # Re-ingesta estándar
 rag ingest /ruta/al/repo -c mi-coleccion --force
 ```
+
+> **Sin re-ranking de vectorización de por medio, igual re-ingesta si editaste archivos ya
+> indexados.** `OrphanChunkCleaner` (mencionado como ítem de checklist en la Fase 5) **no está
+> implementado**: un `ingest` sin `--force` solo hace `EnsureCollectionAsync` + upsert, nunca borra
+> puntos. Si una edición desplaza líneas o elimina una sección, los chunks viejos en esas
+> posiciones quedan huérfanos en Qdrant con contenido obsoleto, sumados a los nuevos — el índice
+> queda con basura además de estar potencialmente incompleto. Para automatización, usa el patrón
+> ya documentado arriba: `curl -X DELETE http://localhost:6333/collections/<nombre>` y corre
+> `ingest` sin `--force` (evita el prompt interactivo de TTY).
 
 ## Calibración de `min-score`
 

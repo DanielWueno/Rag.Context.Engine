@@ -1,0 +1,169 @@
+[
+  {
+    "Question": "¿Cómo levanto un ticket?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/CreateTicketCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": ["TipoTicket.Incidencia", "Post([FromBody] CreateTicketRequest"],
+    "Note": "Caso motivador. CQRS: endpoint POST + lógica de OnCreate. No hay atributos declarativos."
+  },
+  {
+    "Question": "¿Qué datos son obligatorios para crear un ticket?",
+    "TargetRelativePaths": [
+      "Validations/ServiciosTI/Tickets/CreateTicketRequestValidator.cs",
+      "Commands/ServiciosTI/Tickets/CreateTicketCommandHandler.cs"
+    ],
+    "TargetContentContains": ["dto.ActivoComputoId", "CaracteresValidosTelefono"],
+    "Note": "Validator FluentValidation (NotEmpty) + reglas ricas del OnValidate (teléfono, observaciones)."
+  },
+  {
+    "Question": "¿Qué se necesita para cerrar un ticket?",
+    "TargetRelativePaths": ["Commands/ServiciosTI/Tickets/CerrarTicketCommandHandler.cs"],
+    "TargetContentContains": ["TicketSinActividad"],
+    "Note": "Precondiciones de cierre en OnValidate."
+  },
+  {
+    "Question": "¿Cómo reasigno un ticket a otra persona?",
+    "TargetRelativePaths": [
+      "Validations/ServiciosTI/Tickets/ReasignarTicketRequestValidator.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": ["dto.PersonalAsignadoId", "ReasignarTicketRequest request"],
+    "Note": "Endpoint reasignar + su validator (exige PersonalAsignadoId)."
+  },
+  {
+    "Question": "¿Cómo adjunto un documento o evidencia a un ticket?",
+    "TargetRelativePaths": [
+      "Validations/ServiciosTI/Tickets/CreateTicketDocumentRequestValidator.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": ["RegistroTicketDocumentoValidationMessages", "TicketDocumentoRequest request"],
+    "Note": "Endpoint POST {id}/documento + validator."
+  },
+  {
+    "Question": "¿Cómo registro el avance o una actividad en un ticket?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/CreateTicketRegistroActividadCommandHandler.cs",
+      "Validations/ServiciosTI/Tickets/CreateTicketRegistroActividadRequestValidator.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "no pertenece al empleado o departamento que se asigno",
+      "actividad no puede quedar vacia",
+      "CreateTicketRegistroActividadRequest request"
+    ],
+    "Note": "Handler + validator + endpoint registro_actividad."
+  },
+  {
+    "Question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/MesaAyudaTicketCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "no pertenece a ninguno de los departamentos seleccionados",
+      "new MesaAyudaTicketRequest { Id = id }"
+    ],
+    "Note": "El endpoint mesa_ayuda no lleva [FromBody]; se identifica por la construcción del request."
+  },
+  {
+    "Question": "¿Cómo recibo un ticket que me asignaron?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/RecibirTicketCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "no es posible recibir ya que no se selecciono un tipo de servicio",
+      "RecibirTicketRequest request"
+    ],
+    "Note": "Handler OnValidate + endpoint recibir."
+  },
+  {
+    "Question": "¿Cómo cambio el tipo de servicio de un ticket?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/ActualizarTipoServicioCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "OrderByDescending(a => a.UltimaAsignacion)",
+      "TicketAsignacionRequest request"
+    ],
+    "Note": "Handler de una línea (OnPatch) + endpoint cambia_tipo_servicio."
+  },
+  {
+    "Question": "¿Cómo actualizo o subo el documento de cierre de un ticket?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/ActualizarDocCierreCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "no se encuentra en los estatus permitidos",
+      "DocumentoCierreTicketRequest request"
+    ],
+    "Note": "Handler OnValidate + endpoint PUT documento_cierre."
+  },
+  {
+    "Question": "¿Qué condiciones deben cumplirse para poder reasignar un ticket?",
+    "TargetRelativePaths": ["Commands/ServiciosTI/Tickets/ReasignarTicketCommandHandler.cs"],
+    "TargetContentContains": ["No es posible reasignar ya que no tiene asignado el ticket"],
+    "Note": "Reglas ricas en OnValidate del handler (distinto del validator de la pregunta 4)."
+  },
+  {
+    "Question": "¿En qué casos un ticket necesita autorización digital?",
+    "TargetRelativePaths": [
+      "Commands/ServiciosTI/Tickets/ValidarAutorizacionTicketCommandHandler.cs",
+      "Controllers/ServiciosTI/TicketsController.cs"
+    ],
+    "TargetContentContains": [
+      "Constants.ClaveTipoServicioSolicitudAcceso",
+      "ValidarAutorizacionTicketRequest"
+    ],
+    "Note": "Handler de decisión + endpoint validar_autorizacion."
+  },
+  {
+    "Question": "¿Por qué a veces me piden llenar el campo Módulo al cerrar un ticket?",
+    "TargetRelativePaths": ["Commands/ServiciosTI/Tickets/ValidarMostrarModuloTicketCommandHandler.cs"],
+    "TargetContentContains": ["ClaveSoporteAplicaciones"],
+    "Note": "Regla: solo Soporte de Aplicaciones o Desarrollo ven el campo Módulo."
+  },
+  {
+    "Question": "¿Cuándo puedo mandar un ticket a Mesa de Ayuda?",
+    "TargetRelativePaths": ["Commands/ServiciosTI/Tickets/ValidarMesaAyudaTicketCommandHandler.cs"],
+    "TargetContentContains": ["ClaveDepartamentoCAU"],
+    "Note": "Regla de elegibilidad (estatus + departamento)."
+  },
+  {
+    "Question": "¿Cómo consulto mis solicitudes de servicio?",
+    "TargetRelativePaths": ["Controllers/ServiciosTI/SolicitudesServicioController.cs"],
+    "TargetContentContains": ["GetPagedSolicitudServiciosQuery"],
+    "Note": "Endpoints GET de solicitudes de servicio."
+  },
+  {
+    "Question": "¿Dónde veo a quién se han asignado los tickets?",
+    "TargetRelativePaths": ["Controllers/ServiciosTI/TicketsAsignacionesController.cs"],
+    "TargetContentContains": ["GetPagedTicketsAsignacionesQuery"],
+    "Note": "Endpoints GET de asignaciones."
+  },
+  {
+    "Question": "¿Qué tipos de servicio corresponden a un departamento?",
+    "TargetRelativePaths": ["Controllers/ServiciosTI/TicketsTipoServicioController.cs"],
+    "TargetContentContains": ["GetTipoServicioByDepartamentoIdQuery"],
+    "Note": "Endpoint de tipos de servicio por departamento."
+  },
+  {
+    "Question": "¿Qué información se guarda de un ticket?",
+    "TargetRelativePaths": ["Domain/ServiciosTI/Ticket.cs"],
+    "TargetContentContains": ["RequiereAutorizacionDigital"],
+    "Note": "Entidad de dominio Ticket (propiedades)."
+  },
+  {
+    "Question": "¿Cómo se registra el seguimiento y las actividades de un ticket?",
+    "TargetRelativePaths": [
+      "Domain/ServiciosTI/TicketRegistroActividad.cs",
+      "Domain/ServiciosTI/TicketSeguimiento.cs"
+    ],
+    "TargetContentContains": ["DescripcionActividad", "TipoEvento"],
+    "Note": "Entidad de registro de actividad + modelo de seguimiento."
+  }
+]

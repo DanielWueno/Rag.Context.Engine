@@ -3,4 +3,7 @@
     <Project Path="src/RagEngine.Cli/RagEngine.Cli.csproj" />
     <Project Path="src/RagEngine.Core/RagEngine.Core.csproj" />
   </Folder>
+  <Folder Name="/poc/">
+    <Project Path="poc/RagEngine.Poc.FreeSearch/RagEngine.Poc.FreeSearch.csproj" />
+  </Folder>
 </Solution>

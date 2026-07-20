@@ -14,6 +14,12 @@
     "BatchSize": 32,                    // chunks por inferencia
     "EmbeddingDimensions": 384          // debe coincidir con el modelo Y con la colección
   },
+  "CrossEncoder": {
+    "ModelPath": ".../mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+    "VocabPath": ".../mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+    "MaxSequenceLength": 512,           // XLM-R admite hasta 512; no hay índice que re-ingestar
+    "BatchSize": 8                      // secuencias más largas que el bi-encoder → batch menor
+  },
   "Qdrant":   { "Host": "localhost", "GrpcPort": 6334, "HttpPort": 6333 },
   "Ingestion":{ "DefaultCollection": "rag-engine", "RepositoryName": "my-repo", "BatchSize": 32 },
   "Ollama":   { "Endpoint": "http://localhost:11434/v1", "ModelId": "qwen2.5-coder", "TimeoutSeconds": 120 }
@@ -36,8 +42,9 @@
 |---|---|---|
 | **Multilingüe** (default) | `bash infra/download-model.sh` | `paraphrase-multilingual-MiniLM-L12-v2` — ES/EN y 50+ idiomas. Incluye `model.onnx` (fp32) y `model_qint8_arm64.onnx` (int8, **recomendado en Apple Silicon**: 2.3× más rápido, calidad casi idéntica) |
 | Inglés (legacy) | `bash infra/download-model.sh english` | `all-MiniLM-L6-v2` — ~2× más rápido que el multilingüe, **sin soporte real de español** |
+| Re-ranker (opcional) | `bash infra/download-model.sh reranker` | `mmarco-mMiniLMv2-L12-H384-v1` — Cross-Encoder multilingüe para `--rerank`. **No requiere re-ingesta**: solo actúa en tiempo de consulta. Detalle: [busqueda-hibrida.md](busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker) |
 
-Para cambiar de modelo: descarga → apunta `ModelPath`/`VocabPath`/`TokenizerType` → **re-ingesta todas las colecciones**.
+Para cambiar de modelo denso: descarga → apunta `ModelPath`/`VocabPath`/`TokenizerType` → **re-ingesta todas las colecciones**. El re-ranker es independiente de este ciclo — se puede activar/desactivar o cambiar de modelo sin tocar las colecciones ya ingestadas.
 
 ## Cuándo re-ingestar
 
@@ -49,8 +56,9 @@ Los vectores y términos almacenados quedan desalineados con las consultas cuand
 | `TokenizerType` / archivo de tokenizador | ✅ Sí |
 | Lógica del `SparseTokenizer` (stemming, folding, pesos, stop words) | ✅ Sí |
 | Estrategias de chunking | ✅ Sí |
-| `MaxSequenceLength`, `BatchSize` | ⚠️ Recomendado solo si bajó el primero |
+| `MaxSequenceLength`, `BatchSize` (`OnnxBrain`) | ⚠️ Recomendado solo si bajó el primero |
 | `min-score`, TopK, opciones de búsqueda | ❌ No — son parámetros de consulta |
+| Modelo o configuración de `CrossEncoder` (`--rerank`) | ❌ No — re-puntúa en tiempo de consulta, no toca vectores almacenados |
 | Prompt del LLM, Ollama, contexto | ❌ No |
 
 ```bash

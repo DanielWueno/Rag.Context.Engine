@@ -21,6 +21,8 @@ flowchart LR
     end
     subgraph Consulta
         Q[Query] --> R[QdrantSemanticRetriever<br/>prefetch denso + disperso → RRF]
+        R -.-> RR[OnnxCrossEncoderReRanker<br/>opt-in --rerank]
+        RR -.-> R
         R --> S[RagGenerationService<br/>contexto + prompt]
         S --> T[Ollama / Semantic Kernel]
     end
@@ -38,12 +40,13 @@ Dentro de `RagEngine.Core`:
 
 | Carpeta | Contenido |
 |---|---|
-| `Abstractions/` | Contratos: `IIngestionScanner`, `IVectorizationBrain`, `ISparseTokenizer`, `ISemanticRetriever`, `IIngestionPipeline`, `IRagGenerationService`, `IChunkingStrategy` |
+| `Abstractions/` | Contratos: `IIngestionScanner`, `IVectorizationBrain`, `ISparseTokenizer`, `ISemanticRetriever`, `IReRanker`, `IIngestionPipeline`, `IRagGenerationService`, `IChunkingStrategy` |
 | `Domain/` | Entidades: `CodeChunk`, `RetrievalResult`/`RetrievalOptions`, `IngestionRequest`/`Summary`/`Progress`, `ScanProfile`, `SourceLanguage` |
 | `Infrastructure/Scanning` | `FileSystemIngestionScanner` — enumeración con perfiles de exclusión |
 | `Infrastructure/Chunking` | Estrategias por lenguaje (Roslyn C#, TypeScript, Markdown, fallback) + router |
 | `Infrastructure/Vectorization` | `OnnxVectorizationBrain` (denso) y `SparseTokenizer` (disperso) |
 | `Infrastructure/VectorStore` | `QdrantVectorStore` (colecciones/upsert) y `QdrantSemanticRetriever` (búsqueda híbrida) |
+| `Infrastructure/Reranking` | `OnnxCrossEncoderReRanker` — re-scoring opt-in del pool 3×TopK (`--rerank`) |
 | `Pipeline/` | `DefaultIngestionPipeline` (orquestador productor/consumidores) y `ContextAssembler` |
 | `Services/Generation` | `RagGenerationService` — ensamblado de contexto + streaming del LLM |
 | `Diagnostics/` | `RagEngineMetrics` (System.Diagnostics.Metrics) |
@@ -68,6 +71,16 @@ Vectores dispersos BM25-style calculados en C# puro, zero-allocation (spans + `A
 - El store gestiona colecciones con **esquema dual**: vector nombrado `dense` (coseno, 384d) + vector disperso `sparse-code`. Upserts idempotentes con `waitForCommit` configurable.
 - El retriever ejecuta `QueryAsync` con dos `PrefetchQuery` (denso con `ScoreThreshold`, disperso sin umbral) fusionados por **RRF**, protegido por un pipeline Polly (retry exponencial + circuit breaker).
 
+### OnnxCrossEncoderReRanker (re-ranking, opt-in)
+
+Con `--rerank`, el pool 3×TopK que la fusión RRF ya produce se re-puntúa candidato a candidato
+contra la query original usando un Cross-Encoder multilingüe (`mmarco-mMiniLMv2-L12-H384-v1`,
+mismo tokenizador SentencePiece/XLM-R que el bi-encoder). El `InferenceSession` es `Lazy<T>`:
+solo se instancia si alguna búsqueda pide re-ranking, así que no tener el modelo descargado no
+afecta al flujo por defecto. El score resultante (sigmoide del logit) reemplaza al RRF en
+`RetrievalResult.SimilarityScore` — son escalas distintas, no comparables. Detalle:
+[busqueda-hibrida.md](busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker).
+
 ### DefaultIngestionPipeline
 
 Productor (scan → chunk) y **N consumidores** (vectorizar → upsert) desacoplados por un `Channel` acotado (backpressure a 512 chunks). Detalle y números: [pipeline-de-ingesta.md](pipeline-de-ingesta.md).
@@ -84,6 +97,7 @@ Ensambla el contexto (chunks rankeados, presupuesto de 12k chars, los chunks que
 | Variante **int8 ARM64** del modelo | 2.3× más rápida que fp32 con pérdida de calidad insignificante (coseno ES↔EN 0.91 vs 0.92) |
 | Normalización dispersa **idéntica en ingesta y consulta** | El matching es hash exacto: la consistencia importa más que la precisión lingüística |
 | `min-score` solo en el prefetch denso | Es la única rama cuyo score es una similitud acotada; los scores RRF son función del ranking |
+| Re-ranker con carga perezosa (`Lazy<T>`) | `--rerank` es opt-in; exigir el modelo cross-encoder al arrancar rompería el flujo por defecto sin ganancia |
 | IDs de chunk deterministas (path + línea + hash de contenido) | Re-ingestas idempotentes, sin duplicados |
 | Singleton para brain/tokenizer/cliente Qdrant; scoped para pipeline/retriever | Costo de inicialización vs. aislamiento por comando |
 

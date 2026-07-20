@@ -81,6 +81,53 @@ Tres reglas que importan:
 | `0.25+` | Solo matches semánticos muy fuertes; la rama densa se vacía con frecuencia (queda la dispersa) |
 | `0.65` | ⚠️ Escala del modelo anterior — vacía la rama densa en toda consulta real |
 
+## Re-ranking Cross-Encoder — `OnnxCrossEncoderReRanker`
+
+Un bi-encoder (la rama densa de arriba) comprime query y chunk **por separado** y los compara
+por coseno; un cross-encoder los lee **juntos**, con atención completa sobre el par
+`(query, chunk)`, y resuelve interacciones que el bi-encoder pierde al comprimir cada lado a un
+solo vector. El costo es una inferencia por candidato — por eso corre solo sobre el pool ya
+reducido por RRF, nunca sobre la colección completa.
+
+**Activación:** flag `--rerank` en `search`/`ask` (ver [guía CLI](guia-cli.md)). Sin el flag, el
+re-ranker ni siquiera carga su modelo — el `InferenceSession` es `Lazy<T>`, así que no tener el
+modelo descargado no afecta al flujo normal.
+
+**Modelo:** `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, export ONNX **int8 ARM64**,
+multilingüe (afinado sobre mMARCO). Reutiliza el mismo tokenizador SentencePiece/XLM-R que el
+bi-encoder — mismo remapeo fairseq, sin dependencias nuevas.
+
+**Secuencia par (convención XLM-R):**
+
+```
+<s> …query… </s></s> …chunk… </s>
+```
+
+La query reserva como máximo la mitad de `MaxSequenceLength` (512 por defecto); el resto queda
+para el chunk, que se trunca a lo que quepa. El logit de clasificación del modelo se mapea a
+`[0..1]` con sigmoide.
+
+**Qué cambia en `QdrantSemanticRetriever`:** con `UseReRanking` activo, el pool ya era 3×TopK
+(reservado desde el Sprint 7 para esta palanca); ahora ese pool se re-puntúa candidato a
+candidato y solo entonces se corta al TopK final — antes se descartaba sin usar.
+
+> ⚠️ **El score cambia de naturaleza.** Sin `--rerank`, `SimilarityScore` es **RRF** (tope
+> ~0.5). Con `--rerank`, es el **sigmoide del cross-encoder** (rango 0..1, con valores altos —
+> 0.9+ — para matches fuertes). Son escalas incomparables entre sí: no interpretes un 0.5
+> cross-encoder como "peor" que un 0.5 RRF.
+
+**Verificado end-to-end** contra la colección `rag-engine` (427 chunks reales, no sintéticos):
+pool de 15 candidatos (3×5) re-rankeado en **~700ms**, mejor score sigmoide **0.997**. Para la
+misma consulta sin `--rerank`, los scores RRF fueron `0.5, 0.5, 0.39, 0.33, 0.33` — confirma que
+son dos escalas distintas y que el camino de código realmente se ejecuta (no es un no-op).
+
+**Costo:** cada candidato paga una pasada completa por el cross-encoder (secuencias hasta 512
+tokens, mucho más largas que las ~150 típicas del bi-encoder) — de ahí el `BatchSize` menor
+(8 vs. 32) en `CrossEncoderOptions`. Úsalo cuando la precisión importe más que la latencia: el
+caso de uso pensado es exactamente el límite de síntesis que Sprint 7 dejó documentado
+(preguntas donde el LLM 7B no lograba conectar el fraseo abstracto de la pregunta con el chunk
+correcto entre varios candidatos semánticamente parecidos).
+
 ## El caso resuelto: español vs. inglés
 
 Antes del rediseño, una consulta en español devolvía "0 resultados" mientras su traducción al inglés funcionaba. Eran cuatro capas alineadas en contra:

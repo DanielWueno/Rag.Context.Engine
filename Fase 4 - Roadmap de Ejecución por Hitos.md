@@ -547,6 +547,28 @@ el LLM traduzca la semántica de los atributos declarativos ([Persistent] → ta
 abstracto que el modelo 7B no sintetizaba. Próximo hito propuesto (Sprint 8): re-ranker
 cross-encoder sobre el pool 3× que `--rerank` ya reserva.
 
+## 🏁 Sprint 8 — Re-ranking Cross-Encoder (completado)
+
+Meta: atacar el límite de síntesis identificado al cerrar el Sprint 7 — casos donde el chunk
+correcto entraba al pool ampliado (3×TopK) pero un mal ranking RRF lo dejaba fuera del TopK
+final, o donde el fraseo abstracto de la pregunta no bastaba para que el bi-encoder lo
+priorizara frente a candidatos semánticamente parecidos.
+
+ID │ Tarea │ Detalles
+────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────
+S8-T1 │ `IReRanker` / `OnnxCrossEncoderReRanker` │ Cross-Encoder multilingüe (`mmarco-mMiniLMv2-L12-H384-v1`, int8 ARM64) reutilizando el tokenizador SentencePiece/XLM-R del bi-encoder; secuencia par `<s> query </s></s> chunk </s>`; logit → sigmoide
+S8-T2 │ Carga perezosa (`Lazy<T>`) │ El `InferenceSession` del re-ranker solo se instancia si una búsqueda pide `--rerank`; no descargar el modelo no afecta al flujo por defecto
+S8-T3 │ Conexión del pool 3× a `QdrantSemanticRetriever` │ El pool que `UseReRanking` ya reservaba desde el Sprint 7 se re-puntúa candidato a candidato y solo entonces se corta al TopK final (antes se descartaba sin usar)
+S8-T4 │ `--rerank` end-to-end en `search` y `ask` │ El flag existía en `search` pero no llegaba al retriever, y no existía en `ask`; ahora ambos lo propagan por `IRagGenerationService`
+S8-T5 │ `rag doctor` y `download-model.sh reranker` │ Chequeo no bloqueante del modelo del re-ranker; nueva variante de descarga (no exige re-ingesta, solo actúa en tiempo de consulta)
+    ──────
+
+Verificado end-to-end contra Qdrant real (colección `rag-engine`, 427 chunks indexados): pool de
+**15 candidatos re-rankeado en ~700ms**, mejor score sigmoide **0.997**. La misma consulta sin
+`--rerank` produjo scores RRF `0.5, 0.5, 0.39, 0.33, 0.33` — confirma que las dos rutas de código
+producen escalas distintas y que el re-ranking realmente se ejecuta. Detalle técnico:
+`docs/busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker`.
+
 ## Tabla Resumen del Roadmap
 
     SEMANA     S0          S1          S2          S3          S4          S5          S6          S7
@@ -563,13 +585,14 @@ cross-encoder sobre el pool 3× que `--rerank` ya reserva.
 
 ## Entregables Acumulados al Finalizar el POC
 
-Al cerrar el Sprint 7, el equipo tendrá:
+Al cerrar el Sprint 8, el equipo tendrá:
 
 Entregable │ Descripción
 ──────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────
 rag ingest <path> │ Indexa cualquier repositorio .NET/TS con barra de progreso
 rag search <query> │ Búsqueda híbrida (densa + dispersa, RRF) con filtros y múltiples formatos de salida
 rag ask <query> │ Pregunta en lenguaje natural (ES/EN) con respuesta citada del LLM local
+--rerank (search/ask) │ Re-ranking Cross-Encoder opt-in sobre el pool 3×TopK para mayor precisión
 rag status │ Dashboard de estado de colecciones
 rag doctor │ Auto-diagnóstico de dependencias
 RagContextPlugin │ Plugin listo para Semantic Kernel agents

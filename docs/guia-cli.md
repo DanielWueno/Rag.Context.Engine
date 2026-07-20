@@ -34,11 +34,12 @@ rag search "AuditoriaResultadoHallazgo reglas" -c mi-repo -o markdown
 | `-s, --min-score` | `0.10` | Umbral de coseno para la rama densa — ver [escala](busqueda-hibrida.md#escala-de-min-score-denso-coseno) |
 | `-l, --language` | — | Filtro por lenguaje del chunk |
 | `-n, --namespace` | — | Filtro por namespace |
-| `-r, --rerank` | off | Amplía el pool para re-ranking (3× TopK) |
+| `-r, --rerank` | off | Amplía el pool a 3×TopK y lo re-puntúa con el Cross-Encoder — ver [detalle](busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker) |
 | `-o, --output` | `rich` | `rich` (paneles), `markdown` (listo para prompt), `json` (integración) |
 | `--max-tokens` | `8000` | Presupuesto del ensamblado markdown |
 
-> El porcentaje mostrado en la salida rich es el **score RRF** (tope ~0.5), no una similitud coseno.
+> El porcentaje mostrado en la salida rich es el **score RRF** (tope ~0.5) sin `--rerank`, o el
+> **sigmoide del Cross-Encoder** (0..1) con `--rerank` — no son comparables entre sí.
 
 ## `rag ask <query>` — Pregunta con respuesta del LLM
 
@@ -54,6 +55,7 @@ rag ask "Explain the ingestion pipeline" -c rag-engine --no-stream
 | `-c, --collection` | `default` | Colección a consultar |
 | `-k, --top-k` | `5` | Chunks recuperados para el contexto |
 | `-s, --min-score` | `0.10` | Umbral denso (misma semántica que `search`) |
+| `-r, --rerank` | off | Re-puntúa el pool con el Cross-Encoder antes de construir el contexto del LLM — sube precisión a costa de ~1-2s extra |
 | `--no-stream` | off | Respuesta completa en panel en lugar de streaming token a token |
 
 La respuesta llega **en el idioma de la pregunta**, citando archivo y rango de líneas. Si el contexto recuperado no contiene la respuesta, el LLM lo dice explícitamente (grounding estricto) — en ese caso prueba a reformular, subir `-k`, o verificar que la colección esté ingestada con el motor actual.
@@ -91,6 +93,9 @@ Verifica conectividad con Qdrant, presencia y carga del modelo ONNX, tokenizador
 ## Recetas
 
 ```bash
+# Precisión extra cuando el LLM no logra sintetizar entre candidatos parecidos
+rag ask "¿Qué condiciones aplican para registrar un hallazgo en una auditoría?" -c bsuite-repo --rerank
+
 # Contexto en markdown para pegar en un prompt externo
 rag search "manejo de errores del pipeline" -c rag-engine -o markdown --max-tokens 4000
 

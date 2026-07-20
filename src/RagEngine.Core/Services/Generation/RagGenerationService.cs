@@ -123,6 +123,7 @@ public sealed class RagGenerationService : IRagGenerationService
         string collectionName,
         int topK = 5,
         float minimumScore = 0.10f,
+        bool useReRanking = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
@@ -137,7 +138,7 @@ public sealed class RagGenerationService : IRagGenerationService
             topK, collectionName, query);
 
         var (retrievalOk, chunks, retrievalError) = await RetrieveChunksAsync(
-            query, collectionName, topK, minimumScore, cancellationToken);
+            query, collectionName, topK, minimumScore, useReRanking, cancellationToken);
 
         if (!retrievalOk)
         {
@@ -207,6 +208,7 @@ public sealed class RagGenerationService : IRagGenerationService
             string collectionName,
             int topK,
             float minimumScore,
+            bool useReRanking,
             CancellationToken cancellationToken)
     {
         try
@@ -215,7 +217,8 @@ public sealed class RagGenerationService : IRagGenerationService
             {
                 CollectionName         = collectionName,
                 TopK                   = topK,
-                MinimumSimilarityScore = minimumScore
+                MinimumSimilarityScore = minimumScore,
+                UseReRanking           = useReRanking
             };
 
             var chunks = await _retriever.SearchAsync(query, options, cancellationToken);

@@ -6,11 +6,14 @@
 #
 # Usage:
 #   bash infra/download-model.sh                # multilingual (default)
+#   bash infra/download-model.sh reranker       # cross-encoder para --rerank
 #   bash infra/download-model.sh english        # legacy all-MiniLM-L6-v2
 #
 # Models:
 #   multilingual → paraphrase-multilingual-MiniLM-L12-v2
 #                  (50+ idiomas, 384 dims, tokenizer SentencePiece/XLM-R)
+#   reranker     → mmarco-mMiniLMv2-L12-H384-v1 (cross-encoder multilingüe
+#                  afinado sobre mMARCO; mismo tokenizer SentencePiece/XLM-R)
 #   english      → all-MiniLM-L6-v2
 #                  (monolingüe inglés, 384 dims, tokenizer WordPiece)
 # =============================================================================
@@ -21,6 +24,7 @@ VARIANT="${1:-multilingual}"
 
 case "$VARIANT" in
   multilingual)
+    HF_ORG="sentence-transformers"
     MODEL_NAME="paraphrase-multilingual-MiniLM-L12-v2"
     FILES=(
       "onnx/model.onnx"
@@ -31,7 +35,20 @@ case "$VARIANT" in
       "config.json"
     )
     ;;
+  reranker)
+    HF_ORG="cross-encoder"
+    MODEL_NAME="mmarco-mMiniLMv2-L12-H384-v1"
+    FILES=(
+      "onnx/model.onnx"
+      "onnx/model_qint8_arm64.onnx"   # int8 para Apple Silicon, igual que el bi-encoder
+      "sentencepiece.bpe.model"
+      "tokenizer.json"
+      "tokenizer_config.json"
+      "config.json"
+    )
+    ;;
   english)
+    HF_ORG="sentence-transformers"
     MODEL_NAME="all-MiniLM-L6-v2"
     FILES=(
       "onnx/model.onnx"
@@ -42,13 +59,13 @@ case "$VARIANT" in
     )
     ;;
   *)
-    echo "❌ Unknown variant '$VARIANT' (expected: multilingual | english)" >&2
+    echo "❌ Unknown variant '$VARIANT' (expected: multilingual | reranker | english)" >&2
     exit 1
     ;;
 esac
 
 MODEL_DIR="models/$MODEL_NAME"
-HF_BASE="https://huggingface.co/sentence-transformers/$MODEL_NAME/resolve/main"
+HF_BASE="https://huggingface.co/$HF_ORG/$MODEL_NAME/resolve/main"
 
 echo "📦 Creating model directory: $MODEL_DIR"
 mkdir -p "$MODEL_DIR"
@@ -78,6 +95,12 @@ fi
 echo ""
 echo "✔  Model download complete. Files in: $MODEL_DIR"
 echo ""
-echo "ℹ️  Recuerda que 'OnnxBrain' en appsettings.json debe apuntar a este modelo"
-echo "   (ModelPath/VocabPath/TokenizerType) y que cambiar de modelo denso exige"
-echo "   re-ingestar las colecciones (rag ingest --force)."
+if [ "$VARIANT" = "reranker" ]; then
+  echo "ℹ️  Recuerda que 'CrossEncoder' en appsettings.json debe apuntar a este"
+  echo "   modelo (ModelPath/VocabPath). El re-ranker NO exige re-ingesta:"
+  echo "   solo re-puntúa candidatos en tiempo de consulta (--rerank)."
+else
+  echo "ℹ️  Recuerda que 'OnnxBrain' en appsettings.json debe apuntar a este modelo"
+  echo "   (ModelPath/VocabPath/TokenizerType) y que cambiar de modelo denso exige"
+  echo "   re-ingestar las colecciones (rag ingest --force)."
+fi

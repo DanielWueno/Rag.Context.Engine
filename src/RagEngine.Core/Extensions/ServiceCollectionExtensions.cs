@@ -7,6 +7,7 @@ using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Infrastructure.Chunking;
+using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Scanning;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
@@ -38,8 +39,15 @@ public static class ServiceCollectionExtensions
         services.Configure<QdrantOptions>(
             configuration.GetSection(QdrantOptions.SectionName));
 
+        services.Configure<CrossEncoderOptions>(
+            configuration.GetSection(CrossEncoderOptions.SectionName));
+
         // ── 2. ONNX Brain: Singleton (expensive to initialize — one InferenceSession) ──
         services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();
+
+        // ── 2b. Cross-Encoder re-ranker: Singleton con carga perezosa — la
+        // InferenceSession solo se crea si alguna búsqueda pide --rerank ──
+        services.AddSingleton<IReRanker, OnnxCrossEncoderReRanker>();
 
         // ── 3. Sparse Tokenizer: Singleton (stateless, thread-safe, zero I/O) ────────
         services.AddSingleton<ISparseTokenizer, SparseTokenizer>();

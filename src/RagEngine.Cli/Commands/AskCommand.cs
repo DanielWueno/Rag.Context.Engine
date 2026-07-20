@@ -37,6 +37,10 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
         [System.ComponentModel.Description("Minimum dense cosine threshold for retrieved chunks (default: 0.10; relevant question↔code pairs score ~0.12-0.25 with the multilingual model).")]
         public float MinScore { get; init; } = 0.10f;
 
+        [CommandOption("--rerank|-r")]
+        [System.ComponentModel.Description("Re-score a 3×top-k candidate pool with the multilingual Cross-Encoder before building the LLM context (higher precision, ~1-2s extra).")]
+        public bool Rerank { get; init; } = false;
+
         [CommandOption("--no-stream")]
         [System.ComponentModel.Description("Buffer the full response and print it at once instead of streaming.")]
         public bool NoStream { get; init; } = false;
@@ -110,7 +114,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             var firstToken  = true;
 
             await foreach (var fragment in _generation
-                .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, ct)
+                .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, ct)
                 .ConfigureAwait(false))
             {
                 if (firstToken)
@@ -179,7 +183,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
                 .StartAsync("[cyan]Generando respuesta completa...[/]", async _ =>
                 {
                     await foreach (var fragment in _generation
-                        .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, ct)
+                        .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, ct)
                         .ConfigureAwait(false))
                     {
                         buffer.Append(fragment);
@@ -229,6 +233,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
         AnsiConsole.MarkupLine($"[dim]  Colección :[/] [white]{Markup.Escape(s.Collection)}[/]  " +
                                $"[dim]Top-K:[/] [white]{s.TopK}[/]  " +
                                $"[dim]Min-Score:[/] [white]{s.MinScore:F2}[/]  " +
+                               $"[dim]Rerank:[/] [white]{(s.Rerank ? "on" : "off")}[/]  " +
                                $"[dim]Modo:[/] [white]{(s.NoStream ? "buffered" : "streaming")}[/]");
         AnsiConsole.Write(new Rule { Style = Style.Parse("grey dim") });
         AnsiConsole.WriteLine();

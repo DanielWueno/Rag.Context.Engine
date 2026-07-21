@@ -32,7 +32,15 @@ public sealed class RecallEvaluator
         IReadOnlyList<string> Configs,
         Dictionary<string, Dictionary<int, double>> RecallByConfig,
         // Preguntas que cada config resuelve dentro del top-MaxK (para el diagnóstico de aporte).
-        Dictionary<string, HashSet<string>> SolvedAtMaxK);
+        Dictionary<string, HashSet<string>> SolvedAtMaxK,
+        // Detalle por pregunta bajo cód+sparse+resumen: qué se recuperó y en qué puesto cae el objetivo.
+        IReadOnlyList<QuestionDetail> Details);
+
+    public sealed record RetrievedChunk(
+        int Rank, bool IsTarget, string Path, int StartLine, int EndLine, string Type, bool HasSummary);
+
+    public sealed record QuestionDetail(
+        string Question, string[] TargetPaths, int? BestTargetRank, IReadOnlyList<RetrievedChunk> Top);
 
     public Report Evaluate(
         IReadOnlyList<IndexedChunk> index,
@@ -45,6 +53,8 @@ public sealed class RecallEvaluator
 
         var hits = AllConfigs.ToDictionary(c => c, _ => kValues.ToDictionary(k => k, _ => 0));
         var solved = AllConfigs.ToDictionary(c => c, _ => new HashSet<string>());
+        var details = new List<QuestionDetail>();
+        const int topN = 6;
 
         foreach (var (item, qi) in evalSet.Select((it, i) => (it, i)))
         {
@@ -75,6 +85,23 @@ public sealed class RecallEvaluator
                     if (HitAtK(ranked[cfg], targets, k)) hits[cfg][k]++;
                 if (HitAtK(ranked[cfg], targets, maxK)) solved[cfg].Add(item.Question);
             }
+
+            // Detalle bajo la config completa: top-N recuperado + puesto del mejor objetivo.
+            var full = ranked[CodSpaRes];
+            int? bestRank = null;
+            for (int pos = 0; pos < full.Length; pos++)
+                if (targets.Contains(full[pos])) { bestRank = pos + 1; break; }
+
+            var top = new List<RetrievedChunk>();
+            for (int pos = 0; pos < Math.Min(topN, full.Length); pos++)
+            {
+                var ic = index[full[pos]];
+                top.Add(new RetrievedChunk(
+                    pos + 1, targets.Contains(full[pos]),
+                    ic.Chunk.Metadata.RelativeFilePath, ic.Chunk.Metadata.StartLine,
+                    ic.Chunk.Metadata.EndLine, ic.Chunk.Type.ToString(), ic.SummaryVector is not null));
+            }
+            details.Add(new QuestionDetail(item.Question, [.. targets.Select(t => index[t].Chunk.Metadata.RelativeFilePath).Distinct()], bestRank, top));
         }
 
         int n = evalSet.Count;
@@ -82,7 +109,7 @@ public sealed class RecallEvaluator
             c => c, c => kValues.ToDictionary(k => k, k => n == 0 ? 0.0 : (double)hits[c][k] / n));
 
         return new Report(n, index.Count, index.Count(c => c.SummaryVector is not null),
-            maxK, AllConfigs, recall, solved);
+            maxK, AllConfigs, recall, solved, details);
     }
 
     private static int[] RankDense(IReadOnlyList<IndexedChunk> index, float[] qVec, bool useSummary)

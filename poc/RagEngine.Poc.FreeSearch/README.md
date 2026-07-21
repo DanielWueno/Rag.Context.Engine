@@ -25,8 +25,10 @@ go/no-go real. La calidad por lenguaje se reporta aparte, como cobertura de sent
 2. **Resúmenes** — `SummaryGenerator` llama a `qwen2.5-coder` vía Ollama con el prompt
    universal del documento (incluye el centinela `SIN_CONTENIDO_DE_NEGOCIO`).
 3. **Embeddings** — `EmbeddingHarness` envuelve el mismo `OnnxVectorizationBrain`.
-4. **Recall** — `RecallEvaluator` compara baseline (código) vs. fusión RRF ponderada
-   (código + resumen).
+4. **Recall** — `RecallEvaluator` compara tres configuraciones por RRF ponderado:
+   `código` (denso aislado) · `cód+sparse` (el baseline REAL de producción) ·
+   `cód+sparse+resumen` (la propuesta completa). La comparación que decide es
+   cód+sparse vs cód+sparse+resumen: el aporte del resumen sobre el híbrido real.
 
 ## Requisitos previos
 
@@ -40,8 +42,9 @@ go/no-go real. La calidad por lenguaje se reporta aparte, como cobertura de sent
    (`Reyma.TI.Tickets.Microservice/src`) en `poc-settings.json`. C# puro — señal
    limpia; el dominio de tickets es justo el caso motivador del documento.
 2. **Set de evaluación** (el trabajo humano y el que da valor): `eval/eval-set.sample.json`
-   ya trae 5 preguntas libres reales con targets verificados por ruta + substring
-   (crear/cerrar/reasignar ticket, adjuntar evidencia, campos obligatorios). **Revísalo**:
+   ya trae 19 preguntas libres reales con targets verificados por ruta + substring
+   (crear/cerrar/reasignar/recibir ticket, mesa de ayuda, actividad, doc de cierre,
+   autorización, dominio). **Revísalo**:
    confirma que cada `TargetContentContains` cae en el chunk que TÚ considerarías la
    respuesta correcta, y añade más casos difíciles. Ojo: en este repo las reglas son
    CQRS + FluentValidation (`OnValidate`, `AbstractValidator`), no atributos XAF.

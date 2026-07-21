@@ -150,9 +150,11 @@ try
             },
             cancellationToken);
 
+        var history = request.History?.Select(t => t.ToDomain()).ToList();
+
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, history, cancellationToken))
         {
             answer.Append(fragment);
         }
@@ -170,6 +172,7 @@ try
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
+                HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 Answer = answer.ToString(),
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
@@ -240,9 +243,15 @@ try
         await SendAsync("sources", new { sources });
         await SendAsync("status", new { message = $"Generando respuesta a partir de {sources.Count} fragmentos..." });
 
+        // Sin estado de sesión en el servidor: el cliente reenvía la transcripción
+        // completa en cada request. El retrieval de arriba solo usa `request.Query`
+        // (el turno actual) — el historial se inyecta al LLM para dar continuidad
+        // conversacional, no se vuelve a buscar en Qdrant.
+        var history = request.History?.Select(t => t.ToDomain()).ToList();
+
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, history, cancellationToken))
         {
             answer.Append(fragment);
             await SendAsync("token", new { text = fragment });
@@ -261,6 +270,7 @@ try
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
+                HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 Answer = answer.ToString(),
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })

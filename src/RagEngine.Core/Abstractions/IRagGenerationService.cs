@@ -30,6 +30,12 @@ public interface IRagGenerationService
     ///   If true, the retriever widens the candidate pool (3×topK) and re-scores it
     ///   with the Cross-Encoder before injecting the final topK into the LLM context.
     /// </param>
+    /// <param name="history">
+    ///   Prior turns of the conversation, oldest first, supplied by the caller on every
+    ///   call (this service holds no session state). Only <paramref name="query"/> is
+    ///   used for retrieval — history is injected into the LLM prompt for conversational
+    ///   continuity, not re-searched against Qdrant.
+    /// </param>
     /// <param name="cancellationToken">Token to cancel the streaming operation.</param>
     /// <returns>
     ///   An async stream of text fragments produced by the LLM, suitable for
@@ -41,5 +47,6 @@ public interface IRagGenerationService
         int topK = 5,
         float minimumScore = 0.10f,
         bool useReRanking = false,
+        IReadOnlyList<ChatTurn>? history = null,
         CancellationToken cancellationToken = default);
 }

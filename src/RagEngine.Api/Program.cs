@@ -59,6 +59,17 @@ try
 
     app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 
+    // Alimenta el selector de colección de la página — así el equipo no
+    // depende de que quede fija a un proyecto (hoy innovapp-docs, mañana
+    // podría ser cualquier otra colección ingestada).
+    app.MapGet("/api/collections", async (
+        Qdrant.Client.QdrantClient qdrant,
+        CancellationToken cancellationToken) =>
+    {
+        var collections = await qdrant.ListCollectionsAsync(cancellationToken);
+        return Results.Ok(new { collections, @default = defaultCollection });
+    });
+
     app.MapPost("/api/search", async (
         RagQueryRequest request,
         ISemanticRetriever retriever,

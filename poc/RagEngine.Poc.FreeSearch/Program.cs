@@ -153,6 +153,7 @@ var evaluator = new RecallEvaluator(settings);
 var report = evaluator.Evaluate(indexed, evalSet, questionVectors, questionSparse);
 
 PrintReport(report, settings);
+if (args.Contains("detail")) PrintDetail(report);
 sw.Stop();
 Console.WriteLine($"\nListo en {sw.Elapsed.TotalSeconds:F1}s.");
 
@@ -209,3 +210,31 @@ static void PrintReport(RecallEvaluator.Report r, PocSettings s)
 }
 
 static string Trunc(string s) => s.Length <= 70 ? s : s[..67] + "…";
+
+// Detalle por pregunta: qué recuperó la config completa (cód+sparse+resumen) y dónde
+// cayó el objetivo. Sirve para juzgar a ojo la factibilidad de las preguntas y la
+// calidad de lo recuperado. Nota: el PoC recupera contexto, NO redacta la respuesta.
+static void PrintDetail(RecallEvaluator.Report r)
+{
+    Console.WriteLine("\n════════ Detalle por pregunta (config cód+sparse+resumen) ════════");
+    foreach (var d in r.Details)
+    {
+        var estado = d.BestTargetRank is int br
+            ? (br <= 10 ? $"objetivo en #{br} ✓" : $"objetivo lejos (#{br})")
+            : "objetivo NO recuperado";
+        Console.WriteLine($"\n▸ {d.Question}");
+        Console.WriteLine($"    objetivo esperado: {string.Join(", ", d.TargetPaths.Select(ShortPath))}  →  {estado}");
+        foreach (var c in d.Top)
+        {
+            var mark = c.IsTarget ? "✓" : " ";
+            var res = c.HasSummary ? "" : "  [sin-resumen]";
+            Console.WriteLine($"    {mark} #{c.Rank} {ShortPath(c.Path)}:{c.StartLine}-{c.EndLine} ({c.Type}){res}");
+        }
+    }
+}
+
+static string ShortPath(string p)
+{
+    var parts = p.Replace('\\', '/').Split('/');
+    return parts.Length <= 2 ? p : string.Join('/', parts[^2..]);
+}

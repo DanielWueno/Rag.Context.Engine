@@ -3,92 +3,89 @@ using RagEngine.Core.Domain;
 namespace RagEngine.Poc.FreeSearch;
 
 /// <summary>
-/// Fase 4 — el corazón del PoC. Compara, EN MEMORIA, dos estrategias de recuperación
-/// sobre la muestra:
-///   • baseline  : sólo el vector de código (EnrichedContent), como hoy.
-///   • fusión    : código + resumen de negocio, fusionados con RRF ponderado (Reto B).
+/// Fase 4 — el corazón del PoC. Compara, EN MEMORIA, tres estrategias de recuperación
+/// sobre la muestra, para los mismos casos de evaluación:
+///   • código        : sólo el vector denso de código (EnrichedContent), como aislante.
+///   • cód+sparse     : denso-código + disperso (BM25) — el BASELINE REAL de producción.
+///   • cód+spa+res    : + el vector de resumen de negocio (la propuesta completa, Reto B).
 ///
-/// La métrica es recall@k: ¿sobrevivió el chunk correcto dentro del top-k? Ésta es la
-/// variable que valida (o refuta) la hipótesis del documento — NO la calidad subjetiva
-/// del resumen. El sparse queda fuera a propósito: el PoC aísla el aporte del resumen.
+/// La métrica es recall@k: ¿sobrevivió el chunk correcto dentro del top-k? La comparación
+/// clave es cód+sparse vs cód+spa+res: mide el aporte del resumen SOBRE el híbrido real,
+/// no sobre un baseline denso artificialmente débil.
 /// </summary>
 public sealed class RecallEvaluator
 {
-    private readonly PocSettings _settings;
+    public const string Codigo = "código";
+    public const string CodSparse = "cód+sparse";
+    public const string CodSpaRes = "cód+spa+res";
+    private static readonly string[] AllConfigs = [Codigo, CodSparse, CodSpaRes];
 
+    private readonly PocSettings _settings;
     public RecallEvaluator(PocSettings settings) => _settings = settings;
 
-    /// <summary>Un chunk con sus dos vectores densos (el de resumen puede faltar → sentinel/fallo).</summary>
-    public sealed record IndexedChunk(CodeChunk Chunk, float[] CodeVector, float[]? SummaryVector);
-
-    public sealed record QuestionOutcome(
-        string Question,
-        int TargetCount,
-        Dictionary<int, bool> BaselineHitAtK,
-        Dictionary<int, bool> FusionHitAtK);
+    /// <summary>Un chunk con sus tres representaciones (el vector de resumen puede faltar).</summary>
+    public sealed record IndexedChunk(
+        CodeChunk Chunk, float[] CodeVector, float[]? SummaryVector, Dictionary<uint, float> SparseVector);
 
     public sealed record Report(
-        int Questions,
-        int Chunks,
-        int ChunksWithSummary,
-        Dictionary<int, double> BaselineRecall,
-        Dictionary<int, double> FusionRecall,
-        List<QuestionOutcome> PerQuestion);
+        int Questions, int Chunks, int ChunksWithSummary, int MaxK,
+        IReadOnlyList<string> Configs,
+        Dictionary<string, Dictionary<int, double>> RecallByConfig,
+        // Preguntas que cada config resuelve dentro del top-MaxK (para el diagnóstico de aporte).
+        Dictionary<string, HashSet<string>> SolvedAtMaxK);
 
     public Report Evaluate(
         IReadOnlyList<IndexedChunk> index,
         IReadOnlyList<EvalItem> evalSet,
-        IReadOnlyList<float[]> questionVectors)
+        IReadOnlyList<float[]> questionVectors,
+        IReadOnlyList<Dictionary<uint, float>> questionSparse)
     {
         var kValues = _settings.RecallAtK.Distinct().OrderBy(k => k).ToArray();
-        var perQuestion = new List<QuestionOutcome>();
+        var maxK = kValues.Length == 0 ? 10 : kValues.Max();
 
-        // Rankings de código y de resumen se construyen por pregunta (dependen del query).
+        var hits = AllConfigs.ToDictionary(c => c, _ => kValues.ToDictionary(k => k, _ => 0));
+        var solved = AllConfigs.ToDictionary(c => c, _ => new HashSet<string>());
+
         foreach (var (item, qi) in evalSet.Select((it, i) => (it, i)))
         {
             var qVec = questionVectors[qi];
+            var qSparse = questionSparse[qi];
 
-            // Índices de los chunks objetivo para esta pregunta.
-            var targetIdx = new HashSet<int>();
+            var targets = new HashSet<int>();
             for (int c = 0; c < index.Count; c++)
                 if (item.Matches(index[c].Chunk))
-                    targetIdx.Add(c);
+                    targets.Add(c);
 
-            // Ranking baseline: por similitud código-pregunta.
-            var codeRanked = RankBySimilarity(index, qVec, useSummary: false);
+            var codeRank = ToRankMap(RankDense(index, qVec, useSummary: false));
+            var summaryRank = ToRankMap(RankDense(index, qVec, useSummary: true));
+            var sparseRank = ToRankMap(RankSparse(index, qSparse));
 
-            // Ranking fusión: RRF ponderado entre ranking de código y ranking de resumen.
-            var fusionRanked = RankByWeightedRrf(index, qVec);
-
-            var baseHit = new Dictionary<int, bool>();
-            var fusHit = new Dictionary<int, bool>();
-            foreach (var k in kValues)
+            var ranked = new Dictionary<string, int[]>
             {
-                baseHit[k] = HitAtK(codeRanked, targetIdx, k);
-                fusHit[k] = HitAtK(fusionRanked, targetIdx, k);
-            }
+                [Codigo] = RankByRrf(index.Count, [(codeRank, _settings.WeightCode)]),
+                [CodSparse] = RankByRrf(index.Count,
+                    [(codeRank, _settings.WeightCode), (sparseRank, _settings.WeightSparse)]),
+                [CodSpaRes] = RankByRrf(index.Count,
+                    [(codeRank, _settings.WeightCode), (sparseRank, _settings.WeightSparse), (summaryRank, _settings.WeightResumen)]),
+            };
 
-            perQuestion.Add(new QuestionOutcome(item.Question, targetIdx.Count, baseHit, fusHit));
+            foreach (var cfg in AllConfigs)
+            {
+                foreach (var k in kValues)
+                    if (HitAtK(ranked[cfg], targets, k)) hits[cfg][k]++;
+                if (HitAtK(ranked[cfg], targets, maxK)) solved[cfg].Add(item.Question);
+            }
         }
 
-        // Promedios recall@k.
-        var baselineRecall = kValues.ToDictionary(
-            k => k, k => perQuestion.Average(q => q.BaselineHitAtK[k] ? 1.0 : 0.0));
-        var fusionRecall = kValues.ToDictionary(
-            k => k, k => perQuestion.Average(q => q.FusionHitAtK[k] ? 1.0 : 0.0));
+        int n = evalSet.Count;
+        var recall = AllConfigs.ToDictionary(
+            c => c, c => kValues.ToDictionary(k => k, k => n == 0 ? 0.0 : (double)hits[c][k] / n));
 
-        return new Report(
-            Questions: evalSet.Count,
-            Chunks: index.Count,
-            ChunksWithSummary: index.Count(c => c.SummaryVector is not null),
-            BaselineRecall: baselineRecall,
-            FusionRecall: fusionRecall,
-            PerQuestion: perQuestion);
+        return new Report(n, index.Count, index.Count(c => c.SummaryVector is not null),
+            maxK, AllConfigs, recall, solved);
     }
 
-    /// <summary>Orden de índices de chunk por similitud descendente contra el query.</summary>
-    private static int[] RankBySimilarity(
-        IReadOnlyList<IndexedChunk> index, float[] qVec, bool useSummary)
+    private static int[] RankDense(IReadOnlyList<IndexedChunk> index, float[] qVec, bool useSummary)
     {
         var scored = new List<(int Idx, float Sim)>(index.Count);
         for (int c = 0; c < index.Count; c++)
@@ -100,31 +97,30 @@ public sealed class RecallEvaluator
         return scored.OrderByDescending(x => x.Sim).Select(x => x.Idx).ToArray();
     }
 
-    /// <summary>
-    /// RRF ponderado (Reto B). score(doc) = w_code/(k+rank_code) + w_resumen/(k+rank_resumen).
-    /// Un chunk sin resumen sólo aporta el término de código.
-    /// </summary>
-    private int[] RankByWeightedRrf(IReadOnlyList<IndexedChunk> index, float[] qVec)
+    private static int[] RankSparse(IReadOnlyList<IndexedChunk> index, Dictionary<uint, float> qSparse)
     {
-        var codeRank = ToRankMap(RankBySimilarity(index, qVec, useSummary: false));
-        var summaryRank = ToRankMap(RankBySimilarity(index, qVec, useSummary: true));
-
-        double k = _settings.RrfK;
-        var scores = new Dictionary<int, double>();
+        var scored = new List<(int Idx, float Sim)>(index.Count);
         for (int c = 0; c < index.Count; c++)
+            scored.Add((c, SparseHarness.Dot(qSparse, index[c].SparseVector)));
+        return scored.OrderByDescending(x => x.Sim).Select(x => x.Idx).ToArray();
+    }
+
+    /// <summary>RRF ponderado sobre N ramas: score(doc) = Σ_r w_r / (k + rank_r(doc)).</summary>
+    private int[] RankByRrf(int count, (Dictionary<int, int> Rank, double Weight)[] branches)
+    {
+        double k = _settings.RrfK;
+        var scores = new Dictionary<int, double>(count);
+        for (int c = 0; c < count; c++)
         {
             double s = 0.0;
-            if (codeRank.TryGetValue(c, out var rc))
-                s += _settings.WeightCode / (k + rc);
-            if (summaryRank.TryGetValue(c, out var rs))
-                s += _settings.WeightResumen / (k + rs);
+            foreach (var (rank, w) in branches)
+                if (rank.TryGetValue(c, out var r))
+                    s += w / (k + r);
             scores[c] = s;
         }
-
         return scores.OrderByDescending(kv => kv.Value).Select(kv => kv.Key).ToArray();
     }
 
-    /// <summary>Mapa chunkIndex → rank (1-based) a partir de un orden ya calculado.</summary>
     private static Dictionary<int, int> ToRankMap(int[] ranked)
     {
         var map = new Dictionary<int, int>(ranked.Length);

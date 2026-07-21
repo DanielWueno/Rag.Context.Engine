@@ -31,6 +31,7 @@ public sealed class PocSettings
 
     /// <summary>Pesos base de la fusión (Reto B). Calibrables; arrancan en los del documento.</summary>
     public double WeightCode { get; init; } = 1.0;
+    public double WeightSparse { get; init; } = 1.0;
     public double WeightResumen { get; init; } = 1.3;
 
     // Espejos de appsettings.json del CLI ------------------------------------

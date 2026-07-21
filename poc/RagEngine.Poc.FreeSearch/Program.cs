@@ -131,20 +131,26 @@ var summaryVecs = await EmbedWithProgress(embedder, summaryTexts, "resúmenes", 
 var summaryByChunk = new float[chunks.Count][];
 for (int j = 0; j < summaryIdx.Count; j++) summaryByChunk[summaryIdx[j]] = summaryVecs[j];
 
+// Rama dispersa (BM25) — el mismo tokenizer del motor, sobre EnrichedContent. Barata, sin ONNX.
+var sparse = new SparseHarness();
+var sparseByChunk = chunks.Select(c => sparse.Vectorize(c.EnrichedContent)).ToArray();
+Console.WriteLine($"      sparse: {chunks.Count} chunks tokenizados.");
+
 var indexed = new List<RecallEvaluator.IndexedChunk>(chunks.Count);
 for (int i = 0; i < chunks.Count; i++)
-    indexed.Add(new RecallEvaluator.IndexedChunk(chunks[i], codeVectors[i], summaryByChunk[i]));
+    indexed.Add(new RecallEvaluator.IndexedChunk(chunks[i], codeVectors[i], summaryByChunk[i], sparseByChunk[i]));
 
 // EvalSetPath es relativo al archivo de configuración, no al CWD.
 var evalPath = PathResolver.ResolveAgainst(settings.EvalSetPath, settingsDir);
 var evalSet = EvalSetLoader.Load(evalPath);
 var questionVectors = await embedder.EmbedBatchAsync(evalSet.Select(e => e.Question).ToList(), ct);
+var questionSparse = evalSet.Select(e => sparse.Vectorize(e.Question)).ToList();
 Console.WriteLine($"      {evalSet.Count} preguntas del set '{evalPath}'.\n");
 
-// ── Fase 4 · Recall baseline vs. fusión ───────────────────────────────────────
+// ── Fase 4 · Recall: código vs. cód+sparse vs. cód+sparse+resumen ─────────────
 Console.WriteLine("[4/4] Evaluando recall@k …\n");
 var evaluator = new RecallEvaluator(settings);
-var report = evaluator.Evaluate(indexed, evalSet, questionVectors);
+var report = evaluator.Evaluate(indexed, evalSet, questionVectors, questionSparse);
 
 PrintReport(report, settings);
 sw.Stop();
@@ -175,33 +181,31 @@ static async Task<float[][]> EmbedWithProgress(EmbeddingHarness emb, IReadOnlyLi
 
 static void PrintReport(RecallEvaluator.Report r, PocSettings s)
 {
-    Console.WriteLine("──────────────────────────────────────────────────────────");
+    var kValues = s.RecallAtK.Distinct().OrderBy(x => x).ToArray();
+    Console.WriteLine("──────────────────────────────────────────────────────────────────");
     Console.WriteLine($"  Muestra: {r.Chunks} chunks ({r.ChunksWithSummary} con resumen) · {r.Questions} preguntas");
-    Console.WriteLine($"  Pesos RRF: código={s.WeightCode}  resumen={s.WeightResumen}  (k={s.RrfK})");
-    Console.WriteLine("──────────────────────────────────────────────────────────");
-    Console.WriteLine($"  {"k",4} │ {"baseline",10} │ {"fusión",10} │ {"Δ",8}");
-    Console.WriteLine("  ─────┼────────────┼────────────┼─────────");
-    foreach (var k in s.RecallAtK.Distinct().OrderBy(x => x))
+    Console.WriteLine($"  Pesos RRF: código={s.WeightCode}  sparse={s.WeightSparse}  resumen={s.WeightResumen}  (k={s.RrfK})");
+    Console.WriteLine("──────────────────────────────────────────────────────────────────");
+    Console.WriteLine($"  {"k",4} │ {RecallEvaluator.Codigo,11} │ {RecallEvaluator.CodSparse,11} │ {RecallEvaluator.CodSpaRes,11}");
+    Console.WriteLine("  ─────┼─────────────┼─────────────┼────────────");
+    foreach (var k in kValues)
     {
-        var b = r.BaselineRecall[k];
-        var f = r.FusionRecall[k];
-        var delta = f - b;
-        var deltaStr = (delta >= 0 ? "+" : "") + delta.ToString("P0");
-        Console.WriteLine($"  {k,4} │ {b,9:P0}  │ {f,9:P0}  │ {deltaStr,8}");
+        var a = r.RecallByConfig[RecallEvaluator.Codigo][k];
+        var b = r.RecallByConfig[RecallEvaluator.CodSparse][k];
+        var c = r.RecallByConfig[RecallEvaluator.CodSpaRes][k];
+        Console.WriteLine($"  {k,4} │ {a,10:P0}  │ {b,10:P0}  │ {c,10:P0}");
     }
-    Console.WriteLine("──────────────────────────────────────────────────────────");
+    Console.WriteLine("──────────────────────────────────────────────────────────────────");
 
-    // Preguntas donde la fusión rescató un chunk que el baseline perdía (al menor k).
-    var kMin = s.RecallAtK.Min();
-    var rescued = r.PerQuestion.Where(q => !q.BaselineHitAtK[kMin] && q.FusionHitAtK[kMin]).ToList();
-    var regressed = r.PerQuestion.Where(q => q.BaselineHitAtK[kMin] && !q.FusionHitAtK[kMin]).ToList();
-    Console.WriteLine($"  A k={kMin}: la fusión rescató {rescued.Count}, regresionó {regressed.Count}.");
-    foreach (var q in rescued.Take(10))
-        Console.WriteLine($"    + \"{Trunc(q.Question)}\"");
-    foreach (var q in regressed.Take(10))
-        Console.WriteLine($"    - \"{Trunc(q.Question)}\"  (REGRESIÓN)");
-    if (r.PerQuestion.Any(q => q.TargetCount == 0))
-        Console.WriteLine("  ⚠ Hay preguntas sin chunk objetivo en la muestra — revisa el etiquetado.");
+    // La pregunta que decide: ¿qué aporta el resumen SOBRE el híbrido real (cód+sparse)?
+    var withRes = r.SolvedAtMaxK[RecallEvaluator.CodSpaRes];
+    var noRes = r.SolvedAtMaxK[RecallEvaluator.CodSparse];
+    var gained = withRes.Except(noRes).ToList();   // resuelve gracias al resumen
+    var lost = noRes.Except(withRes).ToList();      // regresión por añadir el resumen
+    Console.WriteLine($"  Aporte del resumen sobre cód+sparse @k={r.MaxK}: " +
+                      $"+{gained.Count} preguntas, -{lost.Count} regresiones.");
+    foreach (var q in gained.Take(12)) Console.WriteLine($"    + \"{Trunc(q)}\"");
+    foreach (var q in lost.Take(12)) Console.WriteLine($"    - \"{Trunc(q)}\"  (REGRESIÓN)");
 }
 
 static string Trunc(string s) => s.Length <= 70 ? s : s[..67] + "…";

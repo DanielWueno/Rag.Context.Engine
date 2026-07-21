@@ -18,6 +18,42 @@ services:
       retries: 5
       start_period: 15s
 
+  rag-api:
+    build:
+      context: ..
+      dockerfile: src/RagEngine.Api/Dockerfile
+    container_name: rag-api
+    restart: unless-stopped
+    ports:
+      - "5080:5080"
+    volumes:
+      # Modelos ONNX ya descargados en el host (ver download-model.sh); montados
+      # de solo lectura para no reconstruir la imagen si cambias de modelo.
+      - /Users/DevStudio/models:/models:ro
+      # Log de consultas (pregunta + respuesta + fuentes) en el mismo logs/ del
+      # repo que ya usa el CLI — sobrevive a recrear el contenedor y se puede
+      # analizar directo desde el host sin `docker logs`.
+      - ../logs:/app/logs
+    environment:
+      # NOTA: en esta máquina Qdrant corre como un contenedor standalone
+      # ("qdrant-local", fuera de este compose), no como el servicio "qdrant"
+      # de arriba. Por eso se alcanza igual que Ollama: publicado en el host.
+      # Si alguna vez migras a que el servicio "qdrant" de este archivo sea
+      # el real, cambia esto a "qdrant" y restaura el depends_on.
+      Qdrant__Host: host.docker.internal
+      # Ollama se deja NATIVO en el host (no en Docker) para conservar la
+      # aceleración Metal de Apple Silicon — un Ollama en el contenedor Linux
+      # caería a CPU-only. host.docker.internal expone el host desde el contenedor.
+      Ollama__Endpoint: "http://host.docker.internal:11434/v1"
+      OnnxBrain__ModelPath: /models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx
+      OnnxBrain__VocabPath: /models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model
+      CrossEncoder__ModelPath: /models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx
+      CrossEncoder__VocabPath: /models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model
+    extra_hosts:
+      # host.docker.internal ya funciona out-of-the-box en Docker Desktop (Mac);
+      # esta línea solo es necesaria si esto se corre alguna vez en Docker Engine/Linux.
+      - "host.docker.internal:host-gateway"
+
 volumes:
   qdrant_storage:
     driver: local

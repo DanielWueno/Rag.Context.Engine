@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RagEngine — Consulta de Documentación</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 760px;
+    margin: 2.5rem auto;
+    padding: 0 1.25rem;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+  p.hint { color: #888; font-size: 0.9rem; margin-top: 0; }
+  form { display: flex; gap: 0.5rem; margin: 1.5rem 0; }
+  input[type=text] {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #999;
+    border-radius: 6px;
+  }
+  button {
+    padding: 0.6rem 1.1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.secondary { background: #555; }
+  #answer {
+    white-space: pre-wrap;
+    border-left: 3px solid #2563eb;
+    padding: 0.25rem 1rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  details { margin-top: 1rem; }
+  .source {
+    font-size: 0.85rem;
+    border-top: 1px solid #ddd;
+    padding: 0.6rem 0;
+  }
+  .source .meta { color: #888; margin-bottom: 0.4rem; }
+  .source .fragment {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    background: rgba(127, 127, 127, 0.1);
+    border: 1px solid rgba(127, 127, 127, 0.25);
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+  }
+  #status { color: #888; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <h1>RagEngine — Consulta de Documentación</h1>
+  <p class="hint">Pregunta en lenguaje natural sobre la documentación del proyecto indexada en este equipo.</p>
+
+  <form id="ask-form">
+    <input type="text" id="query" placeholder="¿Cómo funciona la encuesta de satisfacción?" autofocus>
+    <button type="submit" id="ask-btn">Preguntar</button>
+    <button type="button" id="search-btn" class="secondary">Buscar</button>
+  </form>
+  <p class="hint">"Preguntar" genera una respuesta con el LLM (más lento); "Buscar" solo trae los fragmentos relevantes, sin generar respuesta (mucho más rápido).</p>
+
+  <div id="status"></div>
+  <div id="answer"></div>
+  <details id="sources-wrap" style="display:none">
+    <summary>Fuentes consultadas (con el fragmento usado como contexto)</summary>
+    <div id="sources"></div>
+  </details>
+
+<script>
+const form = document.getElementById('ask-form');
+const queryInput = document.getElementById('query');
+const statusEl = document.getElementById('status');
+const answerEl = document.getElementById('answer');
+const sourcesWrap = document.getElementById('sources-wrap');
+const sourcesEl = document.getElementById('sources');
+const askBtn = document.getElementById('ask-btn');
+const searchBtn = document.getElementById('search-btn');
+
+function setBusy(busy) {
+  askBtn.disabled = busy;
+  searchBtn.disabled = busy;
+}
+
+function renderSources(sources) {
+  sourcesEl.innerHTML = '';
+  for (const s of sources) {
+    const div = document.createElement('div');
+    div.className = 'source';
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = `${s.file}${s.section ? ' — ' + s.section : ''} (L${s.startLine}-${s.endLine}, score ${s.score.toFixed(2)})`;
+    div.appendChild(meta);
+
+    // Extra: el fragmento tal cual se usó/encontró — no reemplaza la respuesta
+    // generada (si la hay), es para que puedas verificarla tú mismo.
+    const fragment = document.createElement('pre');
+    fragment.className = 'fragment';
+    fragment.textContent = s.content;
+    div.appendChild(fragment);
+
+    sourcesEl.appendChild(div);
+  }
+  sourcesWrap.style.display = sources.length ? 'block' : 'none';
+}
+
+// Recorta un título de sección para el status en vivo: "US-17.2 — Finalización
+// automática de Tickets con plazo vencido" -> se queda con lo esencial, no el
+// fragmento entero. Solo cosmético.
+function shortTitle(s) {
+  const label = s.section || s.file;
+  return label.length > 60 ? label.slice(0, 57) + '…' : label;
+}
+
+// /api/search es rápido (sin LLM); un fetch + JSON normal es suficiente.
+async function runSearch() {
+  const query = queryInput.value.trim();
+  if (!query) return;
+
+  setBusy(true);
+  statusEl.textContent = 'Buscando...';
+  answerEl.style.display = 'none';
+  sourcesWrap.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, collection: 'innovapp-docs', topK: 10, rerank: true })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    renderSources(await res.json());
+    statusEl.textContent = '';
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    setBusy(false);
+  }
+}
+
+// /api/ask/stream va emitiendo eventos (SSE) según avanza el pipeline real:
+// primero qué se encontró, luego la respuesta token a token. El status en
+// pantalla refleja eso — no es un mensaje fijo de "espera", ni un log crudo.
+async function runAskStream() {
+  const query = queryInput.value.trim();
+  if (!query) return;
+
+  setBusy(true);
+  statusEl.textContent = 'Buscando en la documentación...';
+  answerEl.textContent = '';
+  answerEl.style.display = 'none';
+  sourcesWrap.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/ask/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, collection: 'innovapp-docs', topK: 10, rerank: true })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let sep;
+      while ((sep = buffer.indexOf('\n\n')) !== -1) {
+        const rawEvent = buffer.slice(0, sep);
+        buffer = buffer.slice(sep + 2);
+
+        let eventName = 'message';
+        let dataLine = '';
+        for (const line of rawEvent.split('\n')) {
+          if (line.startsWith('event:')) eventName = line.slice(6).trim();
+          else if (line.startsWith('data:')) dataLine += line.slice(5).trim();
+        }
+        if (!dataLine) continue;
+        const payload = JSON.parse(dataLine);
+
+        if (eventName === 'status') {
+          statusEl.textContent = payload.message;
+        } else if (eventName === 'sources') {
+          // Ya son los fragmentos reales recuperados — se pintan de inmediato
+          // (con su contenido) y sus títulos alimentan el status siguiente.
+          renderSources(payload.sources);
+          if (payload.sources.length) {
+            const titles = payload.sources.slice(0, 3).map(shortTitle).join(' · ');
+            statusEl.textContent = `Encontrado en: ${titles}`;
+          }
+        } else if (eventName === 'token') {
+          answerEl.textContent += payload.text;
+          answerEl.style.display = 'block';
+        } else if (eventName === 'done') {
+          statusEl.textContent = '';
+        }
+      }
+    }
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    setBusy(false);
+  }
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  runAskStream();
+});
+
+searchBtn.addEventListener('click', runSearch);
+</script>
+</body>
+</html>

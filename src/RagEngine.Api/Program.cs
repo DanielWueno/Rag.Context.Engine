@@ -82,7 +82,7 @@ try
         var collection = request.Collection ?? defaultCollection;
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? false;
+        var rerank = request.Rerank ?? true;
 
         var stopwatch = Stopwatch.StartNew();
         var results = await retriever.SearchAsync(
@@ -130,7 +130,7 @@ try
         var collection = request.Collection ?? defaultCollection;
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? false;
+        var rerank = request.Rerank ?? true;
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -204,7 +204,7 @@ try
         var collection = request.Collection ?? defaultCollection;
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? false;
+        var rerank = request.Rerank ?? true;
 
         http.Response.Headers.CacheControl = "no-cache";
         http.Response.ContentType = "text/event-stream";

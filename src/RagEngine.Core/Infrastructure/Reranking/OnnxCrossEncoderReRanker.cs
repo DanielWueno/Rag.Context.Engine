@@ -64,11 +64,24 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
+        // El orden de entrada (candidates) NO es determinista: Qdrant rompe los
+        // empates de score RRF de forma no determinista entre corridas idénticas.
+        // Como ScorePairs agrupa en lotes en el orden recibido y el padding
+        // dinámico + cuantización int8 hacen que el score de un chunk dependa de
+        // sus vecinos de lote, el mismo chunk obtenía scores distintos según la
+        // corrida. Reordenamos por una clave estable (ChunkId) ANTES de batchear
+        // para fijar la composición de los lotes y hacer el score reproducible.
+        // El .Zip posterior DEBE usar esta misma lista reordenada para preservar
+        // la correspondencia posicional score[i] ↔ orderedCandidates[i].
+        var orderedCandidates = candidates
+            .OrderBy(c => c.ChunkId, StringComparer.Ordinal)
+            .ToList();
+
         var scores = await Task.Run(
-            () => ScorePairs(query, candidates, cancellationToken),
+            () => ScorePairs(query, orderedCandidates, cancellationToken),
             cancellationToken);
 
-        var reranked = candidates
+        var reranked = orderedCandidates
             .Zip(scores, (candidate, score) => candidate with { SimilarityScore = score })
             .OrderByDescending(r => r.SimilarityScore)
             .Take(topK)

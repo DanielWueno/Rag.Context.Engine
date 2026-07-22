@@ -1,7 +1,9 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagEngine.Core.Abstractions;
@@ -33,6 +35,7 @@ public sealed class RagGenerationService : IRagGenerationService
     private readonly Kernel _kernel;
     private readonly ISemanticRetriever _retriever;
     private readonly ILogger<RagGenerationService> _logger;
+    private readonly RagGenerationOptions _options;
 
     // ──────────────────────────────────────────────────────────────
     //  Configuration constants
@@ -164,6 +167,67 @@ public sealed class RagGenerationService : IRagGenerationService
         </CONTEXT>
         """;
 
+    /// <summary>
+    /// Short instruction appended to whichever system prompt was already selected
+    /// when the top chunk's score falls in the mid confidence band
+    /// (<see cref="RagGenerationOptions.LowConfidenceThreshold"/> ≤ score &lt;
+    /// <see cref="RagGenerationOptions.HighConfidenceThreshold"/>). Does not replace
+    /// the template — it is concatenated after it, so the grounding rules above
+    /// still apply in full.
+    /// </summary>
+    private const string LowConfidenceAddendum =
+        """
+
+
+        ═══════════════════════════════════════════════
+        LOW-CONFIDENCE CONTEXT — ADDITIONAL RULE:
+        ═══════════════════════════════════════════════
+        The retrieved context above has a low relevance score for this question —
+        it may not actually contain the answer. Do NOT present your answer as a
+        confirmed fact. Explicitly hedge (e.g. "No encontré una coincidencia clara
+        en el contenido indexado, pero el fragmento más cercano dice..."), then
+        offer the best available candidate from <CONTEXT> as a tentative lead, not
+        as a definitive answer. Still follow rule 2 above if the context is truly
+        unrelated to the question.
+        """;
+
+    /// <summary>
+    /// Fixed, factual self-description returned verbatim for meta-questions about
+    /// the assistant itself (see <see cref="TryMatchMetaIntent"/>). Never generated
+    /// by the LLM — the model is not asked to "recall" what it is.
+    /// </summary>
+    private const string SelfDescriptionBlock =
+        """
+        Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que
+        corre completamente en local, sin conexión a servicios de LLM externos.
+
+        Cómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida
+        (embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector
+        disperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,
+        los re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de
+        generar la respuesta con un modelo local vía Ollama (familia Qwen2.5).
+
+        Solo respondo con base en el contenido ya indexado del corpus activo — no
+        tengo acceso a internet ni a conocimiento fuera de esa colección.
+        """;
+
+    /// <summary>
+    /// Closed list of keyword patterns for meta-questions about the assistant
+    /// itself, taken verbatim from real phrases observed in production logs
+    /// (see docs/analisis-futuro/guardrail-dominio-chat.md). Evaluated before
+    /// retrieval so it wins over accidental lexical overlap with real corpus
+    /// content (e.g. "¿qué proyecto analizas?" scoring high by coincidence).
+    /// </summary>
+    private static readonly Regex[] MetaIntentPatterns =
+    [
+        new(@"qui[ée]n\s+(eres|sos)", RegexOptions.IgnoreCase),
+        new(@"qu[ée]\s+(proyecto|tecnolog[íi]a|modelo)\s+(analizas|usas|eres|corres)", RegexOptions.IgnoreCase),
+        new(@"con\s+qu[ée]\s+(est[áa]s\s+)?(entrenado|hecho|construido)", RegexOptions.IgnoreCase),
+        new(@"en\s+qu[ée]\s+idioma", RegexOptions.IgnoreCase),
+        new(@"alucinacion", RegexOptions.IgnoreCase),
+        new(@"cu[áa]ntos\s+(archivos|documentos)", RegexOptions.IgnoreCase),
+    ];
+
     // ──────────────────────────────────────────────────────────────
     //  Constructor
     // ──────────────────────────────────────────────────────────────
@@ -176,14 +240,17 @@ public sealed class RagGenerationService : IRagGenerationService
     ///   Abstraction over Qdrant that returns ranked <see cref="RetrievalResult"/> objects.
     /// </param>
     /// <param name="logger">Structured logger injected by the DI container.</param>
+    /// <param name="options">Confidence-gate thresholds bound from configuration.</param>
     public RagGenerationService(
         Kernel kernel,
         ISemanticRetriever retriever,
-        ILogger<RagGenerationService> logger)
+        ILogger<RagGenerationService> logger,
+        IOptions<RagGenerationOptions> options)
     {
         _kernel    = kernel    ?? throw new ArgumentNullException(nameof(kernel));
         _retriever = retriever ?? throw new ArgumentNullException(nameof(retriever));
         _logger    = logger    ?? throw new ArgumentNullException(nameof(logger));
+        _options   = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -202,6 +269,18 @@ public sealed class RagGenerationService : IRagGenerationService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionName);
+
+        // ── Step 0: Meta-intent pre-filter ────────────────────────
+        // Questions about the assistant itself ("who are you?", "what tech are
+        // you built with?") never need retrieval or generation — answering them
+        // from a fixed, factual block also sidesteps cases where they'd otherwise
+        // score high by accidental lexical overlap with real corpus content.
+        if (TryMatchMetaIntent(query))
+        {
+            _logger.LogInformation("[RAG] Meta-intent match for query: {Query}. Skipping retrieval.", query);
+            yield return SelfDescriptionBlock;
+            yield break;
+        }
 
         // ── Step 1: Semantic Retrieval ────────────────────────────
         // NOTE: yield return is not allowed inside try/catch blocks in C# iterator
@@ -227,6 +306,34 @@ public sealed class RagGenerationService : IRagGenerationService
             yield break;
         }
 
+        // ── Step 1b: 3-band confidence gate ───────────────────────
+        // Only meaningful when useReRanking is true: the top chunk's score is then
+        // the cross-encoder sigmoid ([0..1], comparable across queries). Without
+        // rerank, SimilarityScore is the RRF fusion score — a function of rank, not
+        // similarity — and is not evaluated against these thresholds; behavior stays
+        // exactly as before (just the zero-chunks check above).
+        string? confidenceAddendum = null;
+        if (useReRanking)
+        {
+            var topScore = chunks[0].SimilarityScore;
+            if (topScore < _options.LowConfidenceThreshold)
+            {
+                _logger.LogWarning(
+                    "[RAG] Low confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Cutting before generation.",
+                    topScore, _options.LowConfidenceThreshold, query);
+                yield return NoContextFallbackMessage;
+                yield break;
+            }
+
+            if (topScore < _options.HighConfidenceThreshold)
+            {
+                _logger.LogInformation(
+                    "[RAG] Mid confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Answering with a low-confidence hedge.",
+                    topScore, _options.HighConfidenceThreshold, query);
+                confidenceAddendum = LowConfidenceAddendum;
+            }
+        }
+
         _logger.LogInformation("[RAG] Retrieved {Count} chunks. Building context block.", chunks.Count);
 
         // ── Step 2: Context Assembly ──────────────────────────────
@@ -238,6 +345,8 @@ public sealed class RagGenerationService : IRagGenerationService
         // document/section citations, not code-line citations and fenced code blocks.
         var promptTemplate = SelectSystemPromptTemplate(chunks);
         var systemPrompt = string.Format(promptTemplate, contextBlock, NoContextFallbackMessage);
+        if (confidenceAddendum is not null)
+            systemPrompt += confidenceAddendum;
 
         // Build a ChatHistory so the system prompt is correctly separated
         // from the conversation turns — Semantic Kernel respects this structure.
@@ -332,6 +441,13 @@ public sealed class RagGenerationService : IRagGenerationService
     // ──────────────────────────────────────────────────────────────
     //  Private helpers
     // ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Matches <paramref name="query"/> against the closed list of meta-intent
+    /// patterns in <see cref="MetaIntentPatterns"/>.
+    /// </summary>
+    private static bool TryMatchMetaIntent(string query) =>
+        MetaIntentPatterns.Any(pattern => pattern.IsMatch(query));
 
     /// <summary>Languages that represent prose documentation rather than source code.</summary>
     private static bool IsDocumentationLanguage(SourceLanguage language) =>

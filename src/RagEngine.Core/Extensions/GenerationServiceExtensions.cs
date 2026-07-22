@@ -54,6 +54,8 @@ public static class GenerationServiceExtensions
         // ── 1. Bind typed options ─────────────────────────────────────────────
         services.Configure<OllamaOptions>(
             configuration.GetSection(OllamaOptions.SectionName));
+        services.Configure<RagGenerationOptions>(
+            configuration.GetSection(RagGenerationOptions.SectionName));
 
         // ── 2. Register Semantic Kernel as a Singleton ────────────────────────
         //

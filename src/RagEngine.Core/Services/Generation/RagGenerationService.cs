@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -193,7 +192,7 @@ public sealed class RagGenerationService : IRagGenerationService
 
     /// <summary>
     /// Fixed, factual self-description returned verbatim for meta-questions about
-    /// the assistant itself (see <see cref="TryMatchMetaIntent"/>). Never generated
+    /// the assistant itself (see <see cref="MetaIntentDetector"/>). Never generated
     /// by the LLM — the model is not asked to "recall" what it is.
     /// </summary>
     private const string SelfDescriptionBlock =
@@ -210,23 +209,6 @@ public sealed class RagGenerationService : IRagGenerationService
         Solo respondo con base en el contenido ya indexado del corpus activo — no
         tengo acceso a internet ni a conocimiento fuera de esa colección.
         """;
-
-    /// <summary>
-    /// Closed list of keyword patterns for meta-questions about the assistant
-    /// itself, taken verbatim from real phrases observed in production logs
-    /// (see docs/analisis-futuro/guardrail-dominio-chat.md). Evaluated before
-    /// retrieval so it wins over accidental lexical overlap with real corpus
-    /// content (e.g. "¿qué proyecto analizas?" scoring high by coincidence).
-    /// </summary>
-    private static readonly Regex[] MetaIntentPatterns =
-    [
-        new(@"qui[ée]n\s+(eres|sos)", RegexOptions.IgnoreCase),
-        new(@"qu[ée]\s+(proyecto|tecnolog[íi]a|modelo)\s+(analizas|usas|eres|corres)", RegexOptions.IgnoreCase),
-        new(@"con\s+qu[ée]\s+(est[áa]s\s+)?(entrenado|hecho|construido)", RegexOptions.IgnoreCase),
-        new(@"en\s+qu[ée]\s+idioma", RegexOptions.IgnoreCase),
-        new(@"alucinacion", RegexOptions.IgnoreCase),
-        new(@"cu[áa]ntos\s+(archivos|documentos)", RegexOptions.IgnoreCase),
-    ];
 
     // ──────────────────────────────────────────────────────────────
     //  Constructor
@@ -275,7 +257,7 @@ public sealed class RagGenerationService : IRagGenerationService
         // you built with?") never need retrieval or generation — answering them
         // from a fixed, factual block also sidesteps cases where they'd otherwise
         // score high by accidental lexical overlap with real corpus content.
-        if (TryMatchMetaIntent(query))
+        if (MetaIntentDetector.IsMetaIntent(query))
         {
             _logger.LogInformation("[RAG] Meta-intent match for query: {Query}. Skipping retrieval.", query);
             yield return SelfDescriptionBlock;
@@ -441,13 +423,6 @@ public sealed class RagGenerationService : IRagGenerationService
     // ──────────────────────────────────────────────────────────────
     //  Private helpers
     // ──────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Matches <paramref name="query"/> against the closed list of meta-intent
-    /// patterns in <see cref="MetaIntentPatterns"/>.
-    /// </summary>
-    private static bool TryMatchMetaIntent(string query) =>
-        MetaIntentPatterns.Any(pattern => pattern.IsMatch(query));
 
     /// <summary>Languages that represent prose documentation rather than source code.</summary>
     private static bool IsDocumentationLanguage(SourceLanguage language) =>

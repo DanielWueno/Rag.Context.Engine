@@ -56,6 +56,13 @@ public static class GenerationServiceExtensions
             configuration.GetSection(OllamaOptions.SectionName));
         services.Configure<RagGenerationOptions>(
             configuration.GetSection(RagGenerationOptions.SectionName));
+        services.Configure<MetaIntentOptions>(
+            configuration.GetSection(MetaIntentOptions.SectionName));
+
+        // Singleton: reuses IVectorizationBrain (itself a singleton) and caches the
+        // exemplar embeddings for the process lifetime instead of recomputing them
+        // per request.
+        services.AddSingleton<IMetaIntentDetector, SemanticMetaIntentDetector>();
 
         // ── 2. Register Semantic Kernel as a Singleton ────────────────────────
         //

@@ -66,13 +66,15 @@ try
     // cases the retrieved chunks played no role in the answer shown to the user,
     // so attaching them as "sources" would be misleading. Mirrors the same
     // decision RagGenerationService.AskStreamingAsync makes internally, using the
-    // same MetaIntentDetector and the same RagGenerationOptions thresholds.
+    // same IMetaIntentDetector and the same RagGenerationOptions thresholds.
+    // isMetaIntent is passed in already computed — it requires an embedder call,
+    // so callers compute it once per request rather than re-running it here.
     static bool ShouldSuppressSources(
-        string query,
+        bool isMetaIntent,
         bool rerank,
         IReadOnlyList<RetrievalResult> results,
         RagGenerationOptions ragOptions) =>
-        MetaIntentDetector.IsMetaIntent(query) ||
+        isMetaIntent ||
         (rerank && results.Count > 0 && results[0].SimilarityScore < ragOptions.LowConfidenceThreshold);
 
     app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
@@ -140,6 +142,7 @@ try
         ISemanticRetriever retriever,
         IRagGenerationService generation,
         IOptions<RagGenerationOptions> ragOptions,
+        IMetaIntentDetector metaIntentDetector,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -150,7 +153,7 @@ try
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
-        var isMetaIntent = MetaIntentDetector.IsMetaIntent(request.Query);
+        var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -183,7 +186,9 @@ try
         }
 
         var retrievedSources = await sourcesTask;
-        var sources = ShouldSuppressSources(request.Query, rerank, retrievedSources, ragOptions.Value)
+        var answerText = answer.ToString();
+        var sources = ShouldSuppressSources(isMetaIntent, rerank, retrievedSources, ragOptions.Value)
+                || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
             ? []
             : retrievedSources.Select(SourceDto.From).ToList();
         stopwatch.Stop();
@@ -200,11 +205,11 @@ try
                 Rerank = rerank,
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
-                Answer = answer.ToString(),
+                Answer = answerText,
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });
 
-        return Results.Ok(new RagAskResponse(answer.ToString(), sources));
+        return Results.Ok(new RagAskResponse(answerText, sources));
     });
 
     // Variante SSE de /api/ask para la página web: en vez de bloquear hasta
@@ -218,6 +223,7 @@ try
         ISemanticRetriever retriever,
         IRagGenerationService generation,
         IOptions<RagGenerationOptions> ragOptions,
+        IMetaIntentDetector metaIntentDetector,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -232,7 +238,7 @@ try
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
-        var isMetaIntent = MetaIntentDetector.IsMetaIntent(request.Query);
+        var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
         http.Response.Headers.CacheControl = "no-cache";
         http.Response.ContentType = "text/event-stream";
@@ -272,7 +278,7 @@ try
         // chunks recuperados no jugaron ningún papel en la respuesta — mostrarlos
         // como "fuentes" confundiría al usuario. Mismo criterio que usa el gate
         // interno del servicio de generación.
-        var sources = ShouldSuppressSources(request.Query, rerank, results, ragOptions.Value)
+        var sources = ShouldSuppressSources(isMetaIntent, rerank, results, ragOptions.Value)
             ? []
             : results.Select(SourceDto.From).ToList();
 
@@ -296,6 +302,17 @@ try
         {
             answer.Append(fragment);
             await SendAsync("token", new { text = fragment });
+        }
+
+        // El gate no cortó (banda media/alta), pero el LLM decidió por su cuenta,
+        // siguiendo la regla 2 del prompt, que ninguno de los chunks recuperados
+        // servía — mismo criterio de "no mostrar fuentes que no se usaron", pero
+        // solo se sabe hasta después de generar. El "sources" ya enviado antes
+        // (para dar progreso temprano) se corrige con un segundo evento vacío.
+        if (sources.Count > 0 && answer.ToString().Trim() == RagGenerationService.NoContextFallbackMessage)
+        {
+            sources = [];
+            await SendAsync("sources", new { sources });
         }
 
         stopwatch.Stop();

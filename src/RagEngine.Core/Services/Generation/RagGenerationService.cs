@@ -35,6 +35,7 @@ public sealed class RagGenerationService : IRagGenerationService
     private readonly ISemanticRetriever _retriever;
     private readonly ILogger<RagGenerationService> _logger;
     private readonly RagGenerationOptions _options;
+    private readonly IMetaIntentDetector _metaIntentDetector;
 
     // ──────────────────────────────────────────────────────────────
     //  Configuration constants
@@ -60,8 +61,12 @@ public sealed class RagGenerationService : IRagGenerationService
     /// Exact fallback sentence the LLM must emit verbatim when the context is
     /// insufficient. Shared by both prompt variants and by the zero-chunks
     /// short-circuit so the wording never drifts out of sync between them.
+    /// Public so callers (e.g. the API host) can detect when the LLM itself chose
+    /// this exact sentence — following rule 2 of the system prompt — even in a
+    /// confidence band where the gate did not pre-emptively cut, so they can avoid
+    /// showing retrieved sources next to an answer that says none were useful.
     /// </summary>
-    private const string NoContextFallbackMessage =
+    public const string NoContextFallbackMessage =
         "I cannot find enough information in the indexed content to answer this question.";
 
     /// <summary>
@@ -223,16 +228,19 @@ public sealed class RagGenerationService : IRagGenerationService
     /// </param>
     /// <param name="logger">Structured logger injected by the DI container.</param>
     /// <param name="options">Confidence-gate thresholds bound from configuration.</param>
+    /// <param name="metaIntentDetector">Detects meta-questions about the assistant itself.</param>
     public RagGenerationService(
         Kernel kernel,
         ISemanticRetriever retriever,
         ILogger<RagGenerationService> logger,
-        IOptions<RagGenerationOptions> options)
+        IOptions<RagGenerationOptions> options,
+        IMetaIntentDetector metaIntentDetector)
     {
-        _kernel    = kernel    ?? throw new ArgumentNullException(nameof(kernel));
-        _retriever = retriever ?? throw new ArgumentNullException(nameof(retriever));
-        _logger    = logger    ?? throw new ArgumentNullException(nameof(logger));
-        _options   = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _kernel             = kernel             ?? throw new ArgumentNullException(nameof(kernel));
+        _retriever          = retriever          ?? throw new ArgumentNullException(nameof(retriever));
+        _logger             = logger             ?? throw new ArgumentNullException(nameof(logger));
+        _options            = options?.Value      ?? throw new ArgumentNullException(nameof(options));
+        _metaIntentDetector = metaIntentDetector ?? throw new ArgumentNullException(nameof(metaIntentDetector));
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -257,7 +265,7 @@ public sealed class RagGenerationService : IRagGenerationService
         // you built with?") never need retrieval or generation — answering them
         // from a fixed, factual block also sidesteps cases where they'd otherwise
         // score high by accidental lexical overlap with real corpus content.
-        if (MetaIntentDetector.IsMetaIntent(query))
+        if (await _metaIntentDetector.IsMetaIntentAsync(query, cancellationToken))
         {
             _logger.LogInformation("[RAG] Meta-intent match for query: {Query}. Skipping retrieval.", query);
             yield return SelfDescriptionBlock;

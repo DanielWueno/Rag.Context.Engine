@@ -44,9 +44,11 @@ public sealed record RagGenerationOptions
     public const string SectionName = "RagGeneration";
 
     /// <summary>
-    /// Por debajo de este score (con rerank activado), se corta antes de generar y
-    /// se responde con <see cref="RagGenerationService.NoContextFallbackMessage"/> —
-    /// mismo camino que el caso de "0 chunks". Ver nota de calibración arriba.
+    /// Por debajo de este score (con rerank activado), los chunks recuperados se
+    /// descartan por completo y se responde con el camino unificado de banda baja
+    /// (<see cref="RagGenerationService.AskStreamingAsync"/>) — mismo camino que el
+    /// caso de "0 chunks". Ver nota de calibración arriba y
+    /// docs/analisis-futuro/guardrail-banda-baja-conversacional.md.
     /// </summary>
     public float LowConfidenceThreshold { get; init; } = 0.05f;
 

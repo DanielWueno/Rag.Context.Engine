@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Vectorization;
 
 namespace RagEngine.Poc.FreeSearch;
@@ -34,9 +35,21 @@ public sealed class PocSettings
     public double WeightSparse { get; init; } = 1.0;
     public double WeightResumen { get; init; } = 1.3;
 
+    /// <summary>
+    /// Activa el paso 5 (rerank): sobre el pool fusionado de cód+spa+res, re-puntúa
+    /// con el mismo Cross-Encoder ONNX de producción y recorta a <see cref="RerankTopK"/>.
+    /// Pregunta que responde (README, "Prueba barata que conviene hacer ANTES"):
+    /// ¿el rerank reduce la necesidad de calibrar los pesos de RRF con precisión?
+    /// </summary>
+    public bool EnableRerank { get; init; } = false;
+
+    /// <summary>TopK final tras rerank; también determina el ancho del pool re-puntuado (TopK×3, igual que producción).</summary>
+    public int RerankTopK { get; init; } = 10;
+
     // Espejos de appsettings.json del CLI ------------------------------------
     public OnnxBrainOptions OnnxBrain { get; init; } = new();
     public OllamaSection Ollama { get; init; } = new();
+    public CrossEncoderOptions CrossEncoder { get; init; } = new();
 
     public sealed class OllamaSection
     {

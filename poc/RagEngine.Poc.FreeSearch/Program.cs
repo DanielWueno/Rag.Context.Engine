@@ -1,5 +1,9 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Poc.FreeSearch;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -147,10 +151,37 @@ var questionVectors = await embedder.EmbedBatchAsync(evalSet.Select(e => e.Quest
 var questionSparse = evalSet.Select(e => sparse.Vectorize(e.Question)).ToList();
 Console.WriteLine($"      {evalSet.Count} preguntas del set '{evalPath}'.\n");
 
-// ── Fase 4 · Recall: código vs. cód+sparse vs. cód+sparse+resumen ─────────────
-Console.WriteLine("[4/4] Evaluando recall@k …\n");
 var evaluator = new RecallEvaluator(settings);
-var report = evaluator.Evaluate(indexed, evalSet, questionVectors, questionSparse);
+
+if (args.Contains("sweep"))
+{
+    // Barrido de pesos: separado de rerank/Fase 4 normal porque sólo necesita los
+    // rankings YA calculados (embeddings ya corrieron arriba) — nada de ONNX/Ollama
+    // se repite por combinación, así que barrer decenas de pesos es casi instantáneo.
+    Console.WriteLine("[4/4] Barriendo pesos RRF (cód+spa+res) …\n");
+    var rankData = evaluator.PrepareRankData(indexed, evalSet, questionVectors, questionSparse);
+    PrintWeightSweep(evaluator, rankData, indexed.Count, settings);
+    sw.Stop();
+    Console.WriteLine($"\nListo en {sw.Elapsed.TotalSeconds:F1}s.");
+    return 0;
+}
+
+// ── Fase 4 · Recall: código vs. cód+sparse vs. cód+sparse+resumen [+ rerank] ──
+// El Cross-Encoder ONNX real (mismo que producción); a propósito SIN `using`/Dispose
+// explícito, mismo motivo que EmbeddingHarness más arriba: el teardown nativo de ONNX
+// aborta en ARM si se dispone, y al no disponer el proceso sale limpio igual.
+IReRanker? reranker = null;
+if (settings.EnableRerank)
+{
+    Console.WriteLine($"[4/5] Cargando Cross-Encoder para rerank (TopK={settings.RerankTopK}, pool={settings.RerankTopK * 3}) …\n");
+    reranker = new OnnxCrossEncoderReRanker(
+        Options.Create(settings.CrossEncoder),
+        NullLogger<OnnxCrossEncoderReRanker>.Instance);
+}
+
+Console.WriteLine($"[{(settings.EnableRerank ? 5 : 4)}/{(settings.EnableRerank ? 5 : 4)}] Evaluando recall@k …\n");
+var report = await evaluator.EvaluateAsync(
+    indexed, evalSet, questionVectors, questionSparse, reranker, settings.RerankTopK, ct);
 
 PrintReport(report, settings);
 if (args.Contains("detail")) PrintDetail(report);
@@ -183,18 +214,36 @@ static async Task<float[][]> EmbedWithProgress(EmbeddingHarness emb, IReadOnlyLi
 static void PrintReport(RecallEvaluator.Report r, PocSettings s)
 {
     var kValues = s.RecallAtK.Distinct().OrderBy(x => x).ToArray();
+    bool hasRerank = r.Configs.Contains(RecallEvaluator.CodSpaResRerank);
+
     Console.WriteLine("──────────────────────────────────────────────────────────────────");
     Console.WriteLine($"  Muestra: {r.Chunks} chunks ({r.ChunksWithSummary} con resumen) · {r.Questions} preguntas");
     Console.WriteLine($"  Pesos RRF: código={s.WeightCode}  sparse={s.WeightSparse}  resumen={s.WeightResumen}  (k={s.RrfK})");
+    if (hasRerank)
+        Console.WriteLine($"  Rerank: Cross-Encoder ON, TopK={s.RerankTopK} (pool {s.RerankTopK * 3})");
     Console.WriteLine("──────────────────────────────────────────────────────────────────");
-    Console.WriteLine($"  {"k",4} │ {RecallEvaluator.Codigo,11} │ {RecallEvaluator.CodSparse,11} │ {RecallEvaluator.CodSpaRes,11}");
-    Console.WriteLine("  ─────┼─────────────┼─────────────┼────────────");
+
+    var header = $"  {"k",4} │ {RecallEvaluator.Codigo,11} │ {RecallEvaluator.CodSparse,11} │ {RecallEvaluator.CodSpaRes,11}";
+    var sep = "  ─────┼─────────────┼─────────────┼────────────";
+    if (hasRerank)
+    {
+        header += $" │ {RecallEvaluator.CodSpaResRerank,19}";
+        sep += "┼─────────────────────";
+    }
+    Console.WriteLine(header);
+    Console.WriteLine(sep);
     foreach (var k in kValues)
     {
         var a = r.RecallByConfig[RecallEvaluator.Codigo][k];
         var b = r.RecallByConfig[RecallEvaluator.CodSparse][k];
         var c = r.RecallByConfig[RecallEvaluator.CodSpaRes][k];
-        Console.WriteLine($"  {k,4} │ {a,10:P0}  │ {b,10:P0}  │ {c,10:P0}");
+        var line = $"  {k,4} │ {a,10:P0}  │ {b,10:P0}  │ {c,10:P0}";
+        if (hasRerank)
+        {
+            var d = r.RecallByConfig[RecallEvaluator.CodSpaResRerank][k];
+            line += $"  │ {d,18:P0}";
+        }
+        Console.WriteLine(line);
     }
     Console.WriteLine("──────────────────────────────────────────────────────────────────");
 
@@ -207,9 +256,67 @@ static void PrintReport(RecallEvaluator.Report r, PocSettings s)
                       $"+{gained.Count} preguntas, -{lost.Count} regresiones.");
     foreach (var q in gained.Take(12)) Console.WriteLine($"    + \"{Trunc(q)}\"");
     foreach (var q in lost.Take(12)) Console.WriteLine($"    - \"{Trunc(q)}\"  (REGRESIÓN)");
+
+    if (!hasRerank) return;
+
+    // ¿El rerank sobre el pool ancho reduce la necesidad de calibrar pesos con precisión?
+    var withRerank = r.SolvedAtMaxK[RecallEvaluator.CodSpaResRerank];
+    var gainedR = withRerank.Except(withRes).ToList();
+    var lostR = withRes.Except(withRerank).ToList();
+    Console.WriteLine();
+    Console.WriteLine($"  Aporte del rerank sobre cód+spa+res @k={r.MaxK}: " +
+                      $"+{gainedR.Count} preguntas, -{lostR.Count} regresiones.");
+    foreach (var q in gainedR.Take(12)) Console.WriteLine($"    + \"{Trunc(q)}\"");
+    foreach (var q in lostR.Take(12)) Console.WriteLine($"    - \"{Trunc(q)}\"  (REGRESIÓN)");
 }
 
 static string Trunc(string s) => s.Length <= 70 ? s : s[..67] + "…";
+
+// Grilla de pesos para cód+spa+res: código queda fijo en 1.0 como ancla (igual que el
+// documento), sparse y resumen se barren. La métrica que decide es recall@10 (¿el
+// objetivo sobrevive en el pool fusionado?) — @1/@3/@5 se muestran solo de contexto,
+// porque ese es el trabajo del rerank, no de los pesos (ver hallazgo de la corrida anterior).
+static void PrintWeightSweep(
+    RecallEvaluator evaluator, List<RecallEvaluator.QuestionRankData> rankData, int chunkCount, PocSettings s)
+{
+    var kValues = s.RecallAtK.Distinct().OrderBy(x => x).ToArray();
+    var maxK = kValues.Length == 0 ? 10 : kValues.Max();
+
+    double[] sparseGrid = [0.7, 1.0, 1.3];
+    double[] resumenGrid = [1.0, 1.3, 1.6, 2.0, 2.5, 3.0, 4.0];
+
+    var results = new List<RecallEvaluator.WeightSweepResult>();
+    foreach (var wSparse in sparseGrid)
+        foreach (var wResumen in resumenGrid)
+            results.Add(evaluator.EvaluateWeights(rankData, chunkCount, 1.0, wSparse, wResumen, s.RrfK, kValues));
+
+    var ordered = results
+        .OrderByDescending(r => r.RecallByK[maxK])
+        .ThenByDescending(r => r.RecallByK.TryGetValue(5, out var r5) ? r5 : 0.0)
+        .ToList();
+
+    var baseline = results.First(r => r.WeightSparse == s.WeightSparse && r.WeightResumen == s.WeightResumen);
+    var best = ordered[0];
+
+    Console.WriteLine("─────────────────────────────────────────────────────────────────────");
+    Console.WriteLine($"  Barrido de pesos RRF — cód+spa+res (código=1.0 fijo, k={s.RrfK})");
+    Console.WriteLine($"  {results.Count} combinaciones · orden: recall@{maxK} desc, luego recall@5 desc");
+    Console.WriteLine("─────────────────────────────────────────────────────────────────────");
+    Console.WriteLine($"  {"sparse",6} │ {"resumen",7} │ " + string.Join(" │ ", kValues.Select(k => $"@{k}".PadLeft(5))));
+    Console.WriteLine("  ───────┼─────────┼" + string.Concat(kValues.Select(_ => "───────┼")).TrimEnd('┼'));
+    foreach (var r in ordered)
+    {
+        var flag = (r.WeightSparse == best.WeightSparse && r.WeightResumen == best.WeightResumen) ? "★"
+                  : (r.WeightSparse == baseline.WeightSparse && r.WeightResumen == baseline.WeightResumen) ? "•"
+                  : " ";
+        var cells = string.Join(" │ ", kValues.Select(k => $"{r.RecallByK[k],5:P0}"));
+        Console.WriteLine($"{flag} {r.WeightSparse,6:0.0} │ {r.WeightResumen,7:0.0} │ {cells}");
+    }
+    Console.WriteLine("─────────────────────────────────────────────────────────────────────");
+    Console.WriteLine($"  ★ mejor: sparse={best.WeightSparse:0.0} resumen={best.WeightResumen:0.0} " +
+                      $"→ recall@{maxK}={best.RecallByK[maxK]:P0} (baseline actual • sparse={baseline.WeightSparse:0.0} " +
+                      $"resumen={baseline.WeightResumen:0.0} → recall@{maxK}={baseline.RecallByK[maxK]:P0})");
+}
 
 // Detalle por pregunta: qué recuperó la config completa (cód+sparse+resumen) y dónde
 // cayó el objetivo. Sirve para juzgar a ojo la factibilidad de las preguntas y la

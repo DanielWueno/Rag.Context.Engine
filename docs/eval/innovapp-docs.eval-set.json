@@ -1,0 +1,222 @@
+[
+  {
+    "Question": "¿Quién puede cancelar un ticket que está en estatus Registrado?",
+    "Category": "literal",
+    "SourceFile": "Cancelación de Ticket por el usuario.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["Solo el usuario que reportó la petición (campo \"Reporta\") podrá ejecutar la cancelación"],
+    "Note": "RN-2.2, vocabulario casi literal del documento."
+  },
+  {
+    "Question": "¿Qué pasa si el motivo de cancelación seleccionado es 'Otro'?",
+    "Category": "literal",
+    "SourceFile": "Cancelación de Ticket por el usuario.md",
+    "TargetSectionHeader": "### Diseño UX/UI",
+    "TargetContentContains": ["el diálogo debe habilitar un campo de texto libre obligatorio"],
+    "Note": "RN-2.4 / diseño UX, texto casi textual."
+  },
+  {
+    "Question": "¿Cuándo se muestra el bloque de encuesta de satisfacción en la Trayectoria?",
+    "Category": "literal",
+    "SourceFile": "Encuesta de Satisfacción al Cierre de Ticket.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El bloque de encuesta se muestra únicamente cuando el estatus vigente de la entidad corresponde a su estatus terminal de cierre exitoso"],
+    "Note": "RN-3.1, US-3.1."
+  },
+  {
+    "Question": "¿Qué es el Folio Único de Atención?",
+    "Category": "literal",
+    "SourceFile": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El Folio Único de Atención corresponde al folio generado al registrar la petición del cliente (ServicioCliente) y no cambia durante todo su ciclo de vida"],
+    "Note": "RN-1.1, US-1.1, definición central del RF."
+  },
+  {
+    "Question": "¿Qué estatus del Ticket generan correo electrónico?",
+    "Category": "literal",
+    "SourceFile": "Notificaciones por Cambio de Estado.md",
+    "TargetSectionHeader": "### Tabla de disparadores de notificación por canal y por entidad",
+    "TargetContentContains": ["Ticket | Registrado, Autorización Financiera, Autorización Rechazada, En Espera, En Validación, Atendido | Registrado, Atendido"],
+    "Note": "Tabla de disparadores, prueba lectura de contenido tabular Markdown."
+  },
+  {
+    "Question": "¿Cómo se marca una notificación como leída?",
+    "Category": "literal",
+    "SourceFile": "Notificaciones por Cambio de Estado.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El usuario puede marcar manualmente una notificación como \"Leído\" sin necesidad de abrir su detalle"],
+    "Note": "RN-2.7, US-2.2."
+  },
+  {
+    "Question": "¿Qué insignia se muestra cuando un estatus del timeline es terminal?",
+    "Category": "literal",
+    "SourceFile": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["La insignia \"Finalizada\" se muestra únicamente cuando el estatus alcanzado por ese nodo es uno de los estatus terminales: Atendido, Entregado, Cancelado o Aut. Rechazada"],
+    "Note": "RN-1.2, US-1.1."
+  },
+  {
+    "Question": "¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'?",
+    "Category": "literal",
+    "SourceFile": "RF-Monitor-Estatus-Tickets.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["Solo un usuario con el permiso especial dedicado a esta acción podrá ver y ejecutar \"Ing. en Traslado\""],
+    "Note": "RN-12.2, US-12.1."
+  },
+  {
+    "Question": "Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo?",
+    "Category": "parafraseada",
+    "SourceFile": "Cancelación de Ticket por el usuario.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["ningún otro usuario, incluyendo otros solicitantes, podrá cancelar una petición que no reportó"],
+    "Note": "\"borrar\" en vez de \"cancelar\", \"yo mismo\" en vez de \"usuario que reportó\" — gap léxico real."
+  },
+  {
+    "Question": "Si escojo 'otro' como razón para cancelar, ¿tengo que explicar por qué?",
+    "Category": "parafraseada",
+    "SourceFile": "Cancelación de Ticket por el usuario.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["Si el Motivo de Cancelación seleccionado tiene marcado \"Requiere texto adicional\""],
+    "Note": "\"explicar por qué\" en vez de \"texto adicional obligatorio\"."
+  },
+  {
+    "Question": "¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio?",
+    "Category": "parafraseada",
+    "SourceFile": "Encuesta de Satisfacción al Cierre de Ticket.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El bloque de encuesta se muestra únicamente cuando el estatus vigente de la entidad corresponde a su estatus terminal de cierre exitoso"],
+    "Note": "\"qué tan contento quedé\" evita por completo la palabra \"encuesta de satisfacción\"."
+  },
+  {
+    "Question": "¿Hay un número que identifique mi caso sin importar si terminó siendo ticket o solicitud de servicio?",
+    "Category": "parafraseada",
+    "SourceFile": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["no cambia durante todo su ciclo de vida, incluyendo su conversión a Ticket o Solicitud de Servicio"],
+    "Note": "Ninguna mención literal de \"Folio Único de Atención\" en la pregunta."
+  },
+  {
+    "Question": "¿Me avisan por correo cuando resuelven mi problema?",
+    "Category": "parafraseada",
+    "SourceFile": "Notificaciones por Cambio de Estado.md",
+    "TargetSectionHeader": "### Tabla de disparadores de notificación por canal y por entidad",
+    "TargetContentContains": ["Ticket | Registrado, Autorización Financiera, Autorización Rechazada, En Espera, En Validación, Atendido | Registrado, Atendido"],
+    "Note": "\"resuelven mi problema\" = estatus Atendido; \"avisan por correo\" = columna correo electrónico."
+  },
+  {
+    "Question": "¿Cómo le hago para que ya no me aparezca como pendiente algo que ya vi?",
+    "Category": "parafraseada",
+    "SourceFile": "Notificaciones por Cambio de Estado.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El usuario puede marcar manualmente una notificación como \"Leído\" sin necesidad de abrir su detalle"],
+    "Note": "\"que ya no me aparezca como pendiente\" evita la palabra \"leído\"/\"notificación\"."
+  },
+  {
+    "Question": "¿Cómo sé qué pasos ya se completaron en mi caso?",
+    "Category": "parafraseada",
+    "SourceFile": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["El timeline debe construirse a partir de la bitácora de estatus de la entidad correspondiente"],
+    "Note": "\"pasos ya se completaron\" en vez de \"timeline\"/\"trayectoria\"."
+  },
+  {
+    "Question": "¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket?",
+    "Category": "parafraseada",
+    "SourceFile": "RF-Monitor-Estatus-Tickets.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": ["Solo un usuario con el permiso especial dedicado a esta acción podrá ver y ejecutar \"Ing. en Traslado\""],
+    "Note": "\"el técnico ya va en camino\" en vez de \"Ing. en Traslado\"."
+  },
+  {
+    "Question": "¿Puedo cancelar mi ticket en cualquier momento?",
+    "Category": "ambigua",
+    "SourceFile": "Cancelación de Ticket por el usuario.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": [
+      "únicamente será visible/ejecutable sobre peticiones cuyo estatus vigente sea Registrado",
+      "La acción \"Cancelar Ticket\" dejará de estar disponible en cuanto la petición avance a Investigación CAU"
+    ],
+    "Note": "Respuesta completa exige sintetizar RN-2.1 (solo en Registrado) + RN-2.8 (después, solo el analista CAU puede); una respuesta de un solo chunk queda incompleta o falsa."
+  },
+  {
+    "Question": "¿Cuál es la diferencia entre el folio del ticket y el Folio Único de Atención?",
+    "Category": "ambigua",
+    "SourceFile": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": [
+      "no cambia durante todo su ciclo de vida",
+      "El Ticket y la Solicitud de Servicio conservan su propio folio; este RF no lo elimina ni lo reemplaza"
+    ],
+    "Note": "Requiere RN-1.1 + RN-1.2 juntas para no confundir ambos folios."
+  },
+  {
+    "Question": "¿Se me notifica igual por correo que por la app cuando mi ticket cambia de estatus?",
+    "Category": "ambigua",
+    "SourceFile": "Notificaciones por Cambio de Estado.md",
+    "TargetSectionHeader": "### Tabla de disparadores de notificación por canal y por entidad",
+    "TargetContentContains": [
+      "el correo electrónico es un subconjunto del listado de Push/Centro de Notificaciones",
+      "Autorización Financiera, Autorización Rechazada, En Espera y En Validación generan Push y entrada en el Centro de Notificaciones, pero **no** generan correo"
+    ],
+    "Note": "La respuesta correcta es \"no, para Ticket el correo es un subconjunto\" — requiere la tabla + la nota aclaratoria, no solo un canal."
+  },
+  {
+    "Question": "¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso?",
+    "Category": "ambigua",
+    "SourceFile": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+    "TargetSectionHeader": "### Reglas de negocio",
+    "TargetContentContains": [
+      "El evento correspondiente al estatus vigente se marca como \"En curso\"",
+      "Un nodo que ya fue superado por una transición posterior... y cuyo estatus no es uno de los estatus terminales... no muestra ninguna insignia"
+    ],
+    "Note": "Distingue 3 casos (vigente / terminal / intermedio superado) — RN-1.2 + RN-1.11; una respuesta que solo cubra \"en curso\" vs \"finalizada\" omite el caso intermedio sin insignia."
+  },
+  {
+    "Question": "¿Cómo solicito mis vacaciones o días económicos?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Confirmado ausente en todo el corpus (grep sin resultados de \"vacacion\"/\"nómina\" en contexto de RRHH). El sistema no debe fabricar una respuesta de RRHH."
+  },
+  {
+    "Question": "¿Cómo se factura un ticket a un cliente externo?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Confirmado ausente (grep \"facturaci\"/\"factura\" sin resultados). Completamente fuera del dominio de gestión de tickets/SS."
+  },
+  {
+    "Question": "¿Puedo cancelar una encuesta de satisfacción después de haberla enviado?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": "Encuesta de Satisfacción al Cierre de Ticket.md",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Domain-adyacente pero ausente: RN-3.6 solo dice que tras enviar se reemplaza por agradecimiento y no se vuelve a solicitar captura — no define ninguna acción de editar/retractar una respuesta ya enviada. Verificado (grep \"editar\"/\"modificar\" solo aparece para administración del catálogo, no para respuestas de usuario). Pone a prueba que el sistema no invente una función de \"cancelar respuesta\" por analogía con \"Cancelar Ticket\"."
+  },
+  {
+    "Question": "¿Qué pasa si el CAU pierde la conexión a internet durante una investigación?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "El corpus son RFs/pruebas funcionales de negocio, no documentación de infraestructura/operación; este tema no está cubierto en ningún archivo."
+  },
+  {
+    "Question": "¿Puedo ver la encuesta de un ticket ajeno?",
+    "Category": "regresion-conocida",
+    "SourceFile": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+    "TargetSectionHeader": "## 7. Casos de prueba — RF-03 Encuesta de Satisfacción al Cierre de Ticket",
+    "TargetContentContains": ["Restricción por propiedad del folio", "El sistema no expone ni permite responder la encuesta de un folio ajeno"],
+    "Note": "TC-03.14. El anchor 'RN-1.18' registrado en una memoria previa no existe en el corpus (verificado con grep, cero resultados) — era una cita fabricada por el LLM en una sesión anterior. Este es el anchor real."
+  },
+  {
+    "Question": "¿Qué pasa si un ticket espera confirmación y nadie responde?",
+    "Category": "regresion-conocida",
+    "SourceFile": "RF-Monitor-Estatus-Tickets.md",
+    "TargetSectionHeader": "# RF-17 — Job para finalizar Tickets con plazo de validación vencido",
+    "TargetContentContains": ["tratando la falta de respuesta del usuario que reporta como una validación implícita \"Válido\""],
+    "Note": "RF-17, línea 1684. Confirma el hallazgo de la memoria rerank-vs-generacion: retrieval ya lo rankea #1, el fallo previo fue de generación, no de recall."
+  }
+]

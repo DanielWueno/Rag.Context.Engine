@@ -54,6 +54,7 @@ try
             services.AddTransient<StatusCommand>();
             services.AddTransient<AskCommand>();
             services.AddTransient<DoctorCommand>();
+            services.AddTransient<EvalCommand>();
         })
         .Build();
 
@@ -91,6 +92,12 @@ app.Configure(config =>
     config.AddCommand<DoctorCommand>("doctor")
         .WithDescription("Verifica las dependencias del sistema (Qdrant, ONNX, Disco).")
         .WithExample(["doctor"]);
+
+    config.AddCommand<EvalCommand>("eval")
+        .WithDescription("Corre un eval-set de ground-truth (docs/eval/*.json) y calcula recall@K por categoría.")
+        .WithExample(["eval"])
+        .WithExample(["eval", "--collection", "innovapp-docs", "--rerank"])
+        .WithExample(["eval", "--eval-set", "docs/eval/innovapp-docs.eval-set.json", "--json"]);
 
     config.SetExceptionHandler((ex, _) =>
     {

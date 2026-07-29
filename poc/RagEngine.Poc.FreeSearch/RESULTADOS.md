@@ -2,19 +2,97 @@
 
 > Estado: **experimento, no producción.** Mide recall en memoria; no toca el motor real.
 > Muestra: `Reyma.TI.Tickets.Microservice/src` (963 chunks, 599 con resumen) · 19 preguntas.
-> Config: pesos RRF código=1 · sparse=1 · resumen=1.3 · k=60 · embeddings 256 tok.
-> Reproducir: `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json detail`
+> Config base: pesos RRF código=1 · sparse=1 · resumen=1.3 · k=60 · embeddings 256 tok.
+> Config calibrada (§1.2): código=1 · **sparse=1.3 · resumen=2.5**.
+> Reproducir:
+> - Config base + rerank: `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json detail`
+> - Barrido de pesos: `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json sweep`
+> - Config calibrada + rerank: `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings-tuned.json detail`
 
-## 1. Recall@k — comparación de tres vías
+## 1. Recall@k — comparación de vías (pesos base: sparse=1, resumen=1.3)
 
-| k | código (denso solo) | cód+sparse (baseline REAL prod.) | cód+sparse+resumen (propuesta) |
-|---|---|---|---|
-| 1 | 0% | 5% | **11%** |
-| 3 | 0% | 11% | **32%** |
-| 5 | 0% | 21% | **42%** |
-| 10 | 5% | 26% | **63%** |
+| k | código (denso solo) | cód+sparse (baseline REAL prod.) | cód+sparse+resumen (propuesta) | cód+spa+res+rerank |
+|---|---|---|---|---|
+| 1 | 0% | 5% | **11%** | 21% |
+| 3 | 0% | 11% | **32%** | 47% |
+| 5 | 0% | 21% | **42%** | 53% |
+| 10 | 5% | 26% | **63%** | 68% |
 
 **Aporte del resumen sobre el híbrido real @10: +37 pts (12/19 vs 5/19), +7 preguntas, 0 regresiones.**
+
+### 1.1 Rerank (Cross-Encoder) sobre el pool fusionado
+
+Se añadió soporte real de rerank al PoC (no existía en el esqueleto original): el mismo
+`OnnxCrossEncoderReRanker` de producción, sobre el pool ancho (top TopK×3 = 30) que deja la
+fusión `cód+spa+res`, igual contrato que `QdrantSemanticRetriever` usa antes de llamar a
+`IReRanker`.
+
+**Aporte del rerank sobre cód+spa+res @10 (pesos base): +2 preguntas, -1 regresión** (neto
++1/19). El salto grande está en precisión, no en recall: @1 casi se duplica (11%→21%), @3 sube
++15pts (32%→47%). Pero rerank **reordena, no amplía el pool** — no rescata objetivos muy lejos
+del top-30 (P11 en #156, P13 en #260 siguen intactos). Confirma la hipótesis del documento
+original (§Reto B): el trabajo de rerank es precisión de ranking, no recall.
+
+### 1.2 Barrido de pesos RRF
+
+Separar el cálculo de rankings (caro: embeddings ya calculados) de la fusión RRF (barata:
+sólo Σw/(k+rank) + sort) permite barrer decenas de combinaciones de pesos en milisegundos,
+sin recalcular nada de ONNX/Ollama. Grilla: código=1.0 fijo (ancla), sparse∈{0.7,1.0,1.3},
+resumen∈{1.0,1.3,1.6,2.0,2.5,3.0,4.0} — 21 combinaciones, ordenadas por recall@10:
+
+| sparse | resumen | @1 | @3 | @5 | @10 |
+|---|---|---|---|---|---|
+| **1.3** | **2.5** | 11% | 32% | 47% | **79%** ★ |
+| 1.3 | 3.0 | 11% | 37% | 47% | 79% |
+| 1.3 | 4.0 | 11% | 42% | 53% | 74% |
+| 1.0 | 2.0 | 11% | 32% | 47% | 74% |
+| … | … | … | … | … | … |
+| 1.0 | 1.3 | 11% | 32% | 42% | 63% • (baseline) |
+| 1.0 | 1.0 | 5% | 37% | 42% | 53% |
+
+**Mejor combinación: sparse=1.3, resumen=2.5 → recall@10=79% vs. 63% del baseline (+16pts,
++3 preguntas: el flagship P1 "¿cómo levanto un ticket?" ahora en #7, P8 "¿cómo recibo un
+ticket que me asignaron?", P15 "¿cómo consulto mis solicitudes de servicio?" ahora en #9).**
+El patrón es consistente: subir sparse de 1.0→1.3 ayuda en casi toda la grilla (el vocabulario
+literal de la pregunta libre igual comparte términos con el código/constants), y resumen tiene
+un punto dulce alrededor de 2.5-3.0 — más allá de eso (4.0) empieza a ahogar código/sparse y
+recall@10 cae de nuevo (74%). Con solo 19 preguntas, ±1 pregunta ≈ ±5pts — la dirección (subir
+ambos pesos ayuda con margen de varias preguntas) es más confiable que el valor exacto del
+punto óptimo.
+
+Los objetivos genuinamente difíciles (P11 #156→#135, P13 #260→#275, P16 #75→#66) **no se
+mueven con ningún peso probado** — confirma que no es un problema de calibración sino de señal
+ausente (§4.C), consistente con lo ya documentado.
+
+### 1.3 Pesos calibrados + rerank: la interacción no era la esperada
+
+Con los pesos calibrados (sparse=1.3, resumen=2.5) y rerank sobre el pool de 30:
+
+| k | cód+spa+res (pesos calibrados) | cód+spa+res+rerank |
+|---|---|---|
+| 1 | 11% | 32% |
+| 3 | 32% | 47% |
+| 5 | 47% | 58% |
+| 10 | **79%** | 68% |
+
+**Rerank ahora resta recall@10: +0 preguntas, -2 regresiones** ("¿cómo levanto un ticket?" y
+"¿qué datos son obligatorios...?", ambas ya dentro del top-10 fusionado en #7 y #5, quedan
+fuera del top-10 tras el reordenamiento del cross-encoder). Con pesos default, rerank sumaba
+(+2/-1); con pesos buenos, resta (+0/-2) — el pool de 30 que rerank reordena ya trae más
+objetivos "cerca del borde" del top-10 gracias a los pesos, y el cross-encoder los empuja
+afuera en vez de consolidarlos.
+
+**Conclusión práctica — dos palancas, dos objetivos distintos, no intercambiables:**
+- **Recall (¿el chunk llega al contexto del LLM?)**: lo gana la calibración de **pesos**, no
+  el rerank. Pesos calibrados sin rerank (79%@10) superan a pesos default con rerank
+  (68%@10) — mismo costo de implementación (Reto B), mejor resultado para este fin.
+- **Precisión @1-5 (¿qué tan arriba queda, relevante para qué se *muestra* como fuente —
+  Reto D)**: la gana el rerank, con o sin pesos calibrados (11%→32%/47%→58% @1/@5 con pesos
+  buenos).
+
+Si el pipeline real activa ambos a la vez sin medir, el resultado neto sobre recall@10 puede
+ser peor que activar solo uno — no asumir que "más técnicas" es estrictamente mejor sin volver
+a correr `rag eval`-equivalente tras cada cambio.
 
 ## 2. ¿Qué mide "cómo respondió"?
 
@@ -154,17 +232,30 @@ Aparecen como #1–#2 en muchísimas preguntas sin ser la respuesta:
   profunda que ni denso ni sparse ni resumen surfacearon. Revisar si el resumen de esos chunks captura
   la intención de negocio, o si la pregunta es demasiado abstracta.
 
-### D. El flagship se quedó cerca
-- **P1 (¿cómo levanto un ticket?) #11:** a un puesto del top-10. Un rerank o ajustar pesos probablemente
-  lo mete.
+### D. El flagship se quedó cerca — resuelto por calibración de pesos
+- **P1 (¿cómo levanto un ticket?) #11 con pesos base.** Con pesos calibrados (sparse=1.3,
+  resumen=2.5, ver §1.2) sube a **#7 ✓** — confirmado que era una cuestión de pesos, no de
+  recuperación imposible. Rerank, en cambio, **no** lo resuelve con pesos base (ver §1.1) y con
+  pesos calibrados directamente lo saca del top-10 (ver §1.3) — fue la calibración de pesos, no
+  el rerank, la que lo rescató.
 
 ## 5. Próximos pasos (para retomar)
 1. Re-etiquetar objetivos como "cualquiera de {controller, query, handler}" por concepto → recall real.
-2. Inspeccionar resúmenes de los chunks-imán (`Ticket.cs`, `MesaAyuda...`) y de los objetivos difíciles (P11, P13).
+2. Inspeccionar resúmenes de los chunks-imán (`Ticket.cs`, `MesaAyuda...`) y de los objetivos difíciles (P11, P13, P16 — ver §1.2, no se movieron con ningún peso probado).
 3. Evaluar partir `Ticket.cs:19-309` (chunk sobre-amplio).
-4. Calibrar pesos RRF y probar `--rerank` (Cross-Encoder) para @1/@5.
+4. ~~Calibrar pesos RRF y probar `--rerank` (Cross-Encoder) para @1/@5.~~ **Hecho** — ver §1.1-1.3.
+   Resultado: pesos calibrados (sparse=1.3, resumen=2.5) ganan +16pts recall@10 (63%→79%) sin
+   rerank; rerank ayuda precisión @1-5 pero con estos pesos **resta** recall@10 (79%→68%). Las
+   dos técnicas atienden objetivos distintos (recall vs. precisión de ranking) y no se deben
+   asumir aditivas sin medir la combinación.
 5. Sólo entonces: decidir si el costo de la Ruta A (LLM por chunk en ingesta + 2º vector + caché) se justifica.
 
 ## 6. Cómo se generó
-`dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json detail`
-(resúmenes cacheados en `poc-summaries-cache.json`; corre en ~16s.)
+- Config base + rerank: `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json detail`
+- Barrido de pesos (§1.2): `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings.json sweep`
+- Config calibrada + rerank (§1.3): `dotnet run --project poc/RagEngine.Poc.FreeSearch -- poc-settings-tuned.json detail`
+
+(resúmenes cacheados en `poc-summaries-cache.json`, tanto en `bin/` como junto al `.csproj` —
+ambas copias deben existir para que corridas con ruta absoluta a un settings distinto en la
+carpeta fuente no regeneren los 963 resúmenes vía Ollama; cada corrida completa en ~16-30s con
+caché caliente.)

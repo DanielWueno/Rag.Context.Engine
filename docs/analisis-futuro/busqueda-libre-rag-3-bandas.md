@@ -1,9 +1,12 @@
 # Búsqueda libre para usuarios no técnicos — RRF a 3 bandas
 
-> **Estado: propuesta de diseño, no implementada.** Este documento consolida un análisis
-> arquitectónico exploratorio. No describe el comportamiento actual del sistema — para eso,
-> ver [`arquitectura.md`](../arquitectura.md) y [`busqueda-hibrida.md`](../busqueda-hibrida.md).
-> Las decisiones aquí están sujetas a validación mediante un PoC antes de tocar el pipeline real.
+> **Estado: propuesta de diseño, no implementada en el pipeline real.** Este documento consolida
+> un análisis arquitectónico exploratorio. No describe el comportamiento actual del sistema — para
+> eso, ver [`arquitectura.md`](../arquitectura.md) y [`busqueda-hibrida.md`](../busqueda-hibrida.md).
+> El PoC offline (paso 1) ya corrió y validó la hipótesis central, y ya se calibraron pesos RRF y
+> se probó rerank sobre el PoC (ver "Próximos pasos" y `poc/RagEngine.Poc.FreeSearch/RESULTADOS.md`
+> §1.1-1.3). Lo que sigue pendiente antes de implementar en el pipeline real (Retos A-D): re-etiquetar
+> el eval-set por concepto y resolver los chunks-imán (`Ticket.cs` sobre-amplio).
 
 ## El problema
 
@@ -46,6 +49,12 @@ Se descarta elegir una sola ruta. Se adopta:
 - **Ruta C queda reservada** como escalación acotada (un único salto extra de búsqueda, no un
   planner abierto), disparada por la señal de grounding estricto que ya existe hoy
   ("no encuentro suficiente información") — no como flujo default.
+- **Ruta A es opt-in por colección, no global** (ver Reto C): el resumen de negocio ayuda mucho
+  en repos de código (el código crudo no es legible para un usuario no técnico) pero puede ser
+  contraproducente en colecciones de docs/wikis donde el contenido ya está en lenguaje humano
+  estructurado — ahí, parafrasear con un LLM arriesga distorsionar información que ya era clara,
+  sin necesidad. La ingesta actual (sin resumen) queda intacta como default; el resumen se activa
+  por config para las colecciones que lo necesitan.
 
 ### Estrategia de búsqueda
 
@@ -166,13 +175,20 @@ score(doc) = w_resumen · 1/(k + rank_resumen(doc))
            + w_sparse  · 1/(k + rank_sparse(doc))
 ```
 
-`k = 60` (default estándar de RRF, el mismo que usa Qdrant internamente hoy). Pesos base a
-calibrar empíricamente con un set de ~20 preguntas mixtas (libres + técnicas), misma metodología
-usada para calibrar `min-score` en `busqueda-hibrida.md`:
+`k = 60` (default estándar de RRF, el mismo que usa Qdrant internamente hoy). Pesos calibrados
+empíricamente con el barrido del PoC (21 combinaciones sobre las 19 preguntas del eval-set de
+`Reyma.TI.Tickets.Microservice`, misma metodología usada para calibrar `min-score` en
+`busqueda-hibrida.md` — ver `poc/RagEngine.Poc.FreeSearch/RESULTADOS.md` §1.2):
 
-- `w_resumen = 1.3` — boost, es la rama que atiende el caso hoy desatendido (usuario no técnico).
-- `w_codigo = 1.0`, `w_sparse = 1.0` — baseline, para no regresionar el patrón ya validado en
-  `bsuite-repo`.
+- `w_codigo = 1.0` — ancla, sin cambios.
+- `w_sparse = 1.3` (antes 1.0) — subirlo ayudó de forma consistente en casi toda la grilla; el
+  vocabulario literal de la pregunta libre igual comparte términos con nombres de constantes/campos.
+- `w_resumen = 2.5` (antes 1.3) — el punto dulce medido está entre 2.5-3.0; más allá (4.0) empieza
+  a ahogar código/sparse y el recall cae de nuevo. Con pesos base (1.0/1.3) el recall@10 medido fue
+  63%; con estos pesos calibrados, 79% — +16pts, +3 preguntas, sobre la misma muestra. Con solo 19
+  preguntas el punto óptimo exacto no es confiable (±1 pregunta ≈ ±5pts), pero la dirección
+  (sparse y resumen ambos por encima del baseline) tiene margen de varias preguntas y se sostiene
+  en casi toda la grilla, no es un pico aislado.
 
 **Ajuste dinámico propuesto (no estático):** un peso fijo siempre es un compromiso. Heurística
 barata y agnóstica del framework — no depende de reglas por stack, solo de una convención
@@ -182,18 +198,104 @@ metadata de ingesta, subir `w_codigo`/`w_sparse` y bajar `w_resumen` para esa qu
 (el usuario ya conoce el vocabulario técnico); si no hay match y la query "suena" a pregunta
 libre, mantener los pesos base.
 
-**Reencuadre que baja la presión de acertar los pesos:** `operaciones.md` ya documenta que si el
-chunk correcto entra al pool ampliado (3×TopK) pero queda mal rankeado por RRF, `--rerank`
-(Cross-Encoder) normalmente lo sube. El trabajo real de los pesos no es lograr el ranking final
-perfecto — es garantizar **recall** (que el chunk correcto sobreviva dentro del pool fusionado).
-Evaluar en el PoC si activar `--rerank` por default en el "modo libre" reduce la necesidad de
-calibrar pesos con precisión.
+**Reencuadre, corregido con evidencia del PoC (`RESULTADOS.md` §1.1-1.3):** la intuición original
+era que `--rerank` (Cross-Encoder) reduciría la presión de calibrar pesos con precisión, porque
+normalmente sube el chunk correcto si ya sobrevivió dentro del pool ampliado (3×TopK). Medido, el
+resultado es más matizado — **son dos palancas para dos objetivos distintos, no sustitutas**:
+
+- Con pesos base (1.0/1.3), rerank sí suma recall@10 (+2/-1 preguntas). Pero con pesos ya
+  calibrados (1.3/2.5), rerank **resta** recall@10 (+0/-2): el pool que rerank reordena ya trae
+  más objetivos cerca del borde del top-10 gracias a los pesos, y el cross-encoder ocasionalmente
+  los empuja afuera en vez de consolidarlos.
+- El trabajo real de los **pesos** es garantizar recall (que el chunk sobreviva en el pool
+  fusionado) — y ahí es donde se midió la ganancia grande (+16pts@10, ver Fórmula propuesta arriba).
+  El trabajo real de **rerank** es precisión de ranking (@1-5, relevante para qué se muestra como
+  fuente en Reto D), no recall.
+- Implicación operativa: no activar ambos por default asumiendo que son aditivos. Antes de fijar
+  la config de producción, medir la combinación específica (pesos + rerank) sobre el eval-set real,
+  no extrapolar del efecto de cada uno por separado.
+
+### Reto C — Ingesta con resumen como opt-in por colección
+
+El documento original asumía la Ruta A como una rama que se suma para toda colección. En la
+práctica el beneficio es asimétrico:
+
+- **Repos de código** (el caso motivador: `bsuite-repo`, `Reyma.TI.Tickets.Microservice`): el
+  contenido crudo no es legible para un usuario no técnico. Aquí el resumen cierra una brecha
+  real — confirmado por el PoC (`poc/RagEngine.Poc.FreeSearch/RESULTADOS.md`): +37 pts en
+  recall@10 sobre el híbrido real, 0 regresiones.
+- **Docs/wikis** (vault de documentación de negocio ya en prosa humana): el contenido ya está en
+  el lenguaje que el usuario libre necesita. Pasar un chunk de documento — que ya es una
+  explicación humana estructurada — por un LLM que lo vuelve a resumir no cierra ninguna brecha
+  semántica y sí arriesga introducir una paráfrasis con matices distintos a los del original
+  (mismo riesgo que motiva el sentinel `SIN_CONTENIDO_DE_NEGOCIO` para chunks de puro código sin
+  significado de negocio, pero en dirección inversa: aquí el chunk ya *es* el significado de
+  negocio).
+
+**Propuesta:** flag de configuración por ingesta, no un comportamiento global fijo:
+
+```json
+"Ingestion": {
+  "EnableResumenLlm": false
+}
+```
+
+o equivalente `--con-resumen` en `rag ingest`. Default `false` — la ingesta actual (dense-código +
+sparse) no cambia para nadie que no lo pida explícitamente. Se activa por colección según el
+perfil de consulta esperado (repos de código consultados por usuarios no técnicos/soporte/QA), no
+por tipo de archivo dentro de una misma colección — evita la complejidad de decidir chunk por
+chunk si "ya es prosa humana" o no.
+
+### Reto D — Exponer el resumen al usuario, no solo usarlo para retrieval
+
+Hoy (`src/RagEngine.Api/Contracts.cs:26-41`) `SourceDto` expone `File, Section, StartLine,
+EndLine, Score, Content` — el fragmento crudo, sin ninguna explicación humana adjunta. La
+traducción técnico→negocio ocurre hoy únicamente *dentro* del texto libre de `Answer`
+(`RagGenerationService.cs`, regla 7 del system prompt), disuelta y dependiente de que el LLM de
+generación decida traducirla bien esa corrida en particular (ver
+[`rag-engine-rerank-vs-generacion`]: el LLM a veces responde con un chunk peor aunque el rerank
+haya puesto el correcto en #1).
+
+**Propuesta:** adjuntar el resumen de negocio como campo estructurado por fuente, no solo como
+insumo del vector `dense-resumen`:
+
+```csharp
+SourceDto { File, Section, StartLine, EndLine, Score, Content, Resumen? }
+```
+
+- **Costo marginal cero**: el resumen ya se genera y cachea (Reto A, `resumen_cache`) para
+  producir el vector `dense-resumen`. Exponerlo en `Sources[]` es reusar un artefacto que ya
+  existe, no generar nada nuevo.
+- **Resuelve el caso de audiencia mixta sin necesitar un concepto de "audiencia"**: un agente de
+  soporte o QA lee `Resumen` (lenguaje humano, sin código); un dev abre `Content` (el fragmento
+  real) para verificar la regla/matiz exacto que el resumen pudo simplificar u omitir. Ambos
+  salen de la misma respuesta, sin flag de audiencia ni segunda consulta.
+- **Coherente con Reto C**: si la colección no generó resumen (flag `EnableResumenLlm=false`, o
+  el chunk cayó en el sentinel `SIN_CONTENIDO_DE_NEGOCIO`), `Resumen` viaja `null` y el frontend
+  simplemente no renderiza esa sección — no hay fallback que invente una traducción on-demand.
 
 ## Próximos pasos (no ejecutados aún)
 
-1. PoC acotado: 50-100 archivos de un mismo módulo de negocio, cruzando stacks, con script
-   offline de generación de resúmenes (sin tocar el pipeline de ingesta real todavía).
-2. Gate de validación manual sobre la muestra generada, comparando calidad de resumen entre
-   lenguajes/stacks antes de comprometerse a escalar.
-3. Si el PoC valida la hipótesis: implementar el caché SQLite (Reto A) y el fusor RRF manual con
-   pesos (Reto B) en el pipeline real.
+1. ~~PoC acotado: script offline de generación de resúmenes, sin tocar el pipeline de ingesta
+   real.~~ **Hecho** — `poc/RagEngine.Poc.FreeSearch/` (rama `feat/poc-busqueda-libre-rag`,
+   mergeada). Resultado: recall@10 código+sparse+resumen 63% vs. 26% del híbrido real (baseline),
+   +37 pts, 0 regresiones, sobre 19 preguntas libres reales contra
+   `Reyma.TI.Tickets.Microservice/src`. La hipótesis se sostiene con evidencia directa, no solo
+   impresión — ver `RESULTADOS.md` del PoC.
+2. Pendientes identificados en el PoC antes de escalar (`RESULTADOS.md`, sección 5):
+   a. Re-etiquetar objetivos del eval-set por concepto (algunos "fallos" son etiquetado
+      estrecho, no fallo de recuperación real).
+   b. Inspeccionar los resúmenes de "chunks imán" que dominan el top sin ser relevantes
+      (`Ticket.cs:19-309`, chunk sobre-amplio de ~290 líneas).
+   c. Evaluar partir ese chunk sobre-amplio.
+   d. ~~Calibrar pesos RRF y probar `--rerank` para mejorar @1/@5.~~ **Hecho** —
+      `RESULTADOS.md` §1.1-1.3. Pesos calibrados (sparse=1.3, resumen=2.5): recall@10 63%→79%
+      (+16pts) sin tocar rerank. Rerank ayuda precisión @1-5 pero, con estos pesos, resta
+      recall@10 (79%→68%) — no son aditivos, ver el "Reencuadre" corregido arriba (Reto B).
+      Pendientes (a) y (b)/(c) siguen abiertos y no se tocaron en esta pasada.
+3. Si tras (2) la hipótesis se sigue sosteniendo: implementar en el pipeline real —
+   - Reto A (caché SQLite) y Reto B (fusor RRF manual con pesos).
+   - Reto C (flag `EnableResumenLlm` opt-in por colección — no activar el costo del LLM en
+     ingesta para colecciones donde no aporta, p. ej. docs/wikis ya en prosa humana).
+   - Reto D (`SourceDto.Resumen` — exponer el resumen ya generado/cacheado como campo de fuente,
+     no solo como insumo interno del vector `dense-resumen`).

@@ -1,3 +1,4 @@
+using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 
 namespace RagEngine.Poc.FreeSearch;
@@ -18,7 +19,7 @@ public sealed class RecallEvaluator
     public const string Codigo = "código";
     public const string CodSparse = "cód+sparse";
     public const string CodSpaRes = "cód+spa+res";
-    private static readonly string[] AllConfigs = [Codigo, CodSparse, CodSpaRes];
+    public const string CodSpaResRerank = "cód+spa+res+rerank";
 
     private readonly PocSettings _settings;
     public RecallEvaluator(PocSettings settings) => _settings = settings;
@@ -42,17 +43,108 @@ public sealed class RecallEvaluator
     public sealed record QuestionDetail(
         string Question, string[] TargetPaths, int? BestTargetRank, IReadOnlyList<RetrievedChunk> Top);
 
-    public Report Evaluate(
+    /// <summary>
+    /// Rankings denso-código/disperso/denso-resumen de una pregunta, YA calculados
+    /// (embeddings + coseno/dot-product) y SIN pesos aplicados. Separar esto de la
+    /// fusión RRF es lo que permite barrer decenas de combinaciones de pesos en
+    /// milisegundos — el costo real (ONNX, Ollama) no se repite por combinación.
+    /// </summary>
+    public sealed record QuestionRankData(
+        string Question,
+        HashSet<int> Targets,
+        Dictionary<int, int> CodeRank,
+        Dictionary<int, int> SparseRank,
+        Dictionary<int, int> SummaryRank);
+
+    public sealed record WeightSweepResult(
+        double WeightCode, double WeightSparse, double WeightResumen,
+        IReadOnlyDictionary<int, double> RecallByK, int Solved, int Questions);
+
+    /// <summary>
+    /// Precalcula, una sola vez, los tres rankings por pregunta (código/sparse/resumen).
+    /// Llamar antes de barrer pesos con <see cref="EvaluateWeights"/>.
+    /// </summary>
+    public List<QuestionRankData> PrepareRankData(
         IReadOnlyList<IndexedChunk> index,
         IReadOnlyList<EvalItem> evalSet,
         IReadOnlyList<float[]> questionVectors,
         IReadOnlyList<Dictionary<uint, float>> questionSparse)
     {
+        var result = new List<QuestionRankData>(evalSet.Count);
+        foreach (var (item, qi) in evalSet.Select((it, i) => (it, i)))
+        {
+            var qVec = questionVectors[qi];
+            var qSparse = questionSparse[qi];
+
+            var targets = new HashSet<int>();
+            for (int c = 0; c < index.Count; c++)
+                if (item.Matches(index[c].Chunk))
+                    targets.Add(c);
+
+            result.Add(new QuestionRankData(
+                item.Question,
+                targets,
+                ToRankMap(RankDense(index, qVec, useSummary: false)),
+                ToRankMap(RankSparse(index, qSparse)),
+                ToRankMap(RankDense(index, qVec, useSummary: true))));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Recall@k de la fusión de 3 bandas (cód+spa+res) para UNA combinación de pesos,
+    /// sobre rankings ya precalculados. Barato: sólo Σ w/(k+rank) y un sort por
+    /// pregunta — pensado para llamarse en un bucle sobre una grilla de pesos.
+    /// </summary>
+    public WeightSweepResult EvaluateWeights(
+        IReadOnlyList<QuestionRankData> rankData,
+        int chunkCount,
+        double weightCode, double weightSparse, double weightResumen,
+        int rrfK, IReadOnlyList<int> kValues)
+    {
+        var hits = kValues.ToDictionary(k => k, _ => 0);
+        int maxK = kValues.Count == 0 ? 10 : kValues.Max();
+        int solved = 0;
+
+        foreach (var q in rankData)
+        {
+            var fused = RankByRrf(chunkCount, rrfK,
+                [(q.CodeRank, weightCode), (q.SparseRank, weightSparse), (q.SummaryRank, weightResumen)]);
+
+            foreach (var k in kValues)
+                if (HitAtK(fused, q.Targets, k)) hits[k]++;
+            if (HitAtK(fused, q.Targets, maxK)) solved++;
+        }
+
+        int n = rankData.Count;
+        return new WeightSweepResult(weightCode, weightSparse, weightResumen,
+            kValues.ToDictionary(k => k, k => n == 0 ? 0.0 : (double)hits[k] / n), solved, n);
+    }
+
+    /// <param name="reranker">
+    /// Si no es null, añade la config <see cref="CodSpaResRerank"/>: re-puntúa el pool
+    /// fusionado de cód+spa+res (widened a <paramref name="rerankTopK"/>×3, igual que
+    /// producción) con el Cross-Encoder ONNX real y recorta a <paramref name="rerankTopK"/>.
+    /// Responde la pregunta abierta del documento: si el recall ya es bueno, ¿el rerank
+    /// reduce la necesidad de calibrar los pesos de RRF con precisión?
+    /// </param>
+    public async Task<Report> EvaluateAsync(
+        IReadOnlyList<IndexedChunk> index,
+        IReadOnlyList<EvalItem> evalSet,
+        IReadOnlyList<float[]> questionVectors,
+        IReadOnlyList<Dictionary<uint, float>> questionSparse,
+        IReRanker? reranker,
+        int rerankTopK,
+        CancellationToken ct = default)
+    {
         var kValues = _settings.RecallAtK.Distinct().OrderBy(k => k).ToArray();
         var maxK = kValues.Length == 0 ? 10 : kValues.Max();
 
-        var hits = AllConfigs.ToDictionary(c => c, _ => kValues.ToDictionary(k => k, _ => 0));
-        var solved = AllConfigs.ToDictionary(c => c, _ => new HashSet<string>());
+        var configs = new List<string> { Codigo, CodSparse, CodSpaRes };
+        if (reranker is not null) configs.Add(CodSpaResRerank);
+
+        var hits = configs.ToDictionary(c => c, _ => kValues.ToDictionary(k => k, _ => 0));
+        var solved = configs.ToDictionary(c => c, _ => new HashSet<string>());
         var details = new List<QuestionDetail>();
         const int topN = 6;
 
@@ -79,7 +171,16 @@ public sealed class RecallEvaluator
                     [(codeRank, _settings.WeightCode), (sparseRank, _settings.WeightSparse), (summaryRank, _settings.WeightResumen)]),
             };
 
-            foreach (var cfg in AllConfigs)
+            if (reranker is not null)
+            {
+                var pool = BuildPool(ranked[CodSpaRes], index, rerankTopK * 3);
+                var rerankedResults = await reranker.ReRankAsync(item.Question, pool, rerankTopK, ct);
+                ranked[CodSpaResRerank] = rerankedResults
+                    .Select(res => int.Parse(res.ChunkId, System.Globalization.CultureInfo.InvariantCulture))
+                    .ToArray();
+            }
+
+            foreach (var cfg in configs)
             {
                 foreach (var k in kValues)
                     if (HitAtK(ranked[cfg], targets, k)) hits[cfg][k]++;
@@ -105,11 +206,35 @@ public sealed class RecallEvaluator
         }
 
         int n = evalSet.Count;
-        var recall = AllConfigs.ToDictionary(
+        var recall = configs.ToDictionary(
             c => c, c => kValues.ToDictionary(k => k, k => n == 0 ? 0.0 : (double)hits[c][k] / n));
 
         return new Report(n, index.Count, index.Count(c => c.SummaryVector is not null),
-            maxK, AllConfigs, recall, solved, details);
+            maxK, configs, recall, solved, details);
+    }
+
+    /// <summary>
+    /// Toma el pool ancho (top <paramref name="poolSize"/> del fusor RRF) y lo empaqueta
+    /// como <see cref="RetrievalResult"/> para el Cross-Encoder — mismo contrato que
+    /// <c>QdrantSemanticRetriever.SearchAsync</c> usa antes de llamar a <c>IReRanker</c>.
+    /// ChunkId es el índice del chunk en <paramref name="index"/> (no el Guid real): el
+    /// PoC no persiste en Qdrant, así que basta con un id estable dentro de la corrida.
+    /// </summary>
+    private static List<RetrievalResult> BuildPool(int[] fusedOrder, IReadOnlyList<IndexedChunk> index, int poolSize)
+    {
+        var take = Math.Min(poolSize, fusedOrder.Length);
+        var pool = new List<RetrievalResult>(take);
+        for (int i = 0; i < take; i++)
+        {
+            var idx = fusedOrder[i];
+            var chunk = index[idx].Chunk;
+            pool.Add(new RetrievalResult(
+                idx.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                chunk.Content,
+                0f,
+                chunk.Metadata));
+        }
+        return pool;
     }
 
     private static int[] RankDense(IReadOnlyList<IndexedChunk> index, float[] qVec, bool useSummary)
@@ -134,8 +259,10 @@ public sealed class RecallEvaluator
 
     /// <summary>RRF ponderado sobre N ramas: score(doc) = Σ_r w_r / (k + rank_r(doc)).</summary>
     private int[] RankByRrf(int count, (Dictionary<int, int> Rank, double Weight)[] branches)
+        => RankByRrf(count, _settings.RrfK, branches);
+
+    private static int[] RankByRrf(int count, double k, (Dictionary<int, int> Rank, double Weight)[] branches)
     {
-        double k = _settings.RrfK;
         var scores = new Dictionary<int, double>(count);
         for (int c = 0; c < count; c++)
         {

@@ -4,11 +4,13 @@
 > commiteados en `c3593a1` (rama `feat/rag-api-selector-coleccion`). Reto D (`SourceDto.Resumen`)
 > implementado y verificado en esta sesión — ver "Sesión 2026-07-31" al final de este documento.
 > El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño original.
-> Pendientes restantes: ítem 5 de "Sesión 2026-07-30" (limpiar colecciones de prueba en Qdrant) y
-> remedir throughput antes de escalar a `bsuite-repo`. El ítem 4 (re-etiquetado del eval-set) se
-> resolvió y el fix de chunk-imán ya se verificó re-ingestando `bsuite-auditorias-test` — ver
-> "Sesión 2026-07-31 (continuación)" y "(continuación 2)" al final. Recall@10 real:
-> **56% → 62% (re-etiquetado) → 69% (re-ingesta con el fix de chunk-imán)**.
+> Pendientes restantes: limpiar `bsuite-auditorias-baseline` (**hecho**) y remedir throughput antes
+> de escalar a `bsuite-repo`. El ítem 4 (re-etiquetado del eval-set) se resolvió y el fix de
+> chunk-imán ya se verificó re-ingestando `bsuite-auditorias-test` — ver "Sesión 2026-07-31
+> (continuación)" y "(continuación 2)" al final. Además, se encontró y arregló un bug relacionado
+> (metadata `StartLine`/`EndLine` engañosa en chunks agrupados) — ver "(continuación 3)". Recall@10
+> real: **56% → 62% (re-etiquetado) → 69% (fix de chunk-imán) → 69% (fix de metadata, sin
+> regresión, recall@3/@5 mejoran)**.
 
 ## El problema
 
@@ -563,3 +565,96 @@ investigado en la continuación anterior); ninguno tiene relación con chunking.
 fix de chunk-imán vale la pena (net +2 preguntas) pero no es una solución completa ni libre de
 efectos secundarios menores — no asumir que arregla el 100% de las propiedades enterradas, y
 esperar algo de reordenamiento marginal en preguntas no relacionadas al re-ingestar.
+
+---
+
+## Sesión 2026-07-31 (continuación 3) — Bug de metadata StartLine/EndLine engañosa: análisis, plan y fix
+
+Al inspeccionar directamente los chunks reales en Qdrant tras el fix de chunk-imán, se encontró un
+bug relacionado pero distinto: `BuildGroupedPropertiesChunks`/`BuildClassHeaderChunks` agrupan
+miembros filtrados por tipo (`OfType<PropertyDeclarationSyntax>()`/`OfType<FieldDeclarationSyntax>()`)
+usando solo el presupuesto de tokens del texto de esos miembros — sin considerar que `OfType<T>()`
+salta silenciosamente cualquier otro miembro (métodos, campos, clases anidadas) intercalado en el
+archivo real. El `StartLine`/`EndLine` reportado abarcaba desde el primer hasta el último miembro
+del grupo, incluyendo huecos de cientos de líneas que no estaban en el `Content` real del chunk —
+expuesto al usuario final vía `SourceDto.StartLine/EndLine` (`Contracts.cs:29-30,43-44`).
+
+Evidencia inicial (contra `bsuite-auditorias-test`, 285 archivos): 12/171 chunks `Property` y
+61/268 `Class` con este patrón (peor caso: 385 líneas reportadas vs. 15 reales).
+
+### Análisis y plan (antes de tocar código)
+
+Se usó un agente Plan para poner a prueba el diseño contra edge cases reales de Roslyn
+(partial classes, records posicionales, `#region`, clases anidadas) usando código real de
+`BusinessSuite.Xaf` — ningún caso rompió la premisa central. Plan aprobado: particionar primero
+por contigüidad real (dos miembros del mismo tipo comparten grupo solo si son adyacentes por
+índice en `typeDecl.Members`, la lista completa sin filtrar — no un umbral arbitrario de líneas),
+y aplicar el split-por-presupuesto ya existente dentro de cada partición, no al revés.
+
+### Qué se implementó
+
+- `RoslynCSharpChunkingStrategy.cs` — nuevo helper `PartitionIntoContiguousRuns<TMember>` (una
+  pasada O(n) sobre `typeDecl.Members`, sin diccionario de índices). Usado en
+  `BuildGroupedPropertiesChunks` y `BuildClassHeaderChunks`.
+- **Segundo bug encontrado durante la verificación** (no en el plan original): `BuildClassHeaderChunks`
+  fusionaba el header de la clase con el primer grupo de campos, forzando `StartLine` a la línea de
+  la declaración de la clase — incorrecto siempre que hay propiedades/métodos antes del primer campo
+  (común en este codebase), y para clases sin ningún campo, `EndLine` abarcaba **toda la clase**.
+  Fix: la declaración de la clase es **siempre** su propio chunk (nunca fusionado con campos),
+  usando `typeDecl.OpenBraceToken` como límite real de fin — nunca el cuerpo completo de la clase.
+- **Edge case encontrado y corregido**: `record Foo(...);` terminado en `;` (sin llaves, un caso
+  real encontrado en `BusinessSuite.Xaf.Blazor.Server`, no solo teórico) no tiene `OpenBraceToken`
+  real — usar `.IsMissing` no lo detecta (Roslyn no lo marca como "missing", es una producción
+  gramatical válida sin ese token); se corrigió chequeando `.IsKind(SyntaxKind.OpenBraceToken)`.
+
+### Verificación (script standalone, `.scratch-chunk-verify/`, patrón ya usado antes)
+
+Corrido sobre **todo** `BusinessSuite.Xaf/src` (2088 archivos, no solo el subset de
+`bsuite-auditorias-test`) — reveló que el bug es mucho más extendido de lo conocido: **520/3006
+(17%) chunks Property y 1470/2637 (56%) chunks Class** con mismatch antes del fix (casos extremos
+de hasta 3082 líneas de gap en archivos `.Designer.cs` autogenerados).
+
+Tras el fix: **Property 317/3335, Class 26/3739** — pero un análisis estructural adicional (comparar
+contra líneas no-en-blanco del archivo fuente dentro del rango reportado, no solo contra
+`Content.Split('\n').Length`) mostró que la enorme mayoría de estos "mismatches" restantes son
+**artefactos benignos del propio criterio de medición**, no el bug original:
+- Líneas en blanco entre miembros agrupados: `Content` las compacta (`string.Join('\n', ...trim...)`)
+  pero el rango de líneas real las cuenta — benigno, no pierde ni oculta contenido.
+- Comentarios `///` y bloques de código comentado (`//...`) inmediatamente antes de un miembro:
+  Roslyn los adjunta como trivia al siguiente token real; `ToFullString()` los incluye pero
+  `GetLocation()`/`Span` no — benigno en la dirección opuesta al bug original (el contenido
+  mostrado es *más* de lo que el rango sugiere, nunca menos).
+
+Con ese chequeo estructural, **solo 2 de 7074 chunks Property+Class (0.03%) son mismatches
+genuinos** — ambos explicados por una causa **distinta y preexistente** (no introducida por este
+fix ni por `c3593a1`): la reconstrucción de `declarationText` (atributos + firma de la clase) no
+captura líneas de atributos comentados intercalados entre atributos reales, un problema de
+contenido/reconstrucción de la declaración, no de agrupación — documentado aquí como hallazgo
+separado, **no corregido en esta pasada** (fuera del alcance de este fix específico).
+
+### Blast radius (comparación en memoria, sin tocar Qdrant)
+
+Dump de `(archivo, tipo, líneas, Id)` con el código viejo (vía `git stash`) vs. el nuevo, sobre
+todo `BusinessSuite.Xaf/src`: **26.907 → 28.338 chunks (+5.3%, no explosión combinatoria)**; 6.4%
+de los IDs viejos quedan huérfanos; 909/2088 archivos (43.5%) tienen al menos 1 chunk distinto.
+Confirma la predicción del análisis previo: el aumento es proporcional al subconjunto ya-roto, no
+un blowup de todo el corpus.
+
+### Smoke test real (Qdrant)
+
+Re-ingestado `bsuite-auditorias-test` (borrado + 3 carpetas, `--con-resumen`): 1.677 chunks
+(344+15+1.318, antes 1.677→1.677 con el fix anterior — el conteo sube levemente por los nuevos
+splits). `rag eval`: **recall@10 se mantiene en 69% (11/16), sin regresión** — mismas 5 preguntas
+fallando que antes. **recall@3 mejoró 44%→50%, recall@5 mejoró 56%→62%** — el fix de metadata no
+perjudica el retrieval y de hecho ayuda al ranking fino.
+
+**How to apply:** el fix es de **exactitud de metadata/provenance** (lo que se le muestra al
+usuario como "de dónde viene" la respuesta), no de recall — verificado que no regresiona nada.
+Antes de escalar a `bsuite-repo`, aplicar este mismo fix ahí también (requiere `--force`, igual que
+el fix de chunk-imán, así que conviene aplicarlos juntos en la misma re-ingesta, no por separado).
+El hallazgo separado (reconstrucción de `declarationText` con atributos comentados) queda como
+pendiente menor, no bloqueante, para una sesión futura si se decide perseguir el último 0.03%.
+
+Sin commitear al cierre de esta sesión: `RoslynCSharpChunkingStrategy.cs` (el fix) y
+`.scratch-chunk-verify/` (script de verificación, no forma parte del repo — mismo patrón que otros
+`.scratch-*` ya presentes).

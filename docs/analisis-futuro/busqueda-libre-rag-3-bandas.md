@@ -1,12 +1,11 @@
 # Búsqueda libre para usuarios no técnicos — RRF a 3 bandas
 
-> **Estado (2026-07-30): implementado en el pipeline real (Retos A-C) y verificado en producción
-> real, pero SIN COMMITEAR todavía.** Rama `feat/rag-api-selector-coleccion`, todo el código nuevo
-> está en el working tree sin `git add`/`commit`. Ver "Sesión 2026-07-30" al final de este documento
-> para el estado completo, lo verificado, y los pendientes exactos para retomar en una sesión nueva
-> — incluye un hallazgo de chunking (no relacionado al resumen) que conviene resolver antes de
-> commitear. El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño
-> original; lo que sigue pendiente es Reto D y los ítems listados en "Sesión 2026-07-30".
+> **Estado (2026-07-31): Retos A-D implementados y verificados en producción real.** Retos A-C
+> commiteados en `c3593a1` (rama `feat/rag-api-selector-coleccion`). Reto D (`SourceDto.Resumen`)
+> implementado y verificado en esta sesión — ver "Sesión 2026-07-31" al final de este documento.
+> El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño original.
+> Pendientes restantes: los ítems 4-6 listados en "Sesión 2026-07-30" (re-etiquetar eval-set,
+> limpiar colecciones de prueba en Qdrant, remedir throughput antes de escalar a `bsuite-repo`).
 
 ## El problema
 
@@ -297,9 +296,8 @@ SourceDto { File, Section, StartLine, EndLine, Score, Content, Resumen? }
    (Retos A-C), ver "Sesión 2026-07-30" abajo para el detalle completo.
    - ~~Reto A (caché SQLite) y Reto B (fusor RRF manual con pesos).~~ **Hecho.**
    - ~~Reto C (flag `EnableResumenLlm` opt-in por colección...).~~ **Hecho** (`--con-resumen`).
-   - Reto D (`SourceDto.Resumen` — exponer el resumen ya generado/cacheado como campo de fuente,
-     no solo como insumo interno del vector `dense-resumen`). **Sigue pendiente, a propósito** —
-     ver "Pendientes" abajo.
+   - ~~Reto D (`SourceDto.Resumen` — exponer el resumen ya generado/cacheado como campo de fuente,
+     no solo como insumo interno del vector `dense-resumen`).~~ **Hecho** — ver "Sesión 2026-07-31".
 
 ---
 
@@ -402,3 +400,59 @@ búsqueda híbrida de 2 bandas ya en producción) pero se descubrió mientras se
    ahí exige `--force` (recrea la colección desde cero) y ronda las 13.6h estimadas con
    concurrencia=2 sin el fix de chunking; con el fix, conviene volver a medir throughput sobre una
    muestra antes de comprometerse a esa corrida completa.
+
+---
+
+## Sesión 2026-07-31 — Reto D implementado y verificado
+
+Expuesto `Resumen` como campo estructurado de fuente, reusando el artefacto que Reto A ya genera y
+cachea (costo marginal cero, sin llamadas nuevas al LLM).
+
+### Qué se implementó
+
+- `src/RagEngine.Core/Domain/RetrievalResult.cs` — nuevo campo `ContentHash` (sibling de
+  `Metadata`, igual que en `CodeChunk`), no en `CodeChunkMetadata` (ese tipo lo construyen 4
+  `IChunkingStrategy` distintas que no conocen el hash del chunk completo).
+- `QdrantSemanticRetriever.MapToRetrievalResult` — lee `content_hash` del payload (ya se escribía
+  ahí para todo chunk, con o sin resumen; solo faltaba mapearlo).
+- `src/RagEngine.Api/Contracts.cs` — `SourceDto` gana el campo `Resumen`; `SourceDto.From` acepta
+  un segundo parámetro opcional `resumen`.
+- `src/RagEngine.Api/Program.cs` — nuevo helper `BuildSourcesAsync` que, para cada
+  `RetrievalResult`, consulta `SummaryCache.TryGetAsync(r.ContentHash)` en paralelo
+  (`Task.WhenAll`) y arma los `SourceDto`. Reemplaza los 3 call-sites que hacían
+  `results.Select(SourceDto.From)` (`/api/search`, `/api/ask`, `/api/ask/stream`).
+- `src/RagEngine.Api/wwwroot/index.html` — `buildSourcesFragment` renderiza `s.resumen` (si no es
+  null) en un bloque destacado antes del fragmento de código crudo; sin fallback si es null.
+- `poc/RagEngine.Poc.FreeSearch/RecallEvaluator.cs` — actualizado el único otro call-site de
+  `new RetrievalResult(...)` para pasar `chunk.ContentHash` (rompía de compilar si no).
+
+### Hallazgo real durante la verificación (ya corregido)
+
+El contenedor Docker `rag-api` (`infra/docker-compose.yml`) **no tenía ningún volumen montado para
+la caché SQLite de resúmenes** (`~/Library/Application Support/rag-engine/summary-cache.sqlite3`
+en el host, escrita por `rag ingest --con-resumen` corriendo nativo). Sin el mount, `SummaryCache`
+dentro del contenedor abría un sqlite3 vacío y todo lookup sería miss — `Resumen` habría viajado
+`null` para absolutamente todo, incluso en colecciones con resumen real. Fix: se agregó el volumen
+(montado read-write, no `:ro` — el modo WAL de SQLite necesita escribir `*-wal`/`*-shm` incluso
+para lecturas) más `Ingestion__ResumenCachePath` apuntando a la ruta montada.
+
+### Verificación en producción real
+
+- `dotnet build` sobre toda la solución: 0 errores.
+- `docker compose build rag-api && up -d rag-api`: rebuild limpio, contenedor arriba.
+- `/api/search` contra `bsuite-auditorias-test` (con resumen): las 3 fuentes devueltas traen
+  `resumen` poblado con texto de negocio real (verificado con la pregunta
+  "¿Qué significa que un hallazgo de auditoría sea recurrente?" del eval-set).
+- `/api/search` contra `innovapp-docs` (sin `--con-resumen`, vault de docs): `resumen` viaja `null`
+  para ambas fuentes, como se esperaba — sin fallback que invente una traducción.
+- `/api/ask` contra `bsuite-auditorias-test`: la generación de la respuesta no se vio afectada, y
+  `Sources[]` trae `resumen` igual que en `/api/search`.
+- El HTML servido por el contenedor (`curl http://localhost:5080/`) confirma que
+  `wwwroot/index.html` actualizado es el que efectivamente se sirve (no quedó cacheado un build
+  viejo).
+
+### Pendientes para la próxima sesión
+
+Los mismos ítems 4-6 de la sesión anterior (re-etiquetado del eval-set, limpieza de colecciones de
+prueba en Qdrant, remedir throughput antes de escalar a `bsuite-repo`) — nada de esto tocó Reto D.
+Este trabajo (Reto D + fix del volumen de Docker) sigue **sin commitear** al cierre de esta sesión.

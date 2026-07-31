@@ -303,7 +303,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
                 EndLine: (int)p["end_line"].IntegerValue,
                 LastModified: DateTimeOffset.Parse(p["last_modified"].StringValue),
                 RepositoryName: p["repository_name"].StringValue
-            )
+            ),
+            ContentHash: p["content_hash"].StringValue
         );
     }
 }

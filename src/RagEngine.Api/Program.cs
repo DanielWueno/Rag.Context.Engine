@@ -6,6 +6,7 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
 using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Services.Summary;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -77,6 +78,20 @@ try
         isMetaIntent ||
         (rerank && results.Count > 0 && results[0].SimilarityScore < ragOptions.LowConfidenceThreshold);
 
+    // El resumen de negocio ya se generó y cacheó en ingesta (Fase 2, opt-in por colección
+    // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
+    // fuente, sin generar nada nuevo. Miss de caché (colección sin resumen, o chunk que cayó
+    // en el sentinel SIN_CONTENIDO_DE_NEGOCIO) simplemente deja Resumen en null.
+    static async Task<List<SourceDto>> BuildSourcesAsync(
+        IReadOnlyList<RetrievalResult> results,
+        SummaryCache summaryCache,
+        CancellationToken cancellationToken)
+    {
+        var resumenes = await Task.WhenAll(
+            results.Select(r => summaryCache.TryGetAsync(r.ContentHash, cancellationToken)));
+        return results.Zip(resumenes, (r, hit) => SourceDto.From(r, hit.Summary)).ToList();
+    }
+
     app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 
     // Alimenta el selector de colección de la página — así el equipo no
@@ -93,6 +108,7 @@ try
     app.MapPost("/api/search", async (
         RagQueryRequest request,
         ISemanticRetriever retriever,
+        SummaryCache summaryCache,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -117,7 +133,7 @@ try
             cancellationToken);
         stopwatch.Stop();
 
-        var sources = results.Select(SourceDto.From).ToList();
+        var sources = await BuildSourcesAsync(results, summaryCache, cancellationToken);
 
         queryLogger.LogInformation(
             "QueryEvent {@Entry}",
@@ -143,6 +159,7 @@ try
         IRagGenerationService generation,
         IOptions<RagGenerationOptions> ragOptions,
         IMetaIntentDetector metaIntentDetector,
+        SummaryCache summaryCache,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -190,7 +207,7 @@ try
         var sources = ShouldSuppressSources(isMetaIntent, rerank, retrievedSources, ragOptions.Value)
                 || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
             ? []
-            : retrievedSources.Select(SourceDto.From).ToList();
+            : await BuildSourcesAsync(retrievedSources, summaryCache, cancellationToken);
         stopwatch.Stop();
 
         queryLogger.LogInformation(
@@ -224,6 +241,7 @@ try
         IRagGenerationService generation,
         IOptions<RagGenerationOptions> ragOptions,
         IMetaIntentDetector metaIntentDetector,
+        SummaryCache summaryCache,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -280,7 +298,7 @@ try
         // interno del servicio de generación.
         var sources = ShouldSuppressSources(isMetaIntent, rerank, results, ragOptions.Value)
             ? []
-            : results.Select(SourceDto.From).ToList();
+            : await BuildSourcesAsync(results, summaryCache, cancellationToken);
 
         // El front pinta estas tarjetas de inmediato (con su fragmento) y usa
         // los primeros títulos como el "extracto de contexto" del status —

@@ -5,12 +5,14 @@
 > implementado y verificado en esta sesión — ver "Sesión 2026-07-31" al final de este documento.
 > El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño original.
 > Pendientes restantes: limpiar `bsuite-auditorias-baseline` (**hecho**) y remedir throughput antes
-> de escalar a `bsuite-repo`. El ítem 4 (re-etiquetado del eval-set) se resolvió y el fix de
-> chunk-imán ya se verificó re-ingestando `bsuite-auditorias-test` — ver "Sesión 2026-07-31
+> de escalar a `bsuite-repo` (**hecho** — ver "(continuación 4)": ~14h estimadas, sin cambio
+> significativo vs. la estimación previa). El ítem 4 (re-etiquetado del eval-set) se resolvió y el
+> fix de chunk-imán ya se verificó re-ingestando `bsuite-auditorias-test` — ver "Sesión 2026-07-31
 > (continuación)" y "(continuación 2)" al final. Además, se encontró y arregló un bug relacionado
 > (metadata `StartLine`/`EndLine` engañosa en chunks agrupados) — ver "(continuación 3)". Recall@10
 > real: **56% → 62% (re-etiquetado) → 69% (fix de chunk-imán) → 69% (fix de metadata, sin
-> regresión, recall@3/@5 mejoran)**.
+> regresión, recall@3/@5 mejoran)**. Escalar a `bsuite-repo` queda como decisión pendiente de
+> agendar (corrida de varias horas), no como bloqueo técnico.
 
 ## El problema
 
@@ -655,6 +657,37 @@ el fix de chunk-imán, así que conviene aplicarlos juntos en la misma re-ingest
 El hallazgo separado (reconstrucción de `declarationText` con atributos comentados) queda como
 pendiente menor, no bloqueante, para una sesión futura si se decide perseguir el último 0.03%.
 
-Sin commitear al cierre de esta sesión: `RoslynCSharpChunkingStrategy.cs` (el fix) y
-`.scratch-chunk-verify/` (script de verificación, no forma parte del repo — mismo patrón que otros
-`.scratch-*` ya presentes).
+Commiteado al cierre de esta sesión (`f690c63`, sin push): `RoslynCSharpChunkingStrategy.cs` (el
+fix) y este doc. `.scratch-chunk-verify/` (script de verificación) queda sin commitear, no forma
+parte del repo — mismo patrón que otros `.scratch-*` ya presentes.
+
+---
+
+## Sesión 2026-07-31 (continuación 4) — Throughput medido antes de escalar a `bsuite-repo`
+
+Pendiente #6 de "Sesión 2026-07-30": medir throughput real con ambos fixes (chunk-imán +
+metadata) ya aplicados, antes de comprometerse a la ingesta completa de `bsuite-repo` (~20k
+puntos, sin vector de resumen todavía).
+
+**Muestra usada:** `REYMA.XAFR1PV.GestionProyectos` (61 archivos, módulo no ingerido antes en
+ninguna colección — measurement en frío, sin ningún hit de `SummaryCache`). Ingestado con
+`--con-resumen` en una colección de prueba desechable (`bsuite-repo-throughput-sample`, borrada
+al cerrar la medición — cumplió su propósito, no aporta como referencia permanente).
+
+**Resultado:** 573 chunks, 391 resúmenes generados (182 sentinel `SIN_CONTENIDO_DE_NEGOCIO`),
+**16:58.58 (1018.6s) → 0.56 chunks/seg**.
+
+**Extrapolación:** sobre los 28.338 chunks totales medidos para todo `BusinessSuite.Xaf/src` (ver
+"continuación 3", blast radius) → **~14 horas** para la ingesta completa de `bsuite-repo`.
+`Auditorias`/`Compras/Utils`/`Base` (1.677 chunks, ~6% del total) ya tienen resumen cacheado por
+`bsuite-auditorias-test`, así que esa porción se saltaría el LLM — pero al ser una fracción chica
+del total, no cambia la estimación de forma material.
+
+**Conclusión: los fixes de esta sesión no cambiaron significativamente el tiempo estimado**
+(~13.6h antes de ambos fixes → ~14h ahora). El +5.3% de chunks que añaden los fixes se compensa
+aproximadamente con la latencia por chunk medida; el orden de magnitud de la corrida sigue siendo
+el mismo.
+
+**How to apply:** escalar a `bsuite-repo` sigue siendo una decisión de agendar una ventana larga
+(overnight), no un bloqueo técnico ni algo que estos fixes hayan encarecido. Ningún pendiente
+técnico impide arrancarla cuando se decida.

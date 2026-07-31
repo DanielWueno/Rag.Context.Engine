@@ -117,8 +117,11 @@
     "Category": "bsuite-auditorias",
     "SourceFile": "EjecucionAuditoriaViewController.cs",
     "TargetSectionHeader": null,
-    "TargetContentContains": ["Importar auditorías desde un archivo Excel."],
-    "Note": "Acción 'Importar Auditorías'."
+    "TargetContentContains": [
+      "Importar auditorías desde un archivo Excel.",
+      "var criterios = aux.Checklist.ChecklistCriterioGrupos.SelectMany(x => x.ChecklistCriterioGrupoCriterios).ToList();"
+    ],
+    "Note": "Acción 'Importar Auditorías' (ToolTip, definido en el constructor, líneas ~94-97) o su método ImportarAuditorias_Execute (lógica real de importación, chunk real recuperado: líneas 566-591) — ambos son respuestas válidas a 'cómo importo'; el runner ya evalúa TargetContentContains con OR (EvalCommand.cs:177), agregar el segundo anchor no requiere cambios de código. Re-etiquetado 2026-07-31: verificado con `rag search` real contra bsuite-auditorias-test — el sistema SÍ recupera el chunk de Execute en el top-10 pero antes no contaba como hit porque el anchor original (la tooltip, línea 97) vive en un chunk distinto (el constructor) que no entra al top-10. Cuidado: el string 'Existen errores en la importación...' (línea 561) NO sirve como anchor pese a estar en el mismo método — cae fuera del rango real del chunk (566-591), verificado leyendo el chunker; se usó en su lugar una línea que sí cae dentro del rango confirmado por rag search."
   },
   {
     "Question": "¿Qué significa recibir el plan de acción PDCA de una auditoría?",

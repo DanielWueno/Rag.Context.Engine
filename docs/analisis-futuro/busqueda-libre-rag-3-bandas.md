@@ -4,8 +4,11 @@
 > commiteados en `c3593a1` (rama `feat/rag-api-selector-coleccion`). Reto D (`SourceDto.Resumen`)
 > implementado y verificado en esta sesión — ver "Sesión 2026-07-31" al final de este documento.
 > El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño original.
-> Pendientes restantes: los ítems 4-6 listados en "Sesión 2026-07-30" (re-etiquetar eval-set,
-> limpiar colecciones de prueba en Qdrant, remedir throughput antes de escalar a `bsuite-repo`).
+> Pendientes restantes: ítems 5-6 de "Sesión 2026-07-30" (limpiar colecciones de prueba en Qdrant,
+> remedir throughput antes de escalar a `bsuite-repo`). El ítem 4 (re-etiquetado del eval-set) se
+> resolvió — ver "Sesión 2026-07-31 (continuación)" al final: de 7 preguntas sin hit, 6 son misses
+> genuinos de retrieval (2 por el bug de chunk-imán de propiedades, 4 por gap semántico real) y 1
+> era etiquetado estrecho, ya corregido. Recall@10 real sobre `bsuite-auditorias-test`: **56% → 62%**.
 
 ## El problema
 
@@ -453,6 +456,68 @@ para lecturas) más `Ingestion__ResumenCachePath` apuntando a la ruta montada.
 
 ### Pendientes para la próxima sesión
 
-Los mismos ítems 4-6 de la sesión anterior (re-etiquetado del eval-set, limpieza de colecciones de
-prueba en Qdrant, remedir throughput antes de escalar a `bsuite-repo`) — nada de esto tocó Reto D.
-Este trabajo (Reto D + fix del volumen de Docker) sigue **sin commitear** al cierre de esta sesión.
+Ítems 5-6 de la sesión anterior (limpieza de colecciones de prueba en Qdrant, remedir throughput
+antes de escalar a `bsuite-repo`) — nada de esto tocó Reto D. El ítem 4 (re-etiquetado del eval-set)
+se resolvió en esta misma sesión, ver "Sesión 2026-07-31 (continuación)" más abajo.
+
+---
+
+## Sesión 2026-07-31 (continuación) — Re-etiquetado del eval-set: resultado
+
+Se investigaron las 7 preguntas sin hit@10 de `docs/eval/bsuite-auditorias.eval-set.json` corriendo
+`rag search` real contra `bsuite-auditorias-test` para cada una y comparando el chunk efectivamente
+recuperado contra el código fuente real en `BusinessSuite.Xaf` (rama `feature/modulo_auditorias`).
+**Conclusión: la hipótesis de partida (varias preguntas mal etiquetadas) no se sostuvo** — de las 7,
+solo 1 era un problema real de etiquetado. Evidencia directa, no impresión, por pregunta:
+
+1. **"¿Cuándo puedo exportar la plantilla de hallazgos...?"** (`FileExport`): **NO hay ambigüedad**.
+   `AuditoriaResultadoHallazgo.FileExport()` (el otro método con el mismo nombre) exporta *acciones
+   correctivas*, no tiene guard de estatus y no es una respuesta razonable a la pregunta — el
+   ground-truth original (`Auditorias.cs`, guard `Estatus != Ejecucion`) es correcto. Miss genuino.
+2. **"¿Cuándo se puede reabrir una acción correctiva...?"**: miss genuino. El archivo correcto
+   (`AuditoriaResultadoHallazgoAccionCorrectiva.cs`) sí aparece en el top-10, pero es un chunk de
+   *otro* método (`ActualizaEstatusHallazgo`) — la propiedad `CanReopen` (anchor real) cae en un
+   chunk de propiedades agrupadas distinto que no entró al top-10.
+3. **"¿Qué información se registra al validar/rechazar...?"**: miss genuino. La clase completa
+   `AuditoriaResultadoHallazgoValidacion.cs` (74 líneas) nunca aparece en el top-10, aunque su clase
+   hija `...ValidacionEvidencia.cs` sí. Anchor correcto y específico, sin alternativa razonable.
+4. **"¿Qué se necesita para reprogramar la ejecución...?"**: miss genuino. `AuditoriaReprogramacion.cs`
+   (63 líneas, clase de reglas de validación) nunca aparece; en su lugar domina
+   `PlanificacionAuditoriaViewController.cs` (7.1% relevancia, la acción de UI para *otra* pregunta
+   del eval-set) — semánticamente cercano pero no es una respuesta válida a "qué se necesita".
+5. **"¿Cuándo se puede finalizar completamente...?"** y **6. "¿Cómo se determina si un empleado es
+   el auditado...?"**: **ambos explicados por el bug de chunk-imán ya documentado**
+   ([[rag-engine-chunk-propiedades-sin-limite-tamano]]) — `CanFinalizarAuditoria` (línea 279) e
+   `IsAuditado` (línea 248) de `Auditorias.cs` caen dentro del chunk de propiedades sin límite de
+   tamaño (`Auditorias.cs:70-786`, ~716 líneas) que ya se sabía que hundía contenido relevante. No
+   es un problema de etiquetado nuevo — es más evidencia a favor de arreglar
+   `BuildGroupedPropertiesChunk` antes de sacar conclusiones de recall sobre este eval-set.
+7. **"¿Cómo importo auditorías desde un archivo Excel?"**: **el único caso real de etiquetado
+   estrecho**. El anchor original (`"Importar auditorías desde un archivo Excel."`, la tooltip de la
+   acción) vive en el chunk del constructor, que no entra al top-10. El sistema sí recupera
+   `ImportarAuditorias_Execute` (líneas 566-591, la lógica real de mapeo de campos del Excel) — una
+   respuesta igual o más útil. Corregido: se agregó un segundo `TargetContentContains` con una línea
+   que cae dentro del rango real del chunk recuperado (verificado leyendo el chunk exacto, no
+   asumiendo — un primer intento con un string a solo 5 líneas de distancia falló por caer fuera del
+   rango real). El runner ya evalúa `TargetContentContains` con OR (`EvalCommand.cs:177`), no
+   requirió cambios de código.
+
+**Impacto medido**: recall@10 sobre las 16 preguntas pasó de **56% a 62%** (10/16) solo con este
+ajuste — verificado corriendo `rag eval` antes/después, no solo editando el JSON. Los otros 6 misses
+quedan como evidencia real de dos causas distintas (chunk-imán de propiedades ×2, y brecha de
+recall genuina en clases pequeñas/aisladas ×4) — no como "ruido de eval-set" a descontar.
+
+**How to apply**: antes de invertir en el fix de chunk-imán ([[rag-engine-chunk-propiedades-sin-limite-tamano]]),
+usar este recall@10=62% como el nuevo baseline real de `bsuite-auditorias-test`. 2 de los 6 misses
+restantes (33%) deberían resolverse solo con ese fix, sin tocar el eval-set de nuevo.
+
+**Verificación independiente (misma sesión):** se re-corrió `rag eval` antes y después del cambio
+de forma independiente — confirma 56%→62% (9/16→10/16), y confirma con grep que la línea agregada
+como segundo anchor (`var criterios = aux.Checklist...`, `EjecucionAuditoriaViewController.cs:579`)
+cae dentro del rango real del chunk recuperado (566-591) y que `EvalCommand.cs` evalúa
+`TargetContentContains` con `.Any(...)` (OR), como se afirma arriba. Los puntos 1-6 también se
+verificaron de forma independiente por otro camino (mismas preguntas, mismo `rag search`, misma
+lectura de código) y coinciden en veredicto y evidencia.
+
+Reto D + el fix del volumen de Docker (sesión anterior) siguen **sin commitear** al cierre de esta
+sesión.

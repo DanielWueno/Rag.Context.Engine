@@ -4,11 +4,11 @@
 > commiteados en `c3593a1` (rama `feat/rag-api-selector-coleccion`). Reto D (`SourceDto.Resumen`)
 > implementado y verificado en esta sesión — ver "Sesión 2026-07-31" al final de este documento.
 > El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño original.
-> Pendientes restantes: ítems 5-6 de "Sesión 2026-07-30" (limpiar colecciones de prueba en Qdrant,
-> remedir throughput antes de escalar a `bsuite-repo`). El ítem 4 (re-etiquetado del eval-set) se
-> resolvió — ver "Sesión 2026-07-31 (continuación)" al final: de 7 preguntas sin hit, 6 son misses
-> genuinos de retrieval (2 por el bug de chunk-imán de propiedades, 4 por gap semántico real) y 1
-> era etiquetado estrecho, ya corregido. Recall@10 real sobre `bsuite-auditorias-test`: **56% → 62%**.
+> Pendientes restantes: ítem 5 de "Sesión 2026-07-30" (limpiar colecciones de prueba en Qdrant) y
+> remedir throughput antes de escalar a `bsuite-repo`. El ítem 4 (re-etiquetado del eval-set) se
+> resolvió y el fix de chunk-imán ya se verificó re-ingestando `bsuite-auditorias-test` — ver
+> "Sesión 2026-07-31 (continuación)" y "(continuación 2)" al final. Recall@10 real:
+> **56% → 62% (re-etiquetado) → 69% (re-ingesta con el fix de chunk-imán)**.
 
 ## El problema
 
@@ -521,3 +521,45 @@ lectura de código) y coinciden en veredicto y evidencia.
 
 Reto D + el fix del volumen de Docker (sesión anterior) siguen **sin commitear** al cierre de esta
 sesión.
+
+---
+
+## Sesión 2026-07-31 (continuación 2) — Verificado el fix de chunk-imán con datos reales
+
+El fix de `BuildGroupedPropertiesChunks` (chequeo de `MaxTokensPerChunk` + split) ya estaba
+commiteado en `c3593a1`, pero nunca se había aplicado a `bsuite-auditorias-test` — los IDs de chunk
+son determinísticos por contenido, así que los chunks gigantes viejos quedaban huérfanos hasta
+recrear la colección. Se borró la colección (`DELETE` directo a Qdrant, no `--force` — ver
+[[rag-engine-env-quirks]]) y se re-ingestaron las 3 carpetas originales (`Auditorias`,
+`Compras/Utils`, `Base`) con `--con-resumen`.
+
+**Resultado real, no proyectado:** `Auditorias` pasó de 295 a 328 chunks, `Base` de 1.266 a 1.285
+(confirma que el split sí ocurrió). `rag eval` antes/después: **recall@10 62% → 69% (11/16)**.
+
+**Pero el efecto no fue uniforme — 3 hallazgos que matizan la mejora:**
+
+- **2 misses sí se resolvieron con el split**, como predecía la hipótesis: "¿Cuándo se puede
+  finalizar completamente...?" (`CanFinalizarAuditoria`) y, más allá de lo esperado, "¿Cuándo se
+  puede reabrir una acción correctiva...?" (`CanReopen`, en otro archivo — el split cambió los
+  vecinos de embedding lo suficiente para que ese chunk también mejorara de ranking).
+- **`IsAuditado` sigue fallando pese a estar en la misma clase partida**: `Auditorias.cs` ahora
+  aparece 2 veces en el top-10 (líneas 192–232 y 279–303), pero `IsAuditado` vive en la línea 248 —
+  en el hueco entre esos dos chunks. El split ayuda en general pero no garantiza que cada
+  sub-chunk individual entre al top-10; esta propiedad específica sigue teniendo score débil.
+- **Apareció 1 miss nuevo que antes era hit**: "¿Qué pasa con una auditoría si no se encontraron
+  hallazgos activos al completarla?" (`ValidarTieneHallazgos`, líneas 632-638, un método — su
+  chunking no cambió). Verificado con `--top-k 20`: el chunk correcto cayó al puesto **#11** (antes
+  debía estar en el top-10). No es una regresión funcional real — es reordenamiento marginal por
+  más chunks compitiendo en el espacio de embeddings tras el split de las clases vecinas, del mismo
+  tipo que [[rag-engine-retrieval-no-determinismo-qdrant]] ya documentó (orden fino sensible a
+  cambios en el corpus, no un fallo de diseño).
+
+**Misses finales (5/16) tras esta corrida:** validar/rechazar hallazgo, reprogramar ejecución,
+`ValidarTieneHallazgos` (#11, marginal), exportar plantilla (`FileExport`), `IsAuditado`. Los
+primeros 2 y el de `FileExport` son gap semántico genuino en clases/métodos aislados (ya
+investigado en la continuación anterior); ninguno tiene relación con chunking.
+
+**How to apply:** usar **recall@10=69%** como baseline real vigente de `bsuite-auditorias-test`. El
+fix de chunk-imán vale la pena (net +2 preguntas) pero no es una solución completa ni libre de
+efectos secundarios menores — no asumir que arregla el 100% de las propiedades enterradas, y
+esperar algo de reordenamiento marginal en preguntas no relacionadas al re-ingestar.

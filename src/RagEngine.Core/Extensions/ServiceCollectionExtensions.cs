@@ -6,12 +6,14 @@ using Polly.CircuitBreaker;
 using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Scanning;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
+using RagEngine.Core.Services.Summary;
 
 namespace RagEngine.Core.Extensions;
 
@@ -41,6 +43,19 @@ public static class ServiceCollectionExtensions
 
         services.Configure<CrossEncoderOptions>(
             configuration.GetSection(CrossEncoderOptions.SectionName));
+
+        services.Configure<IngestionOptions>(
+            configuration.GetSection(IngestionOptions.SectionName));
+
+        services.Configure<RetrievalFusionOptions>(
+            configuration.GetSection(RetrievalFusionOptions.SectionName));
+
+        // OllamaOptions también se registra aquí (no solo en AddRagEngineGeneration):
+        // la Fase 2 de ingesta (resumen de negocio) necesita el endpoint de Ollama
+        // sin que el host tenga que habilitar generación conversacional. Configure<T>
+        // llamado dos veces sobre la misma sección desde dos extensiones es inofensivo.
+        services.Configure<OllamaOptions>(
+            configuration.GetSection(OllamaOptions.SectionName));
 
         // ── 2. ONNX Brain: Singleton (expensive to initialize — one InferenceSession) ──
         services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();
@@ -81,6 +96,34 @@ public static class ServiceCollectionExtensions
                 MinimumThroughput = 5,
                 BreakDuration = TimeSpan.FromSeconds(15)
             });
+        });
+
+        // Reintentos por-chunk para la generación de resúmenes (decisión 4). Cortos
+        // y acotados: un timeout ya cuesta hasta OllamaOptions.TimeoutSeconds por
+        // intento, y el circuit breaker de fallos de CONEXIÓN consecutivos vive a
+        // nivel de la Fase 2 de ingesta (DefaultIngestionPipeline), no aquí.
+        services.AddResiliencePipeline(OllamaBusinessSummaryGenerator.ResiliencePipelineName, builder =>
+        {
+            builder.AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                MaxRetryAttempts = 2,
+                Delay = TimeSpan.FromSeconds(1),
+                BackoffType = DelayBackoffType.Constant
+            });
+        });
+
+        // ──── Resumen de negocio (Fase 2 de ingesta, opt-in): Singleton ─────────
+        // Registrado en Core (no en AddRagEngineGeneration, que es opcional) para
+        // que la ingesta no dependa de que el host habilite generación conversacional.
+        services.AddSingleton<IBusinessSummaryGenerator, OllamaBusinessSummaryGenerator>();
+
+        services.AddSingleton(sp =>
+        {
+            var ingestionOpts = sp.GetRequiredService<IOptions<IngestionOptions>>().Value;
+            var ollamaOpts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
+            var promptVersion = OllamaBusinessSummaryGenerator.ComputePromptVersion(ollamaOpts.ModelId);
+            return SummaryCache.Open(ingestionOpts.ResumenCachePath, promptVersion);
         });
 
         // ── 5. Chunking Strategies: Auto-Discovery ────────────────────────────

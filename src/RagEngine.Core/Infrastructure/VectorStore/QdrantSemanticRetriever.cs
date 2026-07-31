@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
@@ -20,6 +21,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
     private readonly IReRanker _reRanker;
+    private readonly QdrantVectorStore _vectorStore;
+    private readonly RetrievalFusionOptions _fusionOptions;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
     private readonly ResiliencePipeline _resiliencePipeline;
 
@@ -28,6 +31,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
         IReRanker reRanker,
+        QdrantVectorStore vectorStore,
+        IOptions<RetrievalFusionOptions> fusionOptions,
         ILogger<QdrantSemanticRetriever> logger,
         ResiliencePipelineProvider<string> pipelineProvider)
     {
@@ -35,6 +40,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
         _reRanker = reRanker;
+        _vectorStore = vectorStore;
+        _fusionOptions = fusionOptions.Value;
         _logger = logger;
         _resiliencePipeline = pipelineProvider.GetPipeline("qdrant");
     }
@@ -81,40 +88,58 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             ulong prefetchLimit = Math.Max(finalLimit * 4, 40);
             var payloadSelector = new WithPayloadSelector { Enable = true };
 
-            // MinimumSimilarityScore se aplica SOLO al prefetch denso, donde el score
-            // sigue siendo similitud coseno [0..1]. No se aplica al prefetch disperso
-            // (sus scores son dot-products TF sin escala comparable) ni al score RRF
-            // final (que es función del ranking, no de la similitud).
-            var densePrefetch = new PrefetchQuery
-            {
-                Query = queryVector,
-                Using = QdrantVectorStore.DenseVectorName,
-                Filter = filter,
-                Limit = prefetchLimit
-            };
-            if (options.MinimumSimilarityScore > 0f)
-                densePrefetch.ScoreThreshold = options.MinimumSimilarityScore;
+            // Decisión 1/6: el schema real de la colección decide la rama de fusión —
+            // nunca un flag externo. Colecciones de 2 vectores siguen exactamente el
+            // camino nativo de siempre (cero riesgo de regresión); solo las que tienen
+            // el tercer vector "dense-resumen" pasan por la fusión ponderada manual.
+            var hasSummaryVector = await _vectorStore.HasSummaryVectorAsync(options.CollectionName, cancellationToken);
 
-            var searchResults = await _resiliencePipeline.ExecuteAsync(async ct =>
+            IReadOnlyList<ScoredPoint> searchResults;
+            if (!hasSummaryVector)
             {
-                return await _client.QueryAsync(
-                    collectionName: options.CollectionName,
-                    query: new Query { Fusion = Fusion.Rrf },
-                    prefetch: new[]
-                    {
-                        densePrefetch,
-                        new PrefetchQuery
+                // MinimumSimilarityScore se aplica SOLO al prefetch denso, donde el score
+                // sigue siendo similitud coseno [0..1]. No se aplica al prefetch disperso
+                // (sus scores son dot-products TF sin escala comparable) ni al score RRF
+                // final (que es función del ranking, no de la similitud).
+                var densePrefetch = new PrefetchQuery
+                {
+                    Query = queryVector,
+                    Using = QdrantVectorStore.DenseVectorName,
+                    Filter = filter,
+                    Limit = prefetchLimit
+                };
+                if (options.MinimumSimilarityScore > 0f)
+                    densePrefetch.ScoreThreshold = options.MinimumSimilarityScore;
+
+                searchResults = await _resiliencePipeline.ExecuteAsync(async ct =>
+                {
+                    return await _client.QueryAsync(
+                        collectionName: options.CollectionName,
+                        query: new Query { Fusion = Fusion.Rrf },
+                        prefetch: new[]
                         {
-                            Query = (sparseValues, sparseIndices),
-                            Using = QdrantVectorStore.SparseVectorName,
-                            Filter = filter,
-                            Limit = prefetchLimit
-                        }
-                    },
-                    limit: finalLimit,
-                    payloadSelector: payloadSelector,
-                    cancellationToken: ct);
-            }, cancellationToken);
+                            densePrefetch,
+                            new PrefetchQuery
+                            {
+                                Query = (sparseValues, sparseIndices),
+                                Using = QdrantVectorStore.SparseVectorName,
+                                Filter = filter,
+                                Limit = prefetchLimit
+                            }
+                        },
+                        limit: finalLimit,
+                        payloadSelector: payloadSelector,
+                        cancellationToken: ct);
+                }, cancellationToken);
+            }
+            else
+            {
+                searchResults = await _resiliencePipeline.ExecuteAsync(async ct =>
+                    await SearchWeightedFusionAsync(
+                        options.CollectionName, queryVector, sparseValues, sparseIndices,
+                        filter, prefetchLimit, finalLimit, payloadSelector, ct),
+                    cancellationToken);
+            }
 
             // 5. Map to domain entities
             IReadOnlyList<RetrievalResult> results = searchResults
@@ -148,6 +173,82 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             _logger.LogError(ex, "Critical failure during hybrid search for query: {Query}", query);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Decisión 6: fusión RRF ponderada manual sobre 3 ramas independientes (código,
+    /// sparse, resumen), porque la fusión nativa <c>Fusion.Rrf</c> de Qdrant no expone
+    /// un peso por rama (todas entran con peso igual). Portado y adaptado (índices de
+    /// array → PointId string) de <c>RecallEvaluator.RankByRrf</c>/<c>ToRankMap</c> del
+    /// PoC (poc/RagEngine.Poc.FreeSearch/RecallEvaluator.cs), con los pesos calibrados
+    /// ahí como default de <see cref="RetrievalFusionOptions"/>.
+    /// </summary>
+    private async Task<IReadOnlyList<ScoredPoint>> SearchWeightedFusionAsync(
+        string collectionName,
+        float[] queryVector,
+        float[] sparseValues,
+        uint[] sparseIndices,
+        Filter? filter,
+        ulong prefetchLimit,
+        ulong finalLimit,
+        WithPayloadSelector payloadSelector,
+        CancellationToken ct)
+    {
+        var denseTask = _client.QueryAsync(
+            collectionName, query: queryVector, usingVector: QdrantVectorStore.DenseVectorName,
+            filter: filter, limit: prefetchLimit, payloadSelector: payloadSelector, cancellationToken: ct);
+        var sparseTask = _client.QueryAsync(
+            collectionName, query: (sparseValues, sparseIndices), usingVector: QdrantVectorStore.SparseVectorName,
+            filter: filter, limit: prefetchLimit, payloadSelector: payloadSelector, cancellationToken: ct);
+        var resumenTask = _client.QueryAsync(
+            collectionName, query: queryVector, usingVector: QdrantVectorStore.SummaryVectorName,
+            filter: filter, limit: prefetchLimit, payloadSelector: payloadSelector, cancellationToken: ct);
+
+        await Task.WhenAll(denseTask, sparseTask, resumenTask);
+
+        var denseResults = await denseTask;
+        var sparseResults = await sparseTask;
+        var resumenResults = await resumenTask;
+
+        var denseRank = ToRankMap(denseResults);
+        var sparseRank = ToRankMap(sparseResults);
+        var resumenRank = ToRankMap(resumenResults);
+
+        // El mismo punto puede salir en más de una rama con el mismo payload — basta
+        // con quedarse con la primera aparición para tener el ScoredPoint completo.
+        var pointsById = new Dictionary<string, ScoredPoint>();
+        foreach (var point in denseResults.Concat(sparseResults).Concat(resumenResults))
+            pointsById.TryAdd(point.Id.Uuid, point);
+
+        var k = _fusionOptions.RrfK;
+        var scored = pointsById.Keys.Select(id =>
+        {
+            double score = 0.0;
+            if (denseRank.TryGetValue(id, out var rc)) score += _fusionOptions.WeightCodigo / (k + rc);
+            if (sparseRank.TryGetValue(id, out var rs)) score += _fusionOptions.WeightSparse / (k + rs);
+            if (resumenRank.TryGetValue(id, out var rr)) score += _fusionOptions.WeightResumen / (k + rr);
+            return (Id: id, Score: score);
+        })
+        .OrderByDescending(x => x.Score)
+        .Take((int)finalLimit)
+        .ToList();
+
+        var result = new List<ScoredPoint>(scored.Count);
+        foreach (var (id, score) in scored)
+        {
+            var point = pointsById[id];
+            point.Score = (float)score; // score RRF ponderado, no similitud coseno cruda
+            result.Add(point);
+        }
+        return result;
+    }
+
+    private static Dictionary<string, int> ToRankMap(IReadOnlyList<ScoredPoint> ranked)
+    {
+        var map = new Dictionary<string, int>(ranked.Count);
+        for (int pos = 0; pos < ranked.Count; pos++)
+            map[ranked[pos].Id.Uuid] = pos + 1;
+        return map;
     }
 
     private static Filter? BuildFilter(RetrievalOptions options)

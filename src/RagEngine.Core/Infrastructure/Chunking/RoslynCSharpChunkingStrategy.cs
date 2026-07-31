@@ -74,8 +74,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // --- Class header chunk (fields + base types, without method bodies) ---
-            yield return BuildClassHeaderChunk(artifact, typeDecl, fileContext, lines);
+            // --- Class header chunk(s) (fields + base types, without method bodies) ---
+            foreach (var chunk in BuildClassHeaderChunks(artifact, typeDecl, fileContext, lines, options))
+                yield return chunk;
 
             // --- Constructor chunks ---
             foreach (var ctor in typeDecl.Members.OfType<ConstructorDeclarationSyntax>())
@@ -98,10 +99,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 }
             }
 
-            // --- Grouped properties chunk ---
-            var propsChunk = BuildGroupedPropertiesChunk(artifact, typeDecl, fileContext, lines);
-            if (propsChunk is not null)
-                yield return propsChunk;
+            // --- Grouped properties chunk(s) ---
+            foreach (var chunk in BuildGroupedPropertiesChunks(artifact, typeDecl, fileContext, lines, options))
+                yield return chunk;
         }
     }
 
@@ -165,11 +165,12 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         return sb.ToString().TrimEnd();
     }
 
-    private CodeChunk BuildClassHeaderChunk(
+    private IEnumerable<CodeChunk> BuildClassHeaderChunks(
         RawArtifact artifact,
         TypeDeclarationSyntax typeDecl,
         FileContext ctx,
-        string[] lines)
+        string[] lines,
+        ChunkingOptions options)
     {
         var span = typeDecl.GetLocation().GetLineSpan();
         int startLine = span.StartLinePosition.Line + 1;
@@ -179,45 +180,90 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         // de ToFullString(): en clases con atributos ([DefaultClassOptions], reglas
         // XAF, etc.) esa primera línea es el atributo y se perdía la declaración
         // completa, dejando chunks de clase casi vacíos.
-        var headerLines = new List<string>();
+        var declarationLines = new List<string>();
 
         foreach (var attrList in typeDecl.AttributeLists)
-            headerLines.Add(attrList.ToString().Trim());
+            declarationLines.Add(attrList.ToString().Trim());
 
         var declaration =
             $"{typeDecl.Modifiers} {typeDecl.Keyword} {typeDecl.Identifier}" +
             $"{typeDecl.TypeParameterList}{typeDecl.BaseList}";
-        headerLines.Add(declaration.Trim());
+        declarationLines.Add(declaration.Trim());
+        var declarationText = string.Join('\n', declarationLines).Trim();
 
-        // Add field declarations only (not methods)
-        foreach (var field in typeDecl.Members.OfType<FieldDeclarationSyntax>())
-            headerLines.Add(field.ToFullString().TrimEnd());
-
-        var content = string.Join('\n', headerLines).Trim();
+        var fields = typeDecl.Members.OfType<FieldDeclarationSyntax>().ToList();
         var header = BuildContextHeader(ctx, typeDecl);
-        var enriched = $"{header}\n\n{content}";
-        var hash = ContentHasher.Compute(content);
+        int headerTokens = header.Length / ApproxCharsPerToken;
+        int declarationTokens = declarationText.Length / ApproxCharsPerToken;
 
-        return new CodeChunk
+        // Group fields into batches that keep the header (attrs + declaration) plus
+        // fields under MaxTokensPerChunk, splitting only at field boundaries — same
+        // fix as BuildGroupedPropertiesChunks, for classes with many fields.
+        var groups = new List<List<FieldDeclarationSyntax>>();
+        var current = new List<FieldDeclarationSyntax>();
+        int currentChars = 0;
+
+        foreach (var field in fields)
         {
-            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-            Content = content,
-            EnrichedContent = enriched,
-            Type = ChunkType.Class,
-            ContentHash = hash,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: SourceLanguage.CSharp,
-                Namespace: ctx.RootNamespace,
-                ClassName: typeDecl.Identifier.Text,
-                MethodName: null,
-                StartLine: startLine,
-                EndLine: span.EndLinePosition.Line + 1,
-                LastModified: artifact.LastModified,
-                RepositoryName: ctx.RepositoryName
-            )
-        };
+            int fieldChars = field.ToFullString().TrimEnd().Length;
+            int baseTokens = headerTokens + declarationTokens;
+            int projectedTokens = baseTokens + (currentChars + fieldChars) / ApproxCharsPerToken;
+
+            if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+            {
+                groups.Add(current);
+                current = new List<FieldDeclarationSyntax>();
+                currentChars = 0;
+            }
+
+            current.Add(field);
+            currentChars += fieldChars + 1;
+        }
+        groups.Add(current); // always at least the declaration-only group, even with no fields
+
+        for (int g = 0; g < groups.Count; g++)
+        {
+            var group = groups[g];
+            var isFirst = g == 0;
+
+            var contentLines = new List<string>();
+            if (isFirst)
+                contentLines.Add(declarationText);
+            contentLines.AddRange(group.Select(f => f.ToFullString().TrimEnd()));
+            var content = string.Join('\n', contentLines).Trim();
+
+            int fragmentStartLine = isFirst || group.Count == 0
+                ? startLine
+                : group[0].GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+            int fragmentEndLine = group.Count > 0
+                ? group[^1].GetLocation().GetLineSpan().EndLinePosition.Line + 1
+                : span.EndLinePosition.Line + 1;
+
+            var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
+            var enriched = $"{header}{fragmentSuffix}\n\n{content}";
+            var hash = ContentHasher.Compute(content);
+
+            yield return new CodeChunk
+            {
+                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, fragmentStartLine, hash),
+                Content = content,
+                EnrichedContent = enriched,
+                Type = ChunkType.Class,
+                ContentHash = hash,
+                Metadata = new CodeChunkMetadata(
+                    FilePath: artifact.AbsolutePath,
+                    RelativeFilePath: artifact.RelativePath,
+                    Language: SourceLanguage.CSharp,
+                    Namespace: ctx.RootNamespace,
+                    ClassName: typeDecl.Identifier.Text,
+                    MethodName: null,
+                    StartLine: fragmentStartLine,
+                    EndLine: fragmentEndLine,
+                    LastModified: artifact.LastModified,
+                    RepositoryName: ctx.RepositoryName
+                )
+            };
+        }
     }
 
     private IEnumerable<CodeChunk> BuildMethodChunks(
@@ -340,44 +386,78 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         };
     }
 
-    private CodeChunk? BuildGroupedPropertiesChunk(
+    private IEnumerable<CodeChunk> BuildGroupedPropertiesChunks(
         RawArtifact artifact,
         TypeDeclarationSyntax typeDecl,
         FileContext ctx,
-        string[] lines)
+        string[] lines,
+        ChunkingOptions options)
     {
         var props = typeDecl.Members.OfType<PropertyDeclarationSyntax>().ToList();
-        if (props.Count == 0) return null;
-
-        var allProps = string.Join('\n', props.Select(p => p.ToFullString().Trim())).Trim();
-        var firstSpan = props[0].GetLocation().GetLineSpan();
-        var lastSpan = props[^1].GetLocation().GetLineSpan();
-        int startLine = firstSpan.StartLinePosition.Line + 1;
+        if (props.Count == 0) yield break;
 
         var header = BuildContextHeader(ctx, typeDecl);
-        var enriched = $"{header}\n// Properties\n\n{allProps}";
-        var hash = ContentHasher.Compute(allProps);
+        int headerTokens = header.Length / ApproxCharsPerToken;
 
-        return new CodeChunk
+        // Group properties into batches that stay under MaxTokensPerChunk, splitting
+        // only at property boundaries (never mid-declaration) — mirrors the sliding
+        // window BuildMethodChunks already applies to oversized methods. Without this,
+        // classes with many properties produce a single chunk that grows unbounded
+        // (e.g. 700+ lines), burying individual properties past the retrieval TopK.
+        var groups = new List<List<PropertyDeclarationSyntax>>();
+        var current = new List<PropertyDeclarationSyntax>();
+        int currentChars = 0;
+
+        foreach (var prop in props)
         {
-            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-            Content = allProps,
-            EnrichedContent = enriched,
-            Type = ChunkType.Property,
-            ContentHash = hash,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: SourceLanguage.CSharp,
-                Namespace: ctx.RootNamespace,
-                ClassName: typeDecl.Identifier.Text,
-                MethodName: null,
-                StartLine: startLine,
-                EndLine: lastSpan.EndLinePosition.Line + 1,
-                LastModified: artifact.LastModified,
-                RepositoryName: ctx.RepositoryName
-            )
-        };
+            int propChars = prop.ToFullString().Trim().Length;
+            int projectedTokens = headerTokens + (currentChars + propChars) / ApproxCharsPerToken;
+
+            if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+            {
+                groups.Add(current);
+                current = new List<PropertyDeclarationSyntax>();
+                currentChars = 0;
+            }
+
+            current.Add(prop);
+            currentChars += propChars + 1;
+        }
+        groups.Add(current);
+
+        for (int g = 0; g < groups.Count; g++)
+        {
+            var group = groups[g];
+            var content = string.Join('\n', group.Select(p => p.ToFullString().Trim())).Trim();
+            var firstSpan = group[0].GetLocation().GetLineSpan();
+            var lastSpan = group[^1].GetLocation().GetLineSpan();
+            int startLine = firstSpan.StartLinePosition.Line + 1;
+
+            var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
+            var enriched = $"{header}\n// Properties{fragmentSuffix}\n\n{content}";
+            var hash = ContentHasher.Compute(content);
+
+            yield return new CodeChunk
+            {
+                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
+                Content = content,
+                EnrichedContent = enriched,
+                Type = ChunkType.Property,
+                ContentHash = hash,
+                Metadata = new CodeChunkMetadata(
+                    FilePath: artifact.AbsolutePath,
+                    RelativeFilePath: artifact.RelativePath,
+                    Language: SourceLanguage.CSharp,
+                    Namespace: ctx.RootNamespace,
+                    ClassName: typeDecl.Identifier.Text,
+                    MethodName: null,
+                    StartLine: startLine,
+                    EndLine: lastSpan.EndLinePosition.Line + 1,
+                    LastModified: artifact.LastModified,
+                    RepositoryName: ctx.RepositoryName
+                )
+            };
+        }
     }
 
     private async IAsyncEnumerable<CodeChunk> FallbackSlidingWindowAsync(

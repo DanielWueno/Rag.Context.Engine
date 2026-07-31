@@ -46,6 +46,10 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         [Description("Restrict to a language: csharp, typescript, sql, markdown.")]
         public string? LanguageFilter { get; set; }
 
+        [CommandOption("--con-resumen")]
+        [Description("Genera un tercer vector de resumen de negocio vía LLM (opt-in). Default: false.")]
+        public bool EnableResumenLlm { get; set; } = false;
+
         public override ValidationResult Validate()
         {
             if (!Directory.Exists(RepositoryPath))
@@ -93,6 +97,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         configTable.AddRow("[grey]Batch Size[/]", $"[yellow]{settings.BatchSize}[/]");
         configTable.AddRow("[grey]Force Re-index[/]",
             settings.ForceReindex ? "[red]YES \u26a0\ufe0f[/]" : "[green]No[/]");
+        configTable.AddRow("[grey]Con Resumen (LLM)[/]",
+            settings.EnableResumenLlm ? "[cyan]YES[/]" : "[grey]No[/]");
 
         AnsiConsole.Write(configTable);
         AnsiConsole.WriteLine();
@@ -123,7 +129,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 RepositoryName = settings.RepositoryName,
                 BatchSize = settings.BatchSize
             },
-            ForceReindex: settings.ForceReindex
+            ForceReindex: settings.ForceReindex,
+            EnableResumenLlm: settings.EnableResumenLlm
         );
 
         // \u2500\u2500 Live Progress Display \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -195,6 +202,16 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             summaryTable.AddRow("Memory Peak",
                 $"[grey]{summary.EstimatedMemoryPeakBytes / 1_048_576.0:F1} MB[/]");
 
+            if (settings.EnableResumenLlm)
+            {
+                summaryTable.AddRow("Resúmenes generados",   $"[green]{summary.ResumenesCompleted:N0}[/]");
+                summaryTable.AddRow("Resúmenes sin negocio", $"[grey]{summary.ResumenesSinNegocio:N0}[/]");
+                summaryTable.AddRow("Resúmenes pendientes",
+                    summary.ResumenesPending > 0
+                        ? $"[yellow]{summary.ResumenesPending:N0} (correr `rag ingest --con-resumen` de nuevo para completar)[/]"
+                        : "[green]0[/]");
+            }
+
             AnsiConsole.Write(summaryTable);
         }
 
@@ -216,6 +233,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         private int _chunksIndexed;
         private string _stage = "Starting...";
         private string _currentFile = string.Empty;
+        private int _resumenesCompleted;
+        private int _resumenesTotal;
 
         public LiveProgressTracker()
         {
@@ -236,6 +255,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             _currentFile    = p.CurrentFile.Length > 60
                 ? "\u2026" + p.CurrentFile[^57..]
                 : p.CurrentFile;
+            _resumenesCompleted = p.ResumenesCompleted;
+            _resumenesTotal     = p.ResumenesTotal;
         }
 
         public Table GetLayout()
@@ -245,6 +266,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             _table.AddRow("Files Processed", $"[cyan]{_filesProcessed:N0}[/]");
             _table.AddRow("Chunks Produced", $"[cyan]{_chunksProduced:N0}[/]");
             _table.AddRow("Chunks Indexed",  $"[green]{_chunksIndexed:N0}[/]");
+            if (_resumenesTotal > 0)
+                _table.AddRow("Res\u00famenes", $"[cyan]{_resumenesCompleted:N0}/{_resumenesTotal:N0}[/]");
             _table.AddRow("Current File",    $"[grey]{Markup.Escape(_currentFile)}[/]");
             return _table;
         }

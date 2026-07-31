@@ -1,12 +1,12 @@
 # Búsqueda libre para usuarios no técnicos — RRF a 3 bandas
 
-> **Estado: propuesta de diseño, no implementada en el pipeline real.** Este documento consolida
-> un análisis arquitectónico exploratorio. No describe el comportamiento actual del sistema — para
-> eso, ver [`arquitectura.md`](../arquitectura.md) y [`busqueda-hibrida.md`](../busqueda-hibrida.md).
-> El PoC offline (paso 1) ya corrió y validó la hipótesis central, y ya se calibraron pesos RRF y
-> se probó rerank sobre el PoC (ver "Próximos pasos" y `poc/RagEngine.Poc.FreeSearch/RESULTADOS.md`
-> §1.1-1.3). Lo que sigue pendiente antes de implementar en el pipeline real (Retos A-D): re-etiquetar
-> el eval-set por concepto y resolver los chunks-imán (`Ticket.cs` sobre-amplio).
+> **Estado (2026-07-30): implementado en el pipeline real (Retos A-C) y verificado en producción
+> real, pero SIN COMMITEAR todavía.** Rama `feat/rag-api-selector-coleccion`, todo el código nuevo
+> está en el working tree sin `git add`/`commit`. Ver "Sesión 2026-07-30" al final de este documento
+> para el estado completo, lo verificado, y los pendientes exactos para retomar en una sesión nueva
+> — incluye un hallazgo de chunking (no relacionado al resumen) que conviene resolver antes de
+> commitear. El PoC offline (paso 1, sección histórica de abajo) sigue siendo la referencia de diseño
+> original; lo que sigue pendiente es Reto D y los ítems listados en "Sesión 2026-07-30".
 
 ## El problema
 
@@ -293,9 +293,112 @@ SourceDto { File, Section, StartLine, EndLine, Score, Content, Resumen? }
       (+16pts) sin tocar rerank. Rerank ayuda precisión @1-5 pero, con estos pesos, resta
       recall@10 (79%→68%) — no son aditivos, ver el "Reencuadre" corregido arriba (Reto B).
       Pendientes (a) y (b)/(c) siguen abiertos y no se tocaron en esta pasada.
-3. Si tras (2) la hipótesis se sigue sosteniendo: implementar en el pipeline real —
-   - Reto A (caché SQLite) y Reto B (fusor RRF manual con pesos).
-   - Reto C (flag `EnableResumenLlm` opt-in por colección — no activar el costo del LLM en
-     ingesta para colecciones donde no aporta, p. ej. docs/wikis ya en prosa humana).
+3. ~~Si tras (2) la hipótesis se sigue sosteniendo: implementar en el pipeline real —~~ **Hecho**
+   (Retos A-C), ver "Sesión 2026-07-30" abajo para el detalle completo.
+   - ~~Reto A (caché SQLite) y Reto B (fusor RRF manual con pesos).~~ **Hecho.**
+   - ~~Reto C (flag `EnableResumenLlm` opt-in por colección...).~~ **Hecho** (`--con-resumen`).
    - Reto D (`SourceDto.Resumen` — exponer el resumen ya generado/cacheado como campo de fuente,
-     no solo como insumo interno del vector `dense-resumen`).
+     no solo como insumo interno del vector `dense-resumen`). **Sigue pendiente, a propósito** —
+     ver "Pendientes" abajo.
+
+---
+
+## Sesión 2026-07-30 — Implementación real, verificación en producción, y pendientes
+
+Implementación completa de los Retos A-C sobre `RagEngine.Core`/`RagEngine.Cli`. Todo el código
+compila y fue verificado contra Qdrant/Ollama reales (no solo tests) en la colección de prueba
+`bsuite-auditorias-test` (repo `BusinessSuite.Xaf`, rama `feature/modulo_auditorias`). **Nada de
+esto está commiteado todavía** — es el primer punto a decidir en la próxima sesión.
+
+### Qué se implementó (archivos nuevos/modificados)
+
+- `src/RagEngine.Core/Abstractions/IBusinessSummaryGenerator.cs` (nuevo) — interfaz + `BusinessSummaryResult`.
+- `src/RagEngine.Core/Services/Summary/OllamaBusinessSummaryGenerator.cs` (nuevo) — genera el resumen vía Ollama, Kernel propio, sentinel `SIN_CONTENIDO_DE_NEGOCIO`, distingue fallos de conexión (`BusinessSummaryConnectionException`) de fallos de contenido.
+- `src/RagEngine.Core/Services/Summary/SummaryCache.cs` (nuevo) — caché SQLite/WAL compartida entre colecciones, clave `(content_hash, prompt_version)`.
+- `src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs` — tercer vector `dense-resumen`; `HasSummaryVectorAsync` (schema como única fuente de verdad, con caché TTL); `GetExistingResumenStateAsync`/`UpsertBatchAsync` con preservación de estado (ver hallazgo crítico abajo); `ScrollPendingResumenAsync`, `CountResumenPendingAsync`, `MarkResumenCompleteAsync`, `UpdateSummaryVectorAsync`.
+- `src/RagEngine.Core/Infrastructure/VectorStore/QdrantSemanticRetriever.cs` — fusión RRF ponderada manual (`SearchWeightedFusionAsync`) cuando la colección tiene 3 vectores; rama nativa intacta para colecciones de 2 vectores.
+- `src/RagEngine.Core/Infrastructure/VectorStore/RetrievalFusionOptions.cs` (nuevo) — pesos configurables, default = los calibrados en el PoC.
+- `src/RagEngine.Core/Pipeline/DefaultIngestionPipeline.cs` — Fase 2 (resumen) desacoplada en su propio Channel + pool acotado por semáforo; circuit breaker de fallos de conexión consecutivos con Ollama.
+- `src/RagEngine.Core/Domain/IngestionTypes.cs` — `IngestionOptions`, `IngestionRequest.EnableResumenLlm`, `IngestionStage.GeneratingResumenes`.
+- `src/RagEngine.Core/Extensions/ServiceCollectionExtensions.cs` — registro de todo lo anterior + pipeline Polly `"ollama-summary"`.
+- `src/RagEngine.Cli/Commands/IngestCommand.cs` — flag `--con-resumen`.
+- `src/RagEngine.Cli/Commands/StatusCommand.cs` — fila de `resumen_pending` cuando aplica.
+- `src/RagEngine.Cli/Commands/EvalCommand.cs` — soporte multi-target (`SourceFiles: string[]`), antes solo `SourceFile` único.
+- `docs/eval/tickets-microservice.eval-set.json`, `docs/eval/bsuite-auditorias.eval-set.json` (nuevos) — eval-sets reales con anchors verificados literalmente contra el código.
+
+### Hallazgo crítico durante la verificación (ya corregido)
+
+Qdrant hace upsert por **reemplazo completo** de vectores y payload, no merge (verificado
+empíricamente con un smoke test dedicado). El diseño original evitaba destruir resúmenes ya
+generados saltándose toda la Fase 1 al reanudar — pero eso rompía el caso real de agregar
+archivos nuevos a una colección ya con resumen. Fix aplicado: `GetExistingResumenStateAsync`
+consulta, antes de cada upsert de lote, el estado de resumen que el chunk ya tenía (si existía) y
+lo re-incluye en el upsert — así reingestar (archivos nuevos, modificados, o sin cambios) nunca
+destruye trabajo ya hecho ni gasta LLM de más. **Verificado dos veces con datos reales**: (1)
+re-ingesta completa sin cambios → 0 resúmenes regenerados, vector idéntico byte a byte antes/después;
+(2) agregar una carpeta nueva a la misma colección → solo los puntos nuevos se procesan, los viejos
+quedan intactos.
+
+### Verificación en producción real
+
+- Ingesta real: `REYMA.XAFR1PV.Compras/Auditorias` (295 chunks) + `Compras/Utils` (15 chunks) +
+  `REYMA.XAFR1PV.Base` (1.266 chunks) → colección `bsuite-auditorias-test`, **1.576/1.576 puntos
+  con resumen resuelto, 0 pendientes**.
+- `docker compose build && up -d rag-api`: la API/chat web ya corre con el código de hoy y
+  responde correctamente vía `/api/search` y `/api/ask` contra `bsuite-auditorias-test`.
+- Eval-set real (`docs/eval/bsuite-auditorias.eval-set.json`, 16 preguntas, anchors verificados
+  literalmente contra el código): **recall@10 44% sin resumen → 56% con resumen** (colección
+  `bsuite-auditorias-baseline` vs `bsuite-auditorias-test`). Antes de agregar `Base`, el desglose
+  exacto era +5 preguntas ganadas / -3 regresiones (neto +2); agregar `Base` no movió recall@10
+  (las 6 preguntas que siguen fallando apuntan TODAS a archivos que ya estaban en `Auditorias`,
+  no en `Base` — la hipótesis de que `Base` las arreglaría no se confirmó con evidencia).
+
+### Hallazgo nuevo, independiente del resumen: chunk-imán de propiedades (generaliza el de `Ticket.cs`)
+
+Al investigar por qué el chat respondía sin certeza a "¿puedo ver auditorías de otro
+departamento?" (la regla SÍ existe: `Auditorias.cs` líneas 274-277,
+`CriterioDepartamentoCreadoPor`/`CriterioDepartamentoAuditor`), encontramos que ese fragmento vive
+enterrado en un chunk de **716 líneas** (`Auditorias.cs:70-786`, tipo `Property`) que junta las
+~30 propiedades de la clase sin ningún límite de tamaño — quedó en el puesto #12 de 60, fuera del
+top-10.
+
+Causa raíz confirmada en el código: `RoslynCSharpChunkingStrategy.BuildGroupedPropertiesChunk`
+(línea 343) arma un solo chunk con **todas** las propiedades de la clase, sin chequear
+`MaxTokensPerChunk` — a diferencia de `BuildMethodChunks` (línea 240), que si el método excede el
+límite lo parte con sliding-window. Esto **no depende de que el código use `#region`** — es un
+chequeo de tamaño que simplemente falta para chunks de tipo `Property` (y probablemente para
+`BuildClassHeaderChunk`, que agrupa los `FieldDeclarationSyntax` con el mismo problema). Va a
+aparecer en cualquier repo de código con clases de muchas propiedades (modelos de dominio, DTOs,
+entidades ORM) — no es específico de este repo.
+
+**No se implementó todavía.** Es independiente del feature de resumen (afecta también a la
+búsqueda híbrida de 2 bandas ya en producción) pero se descubrió mientras se probaba.
+
+## Pendientes para retomar en una sesión nueva
+
+1. **Decidir sobre el chunk-imán de propiedades antes de commitear el resumen** (o commitear por
+   separado): agregar a `BuildGroupedPropertiesChunk` (y evaluar `BuildClassHeaderChunk`) el mismo
+   chequeo de `MaxTokensPerChunk` + split que ya tiene `BuildMethodChunks`, partiendo por límites
+   de propiedad completa (nunca a mitad de una declaración). Un solo archivo
+   (`RoslynCSharpChunkingStrategy.cs`). Requiere `--force` en cualquier colección para que el nuevo
+   límite de tamaño tenga efecto (los IDs de chunk son determinísticos por contenido — los chunks
+   viejos y gigantes quedan huérfanos hasta recrear la colección).
+2. **Commitear el trabajo de hoy** (Retos A-C) — nada está en git todavía. Revisar
+   `git status` en la raíz del repo antes de armar el commit (incluye 2 eval-sets nuevos en
+   `docs/eval/` y este mismo doc actualizado).
+3. **Reto D** (exponer `SourceDto.Resumen` al usuario final) — sigue pendiente a propósito, se
+   dejó para después de validar recall real (ya validado: sección de arriba).
+4. **Re-etiquetado del eval-set**: al menos 1 de las 16 preguntas de
+   `docs/eval/bsuite-auditorias.eval-set.json` tiene ground-truth ambiguo (dos métodos
+   `FileExport()` válidos en clases distintas — `Auditorias.cs` vs `AuditoriaResultadoHallazgo.cs`;
+   el modelo encontró uno igual de razonable pero distinto al anclado). Mismo patrón de
+   "etiquetado estrecho" ya documentado para el eval-set de `innovapp-docs` — vale la pena revisar
+   las otras 5 preguntas que siguen fallando antes de sacar conclusiones sobre el recall real.
+5. **Limpieza de colecciones de prueba en Qdrant**: `bsuite-auditorias-test` (1.576 pts, con
+   resumen — la "buena"), `bsuite-auditorias-baseline` (295 pts, sin resumen — solo referencia de
+   comparación, se puede borrar cuando ya no haga falta).
+6. Si se decide escalar más allá de este submódulo: `bsuite-repo` (colección real de
+   `BusinessSuite.Xaf` completo, ~20k puntos) NO tiene el vector de resumen todavía — activarlo
+   ahí exige `--force` (recrea la colección desde cero) y ronda las 13.6h estimadas con
+   concurrencia=2 sin el fix de chunking; con el fix, conviene volver a medir throughput sobre una
+   muestra antes de comprometerse a esa corrida completa.

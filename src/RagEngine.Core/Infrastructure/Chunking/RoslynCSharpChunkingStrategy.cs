@@ -175,7 +175,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         var span = typeDecl.GetLocation().GetLineSpan();
         int startLine = span.StartLinePosition.Line + 1;
 
-        // Class header = attributes + full declaration line + fields (sin cuerpos).
+        // Class header = attributes + full declaration line (sin cuerpos ni campos).
         // Se reconstruye desde el AST en lugar de tomar la "primera línea no vacía"
         // de ToFullString(): en clases con atributos ([DefaultClassOptions], reglas
         // XAF, etc.) esa primera línea es el atributo y se perdía la declaración
@@ -191,56 +191,85 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         declarationLines.Add(declaration.Trim());
         var declarationText = string.Join('\n', declarationLines).Trim();
 
-        var fields = typeDecl.Members.OfType<FieldDeclarationSyntax>().ToList();
         var header = BuildContextHeader(ctx, typeDecl);
-        int headerTokens = header.Length / ApproxCharsPerToken;
-        int declarationTokens = declarationText.Length / ApproxCharsPerToken;
 
-        // Group fields into batches that keep the header (attrs + declaration) plus
-        // fields under MaxTokensPerChunk, splitting only at field boundaries — same
-        // fix as BuildGroupedPropertiesChunks, for classes with many fields.
-        var groups = new List<List<FieldDeclarationSyntax>>();
-        var current = new List<FieldDeclarationSyntax>();
-        int currentChars = 0;
+        // The declaration is ALWAYS its own chunk, never merged with the first field
+        // group — merging assumed the first field always sits right after the class
+        // declaration, which is false whenever properties/methods/nested types come
+        // first (common in this codebase). EndLine is the opening brace's own line,
+        // never the whole class body: a class with zero fields previously reported
+        // EndLine = end of the entire class even though Content was just the
+        // declaration text. Semicolon-terminated declarations (e.g. a positional
+        // `record Foo(...);` with no body) have no OpenBraceToken — fall back to the
+        // declaration's own span end rather than a missing token's meaningless location.
+        int declarationEndLine = typeDecl.OpenBraceToken.IsKind(SyntaxKind.OpenBraceToken)
+            ? typeDecl.OpenBraceToken.GetLocation().GetLineSpan().StartLinePosition.Line + 1
+            : span.EndLinePosition.Line + 1;
+        var declarationHash = ContentHasher.Compute(declarationText);
 
-        foreach (var field in fields)
+        yield return new CodeChunk
         {
-            int fieldChars = field.ToFullString().TrimEnd().Length;
-            int baseTokens = headerTokens + declarationTokens;
-            int projectedTokens = baseTokens + (currentChars + fieldChars) / ApproxCharsPerToken;
+            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, declarationHash),
+            Content = declarationText,
+            EnrichedContent = $"{header}\n\n{declarationText}",
+            Type = ChunkType.Class,
+            ContentHash = declarationHash,
+            Metadata = new CodeChunkMetadata(
+                FilePath: artifact.AbsolutePath,
+                RelativeFilePath: artifact.RelativePath,
+                Language: SourceLanguage.CSharp,
+                Namespace: ctx.RootNamespace,
+                ClassName: typeDecl.Identifier.Text,
+                MethodName: null,
+                StartLine: startLine,
+                EndLine: declarationEndLine,
+                LastModified: artifact.LastModified,
+                RepositoryName: ctx.RepositoryName
+            )
+        };
 
-            if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+        // Group fields into batches that stay under MaxTokensPerChunk, splitting only
+        // at field boundaries — same fix as BuildGroupedPropertiesChunks, for classes
+        // with many fields. Fields are first partitioned into contiguous runs (no
+        // other member kind interleaved) so StartLine/EndLine never claims to cover
+        // code — methods, nested types — that isn't actually part of the chunk.
+        int headerTokens = header.Length / ApproxCharsPerToken;
+        var fieldRuns = PartitionIntoContiguousRuns<FieldDeclarationSyntax>(typeDecl.Members);
+        var groups = new List<List<FieldDeclarationSyntax>>();
+
+        foreach (var run in fieldRuns)
+        {
+            var current = new List<FieldDeclarationSyntax>();
+            int currentChars = 0;
+
+            foreach (var field in run)
             {
-                groups.Add(current);
-                current = new List<FieldDeclarationSyntax>();
-                currentChars = 0;
-            }
+                int fieldChars = field.ToFullString().TrimEnd().Length;
+                int projectedTokens = headerTokens + (currentChars + fieldChars) / ApproxCharsPerToken;
 
-            current.Add(field);
-            currentChars += fieldChars + 1;
+                if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+                {
+                    groups.Add(current);
+                    current = new List<FieldDeclarationSyntax>();
+                    currentChars = 0;
+                }
+
+                current.Add(field);
+                currentChars += fieldChars + 1;
+            }
+            if (current.Count > 0)
+                groups.Add(current);
         }
-        groups.Add(current); // always at least the declaration-only group, even with no fields
 
         for (int g = 0; g < groups.Count; g++)
         {
             var group = groups[g];
-            var isFirst = g == 0;
-
-            var contentLines = new List<string>();
-            if (isFirst)
-                contentLines.Add(declarationText);
-            contentLines.AddRange(group.Select(f => f.ToFullString().TrimEnd()));
-            var content = string.Join('\n', contentLines).Trim();
-
-            int fragmentStartLine = isFirst || group.Count == 0
-                ? startLine
-                : group[0].GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-            int fragmentEndLine = group.Count > 0
-                ? group[^1].GetLocation().GetLineSpan().EndLinePosition.Line + 1
-                : span.EndLinePosition.Line + 1;
+            var content = string.Join('\n', group.Select(f => f.ToFullString().TrimEnd())).Trim();
+            int fragmentStartLine = group[0].GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+            int fragmentEndLine = group[^1].GetLocation().GetLineSpan().EndLinePosition.Line + 1;
 
             var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
-            var enriched = $"{header}{fragmentSuffix}\n\n{content}";
+            var enriched = $"{header}\n// Fields{fragmentSuffix}\n\n{content}";
             var hash = ContentHasher.Compute(content);
 
             yield return new CodeChunk
@@ -393,8 +422,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         string[] lines,
         ChunkingOptions options)
     {
-        var props = typeDecl.Members.OfType<PropertyDeclarationSyntax>().ToList();
-        if (props.Count == 0) yield break;
+        if (!typeDecl.Members.OfType<PropertyDeclarationSyntax>().Any()) yield break;
 
         var header = BuildContextHeader(ctx, typeDecl);
         int headerTokens = header.Length / ApproxCharsPerToken;
@@ -404,26 +432,35 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         // window BuildMethodChunks already applies to oversized methods. Without this,
         // classes with many properties produce a single chunk that grows unbounded
         // (e.g. 700+ lines), burying individual properties past the retrieval TopK.
+        // Properties are first partitioned into contiguous runs (no other member kind
+        // interleaved) so StartLine/EndLine never claims to cover code — methods,
+        // fields, nested types — that isn't actually part of the chunk's content.
+        var propRuns = PartitionIntoContiguousRuns<PropertyDeclarationSyntax>(typeDecl.Members);
         var groups = new List<List<PropertyDeclarationSyntax>>();
-        var current = new List<PropertyDeclarationSyntax>();
-        int currentChars = 0;
 
-        foreach (var prop in props)
+        foreach (var run in propRuns)
         {
-            int propChars = prop.ToFullString().Trim().Length;
-            int projectedTokens = headerTokens + (currentChars + propChars) / ApproxCharsPerToken;
+            var current = new List<PropertyDeclarationSyntax>();
+            int currentChars = 0;
 
-            if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+            foreach (var prop in run)
             {
-                groups.Add(current);
-                current = new List<PropertyDeclarationSyntax>();
-                currentChars = 0;
-            }
+                int propChars = prop.ToFullString().Trim().Length;
+                int projectedTokens = headerTokens + (currentChars + propChars) / ApproxCharsPerToken;
 
-            current.Add(prop);
-            currentChars += propChars + 1;
+                if (current.Count > 0 && projectedTokens > options.MaxTokensPerChunk)
+                {
+                    groups.Add(current);
+                    current = new List<PropertyDeclarationSyntax>();
+                    currentChars = 0;
+                }
+
+                current.Add(prop);
+                currentChars += propChars + 1;
+            }
+            if (current.Count > 0)
+                groups.Add(current);
         }
-        groups.Add(current);
 
         for (int g = 0; g < groups.Count; g++)
         {
@@ -458,6 +495,39 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 )
             };
         }
+    }
+
+    /// <summary>
+    /// Splits <paramref name="allMembers"/> into runs of <typeparamref name="TMember"/> that are
+    /// physically adjacent in the source file — i.e. no other member (of any kind: method, field,
+    /// nested type, etc.) sits between them. Grouping by token budget alone (as the property/field
+    /// chunkers below do within each run) cannot be safely applied across a gap: two members of the
+    /// same kind that are far apart in the file would otherwise be merged into one chunk whose
+    /// reported StartLine/EndLine spans everything in between, even though that in-between code
+    /// isn't part of the chunk's actual content.
+    /// </summary>
+    private static List<List<TMember>> PartitionIntoContiguousRuns<TMember>(
+        SyntaxList<MemberDeclarationSyntax> allMembers)
+        where TMember : MemberDeclarationSyntax
+    {
+        var runs = new List<List<TMember>>();
+        List<TMember>? current = null;
+        int lastIndex = -2; // never adjacent to i=0
+
+        for (int i = 0; i < allMembers.Count; i++)
+        {
+            if (allMembers[i] is TMember typed)
+            {
+                if (current is not null && i == lastIndex + 1)
+                    current.Add(typed);
+                else
+                    runs.Add(current = new List<TMember> { typed });
+
+                lastIndex = i;
+            }
+        }
+
+        return runs;
     }
 
     private async IAsyncEnumerable<CodeChunk> FallbackSlidingWindowAsync(

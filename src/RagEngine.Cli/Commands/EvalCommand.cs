@@ -155,8 +155,9 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     private static EvalItemResult Evaluate(EvalItem item, IReadOnlyList<RetrievalResult> hits, int[] cutoffs)
     {
         float topScore = hits.Count > 0 ? hits[0].SimilarityScore : 0f;
+        var targetFileNames = item.TargetFileNames;
 
-        if (string.IsNullOrEmpty(item.SourceFile) || item.TargetContentContains.Count == 0)
+        if (targetFileNames.Count == 0 || item.TargetContentContains.Count == 0)
         {
             return new EvalItemResult(item.Question, item.Category, item.SourceFile, topScore, [], []);
         }
@@ -166,8 +167,11 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
 
         foreach (var k in cutoffs)
         {
+            // Match por OR: cualquiera de los archivos objetivo cuenta como acierto —
+            // preguntas con más de un documento igualmente válido (ej. portadas del PoC)
+            // no se penalizan por evaluar contra un único SourceFile.
             var window = hits.Take(k)
-                .Where(h => string.Equals(Path.GetFileName(h.Metadata.RelativeFilePath), item.SourceFile, StringComparison.OrdinalIgnoreCase))
+                .Where(h => targetFileNames.Contains(Path.GetFileName(h.Metadata.RelativeFilePath), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             bool any = item.TargetContentContains.Any(anchor => window.Any(h => h.Content.Contains(anchor, StringComparison.Ordinal)));
@@ -253,7 +257,18 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         string? SourceFile,
         string? TargetSectionHeader,
         List<string> TargetContentContains,
-        string? Note);
+        string? Note,
+        // Preguntas con más de un documento/chunk igualmente válido como objetivo
+        // (ej. portadas del PoC de búsqueda libre, TargetRelativePaths[]). Si viene
+        // poblado, gana sobre SourceFile — ver EvalItem.TargetFileNames.
+        List<string>? SourceFiles = null)
+    {
+        /// <summary>Lista efectiva de nombres de archivo válidos como objetivo (match por OR).</summary>
+        public IReadOnlyList<string> TargetFileNames =>
+            SourceFiles is { Count: > 0 } multi ? multi
+            : SourceFile is not null ? [SourceFile]
+            : [];
+    }
 
     private sealed record EvalItemResult(
         string Question,

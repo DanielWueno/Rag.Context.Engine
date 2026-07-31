@@ -1,0 +1,131 @@
+[
+  {
+    "Question": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "AuditoriaResultadoHallazgo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Indica si el hallazgo ha ocurrido anteriormente en auditorias previas"],
+    "Note": "Propiedad EsRecurrente, ToolTip del campo."
+  },
+  {
+    "Question": "¿Cuándo se puede reabrir una acción correctiva ya finalizada?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["ReabrirAccionCorrectiva"],
+    "Note": "CanReopen: solo si Estatus=Finalizado y el usuario tiene el permiso especial ReabrirAccionCorrectiva."
+  },
+  {
+    "Question": "¿Cuándo pasa un hallazgo de auditoría a estatus de validación?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Solo actualizar el estatus si todos los hallazgos no cancelados están finalizados"],
+    "Note": "ActualizaEstatusHallazgo: pasa a Validacion solo cuando todas las acciones correctivas no canceladas están finalizadas."
+  },
+  {
+    "Question": "¿Qué información se registra al validar o rechazar un hallazgo de auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "AuditoriaResultadoHallazgoValidacion.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Comentarios u observaciones adicionales sobre la evaluacion"],
+    "Note": "Campo Observaciones de la validación (soporta estatus Rechazado/Finalizado)."
+  },
+  {
+    "Question": "¿Qué se necesita para reprogramar la ejecución de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "AuditoriaReprogramacion.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["La fecha programada de inicio y fin debe ser igual o mayor a la fecha actual"],
+    "Note": "Reglas de validación: fechas dentro de rango + motivo obligatorio."
+  },
+  {
+    "Question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "PlanificacionAuditoriaViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Reprograma la auditoría seleccionada."],
+    "Note": "Acción 'Reprogramar Auditoria' del controller de planificación."
+  },
+  {
+    "Question": "¿Cuándo se puede finalizar completamente una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["accionesCorrectivasNoCanceladas.Count() == accionesCorrectivasFinalizados"],
+    "Note": "CanFinalizarAuditoria: mismo criterio se repite en Auditorias.cs y en AuditoriaResultadoHallazgoAccionCorrectiva.cs.",
+    "SourceFiles": ["Auditorias.cs", "AuditoriaResultadoHallazgoAccionCorrectiva.cs"]
+  },
+  {
+    "Question": "¿Qué pasa con una auditoría si no se encontraron hallazgos activos al completarla?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["TipoEstatus.RegistroPDCA : TipoEstatus.Finalizado"],
+    "Note": "ValidarTieneHallazgos: sin hallazgos activos, la auditoría pasa directo a Finalizado."
+  },
+  {
+    "Question": "¿Cuándo puedo exportar la plantilla de hallazgos de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Solo se puede exportar la plantilla si la auditoria está en estatus Ejecución."],
+    "Note": "FileExport lanza UserFriendlyException fuera de estatus Ejecución."
+  },
+  {
+    "Question": "¿Cómo se determina si un empleado es el auditado de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Responsable == Session.CurrentUser().Employee(Session)"],
+    "Note": "Propiedad IsAuditado."
+  },
+  {
+    "Question": "¿Qué motivo se registra cuando se reprograma un plan de auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "PlanAuditoria.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Razon por la cual se realizo la reprogramacion"],
+    "Note": "Campo MotivoReprogramada."
+  },
+  {
+    "Question": "¿Cómo se calcula la calificación global de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["contibucionGrupo = (calificacion / 100) * grupo.Ponderacion"],
+    "Note": "CalcularCalificacionAuditoria: suma ponderada de la calificación de cada grupo de criterios."
+  },
+  {
+    "Question": "¿Cómo se calcula la calificación de un grupo de criterios del checklist?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["totalGrupo += resultado.CalificacionCalculada"],
+    "Note": "CalcularCalificacionGrupo, distinto de la calificación global de la auditoría completa."
+  },
+  {
+    "Question": "¿Cómo registro el plan de acción de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "EjecucionAuditoriaViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Registrar las acciones correctivas para el plan de acción de la auditoría seleccionada."],
+    "Note": "Acción 'Registrar Plan de Acción'."
+  },
+  {
+    "Question": "¿Cómo importo auditorías desde un archivo Excel?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "EjecucionAuditoriaViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Importar auditorías desde un archivo Excel."],
+    "Note": "Acción 'Importar Auditorías'."
+  },
+  {
+    "Question": "¿Qué significa recibir el plan de acción PDCA de una auditoría?",
+    "Category": "bsuite-auditorias",
+    "SourceFile": "EjecucionAuditoriaViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": ["Recibir plan de acción de la auditoría seleccionada."],
+    "Note": "Acción 'Recibir Plan de Acción PDCA'."
+  }
+]

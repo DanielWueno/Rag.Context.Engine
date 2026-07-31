@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.VectorStore;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -26,10 +27,12 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
     }
 
     private readonly QdrantClient _qdrant;
+    private readonly QdrantVectorStore _vectorStore;
 
-    public StatusCommand(QdrantClient qdrant)
+    public StatusCommand(QdrantClient qdrant, QdrantVectorStore vectorStore)
     {
         _qdrant = qdrant;
+        _vectorStore = vectorStore;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -107,6 +110,18 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         {
             var vp = info.Config.Params.VectorsConfig.Params;
             table.AddRow("[dim]Dimensiones vector[/]", $"[white]{vp.Size}[/]");
+        }
+
+        // Decisión 7: observabilidad por-punto, no solo por-colección — saber que el
+        // schema tiene el tercer vector no dice si ya está poblado en todos los puntos.
+        var hasSummaryVector = await _vectorStore.HasSummaryVectorAsync(collectionName);
+        if (hasSummaryVector)
+        {
+            var pending = await _vectorStore.CountResumenPendingAsync(collectionName);
+            var completedCount = pointCount >= pending ? pointCount - pending : 0;
+            var resumenColor = pending == 0 ? "green" : "yellow";
+            table.AddRow("[dim]Resumen de negocio[/]",
+                $"[{resumenColor}]{completedCount:N0}/{pointCount:N0} puntos ({pending:N0} pendientes)[/]");
         }
 
         var panel = new Panel(table)

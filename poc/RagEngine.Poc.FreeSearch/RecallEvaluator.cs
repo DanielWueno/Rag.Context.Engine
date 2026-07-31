@@ -232,7 +232,8 @@ public sealed class RecallEvaluator
                 idx.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 chunk.Content,
                 0f,
-                chunk.Metadata));
+                chunk.Metadata,
+                chunk.ContentHash));
         }
         return pool;
     }

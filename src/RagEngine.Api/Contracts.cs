@@ -29,15 +29,22 @@ public sealed record SourceDto(
     int StartLine,
     int EndLine,
     float Score,
-    string Content)
+    string Content,
+    string? Resumen)
 {
-    public static SourceDto From(RetrievalResult result) => new(
+    /// <summary>
+    /// <paramref name="resumen"/> viene de una consulta aparte a <c>SummaryCache</c> por
+    /// <see cref="RetrievalResult.ContentHash"/> — null si la colección no generó resumen para
+    /// este chunk (sin <c>--con-resumen</c>, o cayó en el sentinel SIN_CONTENIDO_DE_NEGOCIO).
+    /// </summary>
+    public static SourceDto From(RetrievalResult result, string? resumen = null) => new(
         result.Metadata.RelativeFilePath,
         result.Metadata.MethodName,
         result.Metadata.StartLine,
         result.Metadata.EndLine,
         result.SimilarityScore,
-        result.Content);
+        result.Content,
+        resumen);
 }
 
 /// <summary>Response body for /api/ask.</summary>

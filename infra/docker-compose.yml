@@ -34,7 +34,15 @@ services:
       # repo que ya usa el CLI — sobrevive a recrear el contenedor y se puede
       # analizar directo desde el host sin `docker logs`.
       - ../logs:/app/logs
+      # Caché SQLite de resúmenes de negocio (Reto A), generada por `rag ingest
+      # --con-resumen` corriendo nativo en el host — sin este mount, SummaryCache
+      # abriría un sqlite3 vacío dentro del contenedor y Sources[].Resumen (Reto D)
+      # sería siempre null aunque la colección sí tenga resumen. Montado read-write
+      # (no :ro): el modo WAL de SQLite necesita escribir *-wal/*-shm incluso para
+      # lecturas; la API igual nunca llama a SummaryCache.SetAsync.
+      - "/Users/DevStudio/Library/Application Support/rag-engine:/data/rag-engine"
     environment:
+      Ingestion__ResumenCachePath: /data/rag-engine/summary-cache.sqlite3
       # NOTA: en esta máquina Qdrant corre como un contenedor standalone
       # ("qdrant-local", fuera de este compose), no como el servicio "qdrant"
       # de arriba. Por eso se alcanza igual que Ollama: publicado en el host.

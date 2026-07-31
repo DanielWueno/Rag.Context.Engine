@@ -8,7 +8,8 @@ public sealed record RetrievalResult(
     string ChunkId,
     string Content,
     float SimilarityScore,
-    CodeChunkMetadata Metadata
+    CodeChunkMetadata Metadata,
+    string ContentHash
 );
 
 /// <summary>

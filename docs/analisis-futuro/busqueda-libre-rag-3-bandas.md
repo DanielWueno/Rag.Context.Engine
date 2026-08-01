@@ -11,8 +11,9 @@
 > (continuación)" y "(continuación 2)" al final. Además, se encontró y arregló un bug relacionado
 > (metadata `StartLine`/`EndLine` engañosa en chunks agrupados) — ver "(continuación 3)". Recall@10
 > real: **56% → 62% (re-etiquetado) → 69% (fix de chunk-imán) → 69% (fix de metadata, sin
-> regresión, recall@3/@5 mejoran)**. Escalar a `bsuite-repo` queda como decisión pendiente de
-> agendar (corrida de varias horas), no como bloqueo técnico.
+> regresión, recall@3/@5 mejoran)**. `bsuite-repo` ya se escaló con ambos fixes (**hecho** — ver
+> "(continuación 5)"): 22.986 puntos, ambos vectores, recall@10 baja a 50% por dilución esperada a
+> escala completa. Con esto, la línea de trabajo de esta sesión queda cerrada.
 
 ## El problema
 
@@ -691,3 +692,47 @@ el mismo.
 **How to apply:** escalar a `bsuite-repo` sigue siendo una decisión de agendar una ventana larga
 (overnight), no un bloqueo técnico ni algo que estos fixes hayan encarecido. Ningún pendiente
 técnico impide arrancarla cuando se decida.
+
+---
+
+## Sesión 2026-08-01 (continuación 5) — `bsuite-repo` escalado con ambos fixes: resultado
+
+El usuario corrió la ingesta completa en una ventana dedicada (fuera de esta sesión, para no
+invalidarla con cambios de código en paralelo): `ingest "BusinessSuite.Xaf" --collection bsuite-repo
+--repo-name BusinessSuite.Xaf --con-resumen --force`.
+
+**Resultado real, mucho más rápido de lo estimado:** 2.161 archivos, 22.986 chunks generados e
+indexados, **18:55.19** (vs. las ~14h estimadas en "continuación 4") — 12.835 resúmenes generados,
+10.151 sentinel `SIN_CONTENIDO_DE_NEGOCIO`, 0 pendientes.
+
+**La estimación de throughput fue muy pesimista — causa no resuelta del todo, documentada como
+aprendizaje:** el contador `Resúmenes generados` del resumen de ingesta **no distingue cache-hit de
+llamada real a Ollama** (confirmado leyendo `ProcessResumenPointAsync`: tanto el camino de caché
+como el de generación fresca incrementan la misma métrica). La caché SQLite compartida
+(`summary-cache.sqlite3`) ya tenía 18.784 entradas acumuladas de todo el trabajo previo sobre este
+mismo repo. Se intentó acotar el fenómeno filtrando por `generated_at` (que sí solo se escribe en
+el camino de generación fresca, no en cache-hit) pero los timestamps de las entradas de "hoy"
+abarcan una ventana de 8h42m — mucho más ancha que la corrida de 19 min — lo que impide aislar
+limpiamente cuántas fueron cache-hit vs. fresh-gen de esta corrida puntual sin instrumentación
+adicional. **No se investigó más a fondo** — no es bloqueante y la métrica en sí (que no distingue
+hit/miss) es una limitación de observabilidad conocida, no algo que valga la pena resolver ahora.
+
+**Verificación de la colección:** 22.986 puntos, ambos vectores (`dense` + `dense-resumen`),
+status `green` — estructuralmente sana.
+
+**Verificación de sanidad (reusando el eval-set de auditorías, cuyos archivos SÍ están dentro de
+`bsuite-repo`):** `rag eval --eval-set docs/eval/bsuite-auditorias.eval-set.json --collection
+bsuite-repo` → **recall@10 baja a 50%** (vs. 69% en `bsuite-auditorias-test`, la colección chica
+con solo esos archivos). Caída esperada y no un bug — a escala completa (~23k chunks vs. ~1.7k)
+hay muchísima más competencia en el espacio de embeddings, diluyendo el ranking de chunks
+específicos de un submódulo. No se investigó pregunta por pregunta (no es el propósito de este
+eval-set contra esta colección) — solo sirvió como chequeo de sanidad estructural, que pasó.
+
+**Confirmado también:** los cambios de chunking (ambos fixes) ya son visibles en el chat/API sin
+necesidad de reconstruir la imagen Docker de `rag-api` — el fix es de tiempo de ingesta, no de
+código de servicio; el contenedor solo sirve lo que ya está en Qdrant.
+
+**Con esto se cierra la línea de trabajo completa de esta sesión**: re-etiquetado del eval-set →
+fix de chunk-imán (verificado) → fix de metadata StartLine/EndLine (analizado, planeado,
+implementado, verificado) → escalado a `bsuite-repo` con ambos fixes (verificado). Todo commiteado
+salvo esta última actualización del doc.

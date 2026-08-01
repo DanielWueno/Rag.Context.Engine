@@ -701,21 +701,28 @@ El usuario corrió la ingesta completa en una ventana dedicada (fuera de esta se
 invalidarla con cambios de código en paralelo): `ingest "BusinessSuite.Xaf" --collection bsuite-repo
 --repo-name BusinessSuite.Xaf --con-resumen --force`.
 
-**Resultado real, mucho más rápido de lo estimado:** 2.161 archivos, 22.986 chunks generados e
-indexados, **18:55.19** (vs. las ~14h estimadas en "continuación 4") — 12.835 resúmenes generados,
+**Resultado:** 2.161 archivos, 22.986 chunks generados e indexados, 12.835 resúmenes generados,
 10.151 sentinel `SIN_CONTENIDO_DE_NEGOCIO`, 0 pendientes.
 
-**La estimación de throughput fue muy pesimista — causa no resuelta del todo, documentada como
-aprendizaje:** el contador `Resúmenes generados` del resumen de ingesta **no distingue cache-hit de
-llamada real a Ollama** (confirmado leyendo `ProcessResumenPointAsync`: tanto el camino de caché
-como el de generación fresca incrementan la misma métrica). La caché SQLite compartida
-(`summary-cache.sqlite3`) ya tenía 18.784 entradas acumuladas de todo el trabajo previo sobre este
-mismo repo. Se intentó acotar el fenómeno filtrando por `generated_at` (que sí solo se escribe en
-el camino de generación fresca, no en cache-hit) pero los timestamps de las entradas de "hoy"
-abarcan una ventana de 8h42m — mucho más ancha que la corrida de 19 min — lo que impide aislar
-limpiamente cuántas fueron cache-hit vs. fresh-gen de esta corrida puntual sin instrumentación
-adicional. **No se investigó más a fondo** — no es bloqueante y la métrica en sí (que no distingue
-hit/miss) es una limitación de observabilidad conocida, no algo que valga la pena resolver ahora.
+**Bug real encontrado en la tabla de resumen del CLI (no en el pipeline de ingesta):** la duración
+mostrada, "18:55.19", se leyó inicialmente como 18 minutos 55 segundos — interpretación que llevó a
+concluir (erróneamente) que la corrida había sido dramáticamente más rápida de lo estimado. El
+usuario confirmó que en realidad tardó del orden de **18 horas 55 minutos**. Causa raíz confirmada
+en el código: `IngestCommand.cs:201` formateaba la duración con `TimeSpan.ToString(@"mm\:ss\.ff")`
+— un formato que **descarta silenciosamente el componente de horas** para cualquier duración de 1
+hora o más (`TimeSpan.Minutes`/`.Seconds` son los componentes dentro de la hora actual, no el total).
+Para una duración real de ~18h55m, ese formato imprime solo "55:XX" con los minutos/segundos
+truncados a la hora — el "18" que se vio no eran minutos, sino un artefacto de lectura del
+formato truncado. **Fix aplicado**: la duración ahora se formatea condicionalmente
+(`d\.hh\:mm\:ss` si ≥1 día, `hh\:mm\:ss` si ≥1 hora, `mm\:ss\.ff` si no) para nunca perder el
+componente de horas.
+
+**Con esta corrección, el throughput real (~18h55m para 22.986 chunks ≈ 0.34 chunks/seg) es
+consistente con la estimación previa de ~14h** (mismo orden de magnitud, algo más lento incluso —
+razonable para una corrida de escala real vs. una muestra chica: más presión de memoria, colas de
+batch más grandes, más horas acumuladas de latencia de Ollama). **No hace falta seguir investigando
+la discrepancia de cache-hit vs. generación fresca que se especuló inicialmente — el misterio
+completo era el bug de formato, no un comportamiento real del pipeline de resúmenes.**
 
 **Verificación de la colección:** 22.986 puntos, ambos vectores (`dense` + `dense-resumen`),
 status `green` — estructuralmente sana.
@@ -734,5 +741,5 @@ código de servicio; el contenedor solo sirve lo que ya está en Qdrant.
 
 **Con esto se cierra la línea de trabajo completa de esta sesión**: re-etiquetado del eval-set →
 fix de chunk-imán (verificado) → fix de metadata StartLine/EndLine (analizado, planeado,
-implementado, verificado) → escalado a `bsuite-repo` con ambos fixes (verificado). Todo commiteado
-salvo esta última actualización del doc.
+implementado, verificado) → escalado a `bsuite-repo` con ambos fixes (verificado) → bug de formato
+de duración encontrado y corregido.

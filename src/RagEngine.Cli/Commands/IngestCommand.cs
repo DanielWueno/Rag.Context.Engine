@@ -198,7 +198,12 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             summaryTable.AddRow("Chunks Generated", $"[cyan]{summary.ChunksGenerated:N0}[/]");
             summaryTable.AddRow("Chunks Indexed",   $"[green]{summary.ChunksIndexed:N0}[/]");
             summaryTable.AddRow("Files Skipped",    $"[yellow]{summary.FilesSkipped:N0}[/]");
-            summaryTable.AddRow("Duration",         $"[white]{summary.TotalDuration:mm\\:ss\\.ff}[/]");
+            var durationText = summary.TotalDuration.TotalDays >= 1
+                ? summary.TotalDuration.ToString(@"d\.hh\:mm\:ss")
+                : summary.TotalDuration.TotalHours >= 1
+                    ? summary.TotalDuration.ToString(@"hh\:mm\:ss")
+                    : summary.TotalDuration.ToString(@"mm\:ss\.ff");
+            summaryTable.AddRow("Duration",         $"[white]{durationText}[/]");
             summaryTable.AddRow("Memory Peak",
                 $"[grey]{summary.EstimatedMemoryPeakBytes / 1_048_576.0:F1} MB[/]");
 

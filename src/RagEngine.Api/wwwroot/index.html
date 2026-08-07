@@ -41,6 +41,16 @@
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    color: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mode-toggle input { cursor: pointer; }
 
   /* ── Historial de chat (única zona con scroll) ───────────────── */
   #chat-log {
@@ -212,6 +222,10 @@
     <h1>RagEngine — Consulta de Documentación</h1>
     <div class="header-actions">
       <select id="collection"><option>Cargando colecciones...</option></select>
+      <label class="mode-toggle" title="Activado: respuestas con código y citas de archivo, para desarrolladores. Desactivado (por defecto): respuestas en lenguaje simple, sin código.">
+        <input type="checkbox" id="technical-toggle">
+        Respuesta técnica
+      </label>
       <button type="button" id="new-chat-btn" class="secondary" title="Empezar una conversación nueva">Nuevo chat</button>
     </div>
   </header>
@@ -253,6 +267,16 @@ const askBtn = document.getElementById('ask-btn');
 const searchBtn = document.getElementById('search-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
 const collectionSelect = document.getElementById('collection');
+const technicalToggle = document.getElementById('technical-toggle');
+
+// Se recuerda entre recargas de la pestaña (no entre usuarios/equipos — es
+// localStorage, no una preferencia de servidor). El default real vive en el
+// backend (ResponseModeExtensions.ParseResponseMode → Simple); esto solo evita
+// que un dev tenga que re-marcar el toggle cada vez que abre la página.
+technicalToggle.checked = localStorage.getItem('rag-response-mode') === 'technical';
+technicalToggle.addEventListener('change', () => {
+  localStorage.setItem('rag-response-mode', technicalToggle.checked ? 'technical' : 'simple');
+});
 
 // Sin sesión en el servidor: el historial vive solo en esta pestaña (memoria JS)
 // y se reenvía completo en cada /api/ask/stream — así el backend sigue stateless.
@@ -278,9 +302,15 @@ function buildSourcesFragment(sources) {
     const div = document.createElement('div');
     div.className = 'source';
 
+    // Respuesta simple: el backend manda file/section/líneas/content en null
+    // (SourceDto.Redacted) — un lector no técnico no puede distinguir un
+    // fragmento de código crudo de la respuesta o de un error, así que acá
+    // solo mostramos el score y, si existe, el resumen de negocio.
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.textContent = `${s.file}${s.section ? ' — ' + s.section : ''} (L${s.startLine}-${s.endLine}, score ${s.score.toFixed(2)})`;
+    meta.textContent = s.file
+      ? `${s.file}${s.section ? ' — ' + s.section : ''} (L${s.startLine}-${s.endLine}, score ${s.score.toFixed(2)})`
+      : `Coincidencia (score ${s.score.toFixed(2)})`;
     div.appendChild(meta);
 
     // Solo colecciones ingestadas con --con-resumen traen esto; sin fallback
@@ -293,10 +323,12 @@ function buildSourcesFragment(sources) {
       div.appendChild(resumen);
     }
 
-    const fragment = document.createElement('pre');
-    fragment.className = 'fragment';
-    fragment.textContent = s.content;
-    div.appendChild(fragment);
+    if (s.content) {
+      const fragment = document.createElement('pre');
+      fragment.className = 'fragment';
+      fragment.textContent = s.content;
+      div.appendChild(fragment);
+    }
 
     wrap.appendChild(div);
   }
@@ -389,9 +421,11 @@ loadCollections();
 
 // Recorta un título de sección para el status en vivo: "US-17.2 — Finalización
 // automática de Tickets con plazo vencido" -> se queda con lo esencial, no el
-// fragmento entero. Solo cosmético.
+// fragmento entero. Solo cosmético. En respuesta simple, file/section vienen
+// null (SourceDto.Redacted) — cae al score en vez de romper o filtrar rutas.
 function shortTitle(s) {
   const label = s.section || s.file;
+  if (!label) return `score ${s.score.toFixed(2)}`;
   return label.length > 60 ? label.slice(0, 57) + '…' : label;
 }
 
@@ -457,6 +491,7 @@ async function runAskStream() {
         collection: collectionSelect.value,
         topK: 10,
         rerank: true,
+        responseMode: technicalToggle.checked ? 'technical' : 'simple',
         history: historyForRequest
       })
     });

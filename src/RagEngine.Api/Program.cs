@@ -82,14 +82,25 @@ try
     // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
     // fuente, sin generar nada nuevo. Miss de caché (colección sin resumen, o chunk que cayó
     // en el sentinel SIN_CONTENIDO_DE_NEGOCIO) simplemente deja Resumen en null.
+    //
+    // responseMode decide la forma del DTO, no solo su contenido: en Simple, un lector no
+    // técnico no puede distinguir si un fragmento de código crudo ES la respuesta, una cita,
+    // o un error — así que File/Section/StartLine/EndLine/Content se omiten por completo
+    // (SourceDto.Redacted), dejando solo Score y, si existe, el Resumen ya en lenguaje de
+    // negocio. /api/search (el botón "Buscar", una herramienta explícita de power-user) no
+    // pasa por acá con Simple — solo /api/ask y /api/ask/stream respetan el toggle.
     static async Task<List<SourceDto>> BuildSourcesAsync(
         IReadOnlyList<RetrievalResult> results,
         SummaryCache summaryCache,
+        ResponseMode responseMode,
         CancellationToken cancellationToken)
     {
         var resumenes = await Task.WhenAll(
             results.Select(r => summaryCache.TryGetAsync(r.ContentHash, cancellationToken)));
-        return results.Zip(resumenes, (r, hit) => SourceDto.From(r, hit.Summary)).ToList();
+        return results.Zip(resumenes, (r, hit) => responseMode == ResponseMode.Simple
+                ? SourceDto.Redacted(r, hit.Summary)
+                : SourceDto.From(r, hit.Summary))
+            .ToList();
     }
 
     app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
@@ -133,7 +144,9 @@ try
             cancellationToken);
         stopwatch.Stop();
 
-        var sources = await BuildSourcesAsync(results, summaryCache, cancellationToken);
+        // /api/search es la herramienta "Buscar" del power-user — siempre trae el fragmento
+        // crudo con file/líneas, sin importar el toggle de respuesta simple/técnica del chat.
+        var sources = await BuildSourcesAsync(results, summaryCache, ResponseMode.Technical, cancellationToken);
 
         queryLogger.LogInformation(
             "QueryEvent {@Entry}",
@@ -170,6 +183,7 @@ try
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
+        var responseMode = request.ResponseMode.ParseResponseMode();
         var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
         var stopwatch = Stopwatch.StartNew();
@@ -197,7 +211,7 @@ try
 
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, history, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, responseMode, history, cancellationToken))
         {
             answer.Append(fragment);
         }
@@ -207,7 +221,7 @@ try
         var sources = ShouldSuppressSources(isMetaIntent, rerank, retrievedSources, ragOptions.Value)
                 || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
             ? []
-            : await BuildSourcesAsync(retrievedSources, summaryCache, cancellationToken);
+            : await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
         stopwatch.Stop();
 
         queryLogger.LogInformation(
@@ -220,6 +234,7 @@ try
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
+                ResponseMode = responseMode,
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 Answer = answerText,
@@ -256,6 +271,7 @@ try
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
+        var responseMode = request.ResponseMode.ParseResponseMode();
         var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
         http.Response.Headers.CacheControl = "no-cache";
@@ -298,7 +314,7 @@ try
         // interno del servicio de generación.
         var sources = ShouldSuppressSources(isMetaIntent, rerank, results, ragOptions.Value)
             ? []
-            : await BuildSourcesAsync(results, summaryCache, cancellationToken);
+            : await BuildSourcesAsync(results, summaryCache, responseMode, cancellationToken);
 
         // El front pinta estas tarjetas de inmediato (con su fragmento) y usa
         // los primeros títulos como el "extracto de contexto" del status —
@@ -316,7 +332,7 @@ try
 
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, history, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, responseMode, history, cancellationToken))
         {
             answer.Append(fragment);
             await SendAsync("token", new { text = fragment });
@@ -346,6 +362,7 @@ try
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
+                ResponseMode = responseMode,
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 Answer = answer.ToString(),

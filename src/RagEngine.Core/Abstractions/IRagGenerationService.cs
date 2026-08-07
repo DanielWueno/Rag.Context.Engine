@@ -30,6 +30,12 @@ public interface IRagGenerationService
     ///   If true, the retriever widens the candidate pool (3×topK) and re-scores it
     ///   with the Cross-Encoder before injecting the final topK into the LLM context.
     /// </param>
+    /// <param name="responseMode">
+    ///   Selects the system-prompt persona. <see cref="ResponseMode.Simple"/> (default)
+    ///   explains in plain language with no code/citations shown, for non-technical
+    ///   readers. <see cref="ResponseMode.Technical"/> keeps the code/docs-aware
+    ///   prompts with fenced code blocks and file citations, for developers.
+    /// </param>
     /// <param name="history">
     ///   Prior turns of the conversation, oldest first, supplied by the caller on every
     ///   call (this service holds no session state). Only <paramref name="query"/> is
@@ -47,6 +53,7 @@ public interface IRagGenerationService
         int topK = 5,
         float minimumScore = 0.10f,
         bool useReRanking = false,
+        ResponseMode responseMode = ResponseMode.Simple,
         IReadOnlyList<ChatTurn>? history = null,
         CancellationToken cancellationToken = default);
 }

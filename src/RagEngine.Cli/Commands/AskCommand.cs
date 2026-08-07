@@ -1,4 +1,5 @@
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -44,6 +45,12 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
         [CommandOption("--no-stream")]
         [System.ComponentModel.Description("Buffer the full response and print it at once instead of streaming.")]
         public bool NoStream { get; init; } = false;
+
+        [CommandOption("--technical|-t")]
+        [System.ComponentModel.Description("Answer with code citations and fenced code blocks, for developers. Default (off) answers in plain, non-technical language with no raw code shown.")]
+        public bool Technical { get; init; } = false;
+
+        public ResponseMode ResponseMode => Technical ? ResponseMode.Technical : ResponseMode.Simple;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -114,7 +121,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             var firstToken  = true;
 
             await foreach (var fragment in _generation
-                .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, cancellationToken: ct)
+                .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                 .ConfigureAwait(false))
             {
                 if (firstToken)
@@ -183,7 +190,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
                 .StartAsync("[cyan]Generando respuesta completa...[/]", async _ =>
                 {
                     await foreach (var fragment in _generation
-                        .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, cancellationToken: ct)
+                        .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                         .ConfigureAwait(false))
                     {
                         buffer.Append(fragment);
@@ -234,6 +241,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
                                $"[dim]Top-K:[/] [white]{s.TopK}[/]  " +
                                $"[dim]Min-Score:[/] [white]{s.MinScore:F2}[/]  " +
                                $"[dim]Rerank:[/] [white]{(s.Rerank ? "on" : "off")}[/]  " +
+                               $"[dim]Respuesta:[/] [white]{(s.Technical ? "técnica" : "simple")}[/]  " +
                                $"[dim]Modo:[/] [white]{(s.NoStream ? "buffered" : "streaming")}[/]");
         AnsiConsole.Write(new Rule { Style = Style.Parse("grey dim") });
         AnsiConsole.WriteLine();

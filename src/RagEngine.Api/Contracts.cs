@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using RagEngine.Core.Domain;
 
 namespace RagEngine.Api;
@@ -90,7 +91,20 @@ public sealed record SourceDto(
         EndLine: null,
         Score: result.SimilarityScore,
         Content: null,
-        Resumen: resumen);
+        Resumen: StripEntityPrefix(resumen));
+
+    /// <summary>
+    /// The ingestion-time business-summary prompt (<c>OllamaBusinessSummaryGenerator</c>)
+    /// always makes the model start each summary by "naming the entity, screen, or file,
+    /// followed by a colon" (e.g. <c>"ServicioCliente.cs: ..."</c>) — a leftover technical
+    /// hint that already contradicts <see cref="ResponseMode.Simple"/>'s no-code-exposure
+    /// goal even though it's not raw code. Strips only that first, always-present prefix —
+    /// not any later colon in the sentence (<c>count: 1</c>).
+    /// </summary>
+    private static readonly Regex EntityPrefixPattern = new(@"^\s*[^\n:]{1,80}:\s*", RegexOptions.Compiled);
+
+    private static string? StripEntityPrefix(string? resumen) =>
+        string.IsNullOrEmpty(resumen) ? resumen : EntityPrefixPattern.Replace(resumen, string.Empty, 1);
 }
 
 /// <summary>Response body for /api/ask.</summary>

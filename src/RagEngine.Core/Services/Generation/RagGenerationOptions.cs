@@ -59,4 +59,16 @@ public sealed record RagGenerationOptions
     /// calibración arriba.
     /// </summary>
     public float HighConfidenceThreshold { get; init; } = 0.60f;
+
+    /// <summary>
+    /// Red de seguridad estructural para <see cref="RagEngine.Core.Domain.ResponseMode.Simple"/>:
+    /// cuando está en <c>true</c> (default), la respuesta del camino grounded se
+    /// buferea completa y pasa por un filtro determinístico (bloques de código y
+    /// nombres tipo identificador) antes de enviarse — ver
+    /// docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 1. Poner en
+    /// <c>false</c> revierte por completo a streaming crudo sin filtrar (el
+    /// comportamiento previo a esa fase), útil como rollback de incidente sin
+    /// rebuild — solo requiere cambiar config/env var y reiniciar el contenedor.
+    /// </summary>
+    public bool EnableSimpleModeSanitizer { get; init; } = true;
 }

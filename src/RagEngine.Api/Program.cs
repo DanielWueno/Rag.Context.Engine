@@ -55,6 +55,19 @@ try
 
     var app = builder.Build();
 
+    // Fase 1 del modo Simple (docs/analisis-futuro/modo-respuesta-simple-codigo.md)
+    // agrega un filtro determinístico + buffer para ResponseMode.Simple, con una
+    // válvula de escape de rollback sin rebuild. Si alguien la apaga vía config/env
+    // var, debe quedar bien visible en el arranque — no algo que se descubra
+    // semanas después de un incidente puntual.
+    if (!app.Services.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>().CurrentValue.EnableSimpleModeSanitizer)
+    {
+        app.Services.GetRequiredService<ILogger<Program>>().LogWarning(
+            "[RAG] EnableSimpleModeSanitizer=false — ResponseMode.Simple está transmitiendo sin " +
+            "el filtro post-generación de Fase 1 (streaming crudo, sin buffer). Revisar " +
+            "docs/analisis-futuro/modo-respuesta-simple-codigo.md antes de dejarlo así por mucho tiempo.");
+    }
+
     app.UseDefaultFiles();
     app.UseStaticFiles();
 
@@ -209,12 +222,19 @@ try
 
         var history = request.History?.Select(t => t.ToDomain()).ToList();
 
+        // Medido por separado del stopwatch total del request (que también cubre el
+        // retrieval de "sources" en paralelo) para poder comparar la latencia real de
+        // Simple (buferea toda la respuesta) contra Technical (streaming) — ver Fase 1
+        // punto 4 de docs/analisis-futuro/modo-respuesta-simple-codigo.md.
+        var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, responseMode, history, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, responseMode, history,
+            onStatus: null, cancellationToken: cancellationToken))
         {
             answer.Append(fragment);
         }
+        generationStopwatch.Stop();
 
         var retrievedSources = await sourcesTask;
         var answerText = answer.ToString();
@@ -237,6 +257,7 @@ try
                 ResponseMode = responseMode,
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
+                GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
                 Answer = answerText,
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });
@@ -330,13 +351,21 @@ try
         // conversacional, no se vuelve a buscar en Qdrant.
         var history = request.History?.Select(t => t.ToDomain()).ToList();
 
+        // Medido por separado del stopwatch total del request, igual que en /api/ask,
+        // para poder comparar la latencia real de Simple (buferea toda la respuesta,
+        // un solo evento "token" al final) contra Technical (streaming token-a-token)
+        // — ver Fase 1 punto 4 de docs/analisis-futuro/modo-respuesta-simple-codigo.md.
+        var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, responseMode, history, cancellationToken))
+            request.Query, collection, topK, minScore, rerank, responseMode, history,
+            onStatus: async (message, ct) => await SendAsync("status", new { message }),
+            cancellationToken: cancellationToken))
         {
             answer.Append(fragment);
             await SendAsync("token", new { text = fragment });
         }
+        generationStopwatch.Stop();
 
         // El gate no cortó (banda media/alta), pero el LLM decidió por su cuenta,
         // siguiendo la regla 2 del prompt, que ninguno de los chunks recuperados
@@ -365,6 +394,7 @@ try
                 ResponseMode = responseMode,
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
+                GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
                 Answer = answer.ToString(),
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });

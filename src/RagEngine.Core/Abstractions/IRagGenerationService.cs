@@ -42,6 +42,14 @@ public interface IRagGenerationService
     ///   used for retrieval — history is injected into the LLM prompt for conversational
     ///   continuity, not re-searched against Qdrant.
     /// </param>
+    /// <param name="onStatus">
+    ///   Optional callback invoked with a short human-readable status label at
+    ///   intermediate pipeline transitions the caller cannot otherwise observe —
+    ///   today, only right before the <see cref="ResponseMode.Simple"/> grounded
+    ///   path runs its post-generation sanitizer on the fully buffered answer (see
+    ///   docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 1 punto 4).
+    ///   Callers that don't need progress UX (e.g. the CLI) can leave this null.
+    /// </param>
     /// <param name="cancellationToken">Token to cancel the streaming operation.</param>
     /// <returns>
     ///   An async stream of text fragments produced by the LLM, suitable for
@@ -55,5 +63,6 @@ public interface IRagGenerationService
         bool useReRanking = false,
         ResponseMode responseMode = ResponseMode.Simple,
         IReadOnlyList<ChatTurn>? history = null,
+        Func<string, CancellationToken, Task>? onStatus = null,
         CancellationToken cancellationToken = default);
 }

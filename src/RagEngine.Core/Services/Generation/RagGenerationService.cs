@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -34,8 +35,18 @@ public sealed class RagGenerationService : IRagGenerationService
     private readonly Kernel _kernel;
     private readonly ISemanticRetriever _retriever;
     private readonly ILogger<RagGenerationService> _logger;
-    private readonly RagGenerationOptions _options;
+    private readonly IOptionsMonitor<RagGenerationOptions> _optionsMonitor;
     private readonly IMetaIntentDetector _metaIntentDetector;
+
+    /// <summary>
+    /// Current snapshot of <see cref="RagGenerationOptions"/>. Read via
+    /// <see cref="IOptionsMonitor{TOptions}"/> (not <c>IOptions&lt;T&gt;</c>) so that
+    /// <see cref="RagGenerationOptions.EnableSimpleModeSanitizer"/> — the Fase 1
+    /// rollback flag — picks up a config/env-var change on container restart (and,
+    /// since the monitor also watches for live reload, potentially without one)
+    /// instead of being frozen at first resolution for the process lifetime.
+    /// </summary>
+    private RagGenerationOptions Options => _optionsMonitor.CurrentValue;
 
     // ──────────────────────────────────────────────────────────────
     //  Configuration constants
@@ -269,6 +280,21 @@ public sealed class RagGenerationService : IRagGenerationService
            requiere aprobación por mayoría...") that are not themselves present in
            <CONTEXT> — if the context does not state the specific rule asked about,
            that is rule 2, not an invitation to speculate a plausible-sounding one.
+           Once you have stated the direct fact that IS in <CONTEXT>, STOP. Do NOT
+           follow it with a suggestion of how the missing behavior "podría
+           implementarse" / "sería necesario agregar..." — that suggestion is never
+           itself present in <CONTEXT>, it is invented on the spot, and it always ends
+           up showing code, which rule 3 forbids, even when the answer right before it
+           was correct and properly grounded.
+           EXAMPLE (apply this exact transformation):
+           BAD:  "No, ServicioCliente no genera el plan automáticamente al crearse: el
+                 método ActualizarEstatusPlan solo actualiza el estatus de un plan que
+                 ya existe. Para lograrlo, sería necesario agregar lógica adicional.
+                 Por ejemplo: ```csharp nuevoPlan.Estatus = TipoEstatus.Activo;
+                 entidad.Planes.Add(nuevoPlan); ```"
+           GOOD: "No, el sistema no genera el plan automáticamente al crearse:
+                 únicamente actualiza el estatus de un plan que ya existe, no crea uno
+                 nuevo en ese momento."
         6. When you need to point to where an answer comes from, describe the source in
            words (e.g. "according to the ticket-monitoring specification" or "based on
            the order configuration"), never as a file path or code citation.
@@ -425,19 +451,24 @@ public sealed class RagGenerationService : IRagGenerationService
     ///   Abstraction over Qdrant that returns ranked <see cref="RetrievalResult"/> objects.
     /// </param>
     /// <param name="logger">Structured logger injected by the DI container.</param>
-    /// <param name="options">Confidence-gate thresholds bound from configuration.</param>
+    /// <param name="optionsMonitor">
+    ///   Confidence-gate thresholds and the Simple-mode sanitizer rollback flag,
+    ///   bound from configuration. <see cref="IOptionsMonitor{TOptions}"/> instead
+    ///   of <c>IOptions&lt;T&gt;</c> so a config/env-var change takes effect on a
+    ///   restart without a rebuild — see <see cref="Options"/>.
+    /// </param>
     /// <param name="metaIntentDetector">Detects meta-questions about the assistant itself.</param>
     public RagGenerationService(
         Kernel kernel,
         ISemanticRetriever retriever,
         ILogger<RagGenerationService> logger,
-        IOptions<RagGenerationOptions> options,
+        IOptionsMonitor<RagGenerationOptions> optionsMonitor,
         IMetaIntentDetector metaIntentDetector)
     {
         _kernel             = kernel             ?? throw new ArgumentNullException(nameof(kernel));
         _retriever          = retriever          ?? throw new ArgumentNullException(nameof(retriever));
         _logger             = logger             ?? throw new ArgumentNullException(nameof(logger));
-        _options            = options?.Value      ?? throw new ArgumentNullException(nameof(options));
+        _optionsMonitor     = optionsMonitor      ?? throw new ArgumentNullException(nameof(optionsMonitor));
         _metaIntentDetector = metaIntentDetector ?? throw new ArgumentNullException(nameof(metaIntentDetector));
     }
 
@@ -454,6 +485,7 @@ public sealed class RagGenerationService : IRagGenerationService
         bool useReRanking = false,
         ResponseMode responseMode = ResponseMode.Simple,
         IReadOnlyList<ChatTurn>? history = null,
+        Func<string, CancellationToken, Task>? onStatus = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
@@ -502,7 +534,7 @@ public sealed class RagGenerationService : IRagGenerationService
         // structural guarantee described there, the retrieved chunks (if any) are
         // never touched again below this branch.
         var topScore = chunks!.Count > 0 ? chunks[0].SimilarityScore : 0f;
-        var noGrounding = chunks.Count == 0 || (useReRanking && topScore < _options.LowConfidenceThreshold);
+        var noGrounding = chunks.Count == 0 || (useReRanking && topScore < Options.LowConfidenceThreshold);
 
         if (noGrounding)
         {
@@ -514,7 +546,7 @@ public sealed class RagGenerationService : IRagGenerationService
             {
                 _logger.LogWarning(
                     "[RAG] Low confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Falling back to no-grounding conversation.",
-                    topScore, _options.LowConfidenceThreshold, query);
+                    topScore, Options.LowConfidenceThreshold, query);
             }
 
             var noGroundingPrompt = string.Format(NoGroundingSystemPromptTemplate, SelfDescriptionBlock);
@@ -529,11 +561,11 @@ public sealed class RagGenerationService : IRagGenerationService
 
         // ── Step 1c: mid-band hedge ────────────────────────────────
         string? confidenceAddendum = null;
-        if (useReRanking && topScore < _options.HighConfidenceThreshold)
+        if (useReRanking && topScore < Options.HighConfidenceThreshold)
         {
             _logger.LogInformation(
                 "[RAG] Mid confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Answering with a low-confidence hedge.",
-                topScore, _options.HighConfidenceThreshold, query);
+                topScore, Options.HighConfidenceThreshold, query);
             confidenceAddendum = LowConfidenceAddendum;
         }
 
@@ -552,9 +584,32 @@ public sealed class RagGenerationService : IRagGenerationService
             systemPrompt += confidenceAddendum;
 
         // ── Step 4: Streaming Generation ─────────────────────────
-        await foreach (var fragment in StreamAnswerAsync(systemPrompt, query, history, cancellationToken))
+        // ResponseMode.Simple with the sanitizer enabled cannot stream token-by-token:
+        // the post-generation filter (SanitizeSimpleAnswer) needs the full text to
+        // reliably match fences/identifiers that can open and close across separate
+        // stream fragments. ResponseMode.Technical, and Simple with the rollback flag
+        // off (Options.EnableSimpleModeSanitizer == false), keep the original
+        // unbuffered per-fragment streaming untouched.
+        // See docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 1.
+        if (responseMode == ResponseMode.Simple && Options.EnableSimpleModeSanitizer)
         {
-            yield return fragment;
+            var buffered = new StringBuilder();
+            await foreach (var fragment in StreamAnswerAsync(systemPrompt, query, history, cancellationToken))
+            {
+                buffered.Append(fragment);
+            }
+
+            if (onStatus is not null)
+                await onStatus("Verificando formato...", cancellationToken);
+
+            yield return SanitizeSimpleAnswer(buffered.ToString());
+        }
+        else
+        {
+            await foreach (var fragment in StreamAnswerAsync(systemPrompt, query, history, cancellationToken))
+            {
+                yield return fragment;
+            }
         }
     }
 
@@ -658,6 +713,79 @@ public sealed class RagGenerationService : IRagGenerationService
             _logger.LogError(ex, "[RAG] Retrieval failed for query: {Query}", query);
             return (false, null, "⚠️ An error occurred while searching the codebase. Please ensure Qdrant is running.");
         }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Simple-mode post-generation sanitizer (Fase 1 — structural safety net)
+    // ──────────────────────────────────────────────────────────────
+
+    /// <summary>Placeholder left behind when a non-empty fenced code block is stripped.</summary>
+    private const string CodeBlockOmittedNotice = "*(se omitió un fragmento técnico)*";
+
+    /// <summary>Placeholder left behind when a single code-like identifier is stripped.</summary>
+    private const string IdentifierOmittedNotice = "[detalle técnico]";
+
+    /// <summary>Matches a complete ``` fenced block, capturing its body (group 1).</summary>
+    private static readonly Regex FencedCodeBlockPattern = new(
+        @"```[^\n]*\n?([\s\S]*?)```", RegexOptions.Compiled);
+
+    /// <summary>Matches a single-line inline code span, e.g. `` `GenerarPlanAuditoria` ``.</summary>
+    private static readonly Regex InlineCodeSpanPattern = new(
+        @"`[^`\n]+`", RegexOptions.Compiled);
+
+    /// <summary>Matches a declarative-attribute decoration, e.g. `[SupportedEstatus(...)]`.</summary>
+    private static readonly Regex AttributeDecorationPattern = new(
+        @"\[[A-Z][A-Za-z0-9]*\([^\]\n]*\)\]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Matches a dotted PascalCase chain, e.g. `TipoEstatus.Completado` or
+    /// `ServicioCliente.GenerarPlanAuditoria` — this shape almost never occurs in
+    /// legitimate Spanish/English prose, so it is a low-false-positive signal.
+    /// </summary>
+    private static readonly Regex DottedIdentifierPattern = new(
+        @"\b[A-Z][A-Za-z0-9]*(?:\.[A-Z][A-Za-z0-9]*){1,}\b", RegexOptions.Compiled);
+
+    /// <summary>Matches a snake_case identifier — not a natural-language shape in Spanish or English prose.</summary>
+    private static readonly Regex SnakeCaseIdentifierPattern = new(
+        @"\b[a-z][a-z0-9]*(?:_[a-z0-9]+){1,}\b", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Matches a bare identifier with two or more capitalized "humps" smashed
+    /// together with no separators, e.g. `GenerarPlanAuditoria` or
+    /// `ServicioCliente`. Deliberately conservative: a single capitalized word
+    /// (a legitimate proper noun, e.g. "Auditoria") never matches — only tokens
+    /// that already look like `PascalCaseCompoundWords` do, which keeps ordinary
+    /// prose with capitalized proper nouns untouched.
+    /// </summary>
+    private static readonly Regex CamelHumpIdentifierPattern = new(
+        @"\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*){1,}\b", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Deterministic post-generation filter for <see cref="ResponseMode.Simple"/> —
+    /// the structural safety net from
+    /// docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 1: regardless of
+    /// whether the model followed the prompt's plain-language rules, this strips
+    /// anything that still looks like source code before the answer ever reaches
+    /// the caller. Order matters — fenced blocks and inline spans are removed
+    /// first (they can contain identifier shapes that would otherwise get
+    /// double-redacted), then the remaining bare-text heuristics run against
+    /// what's left.
+    /// </summary>
+    internal static string SanitizeSimpleAnswer(string answer)
+    {
+        if (string.IsNullOrEmpty(answer))
+            return answer;
+
+        var sanitized = FencedCodeBlockPattern.Replace(answer, match =>
+            string.IsNullOrWhiteSpace(match.Groups[1].Value) ? string.Empty : CodeBlockOmittedNotice);
+
+        sanitized = InlineCodeSpanPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = AttributeDecorationPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = DottedIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = SnakeCaseIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = CamelHumpIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
+
+        return sanitized;
     }
 
     // ──────────────────────────────────────────────────────────────

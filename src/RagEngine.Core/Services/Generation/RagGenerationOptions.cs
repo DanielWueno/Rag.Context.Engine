@@ -71,4 +71,25 @@ public sealed record RagGenerationOptions
     /// rebuild — solo requiere cambiar config/env var y reiniciar el contenedor.
     /// </summary>
     public bool EnableSimpleModeSanitizer { get; init; } = true;
+
+    /// <summary>
+    /// Fase 2 de docs/analisis-futuro/modo-respuesta-simple-codigo.md: swap de contexto
+    /// a <c>Resumen</c> cacheado para <see cref="RagEngine.Core.Domain.ResponseMode.Simple"/>.
+    /// En <c>true</c> (default), cada chunk recuperado busca su resumen de negocio cacheado
+    /// (<c>SummaryCache</c>, por <see cref="RagEngine.Core.Domain.RetrievalResult.ContentHash"/>)
+    /// y lo usa como contenido de contexto en vez del chunk crudo cuando existe — mejora de
+    /// calidad además del filtro de Fase 1, no un reemplazo. Poner en <c>false</c> revierte a
+    /// usar siempre el contenido crudo del chunk (comportamiento previo a Fase 2), sin rebuild.
+    /// </summary>
+    public bool EnableSimpleModeResumenContext { get; init; } = true;
+
+    /// <summary>
+    /// Fracción mínima (0..1) de los chunks recuperados EN ESE TURNO que deben tener un
+    /// resumen cacheado para que los chunks SIN resumen se EXCLUYAN del contexto en vez de
+    /// degradarse a su contenido crudo. Decidido por request, no por colección de antemano
+    /// (una colección puede pasar de 0% a 100% de cobertura de <c>--con-resumen</c> sin que
+    /// nadie actualice una lista fija) — ver Fase 2 del plan. 0.5 es un punto de partida sin
+    /// calibrar todavía contra un corpus real; ajustar aquí si la medición lo justifica.
+    /// </summary>
+    public float SimpleModeResumenCoverageThreshold { get; init; } = 0.5f;
 }

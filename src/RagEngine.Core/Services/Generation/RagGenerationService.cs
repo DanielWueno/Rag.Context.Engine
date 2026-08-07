@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Utilities;
 
 namespace RagEngine.Core.Services.Generation;
 
@@ -37,6 +39,7 @@ public sealed class RagGenerationService : IRagGenerationService
     private readonly ILogger<RagGenerationService> _logger;
     private readonly IOptionsMonitor<RagGenerationOptions> _optionsMonitor;
     private readonly IMetaIntentDetector _metaIntentDetector;
+    private readonly SummaryCache _summaryCache;
 
     /// <summary>
     /// Current snapshot of <see cref="RagGenerationOptions"/>. Read via
@@ -458,18 +461,27 @@ public sealed class RagGenerationService : IRagGenerationService
     ///   restart without a rebuild — see <see cref="Options"/>.
     /// </param>
     /// <param name="metaIntentDetector">Detects meta-questions about the assistant itself.</param>
+    /// <param name="summaryCache">
+    ///   Shared SQLite cache of ingestion-time business summaries, keyed by
+    ///   <see cref="RetrievalResult.ContentHash"/>. Used only for
+    ///   <see cref="ResponseMode.Simple"/> — see
+    ///   <see cref="ResolveContextChunksAsync"/> and
+    ///   docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 2.
+    /// </param>
     public RagGenerationService(
         Kernel kernel,
         ISemanticRetriever retriever,
         ILogger<RagGenerationService> logger,
         IOptionsMonitor<RagGenerationOptions> optionsMonitor,
-        IMetaIntentDetector metaIntentDetector)
+        IMetaIntentDetector metaIntentDetector,
+        SummaryCache summaryCache)
     {
         _kernel             = kernel             ?? throw new ArgumentNullException(nameof(kernel));
         _retriever          = retriever          ?? throw new ArgumentNullException(nameof(retriever));
         _logger             = logger             ?? throw new ArgumentNullException(nameof(logger));
         _optionsMonitor     = optionsMonitor      ?? throw new ArgumentNullException(nameof(optionsMonitor));
         _metaIntentDetector = metaIntentDetector ?? throw new ArgumentNullException(nameof(metaIntentDetector));
+        _summaryCache       = summaryCache       ?? throw new ArgumentNullException(nameof(summaryCache));
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -572,7 +584,13 @@ public sealed class RagGenerationService : IRagGenerationService
         _logger.LogInformation("[RAG] Retrieved {Count} chunks. Building context block.", chunks.Count);
 
         // ── Step 2: Context Assembly ──────────────────────────────
-        var contextBlock = BuildContextBlock(chunks);
+        // For ResponseMode.Simple, swap each chunk's raw content for its cached
+        // business summary when one exists (Fase 2) — see
+        // docs/analisis-futuro/modo-respuesta-simple-codigo.md. SelectSystemPromptTemplate
+        // below still inspects the ORIGINAL `chunks` (language metadata is unaffected by
+        // this swap), only the context block itself uses the resolved set.
+        var contextChunks = await ResolveContextChunksAsync(chunks, responseMode, cancellationToken);
+        var contextBlock = BuildContextBlock(contextChunks);
 
         // ── Step 3: Prompt Construction ───────────────────────────
         // The retrieved chunks decide which persona/rules fit the content: a repo
@@ -811,6 +829,79 @@ public sealed class RagGenerationService : IRagGenerationService
 
         var docChunks = chunks.Count(c => IsDocumentationLanguage(c.Metadata.Language));
         return docChunks * 2 >= chunks.Count ? DocsSystemPromptTemplate : CodeSystemPromptTemplate;
+    }
+
+    /// <summary>
+    /// Fase 2 de docs/analisis-futuro/modo-respuesta-simple-codigo.md. For
+    /// <see cref="ResponseMode.Technical"/> (or when the rollback flag is off), returns
+    /// <paramref name="chunks"/> unchanged — no cache lookups, no added latency. For
+    /// <see cref="ResponseMode.Simple"/>, delegates to
+    /// <see cref="ResolveSimpleModeContextChunksAsync"/> to swap in cached business
+    /// summaries where available.
+    /// </summary>
+    private Task<IReadOnlyList<RetrievalResult>> ResolveContextChunksAsync(
+        IReadOnlyList<RetrievalResult> chunks,
+        ResponseMode responseMode,
+        CancellationToken cancellationToken)
+    {
+        if (responseMode != ResponseMode.Simple || !Options.EnableSimpleModeResumenContext)
+            return Task.FromResult(chunks);
+
+        return ResolveSimpleModeContextChunksAsync(chunks, cancellationToken);
+    }
+
+    /// <summary>
+    /// Looks up each chunk's cached business summary (<see cref="SummaryCache"/>, keyed by
+    /// <see cref="RetrievalResult.ContentHash"/>) and, when found, substitutes it for the
+    /// chunk's raw <see cref="RetrievalResult.Content"/> — the LLM never sees the source
+    /// code for that chunk, only its business-language description (structural guarantee,
+    /// not just a prompt instruction; the Fase 1 sanitizer still runs as a safety net on
+    /// top of this).
+    ///
+    /// Fallback for chunks with NO cached summary is decided per-request from the
+    /// fraction of chunks in THIS retrieval that do have one — not from a fixed
+    /// per-collection list, which would silently go stale the day a collection gains
+    /// <c>--con-resumen</c> coverage:
+    ///   - Coverage ≥ <see cref="RagGenerationOptions.SimpleModeResumenCoverageThreshold"/>:
+    ///     exclude the uncovered chunks from context entirely — little is lost, and the
+    ///     context stays fully code-free.
+    ///   - Coverage below threshold: keep the uncovered chunks' raw content instead of
+    ///     emptying the context over what may just be circumstantial low coverage for
+    ///     this collection today (see the wiki-solis/rag-engine measurement in the plan
+    ///     doc — both are at 0% today). The Fase 1 filter still cleans these on the way out.
+    /// </summary>
+    private async Task<IReadOnlyList<RetrievalResult>> ResolveSimpleModeContextChunksAsync(
+        IReadOnlyList<RetrievalResult> chunks,
+        CancellationToken cancellationToken)
+    {
+        var summaries = new string?[chunks.Count];
+        for (var i = 0; i < chunks.Count; i++)
+        {
+            var (found, summary) = await _summaryCache.TryGetAsync(chunks[i].ContentHash, cancellationToken);
+            summaries[i] = found ? SummaryTextUtilities.StripEntityPrefix(summary) : null;
+        }
+
+        var coveredCount = summaries.Count(s => s is not null);
+        var coverage = (float)coveredCount / chunks.Count;
+        // Guard: only exclude when there is at least one covered chunk to fall back on —
+        // otherwise a misconfigured threshold of 0 would empty the context entirely.
+        var excludeUncovered = coveredCount > 0 && coverage >= Options.SimpleModeResumenCoverageThreshold;
+
+        _logger.LogInformation(
+            "[RAG] Simple-mode resumen coverage {Coverage:P0} ({Covered}/{Total}) — {Strategy} chunks without a cached summary.",
+            coverage, coveredCount, chunks.Count,
+            excludeUncovered ? "excluding" : "degrading to raw content for");
+
+        var resolved = new List<RetrievalResult>(chunks.Count);
+        for (var i = 0; i < chunks.Count; i++)
+        {
+            if (summaries[i] is { } summary)
+                resolved.Add(chunks[i] with { Content = summary });
+            else if (!excludeUncovered)
+                resolved.Add(chunks[i]);
+        }
+
+        return resolved;
     }
 
     /// <summary>

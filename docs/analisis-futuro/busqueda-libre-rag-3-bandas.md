@@ -743,3 +743,75 @@ código de servicio; el contenedor solo sirve lo que ya está en Qdrant.
 fix de chunk-imán (verificado) → fix de metadata StartLine/EndLine (analizado, planeado,
 implementado, verificado) → escalado a `bsuite-repo` con ambos fixes (verificado) → bug de formato
 de duración encontrado y corregido.
+
+---
+
+## Sesión 2026-08-03 — Boost estructural (afinidad de clase + herencia): implementado, medido, abandonado
+
+**Origen:** se analizó `codebase-memory-mcp` (herramienta externa de terceros, grafo de código
+AST-based para agentes de coding). No es adoptable como componente (dominio distinto — solo
+código, sin semántica de negocio; binario en C standalone, no integrable en el pipeline .NET), pero
+inspiró la idea de usar señales estructurales (localidad de clase, herencia) para atacar 4 de los 6
+misses reales de `bsuite-auditorias-test` catalogados como "gap semántico" en la sesión de
+re-etiquetado (arriba). Se descartó explícitamente construir un grafo de llamadas completo
+(`CALLS`/`IMPORTS`): el chunker Roslyn (`RoslynCSharpChunkingStrategy.cs`) es puramente sintáctico
+(sin `Compilation`/`SemanticModel`) y la ingesta procesa archivo por archivo en streaming — ningún
+miss real dependía de "quién llama a quién", así que ese grafo no se justificaba.
+
+**Diseño implementado (Fase 0 + Componente A, ver plan aprobado):**
+- `CodeChunkMetadata.BaseTypeNames` (texto de `BaseList`, sin resolver) + `RetrievalResult.ChunkType`
+  expuesto de vuelta (antes solo se persistía en Qdrant, nunca se leía en el retriever).
+- `IStructuralBooster` / `CompositeStructuralBooster`, insertado entre la fusión RRF y el rerank en
+  `QdrantSemanticRetriever.SearchAsync`, con `StructuralBoostOptions` apagado por defecto
+  (`EnableClassAffinity=false`, `EnableInheritance=false`).
+- Componente A (afinidad de clase): agrupa candidatos del pool por
+  `(RepositoryName, Namespace, ClassName)`, y si el mejor miembro del grupo es "fuerte" (por encima
+  de un umbral), sube proporcionalmente el score de sus hermanos hacia ese mejor score, sin
+  superarlo. Componente B (herencia) quedó solo diseñado en el plan, nunca implementado — se
+  abandonó el esfuerzo antes de llegar a esa fase.
+
+**Medición 1 — umbral = media del pool:**
+`rag eval --eval-set docs/eval/bsuite-auditorias.eval-set.json --top-k 10 --json`:
+- `bsuite-auditorias-test`: **69%→75% (11→12/16), 0 regresiones**, 1 mejora inesperada (pregunta
+  fuera de las 4 conocidas como "gap semántico").
+- `bsuite-repo` (corpus completo, ~23k puntos, mismo eval-set reutilizado como sanity-check):
+  **50%→50% (8/16), pero 2 regresiones y 2 mejoras** — neto cero, por debajo del umbral de éxito
+  acordado (+2pp) y con daño nuevo no anticipado en el eval-set chico.
+
+**Diagnóstico de causa raíz** (comparando `rag search --output json` ranked, baseline vs. boost,
+para una de las preguntas regresionadas — `AuditoriaResultadoHallazgoAccionCorrectiva.cs`):
+el chunk correcto estaba en `#6` (score 0.04547) en baseline, dentro del top-10. Con el boost
+activo, el mismo chunk mantiene el mismo score (0.04547) pero cae a `#14` — no porque el propio
+chunk pierda relevancia, sino porque **todos los miembros de cada grupo "fuerte" del pool se
+inflan simultáneamente** (`FiltroConcentradoAuditorias` puso 3 miembros en el top-3,
+`EjecucionAuditoriaViewController` puso 3-4 miembros entre el `#4` y el `#9`), inundando el top-10
+con hermanos de clase y desplazando positivos reales que no tienen "familia" en el pool.
+
+**Intento de fix — umbral endurecido:** se cambió el gate de "mejor score del grupo > media del
+pool" a "mejor score del grupo rankeado en el tercio superior del pool ampliado (≈ top-K real)" —
+mucho más estricto. **Resultado idéntico**: mismas 2 regresiones, mismas 2 mejoras, mismos números
+exactos en ambas colecciones. Esto confirma que el problema no era el umbral de activación (los
+grupos que disparan el boost ya eran "fuertes" incluso bajo el criterio más estricto) sino el
+mecanismo en sí: inflar a **todos** los miembros de cualquier grupo fuerte, con múltiples grupos
+fuertes compitiendo a la vez, garantiza que el top-10 se llene de hermanos de clase.
+
+**Decisión:** abandonar el boost estructural. Dos iteraciones de diseño (peso proporcional +
+umbral por media, luego umbral por rango) mostraron que la señal es frágil incluso en el mejor
+caso (+6pp sobre solo 16 preguntas es poco dato) y activamente dañina a escala real. Arreglarlo de
+verdad requeriría otra capa de complejidad (acotar el boost a un solo hermano por grupo en vez de
+todos, recalibrar el peso a la escala real de estos scores ~0.03-0.06 en vez de un 15% relativo,
+posiblemente rediseñar la fórmula por completo) sin garantía de que no aparezca un tercer modo de
+falla. El usuario decidió no seguir invirtiendo en esta línea. **Todo el código se revirtió**
+(`IStructuralBooster`, `CompositeStructuralBooster`, `StructuralBoostOptions`, los campos
+`BaseTypeNames`/`ChunkType`, y los cambios en `QdrantSemanticRetriever`/`QdrantVectorStore`/
+`RoslynCSharpChunkingStrategy`/`ServiceCollectionExtensions`/`appsettings.json`) — no quedó nada
+mergeado ni deshabilitado-pero-presente en el árbol.
+
+**How to apply:** si se retoma esta idea en el futuro, no repetir el mismo mecanismo de "boost
+proporcional a todos los miembros del grupo" — probar primero acotar a un único hermano más
+cercano (no todos) y calibrar el peso empíricamente contra la escala real de los scores de la
+colección (no un porcentaje relativo genérico como 15%), y medir SIEMPRE contra `bsuite-repo`
+(corpus completo) además de `bsuite-auditorias-test` (corpus chico) antes de considerar cualquier
+señal positiva como concluyente — la señal positiva en el corpus chico fue completamente engañosa
+sobre el comportamiento a escala real. El Componente B (herencia por texto de `BaseTypeNames`)
+nunca se implementó ni se midió — sigue siendo una idea sin evidencia de que funcione o falle.

@@ -258,6 +258,18 @@ public sealed class RagGenerationService : IRagGenerationService
            required before the record can be saved", a [Persistent] attribute becomes
            "this information is stored under the name ...", a status check becomes
            "this action is only available while the ticket is in status X").
+           This rule applies EQUALLY when <CONTEXT> is already a business-language
+           summary rather than raw code — some summaries still name a field or method
+           in backticks or PascalCase (e.g. `` `Provisionada` ``, `` `IsCancelable` ``)
+           as a technical aside. Copying that token into your answer is exactly as
+           forbidden as quoting it from raw code — restate what it MEANS using the
+           rest of the summary's own explanation, in your own plain words, never the
+           token itself.
+           EXAMPLE (apply this exact transformation):
+           BAD:  "La factura debe estar marcada como `Provisionada`."
+           GOOD: "La factura debe estar registrada como cubierta por completo (sin
+                 relación a una central de compras específica y con estatus distinto
+                 de 'no provisionado') para poder considerarse lista para ese trámite."
         4. NEVER refer to "the code", "the code provided", "según el código
            proporcionado", "basándome en el código", or any other meta-reference to
            reading source. Describe how the SYSTEM behaves, the way a functional
@@ -747,9 +759,31 @@ public sealed class RagGenerationService : IRagGenerationService
     private static readonly Regex FencedCodeBlockPattern = new(
         @"```[^\n]*\n?([\s\S]*?)```", RegexOptions.Compiled);
 
-    /// <summary>Matches a single-line inline code span, e.g. `` `GenerarPlanAuditoria` ``.</summary>
+    /// <summary>Matches a single-line inline code span, e.g. `` `GenerarPlanAuditoria` ``. Captures the inner text (group 1).</summary>
     private static readonly Regex InlineCodeSpanPattern = new(
-        @"`[^`\n]+`", RegexOptions.Compiled);
+        @"`([^`\n]+)`", RegexOptions.Compiled);
+
+    /// <summary>
+    /// An inline-code span whose inner text is ONLY identifier characters (letters,
+    /// digits, underscore, dot) — no spaces, parentheses, or operators. This is the
+    /// shape a resumen or the model itself produces when it backticks a single field
+    /// or method name as an aside (e.g. `` `Provisionada` ``, `` `IsCancelable` ``)
+    /// rather than an actual code snippet — safe to humanize instead of blacking out,
+    /// since there is no risk of leaking a real expression/statement.
+    /// </summary>
+    private static readonly Regex SimpleIdentifierShapePattern = new(
+        @"^[A-Za-z0-9_.]+$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Zero-width split point right after a lowercase letter/digit and right before
+    /// an uppercase letter — used to "de-camelcase" an identifier into space-separated
+    /// words. Deliberately simple (no ALLCAPS-acronym handling) — good enough for this
+    /// codebase's naming convention, where compound identifiers are Spanish/English
+    /// words concatenated in PascalCase (`GenerarPlanAuditoria` → "generar plan
+    /// auditoria"), not technical acronyms.
+    /// </summary>
+    private static readonly Regex CamelBoundaryPattern = new(
+        @"(?<=[a-z0-9])(?=[A-Z])", RegexOptions.Compiled);
 
     /// <summary>Matches a declarative-attribute decoration, e.g. `[SupportedEstatus(...)]`.</summary>
     private static readonly Regex AttributeDecorationPattern = new(
@@ -788,6 +822,17 @@ public sealed class RagGenerationService : IRagGenerationService
     /// first (they can contain identifier shapes that would otherwise get
     /// double-redacted), then the remaining bare-text heuristics run against
     /// what's left.
+    ///
+    /// Word-shaped identifiers (dotted/snake_case/CamelHump) are "de-camelcased"
+    /// into space-separated lowercase words instead of blacked out — a real user
+    /// complaint against the original all-opaque placeholder was that it destroyed
+    /// even the little inferential value a raw identifier gave a reader (see
+    /// docs/analisis-futuro/modo-respuesta-simple-codigo.md, Fase 2 follow-up). This
+    /// is NOT a semantic explanation (it doesn't know what the field MEANS, only
+    /// decodes its name) — rule 3 of SimpleSystemPromptTemplate is the real fix
+    /// (tell the model to explain the concept instead of naming it); this is the
+    /// fallback for when that instruction isn't followed. Attribute decorations and
+    /// fenced code blocks have no natural-language reading and stay fully opaque.
     /// </summary>
     internal static string SanitizeSimpleAnswer(string answer)
     {
@@ -797,13 +842,32 @@ public sealed class RagGenerationService : IRagGenerationService
         var sanitized = FencedCodeBlockPattern.Replace(answer, match =>
             string.IsNullOrWhiteSpace(match.Groups[1].Value) ? string.Empty : CodeBlockOmittedNotice);
 
-        sanitized = InlineCodeSpanPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = InlineCodeSpanPattern.Replace(sanitized, match =>
+        {
+            var inner = match.Groups[1].Value;
+            return SimpleIdentifierShapePattern.IsMatch(inner)
+                ? HumanizeIdentifier(inner)
+                : IdentifierOmittedNotice;
+        });
         sanitized = AttributeDecorationPattern.Replace(sanitized, IdentifierOmittedNotice);
-        sanitized = DottedIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
-        sanitized = SnakeCaseIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
-        sanitized = CamelHumpIdentifierPattern.Replace(sanitized, IdentifierOmittedNotice);
+        sanitized = DottedIdentifierPattern.Replace(sanitized, match => HumanizeIdentifier(match.Value));
+        sanitized = SnakeCaseIdentifierPattern.Replace(sanitized, match => HumanizeIdentifier(match.Value));
+        sanitized = CamelHumpIdentifierPattern.Replace(sanitized, match => HumanizeIdentifier(match.Value));
 
         return sanitized;
+    }
+
+    /// <summary>
+    /// De-camelcases a dotted/snake_case/PascalCase identifier into space-separated
+    /// lowercase words (`GenerarPlanAuditoria` → "generar plan auditoria",
+    /// `TipoEstatus.Completado` → "tipo estatus completado"). See
+    /// <see cref="SanitizeSimpleAnswer"/> for why this replaces outright redaction.
+    /// </summary>
+    private static string HumanizeIdentifier(string token)
+    {
+        var segments = token.Split('.', '_');
+        var words = segments.SelectMany(seg => CamelBoundaryPattern.Split(seg));
+        return string.Join(" ", words).ToLowerInvariant();
     }
 
     // ──────────────────────────────────────────────────────────────

@@ -1,7 +1,16 @@
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using Microsoft.Extensions.Options;
+using RagEngine.Cli.Infrastructure;
+using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Chunking;
+using RagEngine.Core.Infrastructure.Reranking;
+using RagEngine.Core.Infrastructure.VectorStore;
+using RagEngine.Core.Infrastructure.Vectorization;
+using RagEngine.Core.Services.Summary;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -37,15 +46,61 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         [CommandOption("--rerank|-r")]
         public bool Rerank { get; init; }
 
+        [CommandOption("--baseline")]
+        [Description("Compara contra un baseline previo y avisa si NO es comparable.")]
+        public string? BaselinePath { get; init; }
+
         [CommandOption("--json")]
         public bool Json { get; init; }
     }
 
     private readonly ISemanticRetriever _retriever;
+    private readonly OnnxBrainOptions _brainOptions;
+    private readonly CrossEncoderOptions _crossEncoderOptions;
+    private readonly RetrievalFusionOptions _fusionOptions;
+    private readonly OllamaOptions _ollamaOptions;
 
-    public EvalCommand(ISemanticRetriever retriever)
+    public EvalCommand(
+        ISemanticRetriever retriever,
+        IOptions<OnnxBrainOptions> brainOptions,
+        IOptions<CrossEncoderOptions> crossEncoderOptions,
+        IOptions<RetrievalFusionOptions> fusionOptions,
+        IOptions<OllamaOptions> ollamaOptions)
     {
         _retriever = retriever;
+        _brainOptions = brainOptions.Value;
+        _crossEncoderOptions = crossEncoderOptions.Value;
+        _fusionOptions = fusionOptions.Value;
+        _ollamaOptions = ollamaOptions.Value;
+    }
+
+    /// <summary>
+    /// Reune todo lo que determina si este numero de recall es comparable con otro.
+    /// </summary>
+    private EvalProvenance BuildProvenance(Settings settings)
+    {
+        var (commit, dirty) = EvalProvenance.ReadGitState();
+
+        return new EvalProvenance
+        {
+            GitCommit = commit,
+            GitDirty = dirty,
+            EvalSetPath = settings.EvalSetPath,
+            EvalSetHash = EvalProvenance.HashFile(settings.EvalSetPath),
+            EmbeddingModel = Path.GetFileName(_brainOptions.ModelPath),
+            EmbeddingDimensions = _brainOptions.EmbeddingDimensions,
+            EmbeddingMaxSequenceLength = _brainOptions.MaxSequenceLength,
+            CrossEncoderModel = settings.Rerank
+                ? Path.GetFileName(_crossEncoderOptions.ModelPath)
+                : null,
+            WeightCodigo = _fusionOptions.WeightCodigo,
+            WeightSparse = _fusionOptions.WeightSparse,
+            WeightResumen = _fusionOptions.WeightResumen,
+            RrfK = _fusionOptions.RrfK,
+            ChunkingContractVersion = ChunkingContract.Version,
+            ResumenPromptVersion =
+                OllamaBusinessSummaryGenerator.ComputePromptVersion(_ollamaOptions.ModelId),
+        };
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -113,13 +168,103 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
                 settings.TopK,
                 settings.Rerank,
                 settings.MinScore,
+                GeneratedAt = DateTimeOffset.UtcNow,
+                Provenance = BuildProvenance(settings),
                 Results = results
             }, jsonOpts));
             return 0;
         }
 
         RenderReport(settings, results, cutoffs);
+
+        if (!string.IsNullOrWhiteSpace(settings.BaselinePath))
+        {
+            RenderComparabilidad(settings, settings.BaselinePath);
+        }
+
         return 0;
+    }
+
+
+    /// <summary>
+    /// Compara la procedencia de esta corrida con la de un baseline guardado y dice
+    /// si los numeros son comparables. Es el punto del ejercicio: un baseline sin
+    /// procedencia, o con procedencia distinta, no sirve para afirmar "mejoro" ni
+    /// "empeoro", y eso tiene que verse sin discutirlo.
+    /// </summary>
+    private void RenderComparabilidad(Settings settings, string baselinePath)
+    {
+        AnsiConsole.WriteLine();
+
+        if (!File.Exists(baselinePath))
+        {
+            AnsiConsole.MarkupLine($"[red]No existe el baseline:[/] {Markup.Escape(baselinePath)}");
+            return;
+        }
+
+        var actual = BuildProvenance(settings).ComparabilityKeys();
+
+        Dictionary<string, string>? previo = null;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(baselinePath));
+            if (doc.RootElement.TryGetProperty("provenance", out var prov))
+            {
+                var tmp = JsonSerializer.Deserialize<EvalProvenance>(prov.GetRawText(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                        PropertyNameCaseInsensitive = true,
+                    });
+                previo = tmp?.ComparabilityKeys().ToDictionary(kv => kv.Key, kv => kv.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]No se pudo leer el baseline:[/] {Markup.Escape(ex.Message)}");
+            return;
+        }
+
+        if (previo is null)
+        {
+            AnsiConsole.Write(new Rule("[yellow]Baseline SIN procedencia — incomparable[/]").RuleStyle("yellow"));
+            AnsiConsole.MarkupLine(
+                $"[yellow]{Markup.Escape(Path.GetFileName(baselinePath))} se generó antes de que los baselines "
+              + "registraran con qué configuración se produjeron.[/]");
+            AnsiConsole.MarkupLine(
+                "[dim]No se puede afirmar mejora ni regresión contra él: regenéralo con la versión actual.[/]");
+            return;
+        }
+
+        var diferencias = actual
+            .Where(kv => !previo.TryGetValue(kv.Key, out var v) || v != kv.Value)
+            .ToList();
+
+        if (diferencias.Count == 0)
+        {
+            AnsiConsole.Write(new Rule("[green]Comparable con el baseline[/]").RuleStyle("green"));
+            AnsiConsole.MarkupLine("[dim]Misma procedencia en los 12 campos: las diferencias de recall son reales.[/]");
+            return;
+        }
+
+        AnsiConsole.Write(new Rule($"[yellow]INCOMPARABLE: {diferencias.Count} diferencias de procedencia[/]")
+            .RuleStyle("yellow"));
+
+        var tabla = new Table().Border(TableBorder.Rounded).BorderColor(Color.Yellow)
+            .AddColumn("[yellow]Campo[/]").AddColumn("[dim]Baseline[/]").AddColumn("[white]Ahora[/]");
+
+        foreach (var d in diferencias)
+        {
+            tabla.AddRow(
+                Markup.Escape(d.Key),
+                Markup.Escape(previo.TryGetValue(d.Key, out var v) ? v : "(ausente)"),
+                Markup.Escape(d.Value));
+        }
+
+        AnsiConsole.Write(tabla);
+        AnsiConsole.MarkupLine(
+            "[yellow]Cualquier diferencia de recall contra este baseline puede venir de estos cambios, "
+          + "no del retrieval.[/]");
     }
 
     private async Task<EvalItemResult> RunOneAsync(EvalItem item, Settings settings, int[] cutoffs)

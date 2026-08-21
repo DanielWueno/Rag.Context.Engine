@@ -1,0 +1,367 @@
+{
+  "collection": "micro-repo",
+  "top_k": 10,
+  "rerank": false,
+  "min_score": 0.1,
+  "generated_at": "2026-08-21T19:01:58.9337+00:00",
+  "provenance": {
+    "git_commit": "e24125a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/tickets-microservice.eval-set.json",
+    "eval_set_hash": "2ae380bb02df",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": null,
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 1,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFC\u00F3mo levanto un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.53846157,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 datos son obligatorios para crear un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.53225803,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 se necesita para cerrar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "CerrarTicketCommandHandler.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo reasigno un ticket a otra persona?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5833334,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo adjunto un documento o evidencia a un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo registro el avance o una actividad en un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.53225803,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo paso un ticket a Mesa de Ayuda?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5625,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo recibo un ticket que me asignaron?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.53846157,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo cambio el tipo de servicio de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5555556,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo actualizo o subo el documento de cierre de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 condiciones deben cumplirse para poder reasignar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "ReasignarTicketCommandHandler.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 casos un ticket necesita autorizaci\u00F3n digital?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.5416667,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 a veces me piden llenar el campo M\u00F3dulo al cerrar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "ValidarMostrarModuloTicketCommandHandler.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo puedo mandar un ticket a Mesa de Ayuda?",
+      "category": "bsuite-codigo",
+      "source_file": "ValidarMesaAyudaTicketCommandHandler.cs",
+      "top_score": 0.5909091,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo consulto mis solicitudes de servicio?",
+      "category": "bsuite-codigo",
+      "source_file": "SolicitudesServicioController.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFD\u00F3nde veo a qui\u00E9n se han asignado los tickets?",
+      "category": "bsuite-codigo",
+      "source_file": "TicketsAsignacionesController.cs",
+      "top_score": 0.5416667,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 tipos de servicio corresponden a un departamento?",
+      "category": "bsuite-codigo",
+      "source_file": "TicketsTipoServicioController.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 informaci\u00F3n se guarda de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "Ticket.cs",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo se registra el seguimiento y las actividades de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.53225803,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    }
+  ]
+}

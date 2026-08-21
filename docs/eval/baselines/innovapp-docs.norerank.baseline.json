@@ -1,9 +1,9 @@
 {
   "collection": "innovapp-docs",
   "top_k": 10,
-  "rerank": true,
+  "rerank": false,
   "min_score": 0.1,
-  "generated_at": "2026-08-21T19:01:54.272488+00:00",
+  "generated_at": "2026-08-21T19:01:55.858796+00:00",
   "provenance": {
     "git_commit": "e24125a",
     "git_dirty": true,
@@ -12,7 +12,7 @@
     "embedding_model": "model_qint8_arm64.onnx",
     "embedding_dimensions": 384,
     "embedding_max_sequence_length": 256,
-    "cross_encoder_model": "model_qint8_arm64.onnx",
+    "cross_encoder_model": null,
     "weight_codigo": 1,
     "weight_sparse": 1.3,
     "weight_resumen": 2.5,
@@ -25,35 +25,35 @@
       "question": "\u00BFQui\u00E9n puede cancelar un ticket que est\u00E1 en estatus Registrado?",
       "category": "literal",
       "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
-      "top_score": 0.99616086,
+      "top_score": 0.5,
       "hit_any_at_k": {
-        "1": true,
-        "3": true,
-        "5": true,
-        "10": true
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
       },
       "hit_full_at_k": {
-        "1": true,
-        "3": true,
-        "5": true,
-        "10": true
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
       }
     },
     {
       "question": "\u00BFQu\u00E9 pasa si el motivo de cancelaci\u00F3n seleccionado es \u0027Otro\u0027?",
       "category": "literal",
       "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
-      "top_score": 0.9960532,
+      "top_score": 0.5833333,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       },
       "hit_full_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       }
     },
@@ -61,17 +61,17 @@
       "question": "\u00BFCu\u00E1ndo se muestra el bloque de encuesta de satisfacci\u00F3n en la Trayectoria?",
       "category": "literal",
       "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
-      "top_score": 0.9803386,
+      "top_score": 0.527027,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       },
       "hit_full_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       }
     },
@@ -79,17 +79,17 @@
       "question": "\u00BFQu\u00E9 es el Folio \u00DAnico de Atenci\u00F3n?",
       "category": "literal",
       "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
-      "top_score": 0.99823195,
+      "top_score": 0.54,
       "hit_any_at_k": {
-        "1": true,
-        "3": true,
-        "5": true,
+        "1": false,
+        "3": false,
+        "5": false,
         "10": true
       },
       "hit_full_at_k": {
-        "1": true,
-        "3": true,
-        "5": true,
+        "1": false,
+        "3": false,
+        "5": false,
         "10": true
       }
     },
@@ -97,15 +97,15 @@
       "question": "\u00BFQu\u00E9 estatus del Ticket generan correo electr\u00F3nico?",
       "category": "literal",
       "source_file": "Notificaciones por Cambio de Estado.md",
-      "top_score": 0.9735482,
+      "top_score": 0.5,
       "hit_any_at_k": {
-        "1": false,
+        "1": true,
         "3": true,
         "5": true,
         "10": true
       },
       "hit_full_at_k": {
-        "1": false,
+        "1": true,
         "3": true,
         "5": true,
         "10": true
@@ -115,7 +115,7 @@
       "question": "\u00BFC\u00F3mo se marca una notificaci\u00F3n como le\u00EDda?",
       "category": "literal",
       "source_file": "Notificaciones por Cambio de Estado.md",
-      "top_score": 0.99886763,
+      "top_score": 0.5909091,
       "hit_any_at_k": {
         "1": true,
         "3": true,
@@ -133,15 +133,15 @@
       "question": "\u00BFQu\u00E9 insignia se muestra cuando un estatus del timeline es terminal?",
       "category": "literal",
       "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
-      "top_score": 0.9981797,
+      "top_score": 0.75,
       "hit_any_at_k": {
-        "1": true,
+        "1": false,
         "3": true,
         "5": true,
         "10": true
       },
       "hit_full_at_k": {
-        "1": true,
+        "1": false,
         "3": true,
         "5": true,
         "10": true
@@ -151,25 +151,25 @@
       "question": "\u00BFQu\u00E9 permiso se necesita para marcar un ticket como \u0027Ing. en Traslado\u0027?",
       "category": "literal",
       "source_file": "RF-Monitor-Estatus-Tickets.md",
-      "top_score": 0.9976428,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
-        "10": true
+        "3": false,
+        "5": false,
+        "10": false
       },
       "hit_full_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
-        "10": true
+        "3": false,
+        "5": false,
+        "10": false
       }
     },
     {
       "question": "Si levant\u00E9 un ticket por error y ya no lo necesito, \u00BFlo puedo borrar yo mismo?",
       "category": "parafraseada",
       "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
-      "top_score": 0.9250129,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -187,25 +187,25 @@
       "question": "Si escojo \u0027otro\u0027 como raz\u00F3n para cancelar, \u00BFtengo que explicar por qu\u00E9?",
       "category": "parafraseada",
       "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
-      "top_score": 0.73923725,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
-        "5": true,
-        "10": true
+        "5": false,
+        "10": false
       },
       "hit_full_at_k": {
         "1": false,
         "3": false,
-        "5": true,
-        "10": true
+        "5": false,
+        "10": false
       }
     },
     {
       "question": "\u00BFEn qu\u00E9 momento me sale la pregunta de qu\u00E9 tan contento qued\u00E9 con el servicio?",
       "category": "parafraseada",
       "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
-      "top_score": 0.015725829,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -223,7 +223,7 @@
       "question": "\u00BFHay un n\u00FAmero que identifique mi caso sin importar si termin\u00F3 siendo ticket o solicitud de servicio?",
       "category": "parafraseada",
       "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
-      "top_score": 0.99520326,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -241,7 +241,7 @@
       "question": "\u00BFMe avisan por correo cuando resuelven mi problema?",
       "category": "parafraseada",
       "source_file": "Notificaciones por Cambio de Estado.md",
-      "top_score": 0.10718209,
+      "top_score": 0.6666667,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -259,7 +259,7 @@
       "question": "\u00BFC\u00F3mo le hago para que ya no me aparezca como pendiente algo que ya vi?",
       "category": "parafraseada",
       "source_file": "Notificaciones por Cambio de Estado.md",
-      "top_score": 0.12826036,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -277,7 +277,7 @@
       "question": "\u00BFC\u00F3mo s\u00E9 qu\u00E9 pasos ya se completaron en mi caso?",
       "category": "parafraseada",
       "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
-      "top_score": 0.10637978,
+      "top_score": 0.55263156,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -295,7 +295,7 @@
       "question": "\u00BFNecesito un permiso especial para decir que el t\u00E9cnico ya va en camino a atender mi ticket?",
       "category": "parafraseada",
       "source_file": "RF-Monitor-Estatus-Tickets.md",
-      "top_score": 0.8500724,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -313,7 +313,7 @@
       "question": "\u00BFPuedo cancelar mi ticket en cualquier momento?",
       "category": "ambigua",
       "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
-      "top_score": 0.36565575,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -331,16 +331,16 @@
       "question": "\u00BFCu\u00E1l es la diferencia entre el folio del ticket y el Folio \u00DAnico de Atenci\u00F3n?",
       "category": "ambigua",
       "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
-      "top_score": 0.99923027,
+      "top_score": 0.5588235,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
+        "3": false,
         "5": true,
         "10": true
       },
       "hit_full_at_k": {
         "1": false,
-        "3": true,
+        "3": false,
         "5": true,
         "10": true
       }
@@ -349,7 +349,7 @@
       "question": "\u00BFSe me notifica igual por correo que por la app cuando mi ticket cambia de estatus?",
       "category": "ambigua",
       "source_file": "Notificaciones por Cambio de Estado.md",
-      "top_score": 0.92071867,
+      "top_score": 0.525,
       "hit_any_at_k": {
         "1": false,
         "3": false,
@@ -367,12 +367,12 @@
       "question": "\u00BFQu\u00E9 significa que un nodo del timeline est\u00E9 \u0027en curso\u0027 comparado con uno que ya pas\u00F3 pero no termin\u00F3 el proceso?",
       "category": "ambigua",
       "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
-      "top_score": 0.7160348,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
-        "10": true
+        "3": false,
+        "5": false,
+        "10": false
       },
       "hit_full_at_k": {
         "1": false,
@@ -385,7 +385,7 @@
       "question": "\u00BFC\u00F3mo solicito mis vacaciones o d\u00EDas econ\u00F3micos?",
       "category": "fuera-de-dominio",
       "source_file": null,
-      "top_score": 0.027105832,
+      "top_score": 0.5,
       "hit_any_at_k": {},
       "hit_full_at_k": {}
     },
@@ -393,7 +393,7 @@
       "question": "\u00BFC\u00F3mo se factura un ticket a un cliente externo?",
       "category": "fuera-de-dominio",
       "source_file": null,
-      "top_score": 0.70635647,
+      "top_score": 0.5,
       "hit_any_at_k": {},
       "hit_full_at_k": {}
     },
@@ -401,7 +401,7 @@
       "question": "\u00BFPuedo cancelar una encuesta de satisfacci\u00F3n despu\u00E9s de haberla enviado?",
       "category": "fuera-de-dominio",
       "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
-      "top_score": 0.68045956,
+      "top_score": 0.54,
       "hit_any_at_k": {},
       "hit_full_at_k": {}
     },
@@ -409,7 +409,7 @@
       "question": "\u00BFQu\u00E9 pasa si el CAU pierde la conexi\u00F3n a internet durante una investigaci\u00F3n?",
       "category": "fuera-de-dominio",
       "source_file": null,
-      "top_score": 0.31420028,
+      "top_score": 0.5,
       "hit_any_at_k": {},
       "hit_full_at_k": {}
     },
@@ -417,17 +417,17 @@
       "question": "\u00BFPuedo ver la encuesta de un ticket ajeno?",
       "category": "regresion-conocida",
       "source_file": "Pruebas Funcionales - Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
-      "top_score": 0.21905391,
+      "top_score": 0.5,
       "hit_any_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       },
       "hit_full_at_k": {
         "1": false,
-        "3": true,
-        "5": true,
+        "3": false,
+        "5": false,
         "10": true
       }
     },
@@ -435,7 +435,7 @@
       "question": "\u00BFQu\u00E9 pasa si un ticket espera confirmaci\u00F3n y nadie responde?",
       "category": "regresion-conocida",
       "source_file": "RF-Monitor-Estatus-Tickets.md",
-      "top_score": 0.42377478,
+      "top_score": 0.5588235,
       "hit_any_at_k": {
         "1": false,
         "3": false,

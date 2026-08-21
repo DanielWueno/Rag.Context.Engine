@@ -112,9 +112,12 @@
           "multiagente": false,
           "verificacion": "Con RAG_MODELS_DIR apuntando a un directorio vacío, `rag doctor` corre igual y reporta en rojo qué archivo falta, con la ruta resuelta y sin stack trace",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Hacer perezosa la dependencia (Lazy<T> o resolución diferida) es mecánico; el criterio de éxito es observable.",
-          "origen": "Detectado el 2026-08-21 al verificar 1.2 con RAG_MODELS_DIR=/tmp/inexistente. Pre-existente, no introducido por ese cambio. Prioridad alta dentro de la ola: doctor es el instrumento de verificación de varios ítems del plan y no funciona en el caso de fallo."
+          "origen": "Detectado el 2026-08-21 al verificar 1.2 con RAG_MODELS_DIR=/tmp/inexistente. Pre-existente, no introducido por ese cambio. Prioridad alta dentro de la ola: doctor es el instrumento de verificación de varios ítems del plan y no funciona en el caso de fallo.",
+          "fecha": "2026-08-21",
+          "resultado": "DoctorCommand ya no inyecta IVectorizationBrain por constructor: recibe IServiceProvider y lo resuelve perezosamente en TryDescribeBrain(), que atrapa la excepción, desenrolla hasta la InnerException raíz y reporta solo el mensaje (el stack completo ya queda en Serilog). Se distinguen ahora tres estados en vez de dos: archivo ausente, archivo presente que ONNX no puede abrir, y cargado correctamente. Verificado en los tres: (a) con RAG_MODELS_DIR a un directorio vacío el doctor corre completo, imprime rojo con la ruta resuelta, sin stack trace, y sale con 1; (b) con un archivo .onnx inválido reporta '[ErrorCode:InvalidProtobuf] ... Protobuf parsing failed' en vez de morir en la resolución del DI; (c) el camino feliz sigue verde. De paso, CheckCollectionsAsync devolvía false sin imprimir nada: ahora nombra el error.",
+          "nota": "El escenario de riesgo (archivo presente pero ilegible) se probó de verdad, no solo el benigno: antes ese caso también moría en la construcción del contenedor."
         },
         {
           "id": "1.9-doctor-exit-134",
@@ -126,7 +129,8 @@
           "horas_maquina": 0.3,
           "estado": "pendiente",
           "por_que_este_modelo": "Es teardown de código nativo en ARM64; diagnosticar por qué el delay no basta requiere criterio, no plumbing.",
-          "origen": "Medido el 2026-08-21. Bloquea el ítem 1.7 (CI) de facto: cualquier automatización que mire códigos de salida verá el doctor como fallido siempre. Relacionado con el exit 134 de ONNX ya conocido en el entorno."
+          "origen": "Medido el 2026-08-21. Bloquea el ítem 1.7 (CI) de facto: cualquier automatización que mire códigos de salida verá el doctor como fallido siempre. Relacionado con el exit 134 de ONNX ya conocido en el entorno.",
+          "hallazgo_adicional": "Acotado el 2026-08-21 al verificar 1.8: el exit 134 aparece siempre que se toca el runtime nativo de ONNX, INCLUSO cuando la carga del modelo falla (archivo corrupto → exit 134). El único camino que sale limpio (exit 1) es el de archivo no encontrado, que nunca llega a construir la InferenceSession. Eso descarta que el crash dependa de una sesión creada con éxito y apunta a la inicialización/teardown del runtime nativo."
         },
         {
           "id": "1.10-sqlite-vulnerable",
@@ -162,7 +166,7 @@
           "horas_maquina": 0.2,
           "estado": "pendiente",
           "por_que_este_modelo": "Es rastrear una conexión sqlite mal configurada; no requiere criterio de diseño.",
-          "origen": "Observado el 2026-08-21 a las 10:56, durante las corridas de verificación del ítem 1.2. NO reproducible: 3 intentos posteriores (doctor normal, doctor con RAG_MODELS_DIR inválido, doctor con RAG_LOGS_DIR redirigido) no lo recrean. La cadena 'yourdatabasefile' no aparece en ningún archivo de src/ ni poc/. IngestionOptions.ResumenCachePath tiene un default correcto (LocalApplicationData/rag-engine/summary-cache.sqlite3), así que no es SummaryCache. Causa desconocida — se registra el hecho sin atribuirle explicación. Severidad baja: archivo vacío y sin trackear. El archivo se deja en disco a propósito, como evidencia para el diagnóstico."
+          "origen": "Observado el 2026-08-21 a las 10:56, durante las corridas de verificación del ítem 1.2. NO reproducible: 3 intentos posteriores (doctor normal, doctor con RAG_MODELS_DIR inválido, doctor con RAG_LOGS_DIR redirigido) no lo recrean. La cadena 'yourdatabasefile' no aparece en ningún archivo de src/ ni poc/. IngestionOptions.ResumenCachePath tiene un default correcto (LocalApplicationData/rag-engine/summary-cache.sqlite3), así que no es SummaryCache. Causa desconocida — se registra el hecho sin atribuirle explicación. Severidad baja: archivo vacío y sin trackear. CORRECCIÓN: el archivo se borró durante los propios intentos de reproducción, así que ya no está en disco y no queda evidencia física. Si reaparece, conservarlo antes de investigar."
         }
       ]
     },

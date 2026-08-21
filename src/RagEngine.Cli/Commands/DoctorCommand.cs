@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Utilities;
@@ -18,13 +19,19 @@ public sealed class DoctorCommand : AsyncCommand
 {
     private readonly QdrantClient _qdrant;
     private readonly IConfiguration _config;
-    private readonly IVectorizationBrain _brain; // We can check if it resolves/loads
-    
-    public DoctorCommand(QdrantClient qdrant, IConfiguration config, IVectorizationBrain brain)
+
+    // El brain se resuelve de forma perezosa, NO por constructor. Inyectarlo hacía
+    // que el contenedor construyera la InferenceSession antes de ejecutar el
+    // comando: si faltaba el modelo, el diagnóstico moría con
+    // "Could not resolve type 'DoctorCommand'" y un stack trace de 20 líneas,
+    // justo en el caso que el doctor existe para diagnosticar.
+    private readonly IServiceProvider _services;
+
+    public DoctorCommand(QdrantClient qdrant, IConfiguration config, IServiceProvider services)
     {
         _qdrant = qdrant;
         _config = config;
-        _brain = brain;
+        _services = services;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -99,9 +106,23 @@ public sealed class DoctorCommand : AsyncCommand
         var tokenOk = File.Exists(tokenizerPath);
 
         if (modelOk)
-            AnsiConsole.MarkupLine($"[green]✅ ONNX Model[/]     {modelPath}   [dim](Loaded | {_brain.EmbeddingDimensions} dims)[/]");
+        {
+            // Que el archivo exista no garantiza que ONNX pueda abrirlo: un binario
+            // de otra arquitectura o corrupto falla aquí. Se reporta la diferencia
+            // en vez de dejar que la excepción tumbe el comando.
+            var (loaded, detail) = TryDescribeBrain();
+
+            if (loaded)
+                AnsiConsole.MarkupLine($"[green]✅ ONNX Model[/]     {modelPath}   [dim](Loaded | {detail})[/]");
+            else
+                AnsiConsole.MarkupLine($"[red]❌ ONNX Model[/]     {modelPath}   [red](El archivo existe pero no se pudo cargar: {Markup.Escape(detail)})[/]");
+
+            modelOk = loaded;
+        }
         else
-            AnsiConsole.MarkupLine($"[red]❌ ONNX Model[/]     {modelPath}   [red](Not Found)[/]");
+        {
+            AnsiConsole.MarkupLine($"[red]❌ ONNX Model[/]     {modelPath}   [red](Not Found — ejecuta 'bash infra/download-model.sh')[/]");
+        }
 
         if (tokenOk)
             AnsiConsole.MarkupLine($"[green]✅ Tokenizer[/]      {tokenizerPath}   [dim](OK)[/]");
@@ -109,6 +130,32 @@ public sealed class DoctorCommand : AsyncCommand
             AnsiConsole.MarkupLine($"[red]❌ Tokenizer[/]      {tokenizerPath}   [red](Not Found)[/]");
 
         return modelOk && tokenOk;
+    }
+
+    /// <summary>
+    /// Resuelve el brain y describe sus dimensiones, sin dejar escapar la
+    /// excepción: el doctor tiene que terminar de imprimir el resto de los
+    /// chequeos aunque este falle.
+    /// </summary>
+    private (bool Loaded, string Detail) TryDescribeBrain()
+    {
+        try
+        {
+            var brain = _services.GetRequiredService<IVectorizationBrain>();
+            return (true, $"{brain.EmbeddingDimensions} dims");
+        }
+        catch (Exception ex)
+        {
+            // Solo el mensaje, no el stack: el doctor es para diagnosticar, no
+            // para depurar. La excepción completa ya queda en el log de Serilog.
+            var root = ex;
+            while (root.InnerException is not null)
+            {
+                root = root.InnerException;
+            }
+
+            return (false, root.Message);
+        }
     }
 
     /// <summary>
@@ -171,8 +218,11 @@ public sealed class DoctorCommand : AsyncCommand
             }
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            // Antes devolvía false sin imprimir nada: el doctor bajaba su veredicto
+            // a "algo falló" sin decir qué, que es lo contrario de diagnosticar.
+            AnsiConsole.MarkupLine($"[red]❌ Colecciones[/]    [red](No se pudieron listar: {Markup.Escape(ex.Message)})[/]");
             return false;
         }
     }

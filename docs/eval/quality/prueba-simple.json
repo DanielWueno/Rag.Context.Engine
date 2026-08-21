@@ -1,0 +1,129 @@
+{
+ "etiqueta": "prueba-simple",
+ "base_url": "http://localhost:5080",
+ "resumen": {
+  "preguntas": 6,
+  "palabras_promedio": 111.3,
+  "palabras_mediana": 69.0,
+  "respuestas_cortas_pct": 0.0,
+  "rechazo_pleno_pct": 16.7,
+  "banda_baja_pct": 16.7,
+  "directo_pct": 66.7,
+  "directo_con_score_bajo_pct": 0.0,
+  "simple_con_tecnicismos_pct": 0.0,
+  "simple_total": 6,
+  "optimista_promedio": 0.2,
+  "vago_promedio": 0.3,
+  "duracion_promedio_s": 5.5
+ },
+ "detalle": [
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿qué se necesita para cerrar un ticket?",
+   "respuesta": "Para cerrar un ticket, se necesita un Tipo de Servicio Interno que tenga \"Requiere Validación\" = Sí. Cuando se cierra el ticket, no se cierra normalmente, sino que transiciona a \"En Validación\" y queda en bitácora. Además, el Estatus de la petición del cliente relacionada se actualiza al mismo estado \"En Validación\" y queda registrado en su propia bitácora.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 359,
+    "palabras": 59,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9466,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 4.06
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿cómo se registra el seguimiento de un ticket?",
+   "respuesta": "El seguimiento de un ticket se registra a través de un proceso que involucra el responsable de la solicitud de servicio. Este proceso puede variar dependiendo de la plataforma o sistema en uso, pero generalmente implica los siguientes pasos:\n\n1. **Identificación del Ticket**: El responsable identifica el ticket específico al que desea hacer un seguimiento.\n\n2. **Acceso al Sistema**: El responsable accede al sistema donde se gestionan los tickets.\n\n3. **Acción de Seguimiento**: El responsable selecciona la opción para hacer un seguimiento en el ticket. Esto puede estar ubicado en una sección específica del ticket o en un menú desplegable.\n\n4. **Registro de Detalles**: El responsable proporciona los detalles del seguimiento. Esto puede incluir una descripción del problema o la solución, una actualización del estado del ticket, o cualquier otra información relevante.\n\n5. **Guardado del Seguimiento**: Una vez que se han proporcionado los detalles, el responsable guarda el seguimiento. Esto puede implicar hacer clic en un botón \"Guardar\" o \"Enviar\".\n\n6. **Notificación (Opcional)**: Dependiendo de la configuración del sistema, el responsable puede tener la opción de notificar al usuario que reportó el ticket sobre el seguimiento. Esto puede hacerse marcando una opción como \"Notificar a Usuario\" o similar.\n\n7. **Confirmación**: El sistema confirma que el seguimiento ha sido registrado y, si se ha seleccionado la opción de notificación, que la notificación ha sido enviada.\n\n8. **Registro en el Timeline**: El seguimiento se registra en el timeline del ticket, lo que permite al agente que atiende el ticket ver el historial completo de las interacciones y cambios en el estado del ticket.\n\nEste proceso es crucial para mantener un registro detallado de todas las interacciones con un ticket, lo que facilita el seguimiento del problema y asegura que todas las partes involucradas estén al tanto de los avances y decisiones tomadas.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 1948,
+    "palabras": 300,
+    "postura": "directo",
+    "fuentes": 5,
+    "score_top": 0.867,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 1,
+    "vago": 1,
+    "duracion_s": 10.46
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cómo funciona la encuesta de satisfacción?",
+   "respuesta": "La encuesta de satisfacción se implementa dentro del timeline de Trayectoria, apareciendo automáticamente cuando el Ticket alcanza el estatus \"Atendido\" o la Solicitud de Servicio alcanza \"Entregado\" y existe una encuesta vigente. La encuesta incluye tres tipos de preguntas: Escala/Estrellas, Sí/No, y Texto libre. Las preguntas son validadas para asegurar que las respuestas sean obligatorias cuando lo requiera el sistema. Una vez que el usuario responde a la encuesta, la respuesta se envía y se refleja en el sistema.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 522,
+    "palabras": 79,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9138,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.06
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es",
+   "respuesta": "Lo siento, pero no tengo la capacidad de proporcionar la hora actual. Soy un asistente que solo puede responder preguntas basadas en el contenido ya indexado en mi corpus, y no tengo acceso a información en tiempo real como la hora actual.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 239,
+    "palabras": 42,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.93
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Procesos que influyen en la innovapp?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que los procesos que influyen en la innov app incluyen la generación automática de Solicitudes de Servicio a partir de Servicios Cliente, la gestión de Tickets y la preparación de datos para pruebas de orden.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 304,
+    "palabras": 50,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.054,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.78
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Es solo al cierre del ticket?",
+   "respuesta": "No, la validación del servicio no se realiza solo al cierre del ticket. Según los requisitos mencionados, la validación del servicio se realiza en dos momentos principales:\n\n1. Al cerrar el ticket: Si el tipo de servicio interna requerir validación (según la marca RF-03), el ticket transiciona a \"En Validación\" en lugar de cerrarse. En este estado, se registra la fecha de inicio de la validación (RN-16.7).\n\n2. Automáticamente, si el usuario no responde dentro del plazo definido: Si el usuario no responde dentro del plazo de validación, el sistema finaliza automáticamente el ticket, tratando la ausencia de respuesta como una aceptación implícita del servicio (equivalente a un resultado \"Válido\").\n\nAdemás, hay un Job programado que verifica los tickets en \"En Validación\" y los finaliza automáticamente si su plazo de validación ha expirado, contando solo horas laborales (RN-17.1).",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 890,
+    "palabras": 138,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9083,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 6.84
+   }
+  }
+ ]
+}

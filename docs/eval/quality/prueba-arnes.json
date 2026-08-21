@@ -1,0 +1,127 @@
+{
+ "etiqueta": "prueba-arnes",
+ "base_url": "http://localhost:5080",
+ "resumen": {
+  "preguntas": 6,
+  "palabras_promedio": 92.8,
+  "palabras_mediana": 69.0,
+  "respuestas_cortas_pct": 0.0,
+  "abstuvo_pct": 16.7,
+  "respondio_con_score_bajo_pct": 16.7,
+  "simple_con_tecnicismos_pct": null,
+  "simple_total": 0,
+  "optimista_promedio": 0,
+  "vago_promedio": 0.2,
+  "duracion_promedio_s": 8.9
+ },
+ "detalle": [
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿qué se necesita para cerrar un ticket?",
+   "respuesta": "Para cerrar un ticket, se necesita un Tipo de Servicio Interno que tenga \"Requiere Validación\" = Sí. Cuando se cierra el ticket, no se cierra normalmente, sino que transiciona a \"En Validación\" y queda en bitácora. Además, el Estatus de la petición del cliente relacionada se actualiza al mismo estado \"En Validación\" y queda registrado en su propia bitácora.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 359,
+    "palabras": 59,
+    "abstuvo": false,
+    "fuentes": 10,
+    "score_top": 0.9466,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 4.22
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿cómo se registra el seguimiento de un ticket?",
+   "respuesta": "El seguimiento de un ticket se registra a través de un proceso que involucra el responsable de la solicitud de servicio. Este proceso puede incluir la captura de un registro de seguimiento ejecutivo, donde se puede marcar la opción \"Notificar a Usuario\" si se desea informar al usuario que reportó el ticket sobre el estado actual de la solicitud.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 347,
+    "palabras": 59,
+    "abstuvo": false,
+    "fuentes": 5,
+    "score_top": 0.867,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.19
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cómo funciona la encuesta de satisfacción?",
+   "respuesta": "La encuesta de satisfacción se implementa dentro del timeline de Trayectoria, apareciendo automáticamente cuando el Ticket alcanza el estatus \"Atendido\" o la Solicitud de Servicio alcanza \"Entregado\" y existe una encuesta vigente. Esta encuesta incluye tres tipos de preguntas: Escala/Estrellas, Sí/No, y Texto libre. Las preguntas son validadas para asegurar que las respuestas sean obligatorias cuando lo requiera el sistema. Una vez que el usuario responde a la encuesta, la respuesta se envía y se refleja en el sistema.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 524,
+    "palabras": 79,
+    "abstuvo": false,
+    "fuentes": 10,
+    "score_top": 0.9138,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 10.11
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es",
+   "respuesta": "Lo siento, pero no tengo la capacidad de proporcionar la hora actual. Soy un asistente que solo puede responder preguntas basadas en el contenido ya indexado en mi corpus, y no tengo acceso a información en tiempo real como la hora actual.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 239,
+    "palabras": 42,
+    "abstuvo": false,
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.28
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Procesos que influyen en la innovapp?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que los procesos que influyen en la innov app incluyen la generación automática de la Solicitud de Servicio (Gestión de Proyectos) a partir de un Servicio Cliente cuyo Servicio elegido es de tipo Innovación y Negocios, y establecer que dicha Solicitud refleja el Estatus del Servicio Cliente mientras este se encuentra en \"Registrado\" o \"Investigación CAU\", incluyendo su cancelación desde esa fase. Además, los procesos también implican la preparación de bandeja de correo, preparar Tickets en cada estatus disparador, preparar Solicitudes de Servicio — Proyecto en cada estatus disparador, preparar Solicitudes de Servicio — Equipo de Cómputo en cada estatus disparador, preparar estatus no disparadores (caso negativo), preparar actividad de Ticket y registro de Seguimiento Ejecutivo con notificación marcada, generar notificaciones adicionales para prueba de orden, notificación por cambio de estatus, notificación desde actividad de Ticket, notificación desde Seguimiento Ejecutivo, disponibilidad multiplataforma, alcance por usuario, estado vacío sin notificaciones previas.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 1178,
+    "palabras": 165,
+    "abstuvo": true,
+    "fuentes": 10,
+    "score_top": 0.054,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 13.54
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Es solo al cierre del ticket?",
+   "respuesta": "No, la validación del servicio no se realiza solo al cierre del ticket. Según el documento, la validación del servicio se realiza en dos momentos principales:\n\n1. Al cerrar el ticket: Si el tipo de servicio interna requerir validación, el ticket transiciona a \"En Validación\" en lugar de cerrarse. El usuario que reporta puede validar el servicio en ese momento.\n\n2. Automáticamente, si el usuario no valida el servicio dentro del plazo definido: En este caso, el sistema finaliza automáticamente el ticket, tratando la ausencia de respuesta como una aceptación implícita del servicio.\n\nAdemás, hay un Job que se ejecuta automáticamente cada hora para verificar si algún ticket en \"En Validación\" ha excedido el plazo de validación. Si lo ha hecho, el sistema finaliza automáticamente el ticket.\n\nPor lo tanto, la validación del servicio se realiza tanto al cerrar el ticket como de manera automática si el usuario no lo hace a tiempo.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 935,
+    "palabras": 153,
+    "abstuvo": false,
+    "fuentes": 10,
+    "score_top": 0.9083,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 11.99
+   }
+  }
+ ]
+}

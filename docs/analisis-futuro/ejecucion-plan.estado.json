@@ -351,6 +351,31 @@
           "horas_maquina": 1,
           "estado": "pendiente",
           "por_que_este_modelo": "El riesgo es el exit 134 de ONNX en ARM ya conocido; la lógica es simple, la prueba honesta necesita hardware."
+        },
+        {
+          "id": "3.6-arnes-de-calidad-de-respuesta",
+          "titulo": "Arnes de calidad de respuesta (infra/quality-baseline.py): re-corre el bundle de 143 preguntas unicas reales contra la API y mide postura (rechazo pleno / banda baja / directo), longitud, tecnicismos supervivientes en modo Simple, y lexico optimista/vago. Guarda las respuestas completas para que puntuarlas despues no cueste otra corrida de generacion.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Dos corridas de la misma configuracion dan metricas comparables; el A/B de una bandera muestra diferencia medible",
+          "horas_maquina": 0.5,
+          "estado": "en_curso",
+          "por_que_este_modelo": "Es un arnes de medicion, no un cambio de motor.",
+          "origen": "Pedido por el dueno el 2026-08-21 antes de autorizar la re-ingesta: llevaba dias/semanas probando preguntas a mano y percibia que las respuestas se escapaban mas fuera del corpus, eran vagas y muy cortas, y seguian siendo complejas en la opcion no tecnica. Sin una linea base medida, la re-ingesta no se podria evaluar. Nota: `rag eval` mide recall, que no dice nada de esto."
+        },
+        {
+          "id": "3.7-api-puerto-no-configurable",
+          "titulo": "El UseUrls fijo de la API anulaba ASPNETCORE_URLS, al contrario de lo que decia su propio comentario ('Puerto configurable via ASPNETCORE_URLS si 5080 choca'). Con el puerto ocupado la unica salida era editar codigo, lo que impedia levantar una segunda instancia con otra configuracion.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "ASPNETCORE_URLS=http://localhost:5081 levanta la API en 5081 con el contenedor ocupando 5080",
+          "horas_maquina": 0,
+          "estado": "hecho",
+          "fecha": "2026-08-21",
+          "por_que_este_modelo": "Tres lineas de configuracion de arranque.",
+          "origen": "Detectado el 2026-08-21 al intentar montar un A/B de generacion: el segundo proceso fallaba al bindear porque 5080 estaba tomado por el contenedor rag-api. ARREGLADO: el default solo se aplica si nadie configuro urls. Desbloquea comparar dos variantes sin apagar la que esta sirviendo, que es la unica forma honesta de hacer un A/B de calidad de respuesta."
         }
       ]
     }

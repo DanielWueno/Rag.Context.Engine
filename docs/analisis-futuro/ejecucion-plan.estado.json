@@ -29,9 +29,11 @@
           "multiagente": false,
           "verificacion": "Correr `dotnet run --project src/RagEngine.Cli -- status` y `dotnet run --project src/RagEngine.Api` NO crea ningún directorio logs/ dentro de src/; los logs aparecen en la ruta configurada",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Dos líneas de sink más una opción de configuración; el criterio de éxito es observable con un find.",
-          "origen": "Detectado al ejecutar 1.1 el 2026-08-21: mover los archivos no evita que vuelvan. Es la causa raíz, y encaja con 1.2 (appsettings portable) por compartir la decisión de configuración."
+          "origen": "Detectado al ejecutar 1.1 el 2026-08-21: mover los archivos no evita que vuelvan. Es la causa raíz, y encaja con 1.2 (appsettings portable) por compartir la decisión de configuración.",
+          "fecha": "2026-08-21",
+          "resultado": "Los sinks de Serilog usan RagEnginePaths.ResolveLogsDirectory(): RAG_LOGS_DIR, o la raíz del repo localizada buscando RagEngine.slnx hacia arriba desde el binario, o logs/ junto al ejecutable. Verificado: tras correr `dotnet run --project src/RagEngine.Cli -- doctor` NO se recreó ningún logs/ dentro de src/ y el log salió en la raíz; con RAG_LOGS_DIR redirigido, el sink lo respetó."
         },
         {
           "id": "1.2-appsettings-portable",
@@ -41,8 +43,11 @@
           "multiagente": false,
           "verificacion": "rag doctor pasa en limpio; grep '/Users/' en appsettings*.json devuelve vacío",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
-          "por_que_este_modelo": "Toca el arranque de tres proyectos, pero el criterio de éxito es binario y lo dice doctor."
+          "estado": "hecho",
+          "por_que_este_modelo": "Toca el arranque de tres proyectos, pero el criterio de éxito es binario y lo dice doctor.",
+          "fecha": "2026-08-21",
+          "resultado": "Nuevo RagEnginePaths (Core/Utilities) resuelve ~ y tokens ${VARIABLE}; appsettings de Api y Cli usan ${RAG_MODELS_DIR} (default ~/models) en vez de /Users/DevStudio/models. Resolución vía PostConfigure de OnnxBrainOptions y CrossEncoderOptions (ModelPath/VocabPath pasaron de init a set para que el pipeline de opciones pueda escribirlas). docs/configuracion.md documenta el contrato. Verificado: grep '/Users/' en appsettings vacío; rag doctor verde mostrando las rutas resueltas; con RAG_MODELS_DIR=/tmp/inexistente el error nombra esa ruta, probando que la variable se honra y no es solo que la ruta absoluta desapareció.",
+          "decision": "NO se usó ValidateOnStart, contra lo que pedía el enunciado original del ítem: el CLI construye el Host y entrega el contenedor a Spectre sin arrancarlo (Cli/Program.cs:62), así que no dispararía; y validar existencia de modelos al arranque rompería rag doctor, cuyo trabajo es reportar qué falta. La validación ya vive donde se abre el archivo (OnnxVectorizationBrain:49, OnnxCrossEncoderReRanker:101) con mensaje accionable."
         },
         {
           "id": "1.3-exit-code-ingesta",
@@ -98,6 +103,54 @@
           "horas_maquina": 0.2,
           "estado": "pendiente",
           "por_que_este_modelo": "Un YAML. Depende de 1.4: sin tests, el CI no verifica nada."
+        },
+        {
+          "id": "1.8-doctor-no-corre-sin-modelo",
+          "titulo": "rag doctor no puede ejecutarse si falta un modelo: inyecta IVectorizationBrain por constructor, el DI crea la sesión ONNX y lanza FileNotFoundException antes de correr el diagnóstico. El mensaje queda enterrado bajo 'Could not resolve type DoctorCommand' y 20 líneas de stack.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Con RAG_MODELS_DIR apuntando a un directorio vacío, `rag doctor` corre igual y reporta en rojo qué archivo falta, con la ruta resuelta y sin stack trace",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Hacer perezosa la dependencia (Lazy<T> o resolución diferida) es mecánico; el criterio de éxito es observable.",
+          "origen": "Detectado el 2026-08-21 al verificar 1.2 con RAG_MODELS_DIR=/tmp/inexistente. Pre-existente, no introducido por ese cambio. Prioridad alta dentro de la ola: doctor es el instrumento de verificación de varios ítems del plan y no funciona en el caso de fallo."
+        },
+        {
+          "id": "1.9-doctor-exit-134",
+          "titulo": "rag doctor devuelve exit 134 aunque todo esté verde: el crash 'mutex lock failed' de ONNX en Apple Silicon ocurre al liberar la sesión, después de imprimir 'All systems go'. El workaround de Task.Delay(300) en Cli/Program.cs no lo evita en esta ruta.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "`rag doctor` con todo verde devuelve exit 0, medido con $? en una shell limpia (no a través de una tubería)",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es teardown de código nativo en ARM64; diagnosticar por qué el delay no basta requiere criterio, no plumbing.",
+          "origen": "Medido el 2026-08-21. Bloquea el ítem 1.7 (CI) de facto: cualquier automatización que mire códigos de salida verá el doctor como fallido siempre. Relacionado con el exit 134 de ONNX ya conocido en el entorno."
+        },
+        {
+          "id": "1.10-sqlite-vulnerable",
+          "titulo": "NU1903: SQLitePCLRaw.lib.e_sqlite3 2.1.11 con vulnerabilidad conocida de severidad alta (GHSA-2m69-gcr7-jv3q), arrastrado por Microsoft.Data.Sqlite en Core, Api y el PoC",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "dotnet build sin advertencias NU1903; la caché de resúmenes sigue funcionando (SummaryCache abre y lee la sqlite existente)",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Subir la versión del paquete y comprobar que la caché sigue abriendo.",
+          "origen": "Visible en la salida de dotnet build del 2026-08-21. La caché de resúmenes es sqlite, así que el paquete está en la ruta caliente de la ingesta."
+        },
+        {
+          "id": "1.11-cs0219-ingest",
+          "titulo": "warning CS0219 en IngestCommand.cs:138: variable 'error' asignada y nunca usada. Es la única advertencia CS del build y huele a manejo de error a medio escribir.",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "dotnet build sin advertencias CS; si la variable delataba un error que debía reportarse, se reporta",
+          "horas_maquina": 0.1,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Una línea. Pero mirar antes si el 'error' debía propagarse en vez de borrarlo sin más.",
+          "origen": "Salida de dotnet build del 2026-08-21."
         }
       ]
     },

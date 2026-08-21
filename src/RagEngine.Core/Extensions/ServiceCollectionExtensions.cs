@@ -14,6 +14,7 @@ using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
 using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Utilities;
 
 namespace RagEngine.Core.Extensions;
 
@@ -56,6 +57,29 @@ public static class ServiceCollectionExtensions
         // llamado dos veces sobre la misma sección desde dos extensiones es inofensivo.
         services.Configure<OllamaOptions>(
             configuration.GetSection(OllamaOptions.SectionName));
+
+        // ── 1b. Resolución de rutas de modelo ──────────────────────────────────────
+        // Las rutas de appsettings admiten ~ y ${RAG_MODELS_DIR} para que el archivo
+        // versionado no lleve la ruta absoluta de la máquina de nadie. Se resuelven
+        // aquí, una sola vez, en vez de en cada consumidor.
+        //
+        // No se usa ValidateOnStart: el CLI construye el Host y le entrega el
+        // contenedor a Spectre sin arrancarlo (ver RagEngine.Cli/Program.cs), así que
+        // no dispararía; y validar la existencia del modelo al arranque rompería
+        // `rag doctor`, cuyo trabajo es justamente reportar qué falta. La validación
+        // vive donde se abre el archivo: OnnxVectorizationBrain y
+        // OnnxCrossEncoderReRanker ya fallan con un mensaje accionable.
+        services.PostConfigure<OnnxBrainOptions>(opts =>
+        {
+            opts.ModelPath = RagEnginePaths.ResolveModelPath(opts.ModelPath);
+            opts.VocabPath = RagEnginePaths.ResolveModelPath(opts.VocabPath);
+        });
+
+        services.PostConfigure<CrossEncoderOptions>(opts =>
+        {
+            opts.ModelPath = RagEnginePaths.ResolveModelPath(opts.ModelPath);
+            opts.VocabPath = RagEnginePaths.ResolveModelPath(opts.VocabPath);
+        });
 
         // ── 2. ONNX Brain: Singleton (expensive to initialize — one InferenceSession) ──
         services.AddSingleton<IVectorizationBrain, OnnxVectorizationBrain>();

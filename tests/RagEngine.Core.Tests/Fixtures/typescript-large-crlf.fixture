@@ -1,0 +1,81 @@
+import { Item } from './modelos';
+
+export function calcularAcumuladoExtenso(items: Item[]): number {
+  let acumulado = 0;
+
+  const resultadoParcial1 = items.filter(x => x.categoria === 1).map(x => x.total);
+  acumulado += resultadoParcial1.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial2 = items.filter(x => x.categoria === 2).map(x => x.total);
+  acumulado += resultadoParcial2.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial3 = items.filter(x => x.categoria === 3).map(x => x.total);
+  acumulado += resultadoParcial3.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial4 = items.filter(x => x.categoria === 4).map(x => x.total);
+  acumulado += resultadoParcial4.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial5 = items.filter(x => x.categoria === 5).map(x => x.total);
+  acumulado += resultadoParcial5.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial6 = items.filter(x => x.categoria === 6).map(x => x.total);
+  acumulado += resultadoParcial6.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial7 = items.filter(x => x.categoria === 7).map(x => x.total);
+  acumulado += resultadoParcial7.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial8 = items.filter(x => x.categoria === 8).map(x => x.total);
+  acumulado += resultadoParcial8.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial9 = items.filter(x => x.categoria === 9).map(x => x.total);
+  acumulado += resultadoParcial9.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial10 = items.filter(x => x.categoria === 10).map(x => x.total);
+  acumulado += resultadoParcial10.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial11 = items.filter(x => x.categoria === 11).map(x => x.total);
+  acumulado += resultadoParcial11.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial12 = items.filter(x => x.categoria === 12).map(x => x.total);
+  acumulado += resultadoParcial12.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial13 = items.filter(x => x.categoria === 13).map(x => x.total);
+  acumulado += resultadoParcial13.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial14 = items.filter(x => x.categoria === 14).map(x => x.total);
+  acumulado += resultadoParcial14.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial15 = items.filter(x => x.categoria === 15).map(x => x.total);
+  acumulado += resultadoParcial15.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial16 = items.filter(x => x.categoria === 16).map(x => x.total);
+  acumulado += resultadoParcial16.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial17 = items.filter(x => x.categoria === 17).map(x => x.total);
+  acumulado += resultadoParcial17.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial18 = items.filter(x => x.categoria === 18).map(x => x.total);
+  acumulado += resultadoParcial18.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial19 = items.filter(x => x.categoria === 19).map(x => x.total);
+  acumulado += resultadoParcial19.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial20 = items.filter(x => x.categoria === 20).map(x => x.total);
+  acumulado += resultadoParcial20.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial21 = items.filter(x => x.categoria === 21).map(x => x.total);
+  acumulado += resultadoParcial21.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial22 = items.filter(x => x.categoria === 22).map(x => x.total);
+  acumulado += resultadoParcial22.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial23 = items.filter(x => x.categoria === 23).map(x => x.total);
+  acumulado += resultadoParcial23.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial24 = items.filter(x => x.categoria === 24).map(x => x.total);
+  acumulado += resultadoParcial24.reduce((a, b) => a + b, 0);
+
+  const resultadoParcial25 = items.filter(x => x.categoria === 25).map(x => x.total);
+  acumulado += resultadoParcial25.reduce((a, b) => a + b, 0);
+  return acumulado;
+}

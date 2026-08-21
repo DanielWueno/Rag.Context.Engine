@@ -73,6 +73,8 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
         int endLine,
         int fragmentIndex)
     {
-        return $"// Repository: {repoName}\n// File: {artifact.RelativePath}\n// Language: {artifact.Language}\n// Lines: {startLine}-{endLine} [Fragment {fragmentIndex}]";
+        return ChunkBuilder.HeaderPrefix(repoName, artifact.RelativePath)
+             + $"\n// Language: {artifact.Language}"
+             + $"\n// Lines: {startLine}-{endLine} [Fragment {fragmentIndex}]";
     }
 }

@@ -151,6 +151,18 @@
           "estado": "pendiente",
           "por_que_este_modelo": "Una línea. Pero mirar antes si el 'error' debía propagarse en vez de borrarlo sin más.",
           "origen": "Salida de dotnet build del 2026-08-21."
+        },
+        {
+          "id": "1.12-artefacto-sqlite-huerfano",
+          "titulo": "Apareció un yourdatabasefile.db (4 KB, sqlite vacía) en la raíz del repo durante corridas de `rag doctor`. Ese es el nombre placeholder de la documentación de Microsoft.Data.Sqlite.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Identificar qué ruta de código abre una conexión sin DataSource explícito; tras el arreglo, ninguna corrida de los 6 comandos crea archivos en la raíz",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es rastrear una conexión sqlite mal configurada; no requiere criterio de diseño.",
+          "origen": "Observado el 2026-08-21 a las 10:56, durante las corridas de verificación del ítem 1.2. NO reproducible: 3 intentos posteriores (doctor normal, doctor con RAG_MODELS_DIR inválido, doctor con RAG_LOGS_DIR redirigido) no lo recrean. La cadena 'yourdatabasefile' no aparece en ningún archivo de src/ ni poc/. IngestionOptions.ResumenCachePath tiene un default correcto (LocalApplicationData/rag-engine/summary-cache.sqlite3), así que no es SummaryCache. Causa desconocida — se registra el hecho sin atribuirle explicación. Severidad baja: archivo vacío y sin trackear. El archivo se deja en disco a propósito, como evidencia para el diagnóstico."
         }
       ]
     },

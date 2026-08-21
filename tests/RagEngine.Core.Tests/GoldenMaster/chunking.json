@@ -189,19 +189,9 @@
       "ClassName": null,
       "MethodName": "calcularTotalAllman",
       "StartLine": 8,
-      "EndLine": 8,
-      "ContentHash": "606cf9cbebc718a8bda2ee6b15bc9e03b5bc30bdef5d30ee62b4e39406935981",
-      "ContentLength": 58,
-      "ContentTieneCr": false
-    },
-    {
-      "Type": "PlainTextWindow",
-      "ClassName": null,
-      "MethodName": null,
-      "StartLine": 9,
-      "EndLine": 13,
-      "ContentHash": "83395e0374b9854575906ea6c250ab4d9709ceb84523ce9e4b7874e9eaac0408",
-      "ContentLength": 78,
+      "EndLine": 12,
+      "ContentHash": "669ba0399ced5d01b2199016e85a011bd08ffaa914f44b930003654e1e392e13",
+      "ContentLength": 137,
       "ContentTieneCr": false
     },
     {
@@ -209,19 +199,9 @@
       "ClassName": null,
       "MethodName": "calcularTotalMultilinea",
       "StartLine": 14,
-      "EndLine": 14,
-      "ContentHash": "2ee73e9d78c0e0aa48c42531a14b33d71ee2691b2e73522ef27e69e10dad8fdd",
-      "ContentLength": 40,
-      "ContentTieneCr": false
-    },
-    {
-      "Type": "PlainTextWindow",
-      "ClassName": null,
-      "MethodName": null,
-      "StartLine": 15,
-      "EndLine": 21,
-      "ContentHash": "d581c4ab01fca61d8e50ce53d42093962bce66f9e35ac8790d7b6fbeb77b4891",
-      "ContentLength": 134,
+      "EndLine": 20,
+      "ContentHash": "cef8a7f53838ac950611df72a1ca8b2bfb775f7b8d69b35dc215283dad9be883",
+      "ContentLength": 175,
       "ContentTieneCr": false
     },
     {
@@ -261,19 +241,9 @@
       "ClassName": null,
       "MethodName": "calcularTotalAllman",
       "StartLine": 8,
-      "EndLine": 8,
-      "ContentHash": "606cf9cbebc718a8bda2ee6b15bc9e03b5bc30bdef5d30ee62b4e39406935981",
-      "ContentLength": 58,
-      "ContentTieneCr": false
-    },
-    {
-      "Type": "PlainTextWindow",
-      "ClassName": null,
-      "MethodName": null,
-      "StartLine": 9,
-      "EndLine": 13,
-      "ContentHash": "83395e0374b9854575906ea6c250ab4d9709ceb84523ce9e4b7874e9eaac0408",
-      "ContentLength": 78,
+      "EndLine": 12,
+      "ContentHash": "669ba0399ced5d01b2199016e85a011bd08ffaa914f44b930003654e1e392e13",
+      "ContentLength": 137,
       "ContentTieneCr": false
     },
     {
@@ -281,19 +251,9 @@
       "ClassName": null,
       "MethodName": "calcularTotalMultilinea",
       "StartLine": 14,
-      "EndLine": 14,
-      "ContentHash": "2ee73e9d78c0e0aa48c42531a14b33d71ee2691b2e73522ef27e69e10dad8fdd",
-      "ContentLength": 40,
-      "ContentTieneCr": false
-    },
-    {
-      "Type": "PlainTextWindow",
-      "ClassName": null,
-      "MethodName": null,
-      "StartLine": 15,
-      "EndLine": 21,
-      "ContentHash": "d581c4ab01fca61d8e50ce53d42093962bce66f9e35ac8790d7b6fbeb77b4891",
-      "ContentLength": 134,
+      "EndLine": 20,
+      "ContentHash": "cef8a7f53838ac950611df72a1ca8b2bfb775f7b8d69b35dc215283dad9be883",
+      "ContentLength": 175,
       "ContentTieneCr": false
     },
     {

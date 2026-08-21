@@ -77,7 +77,7 @@ public class TypeScriptChunkingStrategyTests
         AssertCuerpoAcompanaALaFirma(chunks, "marcaDelCuerpo", "calcularTotal");
     }
 
-    [Fact(Skip = "Falla HOY: bug confirmado, pendiente del item 2.1 del plan (docs/analisis-futuro/ejecucion-plan.estado.json). El chunker emite la firma sola como chunk Method y el cuerpo como PlainTextWindow sin clase ni metodo, o sea codigo indexado sin su encabezado semantico. Se deja Skip en vez de rojo para no bloquear el CI del item 1.7; quitar el Skip ES el criterio de aceptacion del 2.1.")]
+    [Fact]
     public async Task FirmaEstiloAllman_ElCuerpoViajaConLaFirma()
     {
         // Llave de apertura en su propia línea.
@@ -94,7 +94,7 @@ public class TypeScriptChunkingStrategyTests
         AssertCuerpoAcompanaALaFirma(chunks, "marcaDelCuerpo", "calcularTotal");
     }
 
-    [Fact(Skip = "Falla HOY: bug confirmado, pendiente del item 2.1 del plan (docs/analisis-futuro/ejecucion-plan.estado.json). El chunker emite la firma sola como chunk Method y el cuerpo como PlainTextWindow sin clase ni metodo, o sea codigo indexado sin su encabezado semantico. Se deja Skip en vez de rojo para no bloquear el CI del item 1.7; quitar el Skip ES el criterio de aceptacion del 2.1.")]
+    [Fact]
     public async Task FirmaPartidaEnVariasLineas_ElCuerpoViajaConLaFirma()
     {
         // Lo que produce prettier cuando la firma excede el ancho máximo: el caso

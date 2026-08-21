@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -27,6 +28,13 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
     /// pero solo el segundo deja una coleccion utilizable a medias.
     /// </summary>
     private const int ExitCodeIncompleteIngestion = 3;
+
+    /// <summary>
+    /// Minimo entre redibujados de la tabla en vivo. El pipeline reporta progreso por
+    /// cada chunk; a ~7 renders por segundo la tabla se ve fluida sin gastar la CPU
+    /// en repintar una tabla de seis filas decenas de miles de veces.
+    /// </summary>
+    private const int LiveRefreshIntervalMs = 150;
 
     public sealed class Settings : CommandSettings
     {
@@ -161,13 +169,32 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 .Overflow(VerticalOverflow.Ellipsis)
                 .StartAsync(async ctx =>
                 {
+                    // ctx.Refresh() por si solo NO servia: GetLayout() construye las
+                    // filas con los valores literales del momento y solo se llamaba una
+                    // vez, al crear el Live, asi que Refresh redibujaba filas viejas.
+                    // Durante una corrida de 22.986 chunks la tabla mostraba "0 / 0"
+                    // de principio a fin, que en una ingesta larga es volar a ciegas.
+                    // Hay que reconstruir el objetivo con UpdateTarget.
+                    //
+                    // Y con throttle: el productor reporta por CADA chunk, asi que sin
+                    // esto son ~23.000 renders completos de Spectre para una corrida.
+                    var ultimoRender = Stopwatch.StartNew();
                     var progress = new Progress<IngestionProgress>(p =>
                     {
                         liveProgress.Update(p);
-                        ctx.Refresh();
+
+                        if (ultimoRender.ElapsedMilliseconds >= LiveRefreshIntervalMs)
+                        {
+                            ctx.UpdateTarget(liveProgress.GetLayout());
+                            ultimoRender.Restart();
+                        }
                     });
 
                     summary = await _pipeline.IngestRepositoryAsync(request, progress, cts.Token);
+
+                    // Render final: el ultimo reporte pudo caer dentro del throttle y
+                    // la tabla se quedaria con el penultimo estado.
+                    ctx.UpdateTarget(liveProgress.GetLayout());
                 });
         }
         catch (OperationCanceledException)
@@ -268,6 +295,11 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
     // \u2500\u2500 Live progress tracker using Spectre.Console Table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     private sealed class LiveProgressTracker
     {
+        // Los callbacks de Progress<T> se despachan al thread pool cuando no hay
+        // SynchronizationContext, que es el caso en una app de consola: Update puede
+        // correr en paralelo con GetLayout, que limpia y rellena las filas. Sin este
+        // candado la tabla puede leerse a medio reconstruir.
+        private readonly object _candado = new();
         private readonly Table _table;
         private int _filesProcessed;
         private int _chunksProduced;
@@ -289,6 +321,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 
         public void Update(IngestionProgress p)
         {
+            lock (_candado)
+            {
             _filesProcessed = p.FilesProcessed;
             _chunksProduced = p.ChunksProduced;
             _chunksIndexed  = p.ChunksIndexed;
@@ -298,10 +332,13 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 : p.CurrentFile;
             _resumenesCompleted = p.ResumenesCompleted;
             _resumenesTotal     = p.ResumenesTotal;
+            }
         }
 
         public Table GetLayout()
         {
+            lock (_candado)
+            {
             _table.Rows.Clear();
             _table.AddRow("Stage",           $"[yellow]{_stage}[/]");
             _table.AddRow("Files Processed", $"[cyan]{_filesProcessed:N0}[/]");
@@ -311,6 +348,7 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 _table.AddRow("Res\u00famenes", $"[cyan]{_resumenesCompleted:N0}/{_resumenesTotal:N0}[/]");
             _table.AddRow("Current File",    $"[grey]{Markup.Escape(_currentFile)}[/]");
             return _table;
+            }
         }
     }
 }

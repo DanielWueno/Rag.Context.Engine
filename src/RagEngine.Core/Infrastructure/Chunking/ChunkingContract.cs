@@ -16,12 +16,25 @@ namespace RagEngine.Core.Infrastructure.Chunking;
 /// byte de los chunks producidos; sí hace falta si mueve alguno.
 ///
 /// Historial:
-///   1 — estado al 2026-08-21: 4 estrategias con algoritmos duplicados, split de
-///       líneas inconsistente entre ellas (ver ítem 2.1 del plan) y el chunker de
-///       TypeScript separando el cuerpo de su firma en estilos Allman y multilínea
-///       (ítem 2.0, confirmado con test).
+///   1 — estado al 2026-08-21 por la mañana: 4 estrategias con algoritmos
+///       duplicados, split de líneas inconsistente entre ellas y el chunker de
+///       TypeScript separando el cuerpo de su firma en estilos Allman y multilínea.
+///   2 — 2026-08-21: finales de línea normalizados a LF en un único punto, antes de
+///       parsear, así que un archivo CRLF produce ahora los mismos chunks y los
+///       mismos hashes que su equivalente LF; y el chunker de TypeScript mantiene el
+///       cuerpo junto a su firma en los tres estilos de llave. La construcción de
+///       CodeChunk y la geometría de la ventana se extrajeron a ChunkBuilder, pero
+///       eso NO movió ningún byte (verificado con el golden master) y por sí solo no
+///       habría justificado subir la versión.
+///
+///       Medido antes de subirla: para los corpus ingestados hoy el cambio es un
+///       no-op. BusinessSuite.Xaf son 2.097 archivos con CERO CRLF y CERO .ts, y las
+///       demás fuentes tienen un único archivo CRLF en total. La versión sube igual
+///       porque describe el comportamiento del CHUNKER, no el de un corpus concreto:
+///       el mismo código sobre un corpus con CRLF o con TypeScript sí produce chunks
+///       distintos que en la versión 1.
 /// </summary>
 public static class ChunkingContract
 {
-    public const int Version = 1;
+    public const int Version = 2;
 }

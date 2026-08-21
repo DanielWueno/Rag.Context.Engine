@@ -3,10 +3,10 @@
   "top_k": 10,
   "rerank": false,
   "min_score": 0.1,
-  "generated_at": "2026-08-21T19:01:55.858796+00:00",
+  "generated_at": "2026-08-21T22:23:13.926964+00:00",
   "provenance": {
-    "git_commit": "e24125a",
-    "git_dirty": true,
+    "git_commit": "bc746bf",
+    "git_dirty": false,
     "eval_set_path": "docs/eval/innovapp-docs.eval-set.json",
     "eval_set_hash": "1f9571b91552",
     "embedding_model": "model_qint8_arm64.onnx",
@@ -17,7 +17,7 @@
     "weight_sparse": 1.3,
     "weight_resumen": 2.5,
     "rrf_k": 60,
-    "chunking_contract_version": 1,
+    "chunking_contract_version": 2,
     "resumen_prompt_version": "210d3e35"
   },
   "results": [
@@ -99,13 +99,13 @@
       "source_file": "Notificaciones por Cambio de Estado.md",
       "top_score": 0.5,
       "hit_any_at_k": {
-        "1": true,
+        "1": false,
         "3": true,
         "5": true,
         "10": true
       },
       "hit_full_at_k": {
-        "1": true,
+        "1": false,
         "3": true,
         "5": true,
         "10": true

@@ -58,6 +58,10 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         [Description("Force re-index: deletes and recreates the Qdrant collection.")]
         public bool ForceReindex { get; set; } = false;
 
+        [CommandOption("-y|--yes")]
+        [Description("Asume si en la confirmacion de --force. Necesario para correr sin terminal interactiva.")]
+        public bool AssumeYes { get; set; } = false;
+
         [CommandOption("-l|--lang")]
         [Description("Restrict to a language: csharp, typescript, sql, markdown.")]
         public string? LanguageFilter { get; set; }
@@ -120,8 +124,24 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         AnsiConsole.WriteLine();
 
         // \u2500\u2500 ForceReindex confirmation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-        if (settings.ForceReindex)
+        // La confirmacion solo tiene sentido con una terminal que pueda contestar.
+        // Sin ella, Spectre lanza "Failed to read input in non-interactive mode" y el
+        // comando muere con exit 255 — que es exactamente lo que le pasaba a
+        // replicate-env/scripts/04-ingest-collections.sh, cuyo comando de micro-repo
+        // usa --force: el script de reproduccion del entorno no podia correr
+        // desatendido. Con --yes se salta, y si no hay terminal se aborta con un
+        // mensaje que dice que usar, en vez de con un stack trace.
+        if (settings.ForceReindex && !settings.AssumeYes)
         {
+            if (!AnsiConsole.Profile.Capabilities.Interactive)
+            {
+                AnsiConsole.MarkupLine(
+                    "[red]--force necesita confirmacion y esta terminal no es interactiva.[/]");
+                AnsiConsole.MarkupLine(
+                    "[grey]Agrega [white]--yes[/] para confirmar sin preguntar.[/]");
+                return 1;
+            }
+
             var confirmed = AnsiConsole.Confirm(
                 $"[red]\u26a0\ufe0f  This will DELETE collection '[cyan]{settings.Collection}[/]' and re-index from scratch. Continue?[/]",
                 defaultValue: false);

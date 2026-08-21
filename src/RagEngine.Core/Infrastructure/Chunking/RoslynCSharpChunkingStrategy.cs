@@ -215,28 +215,17 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         int declarationEndLine = typeDecl.OpenBraceToken.IsKind(SyntaxKind.OpenBraceToken)
             ? typeDecl.OpenBraceToken.GetLocation().GetLineSpan().StartLinePosition.Line + 1
             : span.EndLinePosition.Line + 1;
-        var declarationHash = ContentHasher.Compute(declarationText);
-
-        yield return new CodeChunk
-        {
-            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, declarationHash),
-            Content = declarationText,
-            EnrichedContent = $"{header}\n\n{declarationText}",
-            Type = ChunkType.Class,
-            ContentHash = declarationHash,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: SourceLanguage.CSharp,
-                Namespace: ctx.RootNamespace,
-                ClassName: typeDecl.Identifier.Text,
-                MethodName: null,
-                StartLine: startLine,
-                EndLine: declarationEndLine,
-                LastModified: artifact.LastModified,
-                RepositoryName: ctx.RepositoryName
-            )
-        };
+        yield return ChunkBuilder.Create(
+            artifact,
+            content: declarationText,
+            enrichedContent: $"{header}\n\n{declarationText}",
+            type: ChunkType.Class,
+            startLine: startLine,
+            endLine: declarationEndLine,
+            repositoryName: ctx.RepositoryName,
+            language: SourceLanguage.CSharp,
+            namespaceName: ctx.RootNamespace,
+            className: typeDecl.Identifier.Text);
 
         // Group fields into batches that stay under MaxTokensPerChunk, splitting only
         // at field boundaries — same fix as BuildGroupedPropertiesChunks, for classes
@@ -279,29 +268,17 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             int fragmentEndLine = group[^1].GetLocation().GetLineSpan().EndLinePosition.Line + 1;
 
             var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
-            var enriched = $"{header}\n// Fields{fragmentSuffix}\n\n{content}";
-            var hash = ContentHasher.Compute(content);
-
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, fragmentStartLine, hash),
-                Content = content,
-                EnrichedContent = enriched,
-                Type = ChunkType.Class,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: SourceLanguage.CSharp,
-                    Namespace: ctx.RootNamespace,
-                    ClassName: typeDecl.Identifier.Text,
-                    MethodName: null,
-                    StartLine: fragmentStartLine,
-                    EndLine: fragmentEndLine,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: ctx.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: content,
+                enrichedContent: $"{header}\n// Fields{fragmentSuffix}\n\n{content}",
+                type: ChunkType.Class,
+                startLine: fragmentStartLine,
+                endLine: fragmentEndLine,
+                repositoryName: ctx.RepositoryName,
+                language: SourceLanguage.CSharp,
+                namespaceName: ctx.RootNamespace,
+                className: typeDecl.Identifier.Text);
         }
     }
 
@@ -325,35 +302,24 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         if (tokenEstimate <= options.MaxTokensPerChunk)
         {
             // Method fits in one chunk
-            var hash = ContentHasher.Compute(methodText);
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-                Content = methodText,
-                EnrichedContent = enriched,
-                Type = ChunkType.Method,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: SourceLanguage.CSharp,
-                    Namespace: ctx.RootNamespace,
-                    ClassName: typeDecl.Identifier.Text,
-                    MethodName: method.Identifier.Text,
-                    StartLine: startLine,
-                    EndLine: endLine,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: ctx.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: methodText,
+                enrichedContent: enriched,
+                type: ChunkType.Method,
+                startLine: startLine,
+                endLine: endLine,
+                repositoryName: ctx.RepositoryName,
+                language: SourceLanguage.CSharp,
+                namespaceName: ctx.RootNamespace,
+                className: typeDecl.Identifier.Text,
+                methodName: method.Identifier.Text);
             yield break;
         }
 
         // Method too large — split with sliding window
         var methodLines = SourceLines.Split(methodText);
-        int windowLines = options.MaxTokensPerChunk * ApproxCharsPerToken / 80; // ~80 chars/line
-        int overlapLines = options.OverlapTokens * ApproxCharsPerToken / 80;
-        int step = Math.Max(1, windowLines - overlapLines);
+        var (windowLines, _, step) = ChunkBuilder.WindowGeometry(options);
         int fragIndex = 0;
 
         for (int i = 0; i < methodLines.Length; i += step)
@@ -361,28 +327,19 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             var window = methodLines.Skip(i).Take(windowLines).ToArray();
             var windowText = string.Join('\n', window).Trim();
             var windowEnriched = $"{header}\n// [Fragment {++fragIndex}]\n\n{windowText}";
-            var hash = ContentHasher.Compute(windowText);
 
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine + i, hash),
-                Content = windowText,
-                EnrichedContent = windowEnriched,
-                Type = ChunkType.Method,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: SourceLanguage.CSharp,
-                    Namespace: ctx.RootNamespace,
-                    ClassName: typeDecl.Identifier.Text,
-                    MethodName: method.Identifier.Text,
-                    StartLine: startLine + i,
-                    EndLine: startLine + i + window.Length,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: ctx.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: windowText,
+                enrichedContent: windowEnriched,
+                type: ChunkType.Method,
+                startLine: startLine + i,
+                endLine: startLine + i + window.Length,
+                repositoryName: ctx.RepositoryName,
+                language: SourceLanguage.CSharp,
+                namespaceName: ctx.RootNamespace,
+                className: typeDecl.Identifier.Text,
+                methodName: method.Identifier.Text);
         }
     }
 
@@ -401,28 +358,18 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
 
         var header = BuildContextHeader(ctx, typeDecl, member);
         var enriched = $"{header}\n\n{text}";
-        var hash = ContentHasher.Compute(text);
 
-        yield return new CodeChunk
-        {
-            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-            Content = text,
-            EnrichedContent = enriched,
-            Type = chunkType,
-            ContentHash = hash,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: SourceLanguage.CSharp,
-                Namespace: ctx.RootNamespace,
-                ClassName: typeDecl.Identifier.Text,
-                MethodName: null,
-                StartLine: startLine,
-                EndLine: span.EndLinePosition.Line + 1,
-                LastModified: artifact.LastModified,
-                RepositoryName: ctx.RepositoryName
-            )
-        };
+        yield return ChunkBuilder.Create(
+            artifact,
+            content: text,
+            enrichedContent: enriched,
+            type: chunkType,
+            startLine: startLine,
+            endLine: span.EndLinePosition.Line + 1,
+            repositoryName: ctx.RepositoryName,
+            language: SourceLanguage.CSharp,
+            namespaceName: ctx.RootNamespace,
+            className: typeDecl.Identifier.Text);
     }
 
     private IEnumerable<CodeChunk> BuildGroupedPropertiesChunks(
@@ -482,28 +429,18 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
 
             var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
             var enriched = $"{header}\n// Properties{fragmentSuffix}\n\n{content}";
-            var hash = ContentHasher.Compute(content);
 
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-                Content = content,
-                EnrichedContent = enriched,
-                Type = ChunkType.Property,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: SourceLanguage.CSharp,
-                    Namespace: ctx.RootNamespace,
-                    ClassName: typeDecl.Identifier.Text,
-                    MethodName: null,
-                    StartLine: startLine,
-                    EndLine: lastSpan.EndLinePosition.Line + 1,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: ctx.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: content,
+                enrichedContent: enriched,
+                type: ChunkType.Property,
+                startLine: startLine,
+                endLine: lastSpan.EndLinePosition.Line + 1,
+                repositoryName: ctx.RepositoryName,
+                language: SourceLanguage.CSharp,
+                namespaceName: ctx.RootNamespace,
+                className: typeDecl.Identifier.Text);
         }
     }
 

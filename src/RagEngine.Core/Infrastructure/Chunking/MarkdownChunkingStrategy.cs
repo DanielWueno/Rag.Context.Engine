@@ -166,29 +166,18 @@ public sealed partial class MarkdownChunkingStrategy : IChunkingStrategy
 
     private CodeChunk CreateChunk(RawArtifact artifact, string sectionName, string content, int startLine, int endLine, ChunkingOptions options)
     {
-        // Hash de contenido + Path garantiza IDs estables para el motor de Qdrant (idempotencia)
-        string hash = ContentHasher.Compute(content);
-        Guid id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash);
-
-        return new CodeChunk
-        {
-            Id = id,
-            Content = content,
-            EnrichedContent = content, // Para Markdown, la cabecera inyectada ya hace las veces de EnrichedContent
-            ContentHash = hash,
-            Type = ChunkType.DocumentSection,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: artifact.Language,
-                Namespace: null,
-                ClassName: null,
-                MethodName: sectionName, // Guardamos la sección lógica aquí
-                StartLine: startLine,
-                EndLine: endLine,
-                LastModified: artifact.LastModified,
-                RepositoryName: options.RepositoryName
-            )
-        };
+        // El EnrichedContent es el contenido tal cual: en Markdown la cabecera de
+        // seccion ya viene inyectada dentro. La seccion logica se guarda en
+        // MethodName, que es el campo que el resto del pipeline lee como "de donde
+        // salio esto".
+        return ChunkBuilder.Create(
+            artifact,
+            content: content,
+            enrichedContent: content,
+            type: ChunkType.DocumentSection,
+            startLine: startLine,
+            endLine: endLine,
+            repositoryName: options.RepositoryName,
+            methodName: sectionName);
     }
 }

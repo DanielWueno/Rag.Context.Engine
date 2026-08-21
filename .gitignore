@@ -19,3 +19,8 @@ logs/
 # Secrets (never commit)
 appsettings.*.json
 !appsettings.json
+
+# Claude Code: estado local de la máquina, no del repo.
+# .claude/commands/ SÍ se versiona: es parte del arnés de ejecución del plan.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

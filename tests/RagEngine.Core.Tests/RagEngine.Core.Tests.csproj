@@ -17,4 +17,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Content Include="Fixtures\**\*.fixture" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="GoldenMaster\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -12,7 +12,20 @@ namespace RagEngine.Core.Utilities;
 /// </summary>
 public static class TokenEstimator
 {
-    private const double CharsPerToken = 4.0;
+    /// <summary>
+    /// Regla de 4 caracteres por token. Es pública porque los chunkers necesitan el
+    /// mismo número: tenían su propia copia (<c>ApproxCharsPerToken = 4</c>) en dos
+    /// archivos distintos, y un valor duplicado es un valor que se desincroniza.
+    ///
+    /// Ojo: los chunkers hacen división ENTERA con este número
+    /// (<c>longitud / CharsPerToken</c>) mientras <see cref="Estimate"/> redondea
+    /// hacia arriba. No se unificó la aritmética a propósito: cambiar un floor por un
+    /// ceiling movería los límites de agrupación de los chunks, lo que invalida los
+    /// hashes del índice y obliga a una re-ingesta completa (~19 h para bsuite-repo),
+    /// a cambio de nada — las dos formas son la misma heurística con ±15% de error.
+    /// Lo que se comparte aquí es la constante, no el redondeo.
+    /// </summary>
+    public const double CharsPerToken = 4.0;
 
     /// <summary>
     /// Estimates the number of tokens in the given text using the 4-chars-per-token heuristic.

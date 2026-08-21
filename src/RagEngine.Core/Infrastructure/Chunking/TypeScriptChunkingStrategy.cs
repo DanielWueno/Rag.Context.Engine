@@ -90,6 +90,11 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         var  capturedLines = new List<string>();
         int  captureStart  = -1;
         int  braceDepth    = 0;    // Contador de llaves anidadas
+        // Si el bloque en captura ya abrio su llave. Hace falta para no confundir
+        // "el bloque cerro" con "el bloque todavia no abrio": braceDepth vale 0 en
+        // los dos casos, y tratarlos igual emitia la firma sola como si fuera el
+        // cuerpo completo (ver el comentario del flush mas abajo).
+        bool abrioLlave    = false;
         bool isCapturing   = false;
         var  currentSig    = BlockSignature.Empty;
 
@@ -147,13 +152,14 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                             if (c == '{')
                             {
                                 braceDepth++;
+                                abrioLlave = true;
                             }
                             else if (c == '}')
                             {
                                 braceDepth--;
 
                                 // depth == 0 significa que el bloque raíz cerró
-                                if (braceDepth == 0)
+                                if (braceDepth == 0 && abrioLlave)
                                 {
                                     // Emitir el chunk completo
                                     foreach (var chunk in FlushBlock(
@@ -169,6 +175,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                                     currentSig    = BlockSignature.Empty;
                                     captureStart  = -1;
                                     braceDepth    = 0;
+                                    abrioLlave    = false;
                                 }
                             }
                             break;
@@ -249,12 +256,20 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                 // (la apertura '{' puede estar en la misma línea que la firma)
                 foreach (char c in line)
                 {
-                    if      (c == '{') braceDepth++;
+                    if      (c == '{') { braceDepth++; abrioLlave = true; }
                     else if (c == '}') braceDepth--;
                 }
 
-                // Si el bloque cerró en la misma línea (one-liner), emitirlo ya
-                if (braceDepth == 0 && capturedLines.Count > 0)
+                // Solo es un one-liner si la llave se ABRIO y volvio a cerrar en esta
+                // misma linea. Antes bastaba con braceDepth == 0, que tambien es cierto
+                // cuando la firma no lleva llave todavia: llave en estilo Allman, o
+                // firma partida en varias lineas por prettier al pasar del ancho maximo
+                // (el caso mas comun en TypeScript con parametros anotados). En esos dos
+                // formatos se emitia la FIRMA SOLA como chunk de tipo Method y el cuerpo
+                // caia despues al bucket de lineas sueltas, indexado como
+                // PlainTextWindow con clase y metodo vacios: codigo real sin su
+                // encabezado semantico. Confirmado con test antes del arreglo.
+                if (braceDepth == 0 && abrioLlave && capturedLines.Count > 0)
                 {
                     foreach (var chunk in FlushBlock(artifact, currentSig, capturedLines, captureStart, lineNum, options))
                         yield return chunk;
@@ -264,6 +279,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                     currentSig    = BlockSignature.Empty;
                     captureStart  = -1;
                     braceDepth    = 0;
+                    abrioLlave    = false;
                 }
             }
             else

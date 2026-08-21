@@ -54,12 +54,15 @@ MARCAS_RECHAZO_PLENO = [
     "no puedo responder", "no tengo información", "no tengo informacion",
     "fuera del alcance", "no forma parte del corpus", "solo puedo responder",
 ]
+# Solo la plantilla REAL de la banda baja. Las marcas genericas ("no encontre",
+# "no aparece en") producian falsos positivos: una respuesta legitima que explica
+# "si no se encuentra en las variables de entorno, entonces..." quedaba clasificada
+# como banda baja aunque no tuviera ninguna reserva. Se prefiere perder algun caso
+# antes que inflar la metrica que se va a usar para decidir.
 MARCAS_BANDA_BAJA = [
     "no encontré una coincidencia clara", "no encontre una coincidencia clara",
     "el fragmento más cercano", "el fragmento mas cercano",
-    "no encontré", "no encontre", "no hay información", "no hay informacion",
-    "no se encontró", "no se encontro", "no está documentado",
-    "no esta documentado", "no aparece en", "sin evidencia",
+    "no encontré una coincidencia exacta", "no encontre una coincidencia exacta",
 ]
 
 # Léxico de exceso de certeza y de vaguedad. No pretende ser un juez: son

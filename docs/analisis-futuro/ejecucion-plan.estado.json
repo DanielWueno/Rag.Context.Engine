@@ -106,12 +106,12 @@
           "multiagente": false,
           "verificacion": "El workflow corre verde en un push de prueba",
           "horas_maquina": 0.2,
-          "estado": "en_curso",
+          "estado": "hecho",
           "por_que_este_modelo": "Un YAML. Depende de 1.4: sin tests, el CI no verifica nada.",
           "desbloqueado": "Ya hay suite verde y ejecutable en 27 ms sin dependencias externas, y desde el item 1.9 los codigos de salida son confiables. El CI ya se puede montar.",
           "fecha": "2026-08-21",
           "resultado": ".github/workflows/ci.yml creado: checkout, setup-dotnet 10.0.x, cache de NuGet, restore, build Release --no-restore y dotnet test Release --no-build. Dispara en push a cualquier rama, en pull_request y a mano con workflow_dispatch. Sin umbrales de cobertura ni analisis estatico como gate, por decision explicita del item. VERIFICADO LOCALMENTE: YAML valido (parseado con psych), y la cadena exacta de comandos corrida en frio tras borrar todos los obj/ y bin/ del repo — que es donde suele romperse un CI, por la cadena --no-restore/--no-build. Resultado: build correcto con 5 advertencias (las NU1903 del item 1.10) y 0 errores; 39 tests verdes y 2 omitidos. El runner puede ser x64 sin modelos porque ningun test toca ONNX, Qdrant ni Ollama.",
-          "pendiente": "FALTA el ultimo paso del criterio: verlo verde en un push real a GitHub (github.com/DanielWueno/Rag.Context.Engine). Es una accion hacia afuera y consume minutos de Actions, asi que queda a decision del dueno. El item NO se marca hecho hasta que ese push ocurra: un workflow que compila en local puede fallar en el runner por la version del SDK o por disponibilidad de paquetes."
+          "verificacion_real": "Push de 10 commits a origin/feat/rag-api-selector-coleccion el 2026-08-21. El workflow disparo solo y concluyo en success: https://github.com/DanielWueno/Rag.Context.Engine/actions/runs/32513937293 (commit 73a5312). Los 7 pasos en verde en un runner ubuntu-latest x64, incluido Tests. Queda demostrado en hardware distinto al del autor lo que en local solo se podia argumentar: la suite no necesita modelos ONNX, ni Qdrant, ni Ollama, ni ARM64."
         },
         {
           "id": "1.8-doctor-no-corre-sin-modelo",

@@ -6,6 +6,7 @@ using Serilog.Formatting.Compact;
 using RagEngine.Cli.Commands;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Extensions;
+using RagEngine.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -24,7 +25,10 @@ Log.Logger = new LoggerConfiguration()
         outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}")
     .WriteTo.File(
         formatter: new CompactJsonFormatter(),
-        path: "logs/rag-engine-.json",
+        // Anclada a la raíz del repo (o a RAG_LOGS_DIR). Con la ruta relativa
+        // anterior, `dotnet run --project src/RagEngine.Cli` dejaba los logs
+        // dentro de src/ — 49 MB llegaron a acumularse ahí.
+        path: Path.Combine(RagEnginePaths.ResolveLogsDirectory(), "rag-engine-.json"),
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7)
     .CreateLogger();

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -64,7 +65,9 @@ public sealed class DoctorCommand : AsyncCommand
     private async Task<bool> CheckQdrantAsync()
     {
         var host = _config["Qdrant:Host"] ?? "localhost";
-        var port = _config["Qdrant:Port"] ?? "6334";
+        // La sección define GrpcPort/HttpPort: "Qdrant:Port" no existe, así que
+        // esto siempre reportaba el literal 6334 sin importar la configuración.
+        var port = _config["Qdrant:GrpcPort"] ?? "6334";
         
         try
         {
@@ -82,8 +85,15 @@ public sealed class DoctorCommand : AsyncCommand
 
     private bool CheckOnnxModel()
     {
-        var modelPath = _config["OnnxBrain:ModelPath"] ?? "models/paraphrase-multilingual-MiniLM-L12-v2/model.onnx";
-        var tokenizerPath = _config["OnnxBrain:TokenizerPath"] ?? "models/all-MiniLM-L6-v2/tokenizer.json";
+        // Resuelto con el mismo criterio que el pipeline de opciones, para que el
+        // doctor reporte la ruta que de verdad se va a abrir.
+        var modelPath = RagEnginePaths.ResolveModelPath(
+            _config["OnnxBrain:ModelPath"] ?? "models/paraphrase-multilingual-MiniLM-L12-v2/model.onnx");
+        // Antes leía "OnnxBrain:TokenizerPath", clave que no existe en ningún
+        // appsettings: el chequeo caía siempre al fallback de otro modelo
+        // (all-MiniLM-L6-v2) en vez de mirar el tokenizador que se abre de verdad.
+        var tokenizerPath = RagEnginePaths.ResolveModelPath(
+            _config["OnnxBrain:VocabPath"] ?? "models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model");
         
         var modelOk = File.Exists(modelPath);
         var tokenOk = File.Exists(tokenizerPath);
@@ -107,8 +117,10 @@ public sealed class DoctorCommand : AsyncCommand
     /// </summary>
     private void CheckCrossEncoderModel()
     {
-        var modelPath = _config["CrossEncoder:ModelPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx";
-        var vocabPath = _config["CrossEncoder:VocabPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model";
+        var modelPath = RagEnginePaths.ResolveModelPath(
+            _config["CrossEncoder:ModelPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx");
+        var vocabPath = RagEnginePaths.ResolveModelPath(
+            _config["CrossEncoder:VocabPath"] ?? "models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model");
 
         if (File.Exists(modelPath) && File.Exists(vocabPath))
             AnsiConsole.MarkupLine($"[green]✅ Re-Ranker[/]      {modelPath}   [dim](OK — disponible para --rerank)[/]");

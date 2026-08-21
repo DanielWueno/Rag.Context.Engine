@@ -13,11 +13,15 @@ public sealed record CrossEncoderOptions
 {
     public const string SectionName = "CrossEncoder";
 
-    /// <summary>Path to the exported cross-encoder model.onnx file.</summary>
-    public string ModelPath { get; init; } = "models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx";
+    /// <summary>
+    /// Path to the exported cross-encoder model.onnx file. Admite <c>~</c> y
+    /// tokens <c>${RAG_MODELS_DIR}</c>; la resuelve
+    /// <see cref="RagEnginePaths.ResolveModelPath"/> en un PostConfigure.
+    /// </summary>
+    public string ModelPath { get; set; } = "models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx";
 
     /// <summary>Path to the SentencePiece tokenizer (sentencepiece.bpe.model).</summary>
-    public string VocabPath { get; init; } = "models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model";
+    public string VocabPath { get; set; } = "models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model";
 
     /// <summary>
     /// Maximum token length of the joint (query + chunk) sequence. XLM-R admite

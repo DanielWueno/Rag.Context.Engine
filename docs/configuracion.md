@@ -7,16 +7,16 @@
 ```jsonc
 {
   "OnnxBrain": {
-    "ModelPath":  ".../paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
-    "VocabPath":  ".../paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+    "ModelPath":  "${RAG_MODELS_DIR}/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+    "VocabPath":  "${RAG_MODELS_DIR}/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
     "TokenizerType": "SentencePiece",   // "SentencePiece" (XLM-R) | "WordPiece" (BERT)
     "MaxSequenceLength": 256,           // tokens; el padding real es dinámico por lote
     "BatchSize": 32,                    // chunks por inferencia
     "EmbeddingDimensions": 384          // debe coincidir con el modelo Y con la colección
   },
   "CrossEncoder": {
-    "ModelPath": ".../mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
-    "VocabPath": ".../mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+    "ModelPath": "${RAG_MODELS_DIR}/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+    "VocabPath": "${RAG_MODELS_DIR}/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
     "MaxSequenceLength": 512,           // XLM-R admite hasta 512; no hay índice que re-ingestar
     "BatchSize": 8                      // secuencias más largas que el bi-encoder → batch menor
   },
@@ -33,6 +33,24 @@
 | `TokenizerType` | Debe corresponder a la familia del modelo: `vocab.txt` → `WordPiece`; `sentencepiece.bpe.model` → `SentencePiece`. Un mismatch produce embeddings basura *sin error visible*. |
 | `EmbeddingDimensions` | Debe coincidir con el modelo (384 en ambos MiniLM) y con las colecciones ya creadas. |
 | `MaxSequenceLength` | Techo de truncamiento. El costo de inferencia escala con la longitud real del lote (padding dinámico), así que subirlo solo afecta a los chunks largos. |
+
+## Rutas y portabilidad
+
+`appsettings.json` está versionado, así que no puede llevar rutas absolutas de una máquina
+concreta. Las rutas de modelo admiten `~` y tokens `${VARIABLE}`, y las resuelve
+`RagEngine.Core.Utilities.RagEnginePaths`:
+
+| Variable | Default | Qué controla |
+|---|---|---|
+| `RAG_MODELS_DIR` | `~/models` | Raíz donde viven los modelos ONNX descargados. Una ruta relativa en `ModelPath`/`VocabPath` se ancla aquí, **nunca al directorio de trabajo**. |
+| `RAG_LOGS_DIR` | `<raíz del repo>/logs` | Dónde escriben los sinks de Serilog. La raíz se localiza buscando `RagEngine.slnx` hacia arriba desde el binario; si no aparece (publish fuera del repo), cae a `logs/` junto al ejecutable. |
+
+Un token sin definir se deja literal a propósito: así el error de "modelo no encontrado" muestra
+`${RAG_MODELS_DIR}/...` tal cual, en vez de una ruta a medio construir.
+
+Cuidado con `infra/download-model.sh`: descarga a `models/` **relativo al directorio desde el que
+lo corres**, que no es necesariamente `$RAG_MODELS_DIR`. Córrelo desde la raíz de modelos, o
+apunta `RAG_MODELS_DIR` a donde haya dejado los archivos.
 
 ## Modelos disponibles
 

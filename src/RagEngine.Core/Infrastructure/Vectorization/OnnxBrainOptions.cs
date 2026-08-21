@@ -28,14 +28,19 @@ public sealed record OnnxBrainOptions
 {
     public const string SectionName = "OnnxBrain";
 
-    /// <summary>Path to the exported model.onnx file.</summary>
-    public string ModelPath { get; init; } = "models/paraphrase-multilingual-MiniLM-L12-v2/model.onnx";
+    /// <summary>
+    /// Path to the exported model.onnx file. Admite <c>~</c> y tokens
+    /// <c>${RAG_MODELS_DIR}</c>; una ruta relativa se ancla al directorio de
+    /// modelos. La resuelve <see cref="RagEnginePaths.ResolveModelPath"/> en un
+    /// PostConfigure — de ahí que el setter no sea init-only.
+    /// </summary>
+    public string ModelPath { get; set; } = "models/paraphrase-multilingual-MiniLM-L12-v2/model.onnx";
 
     /// <summary>
     /// Path to the tokenizer file: vocab.txt (WordPiece) or
     /// sentencepiece.bpe.model (SentencePiece).
     /// </summary>
-    public string VocabPath { get; init; } = "models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model";
+    public string VocabPath { get; set; } = "models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model";
 
     /// <summary>Tokenizer family required by the model.</summary>
     public OnnxTokenizerKind TokenizerType { get; init; } = OnnxTokenizerKind.SentencePiece;

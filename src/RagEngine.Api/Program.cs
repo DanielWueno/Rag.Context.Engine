@@ -7,6 +7,7 @@ using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
 using RagEngine.Core.Services.Generation;
 using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Utilities;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -23,6 +24,10 @@ using Serilog.Formatting.Compact;
 // contenido ingestado puede incluir reglas de negocio internas.
 // ──────────────────────────────────────────────────────────────────────────────
 
+// La ruta se ancla a la raíz del repo (o a RAG_LOGS_DIR), no al directorio de
+// trabajo: con la ruta relativa anterior, `dotnet run --project src/RagEngine.Api`
+// escribía los logs DENTRO del árbol de código.
+//
 // Cada consulta (pregunta + respuesta + fuentes citadas) queda en logs/rag-api-*.json
 // como una línea JSON — es lo que permite revisar después qué preguntó el equipo
 // durante el piloto y si las respuestas fueron buenas, sin depender de `docker logs`
@@ -34,7 +39,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning)
     .WriteTo.File(
         formatter: new CompactJsonFormatter(),
-        path: "logs/rag-api-.json",
+        path: Path.Combine(RagEnginePaths.ResolveLogsDirectory(), "rag-api-.json"),
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30)
     .CreateLogger();

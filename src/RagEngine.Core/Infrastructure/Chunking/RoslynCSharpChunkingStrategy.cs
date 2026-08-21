@@ -19,7 +19,10 @@ namespace RagEngine.Core.Infrastructure.Chunking;
 public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
 {
     private readonly ILogger<RoslynCSharpChunkingStrategy> _logger;
-    private const int ApproxCharsPerToken = 4; // rough estimate: 1 token ≈ 4 chars
+    // Alias de la constante compartida: misma regla de 4 chars/token que
+    // TokenEstimator, sin una segunda copia del numero. La division sigue
+    // siendo entera aqui — ver la nota en TokenEstimator.CharsPerToken.
+    private const int ApproxCharsPerToken = (int)TokenEstimator.CharsPerToken;
 
     public SourceLanguage TargetLanguage => SourceLanguage.CSharp;
 
@@ -35,6 +38,13 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         ChunkingOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Normalizacion ANTES de parsear, no despues: el contenido de constructores,
+        // metodos y grupos de campos se toma del arbol con ToFullString(), que
+        // devuelve el texto tal cual venia. Si el arbol se construye desde texto
+        // CRLF, esos chunks arrastran el '\r' aunque el arreglo de lineas este
+        // normalizado — medido con el golden master: 3 de 8 chunks seguian sucios.
+        fileContent = SourceLines.Normalize(fileContent);
+
         SyntaxTree? syntaxTree = null;
         SyntaxNode? root = null;
 
@@ -59,7 +69,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         }
 
         var fileContext = ExtractFileContext(root!, artifact, options.RepositoryName);
-        var lines = fileContent.Split('\n');
+        var lines = SourceLines.Split(fileContent);
         var typeDeclarations = root!.DescendantNodes().OfType<TypeDeclarationSyntax>().ToList();
 
         if (!typeDeclarations.Any())
@@ -340,7 +350,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         }
 
         // Method too large — split with sliding window
-        var methodLines = methodText.Split('\n');
+        var methodLines = SourceLines.Split(methodText);
         int windowLines = options.MaxTokensPerChunk * ApproxCharsPerToken / 80; // ~80 chars/line
         int overlapLines = options.OverlapTokens * ApproxCharsPerToken / 80;
         int step = Math.Max(1, windowLines - overlapLines);

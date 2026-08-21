@@ -13,7 +13,10 @@ namespace RagEngine.Core.Infrastructure.Chunking;
 /// </summary>
 public sealed class FallbackChunkingStrategy : IChunkingStrategy
 {
-    private const int ApproxCharsPerToken = 4;
+    // Alias de la constante compartida: misma regla de 4 chars/token que
+    // TokenEstimator, sin una segunda copia del numero. La division sigue
+    // siendo entera aqui — ver la nota en TokenEstimator.CharsPerToken.
+    private const int ApproxCharsPerToken = (int)TokenEstimator.CharsPerToken;
     private const int MinChunkLines = 5;
 
     // SourceLanguage.Unknown means this strategy accepts any language
@@ -26,7 +29,11 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
         ChunkingOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var lines = fileContent.Split('\n');
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
         if (lines.Length == 0) yield break;
 
         int windowLines = Math.Max(MinChunkLines,

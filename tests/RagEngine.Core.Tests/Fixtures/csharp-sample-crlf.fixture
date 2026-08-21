@@ -1,0 +1,36 @@
+using System;
+
+namespace Empresa.Ventas;
+
+/// <summary>Servicio de ordenes.</summary>
+public sealed class ServicioOrdenes
+{
+    private readonly IRepositorio _repositorio;
+
+    public ServicioOrdenes(IRepositorio repositorio)
+    {
+        _repositorio = repositorio;
+    }
+
+    public async Task<Orden> GuardarAsync(Orden orden, CancellationToken ct)
+    {
+        if (orden is null) throw new ArgumentNullException(nameof(orden));
+
+        orden.Validar();
+        await _repositorio.PersistirAsync(orden, ct);
+        return orden;
+    }
+
+    public bool EsAuditable(Orden orden) => orden.Total > 10_000m;
+}
+
+public sealed class Orden
+{
+    public decimal Total { get; init; }
+    public bool IsAuditado { get; set; }
+
+    public void Validar()
+    {
+        if (Total < 0) throw new InvalidOperationException("total negativo");
+    }
+}

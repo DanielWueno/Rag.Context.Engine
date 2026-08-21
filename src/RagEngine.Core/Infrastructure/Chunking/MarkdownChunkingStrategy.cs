@@ -36,7 +36,11 @@ public sealed partial class MarkdownChunkingStrategy : IChunkingStrategy
         // Para asegurar que corra de manera asíncrona real y liberar el hilo
         await Task.Yield();
 
-        var lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
 
         string currentHeader = "Documento Principal";
         var currentSectionLines = new List<string>();

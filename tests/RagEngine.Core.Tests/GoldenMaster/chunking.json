@@ -1,0 +1,418 @@
+{
+  "csharp-sample.fixture": [
+    {
+      "Type": "Class",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 6,
+      "EndLine": 7,
+      "ContentHash": "99218837fa905a833641667e5386724aa856938a5aecfd7b140dbdb45246e8cb",
+      "ContentLength": 35,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 8,
+      "EndLine": 8,
+      "ContentHash": "38dadff8b9eb2e00d66f1734bf1059e2a5f2d70f846552f3c08d57bfd10af3af",
+      "ContentLength": 43,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Constructor",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 10,
+      "EndLine": 13,
+      "ContentHash": "3f5908f5728099d032543ea539fbc405986fa2264d93f4bcd43d3dbeee205c5d",
+      "ContentLength": 96,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": "GuardarAsync",
+      "StartLine": 15,
+      "EndLine": 22,
+      "ContentHash": "920c67416c1b9498ead2b486634668b63f45cfc2479cd72d307e83c15dd1a36b",
+      "ContentLength": 261,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": "EsAuditable",
+      "StartLine": 24,
+      "EndLine": 24,
+      "ContentHash": "f8d1dde2c18502c1cbb12540365629df1b4f23ddb432ef093a6619e4a08e0d85",
+      "ContentLength": 62,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "Orden",
+      "MethodName": null,
+      "StartLine": 27,
+      "EndLine": 28,
+      "ContentHash": "2dbb7ad843a33699de72e643363c29bc54d2a112d3dcdb4da6c9d6e9daa411dd",
+      "ContentLength": 25,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "Orden",
+      "MethodName": "Validar",
+      "StartLine": 32,
+      "EndLine": 35,
+      "ContentHash": "4fc68f6af4a64382a4aa6f7cc3e5f1dc329c22dcf9b458dd71a7eb3ac3e75a10",
+      "ContentLength": 111,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Property",
+      "ClassName": "Orden",
+      "MethodName": null,
+      "StartLine": 29,
+      "EndLine": 30,
+      "ContentHash": "1e414a4dbc178174b682328547bf68b7ac2357a99086b14c3cf8c7fdf272be3a",
+      "ContentLength": 72,
+      "ContentTieneCr": false
+    }
+  ],
+  "csharp-sample-crlf.fixture": [
+    {
+      "Type": "Class",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 6,
+      "EndLine": 7,
+      "ContentHash": "99218837fa905a833641667e5386724aa856938a5aecfd7b140dbdb45246e8cb",
+      "ContentLength": 35,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 8,
+      "EndLine": 8,
+      "ContentHash": "38dadff8b9eb2e00d66f1734bf1059e2a5f2d70f846552f3c08d57bfd10af3af",
+      "ContentLength": 43,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Constructor",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": null,
+      "StartLine": 10,
+      "EndLine": 13,
+      "ContentHash": "3f5908f5728099d032543ea539fbc405986fa2264d93f4bcd43d3dbeee205c5d",
+      "ContentLength": 96,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": "GuardarAsync",
+      "StartLine": 15,
+      "EndLine": 22,
+      "ContentHash": "920c67416c1b9498ead2b486634668b63f45cfc2479cd72d307e83c15dd1a36b",
+      "ContentLength": 261,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "ServicioOrdenes",
+      "MethodName": "EsAuditable",
+      "StartLine": 24,
+      "EndLine": 24,
+      "ContentHash": "f8d1dde2c18502c1cbb12540365629df1b4f23ddb432ef093a6619e4a08e0d85",
+      "ContentLength": 62,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "Orden",
+      "MethodName": null,
+      "StartLine": 27,
+      "EndLine": 28,
+      "ContentHash": "2dbb7ad843a33699de72e643363c29bc54d2a112d3dcdb4da6c9d6e9daa411dd",
+      "ContentLength": 25,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": "Orden",
+      "MethodName": "Validar",
+      "StartLine": 32,
+      "EndLine": 35,
+      "ContentHash": "4fc68f6af4a64382a4aa6f7cc3e5f1dc329c22dcf9b458dd71a7eb3ac3e75a10",
+      "ContentLength": 111,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Property",
+      "ClassName": "Orden",
+      "MethodName": null,
+      "StartLine": 29,
+      "EndLine": 30,
+      "ContentHash": "1e414a4dbc178174b682328547bf68b7ac2357a99086b14c3cf8c7fdf272be3a",
+      "ContentLength": 72,
+      "ContentTieneCr": false
+    }
+  ],
+  "typescript-sample.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 2,
+      "ContentHash": "ce086c10b797f25de1c43e846ca786d29da8eeb1a45e682533e528cfb47ce2e9",
+      "ContentLength": 33,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalKandR",
+      "StartLine": 3,
+      "EndLine": 6,
+      "ContentHash": "57d0371b0da8d22b9e073cdea4999820d425233eb0f0218be6e7fa578f7f5f64",
+      "ContentLength": 132,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalAllman",
+      "StartLine": 8,
+      "EndLine": 8,
+      "ContentHash": "606cf9cbebc718a8bda2ee6b15bc9e03b5bc30bdef5d30ee62b4e39406935981",
+      "ContentLength": 58,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 9,
+      "EndLine": 13,
+      "ContentHash": "83395e0374b9854575906ea6c250ab4d9709ceb84523ce9e4b7874e9eaac0408",
+      "ContentLength": 78,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalMultilinea",
+      "StartLine": 14,
+      "EndLine": 14,
+      "ContentHash": "2ee73e9d78c0e0aa48c42531a14b33d71ee2691b2e73522ef27e69e10dad8fdd",
+      "ContentLength": 40,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 15,
+      "EndLine": 21,
+      "ContentHash": "d581c4ab01fca61d8e50ce53d42093962bce66f9e35ac8790d7b6fbeb77b4891",
+      "ContentLength": 134,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "ServicioCarrito",
+      "MethodName": null,
+      "StartLine": 22,
+      "EndLine": 28,
+      "ContentHash": "67ad42f244a14b49a966aa690dfa41024f4a2f9b13a8d110208ca0f29ff544ed",
+      "ContentLength": 172,
+      "ContentTieneCr": false
+    }
+  ],
+  "typescript-sample-crlf.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 2,
+      "ContentHash": "ce086c10b797f25de1c43e846ca786d29da8eeb1a45e682533e528cfb47ce2e9",
+      "ContentLength": 33,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalKandR",
+      "StartLine": 3,
+      "EndLine": 6,
+      "ContentHash": "57d0371b0da8d22b9e073cdea4999820d425233eb0f0218be6e7fa578f7f5f64",
+      "ContentLength": 132,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalAllman",
+      "StartLine": 8,
+      "EndLine": 8,
+      "ContentHash": "606cf9cbebc718a8bda2ee6b15bc9e03b5bc30bdef5d30ee62b4e39406935981",
+      "ContentLength": 58,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 9,
+      "EndLine": 13,
+      "ContentHash": "83395e0374b9854575906ea6c250ab4d9709ceb84523ce9e4b7874e9eaac0408",
+      "ContentLength": 78,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularTotalMultilinea",
+      "StartLine": 14,
+      "EndLine": 14,
+      "ContentHash": "2ee73e9d78c0e0aa48c42531a14b33d71ee2691b2e73522ef27e69e10dad8fdd",
+      "ContentLength": 40,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 15,
+      "EndLine": 21,
+      "ContentHash": "d581c4ab01fca61d8e50ce53d42093962bce66f9e35ac8790d7b6fbeb77b4891",
+      "ContentLength": 134,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Class",
+      "ClassName": "ServicioCarrito",
+      "MethodName": null,
+      "StartLine": 22,
+      "EndLine": 28,
+      "ContentHash": "67ad42f244a14b49a966aa690dfa41024f4a2f9b13a8d110208ca0f29ff544ed",
+      "ContentLength": 172,
+      "ContentTieneCr": false
+    }
+  ],
+  "markdown-sample.fixture": [
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Cancelacion de Ticket",
+      "StartLine": 1,
+      "EndLine": 3,
+      "ContentHash": "76a3f34c278622b08d5952af3d8f4b8b1158610c808597256da3f439a37ad8ae",
+      "ContentLength": 85,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio",
+      "StartLine": 5,
+      "EndLine": 8,
+      "ContentHash": "37d3d7f0863e8a4f67709e1d7ead59342cb42f97bb936450b50a1cac0229844a",
+      "ContentLength": 159,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Diseno UX/UI",
+      "StartLine": 10,
+      "EndLine": 13,
+      "ContentHash": "65272ac9f06e5bc360e6283b7657ec9c354ae83bac2adcaae1531a94dbbf69dc",
+      "ContentLength": 169,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Consideraciones",
+      "StartLine": 15,
+      "EndLine": 17,
+      "ContentHash": "3fd725ed22da9d27a95ea73d033953705cb69b076c0588bc8c8b4ed9a89211f6",
+      "ContentLength": 99,
+      "ContentTieneCr": false
+    }
+  ],
+  "markdown-sample-crlf.fixture": [
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Cancelacion de Ticket",
+      "StartLine": 1,
+      "EndLine": 3,
+      "ContentHash": "76a3f34c278622b08d5952af3d8f4b8b1158610c808597256da3f439a37ad8ae",
+      "ContentLength": 85,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio",
+      "StartLine": 5,
+      "EndLine": 8,
+      "ContentHash": "37d3d7f0863e8a4f67709e1d7ead59342cb42f97bb936450b50a1cac0229844a",
+      "ContentLength": 159,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Diseno UX/UI",
+      "StartLine": 10,
+      "EndLine": 13,
+      "ContentHash": "65272ac9f06e5bc360e6283b7657ec9c354ae83bac2adcaae1531a94dbbf69dc",
+      "ContentLength": 169,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Consideraciones",
+      "StartLine": 15,
+      "EndLine": 17,
+      "ContentHash": "3fd725ed22da9d27a95ea73d033953705cb69b076c0588bc8c8b4ed9a89211f6",
+      "ContentLength": 99,
+      "ContentTieneCr": false
+    }
+  ],
+  "plaintext-sample.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 8,
+      "ContentHash": "2967ade8054586503dc15b72c95517b3f1d6075b47ac886dd6629e0fb55994a5",
+      "ContentLength": 301,
+      "ContentTieneCr": false
+    }
+  ],
+  "plaintext-sample-crlf.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 8,
+      "ContentHash": "2967ade8054586503dc15b72c95517b3f1d6075b47ac886dd6629e0fb55994a5",
+      "ContentLength": 301,
+      "ContentTieneCr": false
+    }
+  ]
+}

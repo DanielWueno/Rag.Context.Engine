@@ -1,0 +1,17 @@
+# Cancelacion de Ticket
+
+Documento de reglas de negocio para la cancelacion.
+
+## Reglas de negocio
+
+- RN-2.1: solo se cancela en estatus Registrado.
+- RN-2.2: solo el usuario que reporto la peticion puede ejecutar la cancelacion.
+
+## Diseno UX/UI
+
+Al seleccionar el motivo "Otro" se habilita un campo de texto obligatorio
+donde el usuario describe la razon con un minimo de veinte caracteres.
+
+### Consideraciones
+
+El sistema registra la fecha de cierre y notifica al area de operacion.

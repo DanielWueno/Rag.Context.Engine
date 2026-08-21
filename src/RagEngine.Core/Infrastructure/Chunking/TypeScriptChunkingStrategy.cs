@@ -76,7 +76,11 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         // Yield para liberar el hilo y respetar el modelo de streaming asíncrono
         await Task.Yield();
 
-        var lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
 
         // Estado del parser
         var lexerState   = LexerState.Normal;

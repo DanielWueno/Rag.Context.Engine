@@ -1,0 +1,28 @@
+import { Item } from './modelos';
+
+export function calcularTotalKandR(items: Item[]): number {
+  const suma = items.reduce((a, b) => a + b.precio, 0);
+  return suma;
+}
+
+export function calcularTotalAllman(items: Item[]): number
+{
+  const suma = items.reduce((a, b) => a + b.precio, 0);
+  return suma * 2;
+}
+
+export function calcularTotalMultilinea(
+  items: Item[],
+  descuento: number,
+): number {
+  const suma = items.reduce((a, b) => a + b.precio, 0);
+  return suma * descuento;
+}
+
+export class ServicioCarrito {
+  private readonly cache = new Map<string, number>();
+
+  obtener(clave: string): number | undefined {
+    return this.cache.get(clave);
+  }
+}

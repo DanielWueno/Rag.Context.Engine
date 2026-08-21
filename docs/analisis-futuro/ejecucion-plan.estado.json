@@ -279,10 +279,14 @@
           "modelo": "sonnet",
           "esfuerzo": "medium",
           "multiagente": false,
-          "verificacion": "sha256 del prompt renderizado idéntico antes y después, prompt por prompt. Si cambia un byte, prompt_version cambia y se pierden las 947 entradas de caché.",
+          "verificacion": "El orden importo: primero se COPIO el texto a Prompts/ y se verifico con un test que las dos copias eran byte-identicas (leyendo ambas constantes por reflexion), y solo entonces se borraron los originales. Al hacerlo, ese test se volvio tautologico —comparaba los alias contra su propia fuente— asi que se convirtio en PromptHashesTests, que fija el sha256 de cada prompt contra el valor MEDIDO ANTES del movimiento. Los 8 hashes coinciden: refactor byte-identico probado, no asumido. Ademas: build de la solucion en Release con 0 advertencias, 56 tests verdes, y un chequeo por el camino real de la API (una pregunta con evidencia responde, una sin evidencia rechaza).",
           "horas_maquina": 0.5,
-          "estado": "pendiente",
-          "por_que_este_modelo": "La verificación correcta es un hash, no la opinión de un agente. Multiagente aquí no aporta nada que sha256sum no diga mejor."
+          "estado": "hecho",
+          "por_que_este_modelo": "La verificación correcta es un hash, no la opinión de un agente. Multiagente aquí no aporta nada que sha256sum no diga mejor.",
+          "fecha": "2026-08-21",
+          "resultado": "Fase 1 de docs/analisis-futuro/centralizacion-prompts-vault.md, siguiendo el plan que el propio proyecto ya habia escrito en vez de inventar otro: carpeta Prompts/ con una clase estatica por prompt (7 archivos, 596 lineas de texto de prompt). RagGenerationService baja de 1042 a 680 lineas, un 35% menos. Se dejaron ALIAS de una linea en el servicio (`private const string X = Prompts.Y.Z;`), asi que NINGUN call-site cambio: el riesgo del refactor queda en el movimiento del texto, nada mas. NoContextFallbackMessage sigue siendo public porque el host de la API lo consume.",
+          "valor_permanente": "PromptHashesTests deja proteccion continua, no solo prueba del refactor. El caso con precio: el prompt de resumen entra en prompt_version, que es parte de la clave de la cache. Cambiarlo aunque sea un espacio invalida las 18.784 entradas y la proxima ingesta con --con-resumen regenera todo via Ollama (~19 h). Ahora eso falla en 80 ms con un mensaje que lo dice, en vez de descubrirse a mitad de una re-ingesta.",
+          "fase_2_no_hecha": "La Fase 2 del plan (interfaz IPromptProvider delante de las clases estaticas, para que migrar a un vault externo sea cambiar una implementacion) NO se hizo, y el plan la marca como condicional: 'hacer si/cuando'. Sus disparadores explicitos no se han cumplido. Meter la interfaz ahora seria abstraccion sin consumidor."
         },
         {
           "id": "2.4-tabla-live-y-throttle",

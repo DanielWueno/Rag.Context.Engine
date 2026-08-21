@@ -1,0 +1,313 @@
+{
+  "collection": "bsuite-auditorias-test",
+  "top_k": 10,
+  "rerank": false,
+  "min_score": 0.1,
+  "generated_at": "2026-08-21T19:01:57.412193+00:00",
+  "provenance": {
+    "git_commit": "e24125a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/bsuite-auditorias.eval-set.json",
+    "eval_set_hash": "ec6ff169d1a6",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": null,
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 1,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFQu\u00E9 significa que un hallazgo de auditor\u00EDa sea recurrente?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgo.cs",
+      "top_score": 0.057738096,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo se puede reabrir una acci\u00F3n correctiva ya finalizada?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.06900666,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo pasa un hallazgo de auditor\u00EDa a estatus de validaci\u00F3n?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.054761905,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 informaci\u00F3n se registra al validar o rechazar un hallazgo de auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoValidacion.cs",
+      "top_score": 0.056771398,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 se necesita para reprogramar la ejecuci\u00F3n de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaReprogramacion.cs",
+      "top_score": 0.071274936,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFDesde d\u00F3nde reprogramo una auditor\u00EDa ya planificada?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanificacionAuditoriaViewController.cs",
+      "top_score": 0.06528652,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo se puede finalizar completamente una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": null,
+      "top_score": 0.061618526,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa con una auditor\u00EDa si no se encontraron hallazgos activos al completarla?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.072113976,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo puedo exportar la plantilla de hallazgos de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.06001955,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo se determina si un empleado es el auditado de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.06906505,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 motivo se registra cuando se reprograma un plan de auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanAuditoria.cs",
+      "top_score": 0.06915934,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula la calificaci\u00F3n global de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.0765081,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula la calificaci\u00F3n de un grupo de criterios del checklist?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.077123046,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo registro el plan de acci\u00F3n de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.07148382,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      }
+    },
+    {
+      "question": "\u00BFC\u00F3mo importo auditor\u00EDas desde un archivo Excel?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.06632574,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      }
+    },
+    {
+      "question": "\u00BFQu\u00E9 significa recibir el plan de acci\u00F3n PDCA de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.06960068,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      }
+    }
+  ]
+}

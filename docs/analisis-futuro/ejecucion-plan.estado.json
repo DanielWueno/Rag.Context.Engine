@@ -84,8 +84,12 @@
           "multiagente": false,
           "verificacion": "Dos corridas del mismo commit dan baselines idénticos salvo timestamp; un baseline viejo se detecta como incomparable",
           "horas_maquina": 2,
-          "estado": "pendiente",
-          "por_que_este_modelo": "Es esquema más plumbing en EvalCommand. Habilita todo lo de la Ola 2: hacerlo antes no es opcional."
+          "estado": "hecho",
+          "por_que_este_modelo": "Es esquema más plumbing en EvalCommand. Habilita todo lo de la Ola 2: hacerlo antes no es opcional.",
+          "fecha": "2026-08-21",
+          "resultado": "Bloque 'provenance' en la salida JSON de `rag eval` con 12 campos de comparabilidad: commit y si el arbol estaba sucio, hash del contenido del eval-set (detecta re-etiquetado), modelo de embeddings con dimensiones y max sequence length, modelo del cross-encoder, los 3 pesos RRF y RrfK, version del contrato de chunking y prompt_version del resumen. Nuevo ChunkingContract.Version en Core: se sube A MANO cuando cambia el comportamiento observable de un chunker, porque no hay forma automatica de saber que dos corridas usaron el mismo criterio de corte. Arranca en 1 con el historial documentado. Nueva opcion `--baseline`: compara procedencias y, si difieren, tabula que campos cambiaron para que nadie atribuya al retrieval una diferencia de configuracion. Un baseline anterior a este formato se reporta como 'sin procedencia - incomparable' en vez de compararse a ciegas. 4 baselines regenerados (innovapp-docs con y sin rerank, bsuite-auditorias, tickets-microservice) y docs/eval/README.md documentando formato, regeneracion y limites.",
+          "verificacion_real": "1) El baseline viejo (innovapp-docs.rerank, sin procedencia) se detecta como incomparable. VERDE. 2) Determinismo: dos corridas consecutivas del mismo commit sobre innovapp-docs dieron procedencia identica y recall byte-identico en las 26 preguntas. PARCIAL: `top_score` vario en 2 de 26 (0.0157 vs 0.0183 y 0.6805 vs 0.6849). Ambas son preguntas SIN respuesta correcta en el corpus (una regresion conocida, una fuera de dominio), donde el top esta empatado y aplica el no-determinismo de orden-en-empates de Qdrant (#6814) ya documentado en este proyecto. NO se disimulo redondeando: el campo se conserva por su valor diagnostico y el limite queda escrito en docs/eval/README.md. El criterio 'identicos salvo timestamp' se cumple para recall, que es lo que el baseline existe para comparar; no se cumple literalmente para top_score.",
+          "numeros": "bsuite-auditorias 25/69/69 (r@1/5/10, n=16) | innovapp-docs sin rerank 9/18/36 (n=22) | innovapp-docs con rerank 18/55/55 | tickets-microservice 5/16/16 (n=19, primer baseline). Los dos primeros coinciden con corridas historicas de docs/analisis-futuro/, lo que valida el runner. tickets-microservice en 16%@10 es flojo y merece revisarse aparte."
         },
         {
           "id": "1.6-replicate-env-al-repo",

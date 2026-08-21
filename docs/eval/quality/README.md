@@ -60,3 +60,36 @@ postura es por frases: al construirla, "que hora es" quedó mal clasificada como
 `directo` porque el rechazo real —"no tengo la capacidad de proporcionar la hora
 actual"— no estaba en la lista. Fue un falso negativo de la métrica, no un fallo
 del motor. Si aparece un patrón de rechazo nuevo, hay que agregarlo.
+
+
+## Línea base al 2026-08-21 (antes de la re-ingesta)
+
+`linea-base-post-ajustes.json` — 40 preguntas reales en modo Simple (20 de
+`innovapp-docs`, 20 de `bsuite-repo`), con el índice **anterior** a la re-ingesta y
+los prompts ya ajustados. Es el archivo contra el que hay que comparar después.
+
+| Métrica | Antes de los ajustes | Línea base actual |
+|---|---|---|
+| Rechazo pleno | 15,0% | **30,0%** |
+| Banda baja | 40,0% | 32,5% |
+| Directo con score bajo | 22,5% | **15,0%** |
+| Palabras (mediana) | 63 | 54,5 |
+| Respuestas cortas (<40 palabras) | 12,5% | 35,0% |
+| Simple con tecnicismos | 7,5% | 7,5% |
+
+El salto en "respuestas cortas" es **deseado**: son los rechazos de 28-52 palabras
+que sustituyeron a fabricaciones de 222-349. No confundir brevedad con vaguedad
+sin leer las respuestas.
+
+Con n=40, un delta porcentual aislado cae dentro del ruido (error estándar ≈7 pp).
+Lo que sostiene estos cambios es el comportamiento **caso por caso**, verificable
+en el detalle del artefacto.
+
+### Lo que sigue abierto
+
+- La frase degenerada de banda baja aparece en **5 de 40**: "el fragmento más
+  cercano dice que el contexto proporcionado no tiene una relevancia alta". El
+  caso (b) del addendum no bastó.
+- Una pregunta empeoró (372 → 524 palabras) y sigue fabricando.
+- Los saludos "Hola" y "Continua" mantienen 93 palabras con identificadores
+  PascalCase: van por un camino de código que estos prompts no tocan.

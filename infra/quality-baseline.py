@@ -53,6 +53,12 @@ MARCAS_RECHAZO_PLENO = [
     "no tengo la capacidad", "no tengo acceso", "no dispongo",
     "no puedo responder", "no tengo información", "no tengo informacion",
     "fuera del alcance", "no forma parte del corpus", "solo puedo responder",
+    # Formas que produce el prompt tras el ajuste del 2026-08-21. Sin estas, un
+    # rechazo correcto quedaba contado como respuesta directa, y la metrica
+    # reportaba una regresion de +10 puntos donde en realidad habia una mejora.
+    "no tiene contenido relevante", "no hay contenido relevante",
+    "no hay nada relevante", "no tiene información relevante",
+    "no tiene informacion relevante",
 ]
 # Solo la plantilla REAL de la banda baja. Las marcas genericas ("no encontre",
 # "no aparece en") producian falsos positivos: una respuesta legitima que explica

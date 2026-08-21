@@ -1,0 +1,749 @@
+{
+ "etiqueta": "prompts-ajustados-v2",
+ "base_url": "http://localhost:5085",
+ "resumen": {
+  "preguntas": 40,
+  "palabras_promedio": 95.7,
+  "palabras_mediana": 43.0,
+  "respuestas_cortas_pct": 42.5,
+  "rechazo_pleno_pct": 27.5,
+  "banda_baja_pct": 32.5,
+  "directo_pct": 40.0,
+  "directo_con_score_bajo_pct": 17.5,
+  "simple_con_tecnicismos_pct": 7.5,
+  "simple_total": 40,
+  "optimista_promedio": 0,
+  "vago_promedio": 0.0,
+  "duracion_promedio_s": 7.7
+ },
+ "detalle": [
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "reglas para guardar un ticket?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que las reglas para guardar un ticket están definidas en el método intentar recuperar asignacion dentro de la clase ticket computo view controller. Este método intenta restaurar la última asignación conocida del ticket cuando falla el commit principal, y relanza la excepción como amigable. Además, menciona que se verifica si el empleado es del Centro Atención Usuarios, si el estado es Activo o Mesa de Ayuda, y si no es un ticket interno. También se verifica que las observaciones no contengan solo números, que tengan como mínimo 10 caracteres (excepto cuando el tipo de servicio es \"TYC\"), y que el teléfono tenga como mínimo 4 caracteres (a menos que sea un ticket principal o dependiente, o esté cancelado por nomina).",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 821,
+    "palabras": 135,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1117,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 12.43
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "porque no se habilita el boton de cancelar de factura?",
+   "respuesta": "No se habilita el botón de cancelar de factura porque la factura debe estar marcada como provisionada para poder ser cancelada. Si la factura no cumple con esta condición, el botón de cancelar no estará disponible.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 214,
+    "palabras": 36,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.2675,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.59
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "EsPermiteCancelarTraslado que hace esta regla?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que la clase traspaso computo tiene un método es permite cancelar que determina si es permitido cancelar el traspaso, basándose en su estatus y el personal que lo registra.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 268,
+    "palabras": 44,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.2935,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.21
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "EsPermiteCancelarTraslado dodne se define esta funcion?",
+   "respuesta": "Lo siento, pero el indexed corpus no tiene contenido relevante para responder a tu pregunta. No puedo proporcionar información sobre cómo se define la función \"EsPermiteCancelarTraslado\". Te sugiero intentar una pregunta más específica o proporcionar más contexto para que pueda ayudarte mejor.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 294,
+    "palabras": 42,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 1,
+    "tecnicos": {
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.68
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "EsPermiteCancelarTraslado esta propiedad como se define?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que la propiedad \"es permite cancelar traslado\" no se menciona explícitamente en los fragmentos proporcionados.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 207,
+    "palabras": 30,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3336,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.85
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Procesos que influyen en la innovapp?",
+   "respuesta": "La innovación es un proceso complejo que se ve influenciado por varios factores. Algunos de los procesos y factores que influyen en la innovación incluyen:\n\n1. **Innovación interna**: Este proceso se refiere a la creación de nuevas ideas y productos dentro de una organización. Factores como la cultura de innovación, la disposición a tomar riesgos, la colaboración entre equipos y la disposición a invertir en investigación y desarrollo son cruciales.\n\n2. **Innovación externa**: Este proceso implica la adquisición de nuevas ideas y tecnologías desde fuera de la organización. Factores como la colaboración con proveedores, la participación en conferencias y eventos, la investigación de mercados y la adquisición de empresas son importantes.\n\n3. **Innovación social**: Este proceso se refiere a la creación de nuevas ideas y productos que responden a las necesidades y deseos de la sociedad. Factores como la investigación de tendencias, la participación en encuestas y grupos de opinión, y la colaboración con organizaciones no gubernamentales son importantes.\n\n4. **Innovación tecnológica**: Este proceso implica la creación de nuevas tecnologías y productos que utilizan tecnologías existentes de una manera innovadora. Factores como la investigación y desarrollo, la colaboración con universidades y instituciones de investigación, y la participación en conferencias y eventos tecnológicos son importantes.\n\n5. **Innovación cultural**: Este proceso se refiere a la creación de nuevas ideas y productos que reflejan las normas y valores de una cultura. Factores como la participación en eventos culturales, la colaboración con artistas y diseñadores, y la investigación de tendencias culturales son importantes.\n\n6. **Innovación económica**: Este proceso implica la creación de nuevas ideas y productos que responden a las necesidades y deseos de los consumidores. Factores como la investigación de mercados, la participación en encuestas y grupos de opinión, y la colaboración con empresas de otras industrias son importantes.\n\n7. **Innovación ambiental**: Este proceso se refiere a la creación de nuevas ideas y productos que responden a las necesidades y deseos de la naturaleza. Factores como la investigación de tendencias ambientales, la participación en eventos ambientales, y la colaboración con organizaciones de conservación son importantes.\n\n8. **Innovación educativa**: Este proceso implica la creación de nuevas ideas y productos que responden a las necesidades y deseos de los estudiantes. Factores como la investigación de tendencias educativas, la participación en eventos educativos, y la colaboración con organizaciones educativas son importantes.\n\n9. **Innovación política**: Este proceso se refiere a la creación de nuevas ideas y productos que responden a las necesidades y deseos de los ciudadanos. Factores como la investigación de tendencias políticas, la participación en eventos políticos, y la colaboración con organizaciones políticas son importantes.\n\n10. **Innovación religiosa**: Este proceso se refiere a la creación de nuevas ideas y productos que responden a las necesidades y deseos de los seguidores de una religión. Factores como la investigación de tendencias religiosas, la participación en eventos religiosos, y la colaboración con organizaciones religiosas son importantes.\n\nCada uno de estos procesos y factores puede influir en la innovación de una organización o de una sociedad en general. La combinación de estos procesos y factores puede llevar a la creación de nuevas ideas y productos que pueden transformar la sociedad y la economía.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 3589,
+    "palabras": 524,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 18.0
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "autorizaciones genericas, que accion la detona?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que las propiedades criteria autorizacion, criteria cancelacion, pemiter cancelacion por detalles y criteria historial en la clase re asignacion computo pueden estar relacionadas con la detonación de autorizaciones genericas.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 321,
+    "palabras": 44,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3439,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.04
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "identifica las critrerias que se utiliza para segementar la información de las auditorias del proeycto de compras",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que este archivo contiene lógica para obtener criterios que limitan ordenes de compra. Estos criterios se centran en el estatus, las centrales de compras asignadas al usuario, la moneda, el proveedor y los detalles del cliente.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 323,
+    "palabras": 51,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3736,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.86
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "identifica las critrerias que se utiliza para segementar la información de las auditorias.cs del proeycto de compras",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.2967,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.52
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "identifica las critrerias que se utiliza para segementar la información de las auditorias del proeycto de compras/Auditorias",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el archivo recepcion compra logic cs contiene lógica para obtener criterios que limitan ordenes de compra. Estos criterios se centran en el estatus, la moneda, el proveedor, las retenciones, la empresa facturadora y el tipo de cambio.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 334,
+    "palabras": 53,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3991,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.87
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "¿Cómo se cierra un ticket?",
+   "respuesta": "Un ticket se cierra en el sistema al recibir una entrega de consumible. Esto se realiza a través del método realiza cierre ticket entrega consumible en la clase ticket computo. Este método actualiza el estado del ticket a \"Atendido\", registra la actividad correspondiente y agrega una auditoría para documentar el evento.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 321,
+    "palabras": 51,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.6164,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.59
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Se envia algun correo al atender un ticket?",
+   "respuesta": "Sí, se envía un correo al atender un ticket. El correo de notificación incluye el ticket y el motivo del cierre. Si hay un archivo adjunto, lo incluye en el correo; si no, solo envía el correo con la descripción del motivo.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 223,
+    "palabras": 42,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9545,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.81
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "La auditoria el registro de hallazgos cuales condiciones tiene par aser creado?",
+   "respuesta": "Lo siento, pero el indexed corpus no tiene contenido relevante para responder a esa pregunta. Te sugiero intentar una pregunta más específica para obtener una respuesta más precisa.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 181,
+    "palabras": 28,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.19
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Quienes pueden ver las auditorias?",
+   "respuesta": "Lo siento, pero el indexed corpus no tiene contenido relevante para responder a esa pregunta. Te sugiero intentar una pregunta más específica para obtener una respuesta más precisa.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 181,
+    "palabras": 28,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.23
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "El listado de auditorias, quienes lo puden ver?",
+   "respuesta": "Lo siento, pero el indexed corpus no tiene contenido relevante para responder a esa pregunta. Te sugiero intentar una pregunta más específica para obtener una respuesta más precisa.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 181,
+    "palabras": 28,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.27
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "COnoces el proceso de auditorias?",
+   "respuesta": "Lo siento, pero el corpus indexado no tiene contenido relevante para responder a esa pregunta. Te sugiero intentar una pregunta más específica para obtener una respuesta más precisa.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 182,
+    "palabras": 28,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.32
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Puedo ver este listado?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1974,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.73
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Tiene algun filtro por usaurio, rol, permisos?",
+   "respuesta": "Sí, el sistema tiene filtros basados en usuario, rol y permisos. Aquí te explico cómo funciona:\n\n1. **Filtro por Usuario**: El método has filter permission en la clase user extensions verifica si un usuario tiene el permiso de filtro para un tipo específico. Si el usuario tiene el permiso, el método devuelve true; de lo contrario, devuelve false.\n\n2. **Filtro por Rol y Permisos Especiales**: En la clase ticket computo view controller, hay métodos que agregan filtros según los permisos especiales del usuario:\n   - agregar filtro por departamento: Añade filtros de departamento si el usuario tiene el permiso \"auth ticket ver depto\".\n   - agregar filtro por sucursal: Añade filtros de sucursal si el usuario tiene el permiso \"auht ticket ver por sucursal\".\n\n3. **Filtro por Almacén**: En la clase inventario ciclico, hay propiedades que determinan si el campo de Almacén está habilitado para el usuario basándose en un permiso especial (habilita almacen).\n\n4. **Filtro por Conceptos**: En la clase almacen computo entrada, hay un método que define un filtro para los conceptos basado en el estatus, tipo de concepto y autorización especial. Si no se tiene la autorización especial, filtra también por abreviatura distinta a 'AJJ'.\n\nEstos filtros aseguran que los usuarios solo vean los datos relevantes para su rol y permisos, mejorando la seguridad y la eficiencia del sistema.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 1382,
+    "palabras": 220,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.4732,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 15.65
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Puedes darme la cadena de coneccion de la base de datos",
+   "respuesta": "La cadena de conexión de la base de datos se obtiene a través de varios métodos y fuentes en orden:\n\n1. **Variables de Entorno**: El sistema intenta obtener la cadena de conexión desde las variables de entorno.\n2. **Configuración de la Aplicación**: Si no se encuentra en las variables de entorno, el sistema busca la cadena de conexión en la configuración de la aplicación.\n3. **Proveedor Específico de Conexión**: Si no se encuentra en la configuración de la aplicación, el sistema recurre a un proveedor específico de conexión.\n\nSi ninguna de estas fuentes proporciona una cadena de conexión válida, el sistema lanza una excepción indicando que no se encontró una cadena de conexión.\n\nEste proceso se realiza en el método resolver cadena conexion de la clase reyma base object en el archivo [detalle técnico].",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 812,
+    "palabras": 134,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.7478,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 15.84
+   }
+  },
+  {
+   "coleccion": "bsuite-repo",
+   "pregunta": "Que base de datos se consulta?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el sistema no utiliza consultas SQL escritas manualmente. Todas las operaciones de base de datos se realizan dentro de sesiones o unidades de trabajo, asegurando la consistencia y el aislamiento de los cambios. Las consultas a la base de datos se realizan utilizando una API específica del sistema, lo que facilita el acceso y manipulación de los datos.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 453,
+    "palabras": 74,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3642,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.76
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿qué se necesita para cerrar un ticket?",
+   "respuesta": "Para cerrar un ticket, se necesita que el Tipo de Servicio Interno definido tenga \"Requiere Validación\" = No. Cuando se ejecuta la acción de cerrar el Ticket, este se cierra conforme al comportamiento ya existente, sin transicionar a \"En Validación\".",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 250,
+    "palabras": 40,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9571,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.86
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿cómo se registra el seguimiento de un ticket?",
+   "respuesta": "El seguimiento de un ticket se registra a través de un proceso que implica el uso de un mecanismo llamado \"Seguimiento Ejecutivo\". Este mecanismo permite que el responsable de la solicitud de servicio capture un registro que puede incluir detalles relevantes y, opcionalmente, la opción de \"Notificar a Usuario\". Cuando se marca esta opción, el sistema genera una notificación tanto en el Centro de Notificaciones del usuario que reportó el ticket como en el timeline del mismo.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 478,
+    "palabras": 77,
+    "postura": "directo",
+    "fuentes": 5,
+    "score_top": 0.8207,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.13
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cómo funciona la encuesta de satisfacción?",
+   "respuesta": "La encuesta de satisfacción es un proceso que se realiza al finalizar un servicio o solicitud de servicio para evaluar la experiencia del usuario. Este proceso se realiza automáticamente cuando el Ticket o Solicitud de Servicio alcanza el estatus \"Atendido\" o \"Entregado\" y existe una encuesta vigente.\n\nEl bloque de encuesta de satisfacción aparece automáticamente en el timeline de Trayectoria. Este bloque contiene tres tipos de preguntas: Escala/Estrellas, Sí/No y Texto libre. Cada pregunta tiene validación de obligatorias y el envío de respuestas.\n\nEl resultado de la encuesta se almacena en el sistema y puede ser consultado por el usuario en cualquier momento. Además, el responsable de calidad del servicio puede visualizar las respuestas de la encuesta de satisfacción relacionadas a cada Ticket o Solicitud de Servicio para dar seguimiento a la percepción del usuario sobre el servicio recibido.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 907,
+    "palabras": 139,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9222,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.85
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual. No puedo proporcionar información sobre el tiempo.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 100,
+    "palabras": 17,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 1.97
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Procesos que influyen en la innovapp?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.0659,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.64
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Es solo al cierre del ticket?",
+   "respuesta": "No, la validación del servicio no se realiza solo al cierre del ticket. Según la información proporcionada, el sistema evalúa la validación del servicio cada hora mediante una tarea programada (Job). Específicamente, el Job se ejecuta en cada hora y realiza lo siguiente:\n\n1. Obtiene los tickets en estado \"En Validación\".\n2. Calcula el tiempo transcurrido desde la fecha de inicio de validación, contando solo las horas laborales.\n3. Si el tiempo transcurrido es igual o mayor al tiempo de expiración definido en el tipo de servicio, el ticket se finaliza automáticamente.\n\nEste proceso se repite cada hora, por lo que la validación del servicio no se realiza solo al cierre del ticket, sino que se realiza continuamente hasta que el plazo de validación expira o la validación es manualmente resuelta por el usuario.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 817,
+    "palabras": 134,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9047,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.58
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "las notificaciones donde se visualizan?",
+   "respuesta": "Según el contexto proporcionado, las notificaciones se visualizan en dos lugares principales:\n\n1. **Centro de Notificaciones**: Este es el lugar donde se reflejan todas las notificaciones generadas, independientemente de si se dispara un correo electrónico o no. Incluye notificaciones generadas desde actividades de Ticket marcadas \"Notificación a usuario\" o desde registros de Seguimiento Ejecutivo marcados \"Notificar a Usuario\".\n\n2. **Bloque de Notificación del timeline**: Este bloque muestra las notificaciones asociadas a las actividades de Ticket y Seguimiento Ejecutivo, además de mostrarlas en el Centro de Notificaciones.\n\nAdemás, menciona que las notificaciones también pueden ser generadas por el cambio de estado de los Tickets, lo que se documenta en el RF-01.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 775,
+    "palabras": 110,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.5205,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 10.46
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Como se gestionan las notificaciones?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que las notificaciones se manejan a través de una cola de mensajes. Esto significa que todas las notificaciones generadas conforme a RF-01 se envían a través de una cola de mensajes antes de llegar a su canal destino (correo, Push, Centro de Notificaciones).",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 354,
+    "palabras": 58,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.3619,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.55
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Centro de Notificaciones",
+   "respuesta": "El Centro de Notificaciones es una sección centralizada en innov app y Business Suite donde el usuario que reportó una petición puede consultar, administrar y eliminar las notificaciones generadas. Este componente incluye un ícono con contador, un listado de notificaciones dividido en secciones \"No Leídas\" y \"Leídas\", campos de cada entrada, detalles y opciones de navegación a la Trayectoria. El usuario puede marcar las notificaciones como leídas manualmente, eliminarlas individualmente o limpiar todas las no leídas. Además, el Centro de Notificaciones muestra notificaciones generadas por actividades de Ticket marcadas \"Notificación a usuario\" y registros de Seguimiento Ejecutivo marcados \"Notificar a Usuario\". El estado de lectura y eliminación de las notificaciones es consistente entre innov app y Business Suite.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 826,
+    "palabras": 118,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.987,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.33
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Hola",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es?",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 49,
+    "palabras": 10,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 1.73
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Son las 5:34",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual. No puedo proporcionar la información del tiempo.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 98,
+    "palabras": 17,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 1.93
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "ahora que hora es?",
+   "respuesta": "Lo siento, pero no tengo la capacidad de proporcionar la hora actual. Soy un asistente de inteligencia artificial que no tiene acceso a información en tiempo real como la hora actual del sistema.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 195,
+    "palabras": 33,
+    "postura": "rechazo_pleno",
+    "fuentes": 10,
+    "score_top": 0.0625,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.58
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "No",
+   "respuesta": "No hay nada relevante sobre eso en el contenido indexado.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 57,
+    "palabras": 10,
+    "postura": "rechazo_pleno",
+    "fuentes": 10,
+    "score_top": 0.232,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.11
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "como funciona la opción de cancelación de un ticket por parte del usuario",
+   "respuesta": "La opción de cancelación de un ticket por parte del usuario se gestiona a través de varios criterios de aceptación y pruebas funcionales. Aquí te explico los pasos y reglas que se aplican:\n\n### Criterios de Aceptación (CA)\n\n1. **Aparición del bloque de Validación (CA-1.6.1)**\n   - **Condición**: Cuando un Ticket alcanza el estatus \"En Validación\" y este es el vigente.\n   - **Acción**: El usuario que reportó abre la Trayectoria.\n   - **Resultado**: El nodo muestra las dos opciones de respuesta \"Sí, quedó resuelta\" y \"No se resolvió\".\n\n2. **Confirmación positiva (CA-1.6.2)**\n   - **Condición**: El usuario selecciona \"Sí, quedó resuelta\".\n   - **Acción**: El sistema procesa la selección.\n   - **Resultado**: El bloque de opciones deja de mostrarse y el timeline agrega el nodo \"Atendido\".\n\n3. **Envío bloqueado sin motivo (CA-1.6.3)**\n   - **Condición**: El usuario selecciona \"No se resolvió\".\n   - **Acción**: Intenta enviar la respuesta sin capturar el motivo.\n   - **Resultado**: El sistema no permite el envío y mantiene el campo de motivo visible.\n\n4. **Envío con motivo capturado (CA-1.6.4)**\n   - **Condición**: El usuario selecciona \"No se resolvió\" y captura el motivo.\n   - **Acción**: Envía la respuesta.\n   - **Resultado**: El bloque de opciones deja de mostrarse, el timeline agrega un nuevo nodo \"En Proceso\" y dicho nodo muestra el motivo capturado.\n\n5. **Cierre automático por expiración sin interacción del usuario (CA-1.6.5)**\n   - **Condición**: El usuario no responde el bloque de Validación dentro del plazo máximo configurado.\n   - **Acción**: El sistema detecta la expiración.\n   - **Resultado**: El bloque de opciones deja de mostrarse, el timeline agrega el nodo \"Atendido\" y dicho nodo refleja que el cierre fue automático.\n\n### Pruebas Funcionales (Pruebas Funcionales - Cancelación de Ticket por el usuario.md)\n\nLas pruebas funcionales para la cancelación de un ticket por el usuario incluyen:\n\n1. **Visibilidad del botón en estatus Registrado (TC-02.01)**\n   - **Condición**: Usuario A consulta \"Mis Tickets\" sobre una petición propia en estatus \"Registrado\".\n   - **Resultado**: El botón \"Cancelar Ticket\" debe estar visible en la Trayectoria.\n\n2. **Ocultamiento del botón fuera de Registrado (TC-02.02)**\n   - **Condición**: Consultar una petición propia que ya no está en estatus \"Registrado\".\n   - **Resultado**: El botón \"Cancelar Ticket\" no debe mostrarse.\n\n3. **Restricción por propiedad (TC-02.03)**\n   - **Condición**: Usuario B intenta cancelar una petición reportada por Usuario A (UI y, si aplica, acceso directo/llamada al servicio).\n   - **Resultado**: El sistema debe impedir la cancelación sin importar el estatus.\n\n4. **Motivo obligatorio (TC-02.04)**\n   - **Condición**: Confirmar la cancelación sin seleccionar motivo.\n   - **Resultado**: El sistema no debe permitir continuar y debe solicitar seleccionar un motivo.\n\n5. **Texto adicional obligatorio para \"Otro\" (TC-02.05)**\n   - **Condición**: Seleccionar el motivo \"Otro\" (Requiere texto adicional = Sí) y confirmar sin texto.\n   - **Resultado**: El sistema no debe permitir continuar y debe solicitar el texto.\n\n6. **Texto adicional opcional para otros motivos (TC-02.06)**\n   - **Condición**: Seleccionar un motivo con \"Requiere texto adicional\" = No y confirmar sin texto.\n   - **Resultado**: El sistema debe permitir continuar sin exigir texto.\n\n7. **Cancelación exitosa, bitácora y notificación (TC-02.07)**\n   - **Condición**: Usuario A selecciona motivo válido (y texto si aplica) y confirma.\n   - **Resultado**: Estatus debe pasar a \"Cancelado\"; bitácora del servicio debe registrar usuario/fecha/motivo/texto; se debe enviar notificación.\n\n8. **Confirmación previa (no cancela sin confirmar) (TC-02.08)**\n   - **Condición**: Abrir el diálogo, capturar motivo y cerrar/cancelar el diálogo sin confirmar.\n   - **Resultado**: La petición debe permanecer en \"Registrado\", sin cambios.\n\n9. **Motivo inactivo no disponible en el diálogo (TC-02.09)**\n   - **Condición**: Con un motivo marcado Inactivo, abrir el selector en el diálogo de cancelación.\n   - **Resultado**: El motivo inactivo no debe aparecer disponible.\n\n10. **Visualización en Trayectoria tras cancelar (TC-02.10)**\n    - **Condición**: Tras una cancelación exitosa, consultar la Trayectoria de esa petición.\n    - **Resultado**: Se debe mostrar estatus \"Cancelado\" junto con motivo y texto adicional (si aplica).\n\n11. **Botón no disponible tras avanzar a Investigación CAU (TC-02.11)**\n    - **Condición**: Avanzar una petición a \"Investigación CAU\" y consultar \"Mis Tickets\" como el usuario que reportó.\n    - **Resultado**: El botón \"Cancelar Ticket\" ya no debe mostrarse.\n\n12. **Cancelación por CAU tras Investigación CAU (regresión puntual) (TC-02.12)**\n    - **Condición**: Con la petición en \"Investigación CAU\", el analista CAU ejecuta su cancelación con motivo en texto libre.\n    - **Resultado**: La cancelación por CAU debe seguir funcionando como hoy (motivo en texto libre).\n\n13. **No se solicita adjunto (TC-02.13)**\n    - **Condición**: Durante el flujo de cancelación, verificar que no se exija archivo adjunto.\n    - **Resultado**: El diálogo no debe presentar ni exigir campo de adjunto.\n\n14. **Estatus terminal Cancelado (TC-02.14)**\n    - **Condición**: Sobre una petición ya \"Cancelado\", verificar que no existan acciones para reanudar el flujo normal.\n    - **Resultado**: La petición no debe transicionar; no debe haber acciones de flujo disponibles.\n\n### Regla Transversal\n\nEste requerimiento no introduce nuevos estados, grupos de estados ni transiciones; reutiliza la bitácora de estatus y las notificaciones ya existentes de cada entidad, y el catálogo de estados del sistema como fuente de color, ícono y mensaje de cada nodo. No tiene relación funcional con la acción de cancelación ejecutada por el propio usuario: el botón correspondiente puede coexistir visualmente dentro del mismo panel de Trayectoria, pero su comportamiento se rige íntegramente por esa acción, documentada aparte, y no forma parte del alcance de este requerimiento.\n\n### Resumen\n\nLa opción de cancelación de un ticket por parte del usuario se gestiona mediante un bloque de validación que permite al usuario seleccionar si el ticket quedó resuelto o no. Si no se resolvió, se requiere un motivo. El sistema también permite la cancelación automática si el usuario no responde dentro del plazo configurado. Las pruebas funcionales aseguran que el proceso de cancelación funcione correctamente y que no se requiera adjunto durante el flujo.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 6516,
+    "palabras": 933,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9874,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 40.44
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Continua",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "puedo cancelar cualquier ticket?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.5319,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.48
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Para que tiempo esta presupuestado todo esto?",
+   "respuesta": "No tengo acceso a información sobre ti o tu situación actual, así que no puedo determinar cuánto tiempo está presupuestado todo esto. Si tienes alguna otra pregunta o necesitas ayuda con algo más, estaré encantado de asistirte.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 227,
+    "palabras": 37,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.65
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "La bitacora de defectos a que se refiere?",
+   "respuesta": "La bitácora de defectos se refiere a un registro detallado de problemas o errores que ocurren en un sistema, producto, servicio o proceso. Este tipo de registro es crucial para identificar, analizar y solucionar problemas de manera eficiente. \n\nEn un contexto técnico, la bitácora de defectos puede incluir información como:\n\n1. **Fecha y hora del incidente**: Para establecer el momento exacto en que ocurrió el problema.\n2. **Descripción del problema**: Un resumen claro de lo que sucedió.\n3. **Pasos para reproducir el problema**: Para que otros puedan intentar recrear el incidente y validar la solución.\n4. **Impacto**: Cómo el problema afectó a los usuarios o el sistema.\n5. **Estado del problema**: Si está abierto, en proceso de resolución o cerrado.\n6. **Acciones tomadas**: Los pasos realizados para intentar solucionar el problema.\n7. **Solución**: Si se encontró una solución, cómo se implementó y cuándo se resolvió el problema.\n\nLa bitácora de defectos es una herramienta valiosa para el mantenimiento y mejora continua de sistemas y procesos. Ayuda a identificar patrones, prevenir problemas futuros y mejorar la calidad general del producto o servicio.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 1168,
+    "palabras": 181,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.66
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Existe contenido para la bitacora de defectos?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.0572,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.62
+   }
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "query": "Cómo funcionas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funcionas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cómo funcionas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  }
+]

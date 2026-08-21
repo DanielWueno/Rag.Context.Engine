@@ -1,0 +1,65 @@
+[
+  {
+    "query": "Cómo se calcula la calificación de una auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "Cómo se calcula la calificación de una auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "Cómo se calcula la calificación de una auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "Quienes pueden ver las auditorias?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "Como se filtra el listado de las auditorias?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "Si soy del departamento de auditorias internas, puedo ver las auditorias que genere otro departamento?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260730.json"
+  },
+  {
+    "query": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+    "topK": 3,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260731.json"
+  }
+]

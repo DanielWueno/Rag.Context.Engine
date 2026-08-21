@@ -1,0 +1,11 @@
+[
+  {
+    "query": "Cómo se calcula la calificación de una auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260730.json"
+  }
+]

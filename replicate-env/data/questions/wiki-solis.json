@@ -1,0 +1,632 @@
+[
+  {
+    "query": "Que encuentras sobre la firma de las auditorias en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Firma móvil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Que otras reglas tiene?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Cuentame más de esto",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Segmentación por departamento en catálogos, procesos y monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "lo referente a lo móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "Firma movil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260729.json"
+  },
+  {
+    "query": "FIRMA DIGITAL",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260729.json"
+  },
+  {
+    "query": "Que reglas se siguen para poder aplica la firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260729.json"
+  },
+  {
+    "query": "Que encuentras sobre la firma de las auditorias en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma móvil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que otras reglas tiene?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuentame más de esto",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Segmentación por departamento en catálogos, procesos y monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "lo referente a lo móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma movil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "FIRMA DIGITAL",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que reglas se siguen para poder aplica la firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras sobre la firma de las auditorias en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma móvil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que otras reglas tiene?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuentame más de esto",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Segmentación por departamento en catálogos, procesos y monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "lo referente a lo móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma movil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "FIRMA DIGITAL",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que reglas se siguen para poder aplica la firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras sobre la firma de las auditorias en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma móvil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que otras reglas tiene?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuentame más de esto",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Segmentación por departamento en catálogos, procesos y monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "lo referente a lo móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma movil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "FIRMA DIGITAL",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que reglas se siguen para poder aplica la firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras sobre la firma de las auditorias en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma móvil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que otras reglas tiene?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuentame más de esto",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que encuentras referente a una firma móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Segmentación por departamento en catálogos, procesos y monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "lo referente a lo móvil?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Firma movil",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "FIRMA DIGITAL",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que reglas se siguen para poder aplica la firma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  }
+]

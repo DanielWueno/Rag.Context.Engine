@@ -7,9 +7,10 @@ namespace RagEngine.Cli.Infrastructure;
 /// Bridges an already-built Microsoft.Extensions.DependencyInjection IServiceProvider
 /// to Spectre.Console.Cli's type registration mechanism.
 ///
-/// Unlike SpectreTypeRegistrar (which builds a new ServiceProvider from a fresh
-/// IServiceCollection), this registrar forwards resolution to the host's existing
-/// provider — meaning all services registered in Program.cs are available to commands.
+/// Instead of building a second ServiceProvider from a fresh IServiceCollection,
+/// this registrar forwards resolution to the host's existing provider — so every
+/// service registered in Program.cs is available to the commands, and singletons
+/// really are single (two providers would each build their own ONNX session).
 /// </summary>
 public sealed class SpectreHostTypeRegistrar : ITypeRegistrar
 {

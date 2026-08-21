@@ -57,8 +57,10 @@
           "multiagente": false,
           "verificacion": "Ingesta forzada a fallar un lote (Qdrant apagado a mitad) devuelve exit != 0 y nombra el delta",
           "horas_maquina": 0.3,
-          "estado": "pendiente",
-          "por_que_este_modelo": "El arreglo ya está especificado y los dos números necesarios ya existen en el summary."
+          "estado": "hecho",
+          "por_que_este_modelo": "El arreglo ya está especificado y los dos números necesarios ya existen en el summary.",
+          "fecha": "2026-08-21",
+          "resultado": "chunksLost = ChunksGenerated - ChunksIndexed decide el veredicto: regla amarilla que nombra el delta en vez del '✅ Ingestion Complete' verde, fila 'Chunks perdidos' en la tabla junto a los dos números que la componen, mensaje que advierte que la colección queda consultable pero con índice incompleto, y exit code 3 (nuevo, documentado junto a los ya existentes 0/1/2 para que un script distinga 'no indexó nada' de 'indexó casi todo'). VERIFICADO con el escenario real, no con el benigno: se levantó un Qdrant desechable en los puertos 7333/7334 (para no tocar el qdrant-local con las 9 colecciones reales ni el contenedor rag-api que corre contra él), se lanzó la ingesta de src/RagEngine.Core con --batch-size 1 y se mató el contenedor a los 3 segundos. Resultado: 325 chunks generados, 216 indexados, 109 perdidos, veredicto amarillo nombrando el delta y exit 3. El control (ingesta normal) sigue dando exit 0. Entorno restaurado: contenedor eliminado y las 2 colecciones temporales borradas."
         },
         {
           "id": "1.4-proyecto-de-tests",
@@ -156,9 +158,11 @@
           "multiagente": false,
           "verificacion": "dotnet build sin advertencias CS; si la variable delataba un error que debía reportarse, se reporta",
           "horas_maquina": 0.1,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Una línea. Pero mirar antes si el 'error' debía propagarse en vez de borrarlo sin más.",
-          "origen": "Salida de dotnet build del 2026-08-21."
+          "origen": "Salida de dotnet build del 2026-08-21.",
+          "fecha": "2026-08-21",
+          "resultado": "La variable `Exception? error` estaba genuinamente muerta: los cuatro catch de ExecuteAsync retornan directo sin asignarla ni leerla, así que no delataba un error que debiera propagarse. Eliminada. El build ya no emite ninguna advertencia CS. Se cerró junto al ítem 1.3 por estar en el mismo bloque de cinco líneas."
         },
         {
           "id": "1.12-artefacto-sqlite-huerfano",
@@ -245,7 +249,8 @@
           "verificacion": "Una ingesta chica muestra contadores que avanzan de verdad",
           "horas_maquina": 0.3,
           "estado": "pendiente",
-          "por_que_este_modelo": "Se verifica mirando la pantalla."
+          "por_que_este_modelo": "Se verifica mirando la pantalla.",
+          "evidencia_directa": "Confirmado el 2026-08-21 durante la verificación del ítem 1.3: en dos ingestas reales la tabla Live mostró 'Files Processed 0 / Chunks Produced 0 / Chunks Indexed 0' durante toda la corrida, mientras la tabla final reportaba 54 archivos y 325 chunks. El hallazgo ya no es inferido del código, está observado."
         },
         {
           "id": "2.5-un-solo-framework-cli",

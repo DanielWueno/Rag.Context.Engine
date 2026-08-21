@@ -20,6 +20,14 @@ namespace RagEngine.Cli.Commands;
 /// </summary>
 public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 {
+    /// <summary>
+    /// Codigos de salida: 0 = completa, 1 = cancelada o error, 2 = faltan modelos,
+    /// 3 = termino pero perdio chunks en el camino. El 3 existe para que un script
+    /// pueda distinguir "no indexo nada" de "indexo casi todo": ambos son fallos,
+    /// pero solo el segundo deja una coleccion utilizable a medias.
+    /// </summary>
+    private const int ExitCodeIncompleteIngestion = 3;
+
     public sealed class Settings : CommandSettings
     {
         [CommandArgument(0, "<path>")]
@@ -135,7 +143,6 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 
         // \u2500\u2500 Live Progress Display \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         IngestionSummary? summary = null;
-        Exception? error = null;
 
         var liveProgress = new LiveProgressTracker();
 
@@ -183,7 +190,21 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 
         // \u2500\u2500 Final Summary Table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         AnsiConsole.WriteLine();
-        AnsiConsole.Write(new Rule("[green]\u2705 Ingestion Complete[/]").RuleStyle("green"));
+        // Un lote que falla (ONNX, tokenizacion sparse, upsert a Qdrant) se registra
+        // en el log y en el contador IngestionErrorsTotal, pero la corrida terminaba
+        // igual en verde y con exit 0. La perdida es la diferencia entre chunks
+        // generados e indexados: si es mayor que cero la ingesta quedo incompleta, y
+        // hay que decirlo en el veredicto Y en el codigo de salida, o cualquier
+        // script que la invoque leera un fallo parcial como exito.
+        int chunksLost = summary is null
+            ? 0
+            : Math.Max(0, summary.ChunksGenerated - summary.ChunksIndexed);
+        bool incomplete = chunksLost > 0;
+
+        AnsiConsole.Write(incomplete
+            ? new Rule($"[yellow]Ingesta incompleta: {chunksLost:N0} chunks no llegaron al indice[/]")
+                .RuleStyle("yellow")
+            : new Rule("[green]\u2705 Ingestion Complete[/]").RuleStyle("green"));
         AnsiConsole.WriteLine();
 
         if (summary is not null)
@@ -197,6 +218,11 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             summaryTable.AddRow("Files Scanned",    $"[cyan]{summary.FilesScanned:N0}[/]");
             summaryTable.AddRow("Chunks Generated", $"[cyan]{summary.ChunksGenerated:N0}[/]");
             summaryTable.AddRow("Chunks Indexed",   $"[green]{summary.ChunksIndexed:N0}[/]");
+            if (incomplete)
+            {
+                summaryTable.AddRow("[yellow]Chunks perdidos[/]",
+                    $"[yellow]{chunksLost:N0} - revisar los ERROR del log de esta corrida[/]");
+            }
             summaryTable.AddRow("Files Skipped",    $"[yellow]{summary.FilesSkipped:N0}[/]");
             var durationText = summary.TotalDuration.TotalDays >= 1
                 ? summary.TotalDuration.ToString(@"d\.hh\:mm\:ss")
@@ -221,6 +247,16 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         }
 
         AnsiConsole.WriteLine();
+        if (incomplete)
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]La coleccion [cyan]{settings.Collection}[/] es consultable, pero le faltan " +
+                $"{chunksLost:N0} chunks: toda busqueda sobre ella parte de un indice incompleto.[/]");
+            AnsiConsole.MarkupLine(
+                "[dim]Revisar los ERROR del log y re-ejecutar con [white]--force[/] cuando este resuelto.[/]");
+            return ExitCodeIncompleteIngestion;
+        }
+
         AnsiConsole.MarkupLine(
             $"[dim]Collection [cyan]{settings.Collection}[/] is ready for semantic search.[/]");
         AnsiConsole.MarkupLine(

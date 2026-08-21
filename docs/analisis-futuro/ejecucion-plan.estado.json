@@ -70,8 +70,11 @@
           "multiagente": false,
           "verificacion": "dotnet test verde; cada caso incluye su negativo adversarial (memoria: nunca solo positivos)",
           "horas_maquina": 0.5,
-          "estado": "pendiente",
-          "por_que_este_modelo": "Diseñar el oráculo correcto ES el trabajo. Un test que afirma el bug actual es peor que no tener test. Sin multiagente: los tests son la verificación, no necesitan panel."
+          "estado": "hecho",
+          "por_que_este_modelo": "Diseñar el oráculo correcto ES el trabajo. Un test que afirma el bug actual es peor que no tener test. Sin multiagente: los tests son la verificación, no necesitan panel.",
+          "fecha": "2026-08-21",
+          "resultado": "tests/RagEngine.Core.Tests con 41 tests (39 verdes, 2 omitidos a proposito), corren en 27 ms sin red, sin Qdrant y sin Ollama. Agregado a RagEngine.slnx. Decision de diseno: se prueba a traves de la superficie publica o internal existente, sin ampliar visibilidad. SparseTokenizer se ejercita via Tokenize() en vez de exponer StemLight/FoldAccents/MergeCollisions; el chunker via ChunkAsync(); y para SanitizeSimpleAnswer, que ya era internal, se agrego InternalsVisibleTo en el csproj de Core en vez de hacerla publica. Las aserciones son de PROPIEDAD, no copias de la implementacion: para el tokenizador se afirma la simetria indice/consulta (auditoria/auditorias, codigo/codigo con acento, mayusculas, y que terminos distintos NO colisionen), el determinismo, la ausencia de TermIndex duplicados y que el peso crezca con la repeticion. Para el sanitizador, que el codigo desaparezca y que la prosa legitima sobreviva IDENTICA, mas idempotencia (importa porque el filtro corre por chunk en streaming). Todos los bloques llevan negativos adversariales.",
+          "nota_diseno": "Se evito el error que el propio ledger senalaba: un test que afirma el bug actual es peor que no tener test. Los dos casos de chunking que hoy fallan se dejaron Skip apuntando al item 2.1, con la evidencia en la razon, en vez de rebajar la asercion a lo que el codigo hace hoy."
         },
         {
           "id": "1.5-baselines-con-procedencia",
@@ -104,7 +107,8 @@
           "verificacion": "El workflow corre verde en un push de prueba",
           "horas_maquina": 0.2,
           "estado": "pendiente",
-          "por_que_este_modelo": "Un YAML. Depende de 1.4: sin tests, el CI no verifica nada."
+          "por_que_este_modelo": "Un YAML. Depende de 1.4: sin tests, el CI no verifica nada.",
+          "desbloqueado": "Ya hay suite verde y ejecutable en 27 ms sin dependencias externas, y desde el item 1.9 los codigos de salida son confiables. El CI ya se puede montar."
         },
         {
           "id": "1.8-doctor-no-corre-sin-modelo",
@@ -204,8 +208,10 @@
           "multiagente": true,
           "verificacion": "Un test con los 3 formatos de firma demuestra el comportamiento actual antes de tocar nada",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
-          "por_que_este_modelo": "El hallazgo está SIN confirmar. Va primero y con verificación independiente: si es falso, se cae medio ítem 2.1."
+          "estado": "hecho",
+          "por_que_este_modelo": "El hallazgo está SIN confirmar. Va primero y con verificación independiente: si es falso, se cae medio ítem 2.1.",
+          "fecha": "2026-08-21",
+          "resultado": "CONFIRMADO con test reproducible, no leyendo codigo. Para firma Allman y para firma partida en varias lineas, el chunker produce DOS chunks: uno de tipo Method con metodo=calcularTotal y lineas L1-L1 que contiene solo la firma, y otro de tipo PlainTextWindow con clase=null y metodo=null que contiene todo el cuerpo. El cuerpo no se pierde, pero se indexa huerfano de su encabezado semantico. El formato K&R (default de prettier) si funciona. Matiz respecto al enunciado original del hallazgo, que decia que se perdia el cuerpo: no se pierde, se separa. El impacto es el mismo (codigo sin encabezado semantico diluyendo el recall) pero el sintoma es distinto, y eso cambia como se detectaria en produccion."
         },
         {
           "id": "2.1-base-comun-chunking",
@@ -216,7 +222,8 @@
           "verificacion": "recall@10 en bsuite-repo y bsuite-auditorias no baja respecto al baseline de 1.5; hashes estables entre estrategias para el mismo archivo",
           "horas_maquina": 40,
           "estado": "pendiente",
-          "por_que_este_modelo": "Error silencioso y caro: un \\r de más cambia todos los ContentHash e invalida la caché. Multiagente sí, pero el veredicto lo da el eval sobre el corpus completo, no un panel opinando del diff."
+          "por_que_este_modelo": "Error silencioso y caro: un \\r de más cambia todos los ContentHash e invalida la caché. Multiagente sí, pero el veredicto lo da el eval sobre el corpus completo, no un panel opinando del diff.",
+          "criterio_de_aceptacion_adicional": "Quitar el Skip de FirmaEstiloAllman_ElCuerpoViajaConLaFirma y FirmaPartidaEnVariasLineas_ElCuerpoViajaConLaFirma en tests/RagEngine.Core.Tests/TypeScriptChunkingStrategyTests.cs y verlos pasar. Ya existen y fallan hoy por la razon correcta, asi que sirven de test de aceptacion sin escribir nada nuevo."
         },
         {
           "id": "2.2-partir-raggenerationservice",

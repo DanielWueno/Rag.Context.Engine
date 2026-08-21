@@ -1,0 +1,52 @@
+# CI mínimo: compila la solución y corre la suite de tests.
+#
+# Deliberadamente NO incluye: umbrales de cobertura, análisis estático como gate,
+# ni jobs de publicación. Este repo lo desarrolla una persona y el objetivo del CI
+# es detectar que algo dejó de compilar o que un test se puso rojo — no imponer
+# ceremonia. Ver docs/analisis-futuro/ejecucion-plan.estado.json, ítem 1.7.
+#
+# Por qué esto puede correr en un runner x64 sin modelos ONNX ni servicios:
+# tests/RagEngine.Core.Tests no toca ONNX, Qdrant ni Ollama. Ejercita el
+# tokenizador sparse, el sanitizador del modo Simple y los chunkers, que son
+# código administrado puro. La suite tarda ~30 ms.
+
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cachear paquetes NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restaurar
+        run: dotnet restore RagEngine.slnx
+
+      - name: Compilar
+        run: dotnet build RagEngine.slnx --configuration Release --no-restore
+
+      - name: Tests
+        run: >
+          dotnet test tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "console;verbosity=normal"

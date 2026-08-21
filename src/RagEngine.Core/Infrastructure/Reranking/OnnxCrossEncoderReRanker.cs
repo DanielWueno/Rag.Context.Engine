@@ -6,6 +6,8 @@ using Microsoft.ML.Tokenizers;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 
+using RagEngine.Core.Infrastructure.Vectorization;
+
 namespace RagEngine.Core.Infrastructure.Reranking;
 
 /// <summary>
@@ -118,6 +120,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL
         };
 
+        OnnxRuntimeLifetime.MarkRuntimeTouched();
         var session = new InferenceSession(_options.ModelPath, sessionOptions);
 
         using var spmStream = File.OpenRead(_options.VocabPath);

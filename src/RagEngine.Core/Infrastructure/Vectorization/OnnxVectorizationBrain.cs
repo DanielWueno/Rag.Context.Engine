@@ -66,6 +66,9 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
             GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL
         };
 
+        // El entorno global de ONNX queda vivo desde aquí; hay que liberarlo al
+        // cerrar el proceso o aborta con SIGABRT en Apple Silicon.
+        OnnxRuntimeLifetime.MarkRuntimeTouched();
         _session = new InferenceSession(_options.ModelPath, sessionOptions);
 
         _tokenizer = CreateTokenizer();

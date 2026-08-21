@@ -55,8 +55,19 @@ try
     builder.Services.AddRagEngineGeneration(builder.Configuration);
 
     // Escucha en todas las interfaces para que el equipo pueda alcanzarlo por LAN,
-    // no solo localhost. Puerto configurable vía ASPNETCORE_URLS si 5080 choca.
-    builder.WebHost.UseUrls("http://0.0.0.0:5080");
+    // no solo localhost.
+    //
+    // El UseUrls fijo que habia aqui ANULABA a ASPNETCORE_URLS, al contrario de lo
+    // que decia su propio comentario: con el puerto ocupado, la unica salida era
+    // editar el codigo. Eso bloqueaba levantar una segunda instancia con otra
+    // configuracion, que es como se comparan dos variantes de generacion sin
+    // apagar la que esta sirviendo. Ahora el default solo se aplica si nadie dijo
+    // otra cosa.
+    if (string.IsNullOrWhiteSpace(builder.Configuration["urls"]) &&
+        string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
+    {
+        builder.WebHost.UseUrls("http://0.0.0.0:5080");
+    }
 
     var app = builder.Build();
 

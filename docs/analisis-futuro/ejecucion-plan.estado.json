@@ -1,0 +1,241 @@
+{
+  "_leeme": "Ledger de ejecución del plan de ingeniería. Fuente de verdad del avance: sobrevive al reinicio del límite de sesión, a un /clear y a cerrar la terminal. Se avanza con /plan-siguiente (un ítem por invocación, commit al final). Estados: pendiente | en_curso | hecho | bloqueado | descartado.",
+  "_provisional": "Sembrado desde la auditoría del 2026-08-20. Cuando exista docs/analisis-futuro/plan-global-ingenieria.md, reconciliar: los ítems del plan manda, estos son la semilla.",
+  "_moneda": "horas_maquina = tiempo de ingesta/eval/build, NO tokens. Es el recurso escaso real.",
+  "olas": [
+    {
+      "ola": 1,
+      "nombre": "Red de seguridad y reproducibilidad",
+      "criterio_de_salida": "Un cambio de retrieval se puede probar sin correr el chat a mano, y un número de recall se puede reproducir sabiendo qué config lo produjo.",
+      "items": [
+        {
+          "id": "1.1-logs-fuera-del-arbol",
+          "titulo": "Sacar los logs del árbol de código (src/*/logs, 46 MB) y ajustar .gitignore",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "find src -name '*.json' -size +1M devuelve vacío",
+          "horas_maquina": 0,
+          "estado": "hecho",
+          "por_que_este_modelo": "Mecánico y verificable con un find. Pagar Opus aquí es tirar dinero.",
+          "fecha": "2026-08-21",
+          "resultado": "49 MB movidos de src/RagEngine.Cli/logs (46 MB en un solo archivo) y 416 KB de src/RagEngine.Api/logs a logs/archivo-arbol-fuente/<proyecto>/; ambos directorios eliminados. Se archivó en vez de borrar porque los 5 archivos son corridas DISTINTAS de las homónimas en la raíz logs/ (verificado con cmp), y los comentarios de MetaIntentOptions.cs:12 y RagGenerationOptions.cs:18 citan logs como evidencia de calibración. .gitignore: el patrón logs/ se movió de la sección 'Secrets' a 'Binary & runtime artifacts' y se añadió **/logs/ con la razón documentada. Verificado: find src -name '*.json' -size +1M vacío, ningún log dentro de src, git check-ignore confirma el patrón."
+        },
+        {
+          "id": "1.2b-ruta-de-logs-no-dependiente-de-cwd",
+          "titulo": "Los sinks de Serilog escriben a la ruta relativa 'logs/' (Api/Program.cs:37, Cli/Program.cs:27), así que dependen del directorio de trabajo: `dotnet run --project src/X` vuelve a crear src/X/logs. Resolver la ruta contra un ancla estable (raíz de la solución o variable de entorno) y hacerla configurable.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Correr `dotnet run --project src/RagEngine.Cli -- status` y `dotnet run --project src/RagEngine.Api` NO crea ningún directorio logs/ dentro de src/; los logs aparecen en la ruta configurada",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Dos líneas de sink más una opción de configuración; el criterio de éxito es observable con un find.",
+          "origen": "Detectado al ejecutar 1.1 el 2026-08-21: mover los archivos no evita que vuelvan. Es la causa raíz, y encaja con 1.2 (appsettings portable) por compartir la decisión de configuración."
+        },
+        {
+          "id": "1.2-appsettings-portable",
+          "titulo": "appsettings.json sin rutas absolutas: variables de entorno + rutas relativas + validación de opciones al arranque",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "rag doctor pasa en limpio; grep '/Users/' en appsettings*.json devuelve vacío",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Toca el arranque de tres proyectos, pero el criterio de éxito es binario y lo dice doctor."
+        },
+        {
+          "id": "1.3-exit-code-ingesta",
+          "titulo": "Exit code distinto de 0 y regla amarilla cuando ChunksIndexed < ChunksGenerated",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Ingesta forzada a fallar un lote (Qdrant apagado a mitad) devuelve exit != 0 y nombra el delta",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El arreglo ya está especificado y los dos números necesarios ya existen en el summary."
+        },
+        {
+          "id": "1.4-proyecto-de-tests",
+          "titulo": "tests/RagEngine.Core.Tests con ~30 casos de tabla: SanitizeSimpleAnswer, HumanizeIdentifier, StemLight/FoldAccents, MergeCollisions, 3 formatos de firma TS",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "dotnet test verde; cada caso incluye su negativo adversarial (memoria: nunca solo positivos)",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Diseñar el oráculo correcto ES el trabajo. Un test que afirma el bug actual es peor que no tener test. Sin multiagente: los tests son la verificación, no necesitan panel."
+        },
+        {
+          "id": "1.5-baselines-con-procedencia",
+          "titulo": "Baselines de eval que registren commit, modelo de embeddings, pesos RRF, versión de chunker y prompt_version; re-baseline de los 3 eval-sets",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Dos corridas del mismo commit dan baselines idénticos salvo timestamp; un baseline viejo se detecta como incomparable",
+          "horas_maquina": 2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es esquema más plumbing en EvalCommand. Habilita todo lo de la Ola 2: hacerlo antes no es opcional."
+        },
+        {
+          "id": "1.6-replicate-env-al-repo",
+          "titulo": "Commitear replicate-env/ al repo padre (hoy es un git anidado sin trackear, 11 MB) decidiendo qué hacer con summary-cache.sqlite3",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "git ls-files incluye los 6 scripts; el sqlite queda versionado o documentado como artefacto externo con su procedencia",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "La decisión (¿versionar 11 MB de sqlite?) es de criterio, la ejecución es trivial."
+        },
+        {
+          "id": "1.7-ci-minimo",
+          "titulo": "CI mínimo: build + dotnet test en push. Nada de gates de cobertura.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "El workflow corre verde en un push de prueba",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Un YAML. Depende de 1.4: sin tests, el CI no verifica nada."
+        }
+      ]
+    },
+    {
+      "ola": 2,
+      "nombre": "Deuda estructural que multiplica el coste de cada cambio",
+      "criterio_de_salida": "Un fix de chunking se aplica una vez, no cuatro. Un cambio de prompt no exige recompilar.",
+      "advertencia_de_coste": "Todo ítem que cambie el contenido de un chunk invalida la caché de resúmenes (content_hash byte-idéntico) y fuerza regeneración vía Ollama: ~19 h por ingesta de bsuite-repo, y probar no-regresión exige dos. Agrupar TODOS los cambios de chunking en una sola tanda antes de re-ingestar.",
+      "items": [
+        {
+          "id": "2.0-verificar-lexer-ts",
+          "titulo": "Verificar (o refutar) que TypeScriptChunkingStrategy pierde el cuerpo de funciones con firma Allman o multilínea",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": true,
+          "verificacion": "Un test con los 3 formatos de firma demuestra el comportamiento actual antes de tocar nada",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El hallazgo está SIN confirmar. Va primero y con verificación independiente: si es falso, se cae medio ítem 2.1."
+        },
+        {
+          "id": "2.1-base-comun-chunking",
+          "titulo": "Extraer base común de las 4 estrategias: encabezado semántico, ventana deslizante, agrupación por presupuesto, construcción de CodeChunk, y UNIFICAR el split de líneas (CRLF) y el estimador de tokens",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": true,
+          "verificacion": "recall@10 en bsuite-repo y bsuite-auditorias no baja respecto al baseline de 1.5; hashes estables entre estrategias para el mismo archivo",
+          "horas_maquina": 40,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Error silencioso y caro: un \\r de más cambia todos los ContentHash e invalida la caché. Multiagente sí, pero el veredicto lo da el eval sobre el corpus completo, no un panel opinando del diff."
+        },
+        {
+          "id": "2.2-partir-raggenerationservice",
+          "titulo": "Descomponer RagGenerationService (1042 líneas, 12 prompts embebidos) en responsabilidades separadas",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": true,
+          "verificacion": "A/B de respuestas sobre las 89 preguntas de bsuite-repo: cero regresión en 'sin evidencia' y cero fabricación nueva",
+          "horas_maquina": 3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "La regresión aparece como una respuesta peor, no como un test rojo. Es el caso donde el panel adversarial sí gana algo."
+        },
+        {
+          "id": "2.3-prompts-externalizados",
+          "titulo": "Externalizar los prompts del sistema (ver docs/analisis-futuro/centralizacion-prompts-vault.md) como refactor BYTE-IDÉNTICO",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "sha256 del prompt renderizado idéntico antes y después, prompt por prompt. Si cambia un byte, prompt_version cambia y se pierden las 947 entradas de caché.",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "La verificación correcta es un hash, no la opinión de un agente. Multiagente aquí no aporta nada que sha256sum no diga mejor."
+        },
+        {
+          "id": "2.4-tabla-live-y-throttle",
+          "titulo": "Arreglar la tabla Live de rag ingest (UpdateTarget nunca se llama) y throttlear el reporte de progreso",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Una ingesta chica muestra contadores que avanzan de verdad",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Se verifica mirando la pantalla."
+        },
+        {
+          "id": "2.5-un-solo-framework-cli",
+          "titulo": "Eliminar uno de los dos frameworks de CLI (Spectre.Console.Cli vs System.CommandLine beta)",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Los 6 comandos siguen funcionando con sus flags; una sola dependencia en el csproj",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El compilador y un smoke test de los 6 comandos verifican."
+        }
+      ]
+    },
+    {
+      "ola": 3,
+      "nombre": "Que esto lo pueda usar alguien que no seas tú",
+      "criterio_de_salida": "Otro ingeniero clona, sigue el README y llega a una consulta funcionando sin preguntarte nada.",
+      "items": [
+        {
+          "id": "3.1-esquema-colecciones",
+          "titulo": "Migración/detección de esquema del vector store: engine-repo y micro-repo ya están rotas con 'Not existing vector name error: dense'",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "rag doctor detecta y nombra una colección con esquema desactualizado en vez de fallar en la consulta",
+          "horas_maquina": 1,
+          "estado": "pendiente",
+          "por_que_este_modelo": "No es hipotético: ya hay una colección perdida (engine-repo, origen irrecuperable). Diseñar la detección es criterio."
+        },
+        {
+          "id": "3.2-api-endurecida",
+          "titulo": "API: ProblemDetails, UseExceptionHandler, health real (Qdrant + Ollama + sesiones ONNX), límites de tamaño, CORS explícito",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "health falla cuando Qdrant está apagado; un payload malformado devuelve ProblemDetails y no un 500 pelado",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Terreno conocido de ASP.NET, criterio de éxito observable con curl."
+        },
+        {
+          "id": "3.3-exportador-otel",
+          "titulo": "Exportar el Meter que ya existe (4 instrumentos definidos y nadie los recoge)",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "dotnet-counters o un endpoint Prometheus muestra los 4 instrumentos",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Los instrumentos ya están escritos; falta el paquete y el wiring."
+        },
+        {
+          "id": "3.4-docs-fieles",
+          "titulo": "README verificado comando por comando, LICENSE, CLAUDE.md, y mover los 5 'Fase N - *.md' de la raíz a docs/",
+          "modelo": "haiku",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Cada comando citado en el README se ejecuta tal cual y funciona",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio."
+        },
+        {
+          "id": "3.5-portabilidad-x64",
+          "titulo": "Dejar de asumir arm64: selección de binario ONNX por arquitectura",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Requiere una máquina x64 real para probarlo de verdad. Si no hay, marcar bloqueado y decirlo.",
+          "horas_maquina": 1,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El riesgo es el exit 134 de ONNX en ARM ya conocido; la lógica es simple, la prueba honesta necesita hardware."
+        }
+      ]
+    }
+  ]
+}

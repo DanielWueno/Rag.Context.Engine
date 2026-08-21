@@ -5,6 +5,12 @@ models/
 *.user
 .DS_Store
 
+# Logs: nunca dentro del árbol de código. Serilog escribe a una ruta relativa al
+# directorio de trabajo, así que `dotnet run --project src/X` los deja en src/X/logs.
+# Ese patrón los ignora en cualquier nivel; ver ítem 1.2b del ledger para la causa raíz.
+logs/
+**/logs/
+
 # IDE
 .vs/
 .vscode/settings.json
@@ -13,4 +19,3 @@ models/
 # Secrets (never commit)
 appsettings.*.json
 !appsettings.json
-logs/

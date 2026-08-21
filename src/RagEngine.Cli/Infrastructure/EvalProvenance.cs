@@ -45,14 +45,22 @@ public sealed record EvalProvenance
     public required string ResumenPromptVersion { get; init; }
 
     /// <summary>
-    /// Campos cuya diferencia hace que dos baselines NO sean comparables. El
-    /// timestamp queda fuera a propósito, y también la ruta del eval-set: lo que
-    /// importa de él es su contenido, no dónde está.
+    /// Campos cuya diferencia hace que dos baselines NO sean comparables.
+    ///
+    /// Fuera quedan, a propósito: el timestamp; la ruta del eval-set (lo que importa
+    /// de él es su contenido, no dónde está); y el COMMIT.
+    ///
+    /// El commit estaba aquí y era un error de diseño: hacía que cualquier cambio en
+    /// el repo —incluso agregar una bandera al CLI que no puede tocar el retrieval—
+    /// marcara todos los baselines como incomparables. Con eso, un baseline dura
+    /// hasta el siguiente commit y deja de servir para lo que existe. Para eso está
+    /// <see cref="ChunkingContractVersion"/>: declarar explícitamente cuándo un
+    /// cambio de código sí altera los chunks. El commit se sigue registrando como
+    /// contexto —y se reporta si difiere— pero no invalida la comparación por sí solo.
     /// </summary>
     public IReadOnlyDictionary<string, string> ComparabilityKeys() =>
         new Dictionary<string, string>
         {
-            ["commit"] = GitCommit + (GitDirty ? " (arbol sucio)" : string.Empty),
             ["eval_set_hash"] = EvalSetHash,
             ["embedding_model"] = EmbeddingModel,
             ["embedding_dimensions"] = EmbeddingDimensions.ToString(),

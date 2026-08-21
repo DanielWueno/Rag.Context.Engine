@@ -7,4 +7,7 @@
   <Folder Name="/poc/">
     <Project Path="poc/RagEngine.Poc.FreeSearch/RagEngine.Poc.FreeSearch.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj" />
+  </Folder>
 </Solution>

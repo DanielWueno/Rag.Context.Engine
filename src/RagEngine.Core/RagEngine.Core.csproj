@@ -21,4 +21,15 @@
     <PackageReference Include="Serilog" Version="4.4.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- SanitizeSimpleAnswer es internal a proposito: es un detalle de
+         implementacion del modo Simple, no API publica. Se expone al proyecto de
+         tests en vez de hacerla publica, para poder probarla sin ampliar la
+         superficie del ensamblado. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>RagEngine.Core.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

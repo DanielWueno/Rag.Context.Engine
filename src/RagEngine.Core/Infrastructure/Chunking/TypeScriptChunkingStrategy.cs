@@ -402,37 +402,42 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
             "Block '{Name}' en {File} excede {Max} tokens — particionando por párrafos.",
             sig.Name, artifact.RelativePath, options.MaxTokensPerChunk);
 
-        var paragraphs    = SplitIntoParagraphs(capturedLines);
-        var currentParas  = new List<string>();
-        int currentStart  = startLine;
-        int currentEnd    = startLine;
-        int relLine       = startLine;
+        var paragraphs = SplitIntoParagraphs(capturedLines);
 
-        foreach (var (paraLines, paraLen) in paragraphs)
+        // Línea de inicio de cada párrafo, acumulando longitudes. Se precalcula para
+        // que la contabilidad de líneas siga siendo la de esta estrategia mientras la
+        // decisión de presupuesto se comparte con Markdown vía ParagraphBudget.
+        var textos = new List<string>(paragraphs.Count);
+        var inicioDe = new int[paragraphs.Count];
+        var finDe = new int[paragraphs.Count];
+        int relLine = startLine;
+
+        for (int i = 0; i < paragraphs.Count; i++)
         {
-            string paraText  = string.Join("\n", paraLines);
-            string testContent = $"{header}\n\n{string.Join("\n\n", currentParas.Append(paraText))}";
-
-            if (TokenEstimator.Estimate(testContent) > options.MaxTokensPerChunk && currentParas.Count > 0)
-            {
-                string flushBody    = string.Join("\n\n", currentParas);
-                string flushContent = $"{header}\n\n{flushBody}";
-                yield return CreateChunk(artifact, sig, flushContent, flushBody, currentStart, currentEnd, options);
-
-                currentParas  = [];
-                currentStart  = relLine;
-            }
-
-            currentParas.Add(paraText);
-            currentEnd  = relLine + paraLen - 1;
-            relLine    += paraLen;
+            var (paraLines, paraLen) = paragraphs[i];
+            textos.Add(string.Join("\n", paraLines));
+            inicioDe[i] = relLine;
+            finDe[i] = relLine + paraLen - 1;
+            relLine += paraLen;
         }
 
-        if (currentParas.Count > 0)
+        var lotes = ParagraphBudget.Agrupar(textos, header, options.MaxTokensPerChunk).ToList();
+
+        for (int l = 0; l < lotes.Count; l++)
         {
-            string flushBody    = string.Join("\n\n", currentParas);
+            var (grupo, primero, ultimo) = lotes[l];
+
+            string flushBody    = string.Join("\n\n", grupo);
             string flushContent = $"{header}\n\n{flushBody}";
-            yield return CreateChunk(artifact, sig, flushContent, flushBody, currentStart, endLine, options);
+
+            // El último lote cierra en el fin del BLOQUE, no en el fin de su último
+            // párrafo: así el rango cubre la llave de cierre y cualquier línea en
+            // blanco final. Es la asimetría que ya tenía el código original y se
+            // preserva a propósito — cambiarla movería la metadata de los chunks.
+            int fin = l == lotes.Count - 1 ? endLine : finDe[ultimo];
+
+            yield return CreateChunk(
+                artifact, sig, flushContent, flushBody, inicioDe[primero], fin, options);
         }
     }
 
@@ -470,8 +475,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
     {
         var parts = new List<string>
         {
-            $"// Repository: {options.RepositoryName}",
-            $"// File: {artifact.RelativePath}"
+            ChunkBuilder.HeaderPrefix(options.RepositoryName, artifact.RelativePath)
         };
 
         parts.Add(sig.Type switch

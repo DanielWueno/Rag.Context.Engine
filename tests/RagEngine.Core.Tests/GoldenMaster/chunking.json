@@ -374,5 +374,173 @@
       "ContentLength": 301,
       "ContentTieneCr": false
     }
+  ],
+  "markdown-large.fixture": [
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 3,
+      "EndLine": 13,
+      "ContentHash": "6418cd1019202b78df7a05c2d776bbe3760cc4133101ba0bec73ab3734e2d360",
+      "ContentLength": 1747,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 15,
+      "EndLine": 23,
+      "ContentHash": "085c54fe3d33e0aca4634f3a06a0a3d15615537ac58c82c1267027ced9312786",
+      "ContentLength": 1749,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 25,
+      "EndLine": 33,
+      "ContentHash": "a8e394bedc55e8525e85443bdbc153a57e45f2206cf7381a0b2f17360d634818",
+      "ContentLength": 1757,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 35,
+      "EndLine": 39,
+      "ContentHash": "999525005adc80a3365c2e9ca1206230c48576985b09441417a9b1a79ae8754f",
+      "ContentLength": 1069,
+      "ContentTieneCr": false
+    }
+  ],
+  "markdown-large-crlf.fixture": [
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 3,
+      "EndLine": 13,
+      "ContentHash": "6418cd1019202b78df7a05c2d776bbe3760cc4133101ba0bec73ab3734e2d360",
+      "ContentLength": 1747,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 15,
+      "EndLine": 23,
+      "ContentHash": "085c54fe3d33e0aca4634f3a06a0a3d15615537ac58c82c1267027ced9312786",
+      "ContentLength": 1749,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 25,
+      "EndLine": 33,
+      "ContentHash": "a8e394bedc55e8525e85443bdbc153a57e45f2206cf7381a0b2f17360d634818",
+      "ContentLength": 1757,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "DocumentSection",
+      "ClassName": null,
+      "MethodName": "Reglas de negocio extensas",
+      "StartLine": 35,
+      "EndLine": 39,
+      "ContentHash": "999525005adc80a3365c2e9ca1206230c48576985b09441417a9b1a79ae8754f",
+      "ContentLength": 1069,
+      "ContentTieneCr": false
+    }
+  ],
+  "typescript-large.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 2,
+      "ContentHash": "ce086c10b797f25de1c43e846ca786d29da8eeb1a45e682533e528cfb47ce2e9",
+      "ContentLength": 33,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 3,
+      "EndLine": 41,
+      "ContentHash": "89650c73bb3f061cb5c4adb83a148329aa7bbaf02db787f22e0feee313ad415c",
+      "ContentLength": 1847,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 42,
+      "EndLine": 77,
+      "ContentHash": "994d6bc81f68dfd67169f9f0d8a7596fd62b8c8d0827487ace486895be6f461d",
+      "ContentLength": 1786,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 78,
+      "EndLine": 81,
+      "ContentHash": "06771e0a3a99dcea99b872323aa8415b920180f0654f53e7cbbc433d44cb1966",
+      "ContentLength": 169,
+      "ContentTieneCr": false
+    }
+  ],
+  "typescript-large-crlf.fixture": [
+    {
+      "Type": "PlainTextWindow",
+      "ClassName": null,
+      "MethodName": null,
+      "StartLine": 1,
+      "EndLine": 2,
+      "ContentHash": "ce086c10b797f25de1c43e846ca786d29da8eeb1a45e682533e528cfb47ce2e9",
+      "ContentLength": 33,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 3,
+      "EndLine": 41,
+      "ContentHash": "89650c73bb3f061cb5c4adb83a148329aa7bbaf02db787f22e0feee313ad415c",
+      "ContentLength": 1847,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 42,
+      "EndLine": 77,
+      "ContentHash": "994d6bc81f68dfd67169f9f0d8a7596fd62b8c8d0827487ace486895be6f461d",
+      "ContentLength": 1786,
+      "ContentTieneCr": false
+    },
+    {
+      "Type": "Method",
+      "ClassName": null,
+      "MethodName": "calcularAcumuladoExtenso",
+      "StartLine": 78,
+      "EndLine": 81,
+      "ContentHash": "06771e0a3a99dcea99b872323aa8415b920180f0654f53e7cbbc433d44cb1966",
+      "ContentLength": 169,
+      "ContentTieneCr": false
+    }
   ]
 }

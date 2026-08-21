@@ -124,42 +124,20 @@ public sealed partial class MarkdownChunkingStrategy : IChunkingStrategy
             paragraphs.Add((string.Join("\n", currentPara), paraStartLine, currentLineNum - 1));
         }
 
-        // Agrupar párrafos respetando el MaxTokensPerChunk
-        var chunkParas = new List<string>();
-        int chunkStartLine = sectionStartLine;
-        int chunkEndLine = sectionStartLine;
-
-        foreach (var para in paragraphs)
+        // Agrupar párrafos respetando el MaxTokensPerChunk. La decisión de
+        // presupuesto vive en ParagraphBudget, compartida con la estrategia de
+        // TypeScript; la contabilidad de líneas se queda aquí porque es propia de
+        // Markdown: el primer lote arranca en la línea de la cabecera de sección
+        // para que el chunk la cubra lógicamente, no en la del primer párrafo.
+        foreach (var (textos, primero, ultimo) in ParagraphBudget.Agrupar(
+                     paragraphs.Select(x => x.Text).ToList(),
+                     contextHeader,
+                     options.MaxTokensPerChunk))
         {
-            // Validar si el chunk actual + el nuevo párrafo exceden el límite de tokens
-            string testContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas.Concat(new[] { para.Text }))}";
+            int chunkStartLine = primero == 0 ? sectionStartLine : paragraphs[primero].StartLine;
+            int chunkEndLine = paragraphs[ultimo].EndLine;
 
-            if (TokenEstimator.Estimate(testContent) > options.MaxTokensPerChunk && chunkParas.Count > 0)
-            {
-                // Emitir el bloque consolidado actual
-                string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas)}";
-                yield return CreateChunk(artifact, cleanHeader, flushContent, chunkStartLine, chunkEndLine, options);
-
-                // Iniciar un nuevo bloque secundario
-                chunkParas.Clear();
-                chunkStartLine = para.StartLine;
-            }
-
-            if (chunkParas.Count == 0)
-            {
-                // Si es el primer bloque de esta partición secundaria, usamos su línea de inicio.
-                // Sin embargo, si es el *primer* párrafo absoluto, usamos el sectionStartLine para atrapar la cabecera lógicamente.
-                chunkStartLine = paragraphs.IndexOf(para) == 0 ? sectionStartLine : para.StartLine;
-            }
-
-            chunkParas.Add(para.Text);
-            chunkEndLine = para.EndLine;
-        }
-
-        // Vaciar el último bloque remanente
-        if (chunkParas.Count > 0)
-        {
-            string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas)}";
+            string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", textos)}";
             yield return CreateChunk(artifact, cleanHeader, flushContent, chunkStartLine, chunkEndLine, options);
         }
     }

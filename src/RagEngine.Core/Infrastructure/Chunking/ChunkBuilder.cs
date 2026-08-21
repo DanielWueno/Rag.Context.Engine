@@ -45,6 +45,22 @@ internal static class ChunkBuilder
         return (windowLines, overlapLines, Math.Max(1, windowLines - overlapLines));
     }
 
+
+    /// <summary>
+    /// Las dos primeras líneas del encabezado semántico, comunes a las estrategias
+    /// que emiten encabezado con formato de comentario.
+    ///
+    /// Nota honesta sobre el alcance: el diagnóstico inicial hablaba de "el
+    /// encabezado semántico duplicado 4 veces", y al abrirlo resultó menos que eso.
+    /// Lo que de verdad se repite son estas dos líneas; el resto de cada encabezado
+    /// describe estructura propia del lenguaje (namespace y tipo en C#, clase y
+    /// método en TypeScript, rango de líneas en el fallback) y unificarlo pediría
+    /// una jerarquía que no compensa. Compartir el prefijo sí sirve: si mañana se
+    /// renombra "Repository" o se agrega un campo, cambia en un solo sitio.
+    /// </summary>
+    public static string HeaderPrefix(string repositoryName, string relativePath) =>
+        $"// Repository: {repositoryName}\n// File: {relativePath}";
+
     /// <summary>
     /// Arma un chunk calculando su hash y su Id determinista. El Id se deriva de la
     /// línea inicial y del hash del contenido: mismo contenido en la misma posición

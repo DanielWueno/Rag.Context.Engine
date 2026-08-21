@@ -139,8 +139,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         MemberDeclarationSyntax? member = null)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"// Repository: {ctx.RepositoryName}");
-        sb.AppendLine($"// File: {ctx.RelativeFilePath}");
+        sb.AppendLine(ChunkBuilder.HeaderPrefix(ctx.RepositoryName, ctx.RelativeFilePath));
 
         if (ctx.RootNamespace is not null)
             sb.AppendLine($"// Namespace: {ctx.RootNamespace}");

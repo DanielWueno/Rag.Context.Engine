@@ -52,6 +52,14 @@ public class ChunkingGoldenMasterTests
         ("markdown-sample-crlf.fixture",  SourceLanguage.Markdown),
         ("plaintext-sample.fixture",      SourceLanguage.PlainText),
         ("plaintext-sample-crlf.fixture", SourceLanguage.PlainText),
+        // Fixtures que EXCEDEN MaxTokensPerChunk a proposito: sin ellos el golden
+        // master no cubria la agrupacion de parrafos por presupuesto de tokens, que
+        // solo se activa cuando un bloque no cabe. Refactorizar ese camino sin estos
+        // casos habria sido a ciegas.
+        ("markdown-large.fixture",        SourceLanguage.Markdown),
+        ("markdown-large-crlf.fixture",   SourceLanguage.Markdown),
+        ("typescript-large.fixture",      SourceLanguage.TypeScript),
+        ("typescript-large-crlf.fixture", SourceLanguage.TypeScript),
     ];
 
     private static readonly JsonSerializerOptions JsonOpts = new()

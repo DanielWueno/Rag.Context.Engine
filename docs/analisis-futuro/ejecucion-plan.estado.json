@@ -95,8 +95,10 @@
           "multiagente": false,
           "verificacion": "git ls-files incluye los 6 scripts; el sqlite queda versionado o documentado como artefacto externo con su procedencia",
           "horas_maquina": 0,
-          "estado": "pendiente",
-          "por_que_este_modelo": "La decisión (¿versionar 11 MB de sqlite?) es de criterio, la ejecución es trivial."
+          "estado": "hecho",
+          "por_que_este_modelo": "La decisión (¿versionar 11 MB de sqlite?) es de criterio, la ejecución es trivial.",
+          "fecha": "2026-08-21",
+          "resultado": "replicate-env/ versionado en el repo padre: 17 archivos, los 6 scripts de reproduccion, los 3 .md de notas, los 7 sets de preguntas y la cache de resumenes de 7,6 MB. DECISION DEL DUENO (2026-08-21): versionar tambien el sqlite. Son 18.784 resumenes generados con horas de Ollama y su reproduccion cuesta ~19 h de maquina, asi que el peso en el repo es barato comparado con perderlos. El .git anidado que tenia replicate-env/ se movio (no se borro) a /Users/DevStudio/.claude/jobs/a88fc87c/tmp/replicate-env-git-anidado-respaldo, donde queda su unico commit 91860b2 por si hace falta. Se agrego .gitattributes marcando *.sqlite3 como binario para que git no intente diffear ni mergear el archivo."
         },
         {
           "id": "1.7-ci-minimo",

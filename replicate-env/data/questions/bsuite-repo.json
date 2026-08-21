@@ -1,0 +1,2072 @@
+[
+  {
+    "query": "reglas para guardar un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "porque no se habilita el boton de cancelar de factura?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "EsPermiteCancelarTraslado que hace esta regla?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "EsPermiteCancelarTraslado dodne se define esta funcion?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "EsPermiteCancelarTraslado esta propiedad como se define?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "porque no se habilita el boton de cancelar de factura?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "autorizaciones genericas, que accion la detona?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "identifica las critrerias que se utiliza para segementar la información de las auditorias del proeycto de compras",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "identifica las critrerias que se utiliza para segementar la información de las auditorias.cs del proeycto de compras",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "identifica las critrerias que se utiliza para segementar la información de las auditorias del proeycto de compras/Auditorias",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "¿Cómo se cierra un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Se envia algun correo al atender un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "La auditoria el registro de hallazgos cuales condiciones tiene par aser creado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Quienes pueden ver las auditorias?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "El listado de auditorias, quienes lo puden ver?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "COnoces el proceso de auditorias?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Puedo ver este listado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Tiene algun filtro por usaurio, rol, permisos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Puedes darme la cadena de coneccion de la base de datos",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Que base de datos se consulta?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Que me puedes decir del inventario de sistemas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Es esa, que me dices de ese modulo de Inventario Sistema",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Tiene reglas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Com funciona la cancelacion de un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260801.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Para cancelar la orden de compra que se requiere/",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "En que parte se puede llenar la descripción de una auditoria?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "En la lista de selección de tipo de hallazgo, al generar un hallazgo y seleccionar el tipo, en esta selección no se puede cambiar el campo de alto impacto, esto no fluye solo es un selector?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Cuando se finaliza una auditoría, la ventana de enviar correos estos correos se pueden precargar, o solo se ingresan manualmente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 10,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Se valida el formato del correo, cuando se ingresa a mano?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 12,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 14,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Cuando se envia el correo, la que se pinta en Fecha: del correo es cuando se envia o se genera?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 16,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Cuál es el estatus cuando una auditoría se reprograma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El auditado, puede ver solo sus auditorías en ejecución?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "La acción de registro de acciones correctivas, el auditado cuando la puede ver?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Porque mi registro de plan de acción cambio a en ejecución pdca?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El auditado sube evidencias escritas, fotos, documentos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 10,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 12,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el hallazgo es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 14,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Tienen que estar todos los hallazgos finalizados? Para poder finalizar la auditoría",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 16,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "En el sistema actual es esto verdad?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 18,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Está parte de auditoría tiene dos monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 20,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Monitor Hallazgos / Acciones correctivas",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 22,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En la lista de selección de tipo de hallazgo, al generar un hallazgo y seleccionar el tipo, en esta selección no se puede cambiar el campo de alto impacto, esto no fluye solo es un selector?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se finaliza una auditoría, la ventana de enviar correos estos correos se pueden precargar, o solo se ingresan manualmente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Se valida el formato del correo, cuando se ingresa a mano?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo, la que se pinta en Fecha: del correo es cuando se envia o se genera?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuál es el estatus cuando una auditoría se reprograma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado, puede ver solo sus auditorías en ejecución?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "La acción de registro de acciones correctivas, el auditado cuando la puede ver?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Porque mi registro de plan de acción cambio a en ejecución pdca?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado sube evidencias escritas, fotos, documentos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el hallazgo es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Tienen que estar todos los hallazgos finalizados? Para poder finalizar la auditoría",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En el sistema actual es esto verdad?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Está parte de auditoría tiene dos monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Monitor Hallazgos / Acciones correctivas",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola, quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Como se genera el plan de auditoria?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Para cancelar la orden de compra que se requiere?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Para cancelar la orden de compra que se requiere?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En la lista de selección de tipo de hallazgo, al generar un hallazgo y seleccionar el tipo, en esta selección no se puede cambiar el campo de alto impacto, esto no fluye solo es un selector?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se finaliza una auditoría, la ventana de enviar correos estos correos se pueden precargar, o solo se ingresan manualmente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Se valida el formato del correo, cuando se ingresa a mano?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo, la que se pinta en Fecha: del correo es cuando se envia o se genera?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuál es el estatus cuando una auditoría se reprograma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado, puede ver solo sus auditorías en ejecución?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "La acción de registro de acciones correctivas, el auditado cuando la puede ver?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Porque mi registro de plan de acción cambio a en ejecución pdca?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado sube evidencias escritas, fotos, documentos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el hallazgo es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Tienen que estar todos los hallazgos finalizados? Para poder finalizar la auditoría",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En el sistema actual es esto verdad?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Está parte de auditoría tiene dos monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Monitor Hallazgos / Acciones correctivas",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se finaliza una auditoría, la ventana de enviar correos estos correos se pueden precargar, o solo se ingresan manualmente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Se valida el formato del correo, cuando se ingresa a mano?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo, la que se pinta en Fecha: del correo es cuando se envia o se genera?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuál es el estatus cuando una auditoría se reprograma?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado, puede ver solo sus auditorías en ejecución?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "La acción de registro de acciones correctivas, el auditado cuando la puede ver?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Porque mi registro de plan de acción cambio a en ejecución pdca?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El auditado sube evidencias escritas, fotos, documentos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el hallazgo es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Tienen que estar todos los hallazgos finalizados? Para poder finalizar la auditoría",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En el sistema actual es esto verdad?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Está parte de auditoría tiene dos monitores?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Monitor Hallazgos / Acciones correctivas",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Si un hallazgo trae 5 acciones y se rechaza 1 el plan es rechazado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola, quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Como se genera el plan de auditoria?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Para cancelar la orden de compra que se requiere?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Cuando se envia el correo al completar la auditoría, la fecha que manda es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Una auditoria programada se genera al inicio de la auditoria o la tengo que generar despues?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es una orden de compra?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es la reprogramación de la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Con que estatus aparece cuando se reprograma la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "En las auditorías el seleccionar el campo de alto impacto en el tipo de hallazgo, se puede marcar esto cuando se agrega un hallazgo?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "¿Qué reglas de validación tiene ServicioCliente?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola, quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Como se genera el plan de auditoria?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Para cancelar la orden de compra que se requiere?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Como hago un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260807.json"
+  },
+  {
+    "query": "Que es un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260807.json"
+  }
+]

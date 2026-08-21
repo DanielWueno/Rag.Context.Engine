@@ -1,0 +1,4 @@
+# La caché de resúmenes es un binario grande (~7,6 MB, 18.784 entradas generadas
+# con horas de Ollama). Marcarla como binaria evita que git intente diffearla o
+# mergearla si alguna vez se actualiza.
+*.sqlite3 binary

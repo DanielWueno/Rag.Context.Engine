@@ -1,0 +1,1037 @@
+[
+  {
+    "query": "¿qué se necesita para cerrar un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "¿cómo se registra el seguimiento de un ticket?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "¿qué se necesita para cerrar un ticket?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "que hora es",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": null,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Es solo al cierre del ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "las notificaciones donde se visualizan?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Como se gestionan las notificaciones?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Centro de Notificaciones",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "que hora es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Son las 5:34",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "que hora es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "ahora que hora es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 10,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "No",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 12,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "como funciona la opción de cancelación de un ticket por parte del usuario",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Continua",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "puedo cancelar cualquier ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260721.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Para que tiempo esta presupuestado todo esto?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "La bitacora de defectos a que se refiere?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Existe contenido para la bitacora de defectos?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes explicarme mejor esta parte Bitácora de Envío por Canal?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 10,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 12,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Que proyecto analizas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 14,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuantos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 16,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes contarlos y darme un numero?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 18,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Explicame mejor el numero 47",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 20,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes ayudarme a levanar un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 22,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes ayudarme a redactar un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 24,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Si te doy mi problema, me ayuudas a redactarlo mejor para la gente de TI?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 26,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "mi mouse no sirve no si si es el laser o la ruedita los botones o que",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 28,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "de donde sacaste que era nuevo el mouse y que solo fue usado por un par de semanas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 30,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Alucinaciones?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 32,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "COn que tecnologia esta realizado este chat?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 34,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Con que estas entrenado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 36,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "en que idioma puedes respodner?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 38,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "traduce este texto a aleman \"hola mundo, buen día a todos\"",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 40,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuando fue la guerra de los pasteles?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 42,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Con que estas entrenado?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 44,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuando fue la guerra de los pasteles?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 46,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes ayduarme con un problema de logica computacional?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 48,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Intento hacer una piramide de asteriscos puedes ayudarme en codigo para powrshell en el cmd de windows",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 50,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Intento hacer una piramide de asteriscos puedes ayudarme en codigo para powrshell en el cmd de windows",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": false,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuando fue la guerra de los pasteles?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "¿Cuántos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuantos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuando fue la guerra de los pasteles?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuantos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "¿Cuántos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "¿Cuántos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Como es que puedes responderme?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "para las ordenes de compra como realizo una factura?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "I cannot find enough information in the indexed content to answer this question.",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "cuantos archivos tienes aquí?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "para las ordenes de compra como realizo una factura?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "I cannot find enough information in the indexed content to answer this question.",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cuantos archivos te constituyen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Como es que puedes responderme?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Que proyecto analizas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "para las ordenes de compra como realizo una factura?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "que dia es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "puedes darme un resumen?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Puedes darme un resumen del documento de notificaciones?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "Hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260722.json"
+  },
+  {
+    "query": "¿Cómo se cierra un ticket?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿que proyecto analizas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Hola",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 4,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Puedes ayudarme?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 6,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Qué hora es?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 8,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "la hora actual",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 10,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Puedes realziar una busqueda en internet",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 12,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Procesos que influyen en la innovapp?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 14,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "mi mouse no sirve no se si es el laser o la ruedita los botones o que",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 16,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Hola, como estas?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 18,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Yo, bien gracais, tengo un problema con mi computadora no se conecta a la red",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 20,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "¿Recuerdas lo que hablamos la semana pasada?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 22,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Conoces a AlteIA?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 24,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "Quien eres?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 26,
+    "sourceLog": "rag-api-20260723.json"
+  },
+  {
+    "query": "\"Preguntar\" genera una respuesta con el LLM y mantiene el hilo de la conversación; \"Buscar\" solo trae los fragmentos relevantes en una ventana aparte, sin generar respuesta ni afectar el chat.",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260724.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": null,
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260728.json"
+  },
+  {
+    "query": "¿Cómo funciona la validación de campos requeridos?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "¿Cómo funciona la validación de campos requeridos?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "COMO AFECTA LA ENCUESTA",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "COMO FUNICIONA LA ENCUESTA",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 2,
+    "sourceLog": "rag-api-20260803.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Technical",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "Cómo funciona la encuesta de satisfacción?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260804.json"
+  },
+  {
+    "query": "El plan de auditoría se genera en automático al crear la auditoría?",
+    "topK": 10,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260805.json"
+  }
+]

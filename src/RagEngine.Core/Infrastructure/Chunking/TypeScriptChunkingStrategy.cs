@@ -511,34 +511,23 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         int endLine,
         ChunkingOptions options)
     {
-        string hash = ContentHasher.Compute(rawContent);
-        Guid   id   = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash);
-
         // Extraer nombre de clase vs. método para los metadatos
         string? className  = sig.Type == BlockType.Class ? sig.Name : null;
         string? methodName = sig.Type is BlockType.Function or BlockType.ArrowFunction or BlockType.Method
             ? sig.Name : null;
 
-        return new CodeChunk
-        {
-            Id              = id,
-            Content         = rawContent,
-            EnrichedContent = enrichedContent,
-            ContentHash     = hash,
-            Type            = MapToChunkType(sig.Type),
-            Metadata        = new CodeChunkMetadata(
-                FilePath:         artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language:         artifact.Language,
-                Namespace:        null,  // TS no tiene namespaces C#; se podría extraer el módulo en el futuro
-                ClassName:        className,
-                MethodName:       methodName,
-                StartLine:        startLine,
-                EndLine:          endLine,
-                LastModified:     artifact.LastModified,
-                RepositoryName:   options.RepositoryName
-            )
-        };
+        // Namespace queda en null: TS no tiene namespaces como C#; se podria extraer
+        // el modulo en el futuro.
+        return ChunkBuilder.Create(
+            artifact,
+            content: rawContent,
+            enrichedContent: enrichedContent,
+            type: MapToChunkType(sig.Type),
+            startLine: startLine,
+            endLine: endLine,
+            repositoryName: options.RepositoryName,
+            className: className,
+            methodName: methodName);
     }
 
     /// <summary>

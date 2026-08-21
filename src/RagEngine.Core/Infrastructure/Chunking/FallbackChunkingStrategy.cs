@@ -13,10 +13,6 @@ namespace RagEngine.Core.Infrastructure.Chunking;
 /// </summary>
 public sealed class FallbackChunkingStrategy : IChunkingStrategy
 {
-    // Alias de la constante compartida: misma regla de 4 chars/token que
-    // TokenEstimator, sin una segunda copia del numero. La division sigue
-    // siendo entera aqui — ver la nota en TokenEstimator.CharsPerToken.
-    private const int ApproxCharsPerToken = (int)TokenEstimator.CharsPerToken;
     private const int MinChunkLines = 5;
 
     // SourceLanguage.Unknown means this strategy accepts any language
@@ -36,11 +32,7 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
         var lines = SourceLines.Split(fileContent);
         if (lines.Length == 0) yield break;
 
-        int windowLines = Math.Max(MinChunkLines,
-            options.MaxTokensPerChunk * ApproxCharsPerToken / 80);
-        int overlapLines = Math.Max(0,
-            options.OverlapTokens * ApproxCharsPerToken / 80);
-        int step = Math.Max(1, windowLines - overlapLines);
+        var (windowLines, _, step) = ChunkBuilder.WindowGeometry(options, MinChunkLines);
 
         int fragIndex = 0;
 
@@ -57,29 +49,15 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
             int endLine = i + window.Length;
 
             var header = BuildContextHeader(artifact, options.RepositoryName, startLine, endLine, ++fragIndex);
-            var enriched = $"{header}\n\n{content}";
-            var hash = ContentHasher.Compute(content);
 
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-                Content = content,
-                EnrichedContent = enriched,
-                Type = ChunkType.PlainTextWindow,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: artifact.Language,
-                    Namespace: null,
-                    ClassName: null,
-                    MethodName: null,
-                    StartLine: startLine,
-                    EndLine: endLine,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: options.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: content,
+                enrichedContent: $"{header}\n\n{content}",
+                type: ChunkType.PlainTextWindow,
+                startLine: startLine,
+                endLine: endLine,
+                repositoryName: options.RepositoryName);
 
             // Stop if we've reached the end
             if (i + window.Length >= lines.Length) break;

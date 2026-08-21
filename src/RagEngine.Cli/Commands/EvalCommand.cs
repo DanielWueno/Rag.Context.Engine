@@ -240,10 +240,22 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             .Where(kv => !previo.TryGetValue(kv.Key, out var v) || v != kv.Value)
             .ToList();
 
+        // El commit y el estado del arbol se reportan como CONTEXTO, no como motivo de
+        // incomparabilidad: no invalidan la comparacion, pero un baseline generado con
+        // cambios sin commitear no es reproducible y hay que decirlo.
+        var actualProv = BuildProvenance(settings);
+        if (actualProv.GitDirty)
+        {
+            AnsiConsole.MarkupLine(
+                "[yellow]Aviso: esta corrida se hizo con cambios sin commitear, asi que no es "
+              + "reproducible tal cual.[/]");
+        }
+
         if (diferencias.Count == 0)
         {
             AnsiConsole.Write(new Rule("[green]Comparable con el baseline[/]").RuleStyle("green"));
-            AnsiConsole.MarkupLine("[dim]Misma procedencia en los 12 campos: las diferencias de recall son reales.[/]");
+            AnsiConsole.MarkupLine(
+                "[dim]Misma procedencia en los campos que importan: las diferencias de recall son reales.[/]");
             return;
         }
 

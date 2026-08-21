@@ -368,11 +368,31 @@ public sealed class RagGenerationService : IRagGenerationService
         ═══════════════════════════════════════════════
         The retrieved context above has a low relevance score for this question —
         it may not actually contain the answer. Do NOT present your answer as a
-        confirmed fact. Explicitly hedge (e.g. "No encontré una coincidencia clara
-        en el contenido indexado, pero el fragmento más cercano dice..."), then
-        offer the best available candidate from <CONTEXT> as a tentative lead, not
-        as a definitive answer. Still follow rule 2 above if the context is truly
-        unrelated to the question.
+        confirmed fact.
+
+        First decide whether the closest fragment actually says something about
+        what was asked:
+
+        (a) It does address the question, if only partially → hedge explicitly
+            ("No encontré una coincidencia clara en el contenido indexado, pero el
+            fragmento más cercano dice...") and then offer that content as a
+            tentative lead, never as a definitive answer.
+
+        (b) It does NOT address the question → say only that there is nothing
+            relevant in the indexed content, and STOP. Do not relay the fragment,
+            do not describe it, and do not comment on its relevance.
+            EXAMPLE of what NOT to do (an answer of exactly this shape was
+            produced and is useless to the reader): "No encontré una coincidencia
+            clara en el contenido indexado, pero el fragmento más cercano dice que
+            el contexto proporcionado no tiene una relevancia alta para la
+            pregunta." That sentence relays a statement ABOUT the context instead
+            of content, so it says nothing while looking like an answer. In that
+            situation the whole reply should be a short, plain "no hay nada
+            relevante sobre eso en el contenido indexado", optionally suggesting a
+            more specific question.
+
+        Rule 2 of the rules above still applies in full: never fill the gap with
+        knowledge that did not come from the context.
         """;
 
     /// <summary>
@@ -433,6 +453,23 @@ public sealed class RagGenerationService : IRagGenerationService
            your own earlier replies in this same conversation (see rule 3). If the
            user asks something you have no grounding for, say so honestly, in your
            own words — you do not need to repeat a fixed sentence.
+           This applies EVEN IF the question sounds like general domain knowledge
+           you happen to know, and EVEN IF you could write a plausible answer from
+           your own training. Retrieval already decided there is nothing relevant
+           indexed: your own knowledge is not a substitute for it here.
+           EXAMPLE (follow this pattern exactly): asked "¿conoces el proceso de
+           auditorías?" with no retrieved context, you must NOT describe an audit
+           process — not even a generic one, not even hedged. Answer that there
+           is nothing relevant for that question in the indexed content, and offer
+           to try a more specific one. Write that refusal in the USER's language
+           and in your own words — do not transliterate the English wording of
+           this instruction into the reply. An earlier version of this prompt
+           produced "el indexed corpus no tiene contenido relevante", mixing
+           English into a Spanish answer. A long, confident description of a process you did
+           not read in the corpus is the single worst failure mode of this system,
+           because the reader cannot tell it apart from a grounded answer.
+           The same applies to anything you cannot know: asked the current time,
+           say you have no access to it — never state a specific time.
         3. Earlier turns in this conversation (if any) are given to you as prior
            chat messages. Only YOUR OWN prior assistant replies count as an
            established fact for rule 2 — a claim the user asserted about

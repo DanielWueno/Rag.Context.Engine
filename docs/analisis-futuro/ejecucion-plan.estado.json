@@ -382,6 +382,21 @@
           "fecha": "2026-08-21",
           "por_que_este_modelo": "Tres lineas de configuracion de arranque.",
           "origen": "Detectado el 2026-08-21 al intentar montar un A/B de generacion: el segundo proceso fallaba al bindear porque 5080 estaba tomado por el contenedor rag-api. ARREGLADO: el default solo se aplica si nadie configuro urls. Desbloquea comparar dos variantes sin apagar la que esta sirviendo, que es la unica forma honesta de hacer un A/B de calidad de respuesta."
+        },
+        {
+          "id": "3.8-ajuste-prompts-fuera-de-corpus",
+          "titulo": "Dos ajustes de prompt para las respuestas fuera del corpus y las degeneradas de banda baja: ejemplo concreto en la regla 2 de NoGroundingSystemPromptTemplate, y caso (b) explicito en LowConfidenceAddendum para no relatar un fragmento que no aporta.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Medicion emparejada con infra/quality-baseline.py sobre las mismas 40 preguntas antes y despues",
+          "horas_maquina": 0.6,
+          "estado": "hecho",
+          "fecha": "2026-08-21",
+          "por_que_este_modelo": "Redactar el ejemplo concreto correcto es criterio, no plumbing: el propio repo ya habia registrado que la regla abstracta no funciona con este modelo.",
+          "resultado": "FUNCIONA para los casos claros, verificado caso por caso y no solo en agregado. Cuatro preguntas que fabricaban 222, 266, 349 y 43 palabras sobre auditorias ahora rechazan en 28-52 palabras diciendo que no hay contenido relevante. 'Son las 5:34', que inventaba una hora, ahora responde que no tiene acceso a la hora. En agregado sobre 40 preguntas: rechazo pleno 15% -> 27.5%, banda baja 40% -> 32.5%, directo con score bajo 22.5% -> 17.5%, palabras mediana 63 -> 43. Con n=40 los deltas porcentuales caen dentro del ruido individualmente (error estandar ~7pp), asi que la evidencia fuerte es el cambio caso por caso, no los porcentajes. NO REQUIERE RE-INGESTA: prompt_version se calcula sobre el prompt de RESUMEN, no sobre los de generacion, asi que la cache de 18.784 entradas queda intacta.",
+          "lo_que_no_funciono": "1) La frase degenerada de banda baja SIGUE apareciendo: 'el fragmento mas cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta'. El caso (b) del addendum solo tomo parcialmente. 2) 'Procesos que influyen en la innovapp?' EMPEORO: 372 -> 524 palabras, sigue fabricando. 3) 'Hola' y 'Continua' siguen igual (93 palabras con tecnicismos PascalCase): van por otro camino de codigo que estos prompts no tocan.",
+          "errores_de_metodo_cometidos": "1) La primera medicion fue INVALIDA: compile en Release y corri con `dotnet run --no-build`, que usa Debug, asi que la instancia sirvio los prompts VIEJOS. El DLL de Debug era 18 minutos anterior a la edicion. Detectado comparando marcas de tiempo; se re-verifico buscando la marca del prompt nuevo dentro del DLL en UTF-16. 2) El detector de posturas conto los rechazos correctos como 'directo' porque no llevan las frases de la plantilla, y reporto una REGRESION de +10pp donde habia una mejora de -5pp. Corregido y re-puntuado sobre los artefactos guardados, sin regenerar. 3) Un edit del prompt fallo su assert y no se aplico; la corrida siguiente uso el prompt anterior. Leccion recurrente: verificar que el binario que responde contiene el cambio, no que el archivo lo tiene."
         }
       ]
     }

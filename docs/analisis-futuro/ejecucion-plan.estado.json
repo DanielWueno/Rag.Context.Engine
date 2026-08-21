@@ -153,9 +153,13 @@
           "multiagente": false,
           "verificacion": "dotnet build sin advertencias NU1903; la caché de resúmenes sigue funcionando (SummaryCache abre y lee la sqlite existente)",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Subir la versión del paquete y comprobar que la caché sigue abriendo.",
-          "origen": "Visible en la salida de dotnet build del 2026-08-21. La caché de resúmenes es sqlite, así que el paquete está en la ruta caliente de la ingesta."
+          "origen": "Visible en la salida de dotnet build del 2026-08-21. La caché de resúmenes es sqlite, así que el paquete está en la ruta caliente de la ingesta.",
+          "fecha": "2026-08-21",
+          "resultado": "Microsoft.Data.Sqlite 10.0.10 -> 10.0.11 en RagEngine.Core.csproj. La 10.0.10 arrastraba SQLitePCLRaw.bundle_e_sqlite3 2.1.11, cuya SQLite embebida tiene CVE-2025-6965 (GHSA-2m69-gcr7-jv3q, alta, rango afectado <= 2.1.11); la 10.0.11 ya referencia bundle y core 2.1.12. Se subio el paquete de primer nivel en vez de pinchar la dependencia transitiva, para no descuadrar bundle y core entre si. Verificado: dotnet build de la solucion completa en Release con 0 advertencias y 0 errores — no queda ninguna NU1903, y con el CS0219 ya eliminado en el item 1.3 el build esta limpio del todo. Funcionalmente: 5 tests nuevos de SummaryCache (44 verdes en total) y, aparte, lectura de la cache REAL de 18.784 filas por el codigo de produccion (SummaryCache.Open + TryGetAsync), recuperando un resumen de 306 caracteres. Se trabajo sobre una copia porque Open ejecuta DDL y pondria el archivo en WAL.",
+          "nota_metodo": "El primer intento de esa verificacion FALLO por un error mio, no de la libreria: elegi la fila con 'where resumen is not null', y resulto ser un centinela sin_negocio=1 con resumen de longitud 0, mientras mi asercion exigia contenido no vacio. Repetido con una fila de sin_negocio=0 y resumen de 306 caracteres, paso. Queda anotado porque la conclusion apresurada habria sido 'la nueva SQLite no lee la cache', que es falsa.",
+          "efecto_colateral": "Los tests de SummaryCache codifican en codigo la regla con consecuencias economicas del item 2.3: cambiar prompt_version invalida la entrada. Un cambio de prompt que no sea byte-identico deja la cache entera en fallo y obliga a regenerar 18.784 resumenes via Ollama."
         },
         {
           "id": "1.11-cs0219-ingest",

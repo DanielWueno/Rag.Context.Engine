@@ -8,7 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <!-- 10.0.11 en vez de 10.0.10: la anterior arrastraba
+         SQLitePCLRaw.bundle_e_sqlite3 2.1.11, cuya SQLite embebida tiene
+         CVE-2025-6965 (GHSA-2m69-gcr7-jv3q, severidad alta, afecta <= 2.1.11).
+         10.0.11 referencia bundle y core 2.1.12, ya corregidos. Se sube el
+         paquete de primer nivel en vez de pinchar la dependencia transitiva,
+         para no descuadrar bundle y core entre si. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />

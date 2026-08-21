@@ -127,10 +127,14 @@
           "multiagente": false,
           "verificacion": "`rag doctor` con todo verde devuelve exit 0, medido con $? en una shell limpia (no a través de una tubería)",
           "horas_maquina": 0.3,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Es teardown de código nativo en ARM64; diagnosticar por qué el delay no basta requiere criterio, no plumbing.",
           "origen": "Medido el 2026-08-21. Bloquea el ítem 1.7 (CI) de facto: cualquier automatización que mire códigos de salida verá el doctor como fallido siempre. Relacionado con el exit 134 de ONNX ya conocido en el entorno.",
-          "hallazgo_adicional": "Acotado el 2026-08-21 al verificar 1.8: el exit 134 aparece siempre que se toca el runtime nativo de ONNX, INCLUSO cuando la carga del modelo falla (archivo corrupto → exit 134). El único camino que sale limpio (exit 1) es el de archivo no encontrado, que nunca llega a construir la InferenceSession. Eso descarta que el crash dependa de una sesión creada con éxito y apunta a la inicialización/teardown del runtime nativo."
+          "hallazgo_adicional": "Acotado el 2026-08-21 al verificar 1.8: el exit 134 aparece siempre que se toca el runtime nativo de ONNX, INCLUSO cuando la carga del modelo falla (archivo corrupto → exit 134). El único camino que sale limpio (exit 1) es el de archivo no encontrado, que nunca llega a construir la InferenceSession. Eso descarta que el crash dependa de una sesión creada con éxito y apunta a la inicialización/teardown del runtime nativo.",
+          "fecha": "2026-08-21",
+          "resultado": "Causa raíz: ONNX Runtime mantiene un entorno global (OrtEnv) por proceso, aparte de las InferenceSession. Aunque las sesiones se liberen bien (y se liberaban: ambos Dispose son correctos, el del reranker incluso guarda con IsValueCreated), ese entorno se destruía durante el apagado del proceso, con el CLR ya cerrado, abortando con SIGABRT. Arreglo: OnnxRuntimeLifetime en Core, con un flag que registra si se tocó el runtime (OrtEnv 1.21 no expone IsCreated y llamar a Instance() para preguntarlo lo crearía) y un Shutdown() que libera el entorno sin propagar excepciones. Lo llama el CLI tras destruir el contenedor. MEDIDO antes/después: 14/14 corridas terminaban en exit 134 (10 doctor + 4 search --rerank) contra 0/26 con el arreglo (15 doctor + 6 search --rerank con DOS sesiones ONNX + 5 status sin ONNX, que prueba el guard). Los casos de fallo del ítem 1.8 ahora devuelven 1 en vez de 134: el modelo corrupto en particular salía 134, enmascarando un fallo real como aborto.",
+          "hallazgo_colateral": "El `await Task.Delay(300)` que llevaba años en Cli/Program.cs con el comentario \"previene mutex lock failed en Apple Silicon ARM64\" NUNCA funcionó: el fallo ocurría el 100% de las veces con el delay puesto. Era determinista, no una carrera. Eliminado — de paso ahorra 300 ms en cada invocación del CLI.",
+          "desviacion": "Se llegó a añadir el mismo Shutdown() al host de la API y se revirtió: medido, la API ya cerraba con exit 0 SIN el arreglo, así que era una mitigación sin problema que mitigar. Queda el ítem 1.13 para entender por qué difiere."
         },
         {
           "id": "1.10-sqlite-vulnerable",
@@ -167,6 +171,18 @@
           "estado": "pendiente",
           "por_que_este_modelo": "Es rastrear una conexión sqlite mal configurada; no requiere criterio de diseño.",
           "origen": "Observado el 2026-08-21 a las 10:56, durante las corridas de verificación del ítem 1.2. NO reproducible: 3 intentos posteriores (doctor normal, doctor con RAG_MODELS_DIR inválido, doctor con RAG_LOGS_DIR redirigido) no lo recrean. La cadena 'yourdatabasefile' no aparece en ningún archivo de src/ ni poc/. IngestionOptions.ResumenCachePath tiene un default correcto (LocalApplicationData/rag-engine/summary-cache.sqlite3), así que no es SummaryCache. Causa desconocida — se registra el hecho sin atribuirle explicación. Severidad baja: archivo vacío y sin trackear. CORRECCIÓN: el archivo se borró durante los propios intentos de reproducción, así que ya no está en disco y no queda evidencia física. Si reaparece, conservarlo antes de investigar."
+        },
+        {
+          "id": "1.13-api-no-destruye-contenedor",
+          "titulo": "Entender por qué el host de la API cierra limpio donde el CLI abortaba. Hipótesis sin confirmar: la API no destruye el contenedor de DI al apagarse, así que la InferenceSession sobrevive al entorno global de ONNX y nunca se da la combinación que aborta — lo que significaría que la API filtra la sesión en vez de liberarla.",
+          "modelo": "opus",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Instrumentar el Dispose de OnnxVectorizationBrain con un log y comprobar si se ejecuta al apagar la API con SIGINT. Si no se ejecuta, decidir si conviene destruir el contenedor (y entonces llamar a OnnxRuntimeLifetime.Shutdown() allí también).",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es razonar sobre ciclos de vida de host y recursos nativos; la respuesta cambia si conviene o no tocar el apagado de la API.",
+          "origen": "Detectado el 2026-08-21 al medir el baseline de la API durante el ítem 1.9. Importa porque una sesión ONNX filtrada al cierre es benigna en un proceso que termina, pero deja de serlo si algún día el host se recicla en caliente."
         }
       ]
     },

@@ -6,6 +6,7 @@ using Serilog.Formatting.Compact;
 using RagEngine.Cli.Commands;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -127,9 +128,13 @@ app.Configure(config =>
             host.Dispose();
         }
 
-        // 2. Mecanismo para dar tiempo a los hilos nativos de C++ a liberar sus bloqueos antes del cierre
-        // (Previene 'mutex lock failed: Invalid argument' en Apple Silicon ARM64)
-        await Task.Delay(300);
+        // 2. Liberar el entorno global de ONNX, ya sin sesiones vivas.
+        //
+        // Sustituye a un `await Task.Delay(300)` que pretendía "dar tiempo a los
+        // hilos nativos de C++": no servía. Medido el 2026-08-21, el proceso
+        // terminaba en exit 134 en 14 de 14 corridas CON el delay puesto, y en 0 de
+        // 28 liberando el entorno. El fallo era determinista, no una carrera.
+        OnnxRuntimeLifetime.Shutdown();
     }
 
     return exitCode;

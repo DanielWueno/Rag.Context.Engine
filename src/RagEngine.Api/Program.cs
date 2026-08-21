@@ -415,5 +415,12 @@ catch (Exception ex)
 }
 finally
 {
+    // Deliberadamente NO se llama a OnnxRuntimeLifetime.Shutdown() aquí: medido el
+    // 2026-08-21, la API ya cierra con exit 0 y sin el aborto de SIGABRT que sí
+    // sufría el CLI, así que no hay problema que arreglar. Hipótesis a confirmar
+    // (ítem 1.13 del ledger): este host no destruye el contenedor de DI al apagarse,
+    // de modo que la InferenceSession sobrevive al entorno global y nunca se da la
+    // combinación que aborta. Si algún día se añade esa destrucción, habrá que
+    // llamar a Shutdown() aquí también.
     Log.CloseAndFlush();
 }

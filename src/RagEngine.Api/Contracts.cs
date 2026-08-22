@@ -77,6 +77,26 @@ public sealed record SourceDto(
         resumen);
 
     /// <summary>
+    /// <see cref="ResponseMode.Simple"/> sobre un chunk de PROSA (ver
+    /// <see cref="SourceLanguageExtensions.IsProse"/>). La redacción existe para que nadie
+    /// confunda código crudo con la respuesta; en un corpus de documentación no hay código
+    /// crudo que ocultar, y redactar deja al lector con un score y nada más — peor que no
+    /// mostrar la fuente.
+    ///
+    /// Se envían archivo, sección (el encabezado del documento) y contenido. Las líneas no:
+    /// para prosa no significan nada al lector, y en chunks agrupados han demostrado ser
+    /// engañosas. Eso mantiene una diferencia real con <see cref="ResponseMode.Technical"/>.
+    /// </summary>
+    public static SourceDto ForProse(RetrievalResult result, string? resumen = null) => new(
+        File: result.Metadata.RelativeFilePath,
+        Section: result.Metadata.MethodName,
+        StartLine: null,
+        EndLine: null,
+        Score: result.SimilarityScore,
+        Content: result.Content,
+        Resumen: SummaryTextUtilities.StripEntityPrefix(resumen));
+
+    /// <summary>
     /// Used for <see cref="ResponseMode.Simple"/> — a non-technical reader cannot tell
     /// whether a file path/line range/raw code fragment IS the answer, a citation, or
     /// an error, so none of that is sent. Only the score, plus <paramref name="resumen"/>

@@ -126,9 +126,10 @@ try
     {
         var resumenes = await Task.WhenAll(
             results.Select(r => summaryCache.TryGetAsync(r.ContentHash, cancellationToken)));
-        return results.Zip(resumenes, (r, hit) => responseMode == ResponseMode.Simple
-                ? SourceDto.Redacted(r, hit.Summary)
-                : SourceDto.From(r, hit.Summary))
+        return results.Zip(resumenes, (r, hit) =>
+                responseMode != ResponseMode.Simple    ? SourceDto.From(r, hit.Summary)
+                : r.Metadata.Language.IsProse()        ? SourceDto.ForProse(r, hit.Summary)
+                :                                        SourceDto.Redacted(r, hit.Summary))
             .ToList();
     }
 

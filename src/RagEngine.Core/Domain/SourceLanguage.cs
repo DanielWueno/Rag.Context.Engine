@@ -15,3 +15,22 @@ public enum SourceLanguage
     PlainText,    // .txt, .json, .xml, .csproj
     Unknown
 }
+
+/// <summary>
+/// Distingue los lenguajes que un lector no técnico puede leer sin riesgo de los que no.
+/// </summary>
+public static class SourceLanguageExtensions
+{
+    /// <summary>
+    /// True si el contenido de un chunk de este lenguaje es prosa escrita para personas.
+    /// La redacción del modo Simple existe para que nadie confunda un fragmento de código
+    /// crudo con la respuesta; sobre prosa esa protección no aplica y sólo consigue dejar
+    /// la fuente en un score sin contexto.
+    ///
+    /// <see cref="SourceLanguage.PlainText"/> NO cuenta: ese mismo valor cubre .txt pero
+    /// también .json, .xml y .csproj, y desde aquí no se pueden distinguir. Ante la duda,
+    /// se redacta.
+    /// </summary>
+    public static bool IsProse(this SourceLanguage language) =>
+        language == SourceLanguage.Markdown;
+}

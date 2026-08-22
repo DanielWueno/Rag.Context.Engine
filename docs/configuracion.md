@@ -78,21 +78,30 @@ Los vectores y términos almacenados quedan desalineados con las consultas cuand
 | `min-score`, TopK, opciones de búsqueda | ❌ No — son parámetros de consulta |
 | Modelo o configuración de `CrossEncoder` (`--rerank`) | ❌ No — re-puntúa en tiempo de consulta, no toca vectores almacenados |
 | Prompt del LLM, Ollama, contexto | ❌ No |
-| Contenido editado de un archivo ya ingestado (código o docs) | ✅ Sí, con `--force` — ver nota abajo |
+| Contenido editado de un archivo ya ingestado (código o docs) | ⚠️ Basta `ingest` incremental — ver nota abajo |
+| Reglas nuevas en `.ragignore` / `.gitignore` sobre rutas YA indexadas | ✅ Sí, con `--force` — ver nota abajo |
 
 ```bash
-# Re-ingesta estándar
-rag ingest /ruta/al/repo -c mi-coleccion --force
+# Re-ingesta incremental: reindexa lo que cambió y borra lo que quedó obsoleto
+rag ingest /ruta/al/repo -c mi-coleccion
+
+# Reconstrucción completa (borra y recrea la colección); --yes la hace no interactiva
+rag ingest /ruta/al/repo -c mi-coleccion --force --yes
 ```
 
-> **Sin re-ranking de vectorización de por medio, igual re-ingesta si editaste archivos ya
-> indexados.** `OrphanChunkCleaner` (mencionado como ítem de checklist en la Fase 5) **no está
-> implementado**: un `ingest` sin `--force` solo hace `EnsureCollectionAsync` + upsert, nunca borra
-> puntos. Si una edición desplaza líneas o elimina una sección, los chunks viejos en esas
-> posiciones quedan huérfanos en Qdrant con contenido obsoleto, sumados a los nuevos — el índice
-> queda con basura además de estar potencialmente incompleto. Para automatización, usa el patrón
-> ya documentado arriba: `curl -X DELETE http://localhost:6333/collections/<nombre>` y corre
-> `ingest` sin `--force` (evita el prompt interactivo de TTY).
+> **Editar archivos ya indexados ya no exige `--force`.** El Id de chunk es
+> `UUIDv5(rutaAbsoluta:startLine:hashContenido)`, así que una edición que desplaza líneas produce
+> Ids nuevos y dejaba los viejos indexados para siempre. Desde `e559d80` la ingesta incremental
+> **borra esos puntos obsoletos** al cerrar la Fase 1 (`DeleteSupersededPointsAsync`), y la línea
+> de cierre del log reporta cuántos: `Obsoletos borrados: N`.
+>
+> Dos casos que la limpieza **no** cubre, y que sí necesitan `--force`:
+>
+> 1. **Archivos borrados del repo.** La limpieza sólo toca archivos que la Fase 1 procesó; uno que
+>    ya no existe no se procesa, así que sus puntos sobreviven. Es deliberado: si un archivo falló
+>    al leerse o al chunkearse, un fallo transitorio nunca debe borrar datos buenos.
+> 2. **Rutas recién excluidas** por `.ragignore` o `.gitignore`. Excluir es dejar de procesar, así
+>    que sus puntos quedan igualmente huérfanos.
 
 ## Calibración de `min-score`
 

@@ -12,7 +12,8 @@ El plan de proyecto interno (diseño histórico, roadmap y riesgos) vive en la r
 | [pipeline-de-ingesta.md](pipeline-de-ingesta.md) | Ingeniería | Flujo productor/consumidores, estrategias de chunking, filtros de calidad, características de rendimiento medidas |
 | [guia-cli.md](guia-cli.md) | Usuarios | Referencia completa de `ingest`, `search`, `ask`, `status`, `doctor` con ejemplos |
 | [configuracion.md](configuracion.md) | Usuarios / Ops | `appsettings.json` campo a campo, gestión de modelos ONNX, matriz de "cuándo re-ingestar" |
-| [operaciones.md](operaciones.md) | Ops | Qdrant, logs estructurados, métricas, troubleshooting conocido y runbook |
+| [operaciones.md](operaciones.md) | Ops | Qdrant, caché SQLite de resúmenes, logs estructurados, métricas, troubleshooting conocido y runbook |
+| [reingesta-manual.md](reingesta-manual.md) | Ops | Comandos de re-ingesta por colección, respaldo de Qdrant, cómo verificar que salió bien y cómo medir si movió algo |
 
 ## Convenciones
 

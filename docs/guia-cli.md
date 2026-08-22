@@ -14,11 +14,23 @@ rag ingest /ruta/al/repo --collection mi-repo --repo-name MiRepo
 | `-c, --collection` | `rag-engine` | Colección destino en Qdrant |
 | `-r, --repo-name` | `my-repo` | Nombre usado en los encabezados de contexto de cada chunk |
 | `-b, --batch-size` | `32` | Chunks por lote de inferencia ONNX |
-| `-f, --force` | off | Borra y recrea la colección (confirmación interactiva) |
+| `-f, --force` | off | Borra y recrea la colección (pide confirmación) |
+| `-y, --yes` | off | Confirma `--force` sin preguntar; necesario sin terminal interactiva |
+| `--con-resumen` | off | Genera el tercer vector de resumen de negocio vía LLM (Fase 2) |
 | `-l, --lang` | todos | Restringe a un lenguaje: `csharp`, `typescript`, `sql`, `markdown` |
 
-> Automatización/CI: `--force` exige TTY. Para scripts, borra la colección vía API REST
-> (`curl -X DELETE http://localhost:6333/collections/<nombre>`) y corre `ingest` sin `--force`.
+> **Automatización/CI:** `rag ingest ... --force --yes`. Sin `--yes` y sin TTY la CLI aborta con un
+> mensaje explícito en vez de colgarse.
+>
+> **Sin `--force` la ingesta es incremental** y además borra los puntos que quedaron obsoletos
+> (archivos editados cuyos chunks cambiaron de Id). Ver
+> [pipeline-de-ingesta.md](pipeline-de-ingesta.md#idempotencia-y-re-ingesta).
+>
+> **Qué se indexa:** el escáner respeta `.gitignore` y `.ragignore` de la raíz del repositorio —
+> ver [exclusiones del corpus](pipeline-de-ingesta.md#exclusiones-del-corpus--gitignore-y-ragignore).
+>
+> **`--con-resumen` baja `rag-api` primero:** la Fase 2 escribe la caché SQLite y compartirla con el
+> contenedor la corrompe (ver [operaciones.md](operaciones.md#caché-de-resúmenes-de-negocio-sqlite)).
 
 ## `rag search <query>` — Búsqueda híbrida
 

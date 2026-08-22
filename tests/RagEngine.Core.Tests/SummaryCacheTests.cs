@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Microsoft.Data.Sqlite;
 using RagEngine.Core.Services.Summary;
 using Xunit;
 
@@ -25,6 +27,52 @@ public class SummaryCacheTests : IDisposable
             var archivo = _rutaTemporal + sufijo;
             if (File.Exists(archivo)) File.Delete(archivo);
         }
+    }
+
+    /// <summary>
+    /// Propiedad de la que depende operar con la API consultando y una ingesta escribiendo:
+    /// un escritor que encuentra el lock tomado ESPERA, no falla. Se verificó de forma
+    /// aislada que quien la garantiza es el reintento ante SQLITE_BUSY de
+    /// Microsoft.Data.Sqlite (ocurre con y sin `PRAGMA busy_timeout`, y también con
+    /// CommandTimeout=0, que en este proveedor significa "sin límite"). El pragma que
+    /// SummaryCache aplica en cada conexión es defensa adicional, no lo que sostiene esto.
+    ///
+    /// Este test NO discrimina la presencia del pragma — fija la garantía observable, que
+    /// es lo que importa si algún día se cambia de proveedor o de política de reintentos.
+    /// </summary>
+    [Fact]
+    public async Task Escribir_EsperaAlLockDeOtroEscritorEnVezDeFallar()
+    {
+        var cache = SummaryCache.Open(_rutaTemporal, "v1");
+        var cadena = new SqliteConnectionStringBuilder { DataSource = _rutaTemporal }.ToString();
+
+        await using var bloqueador = new SqliteConnection(cadena);
+        await bloqueador.OpenAsync();
+        await using (var begin = bloqueador.CreateCommand())
+        {
+            begin.CommandText = "BEGIN IMMEDIATE;";   // toma el lock de escritura
+            await begin.ExecuteNonQueryAsync();
+        }
+
+        var soltar = Task.Run(async () =>
+        {
+            await Task.Delay(400);
+            await using var commit = bloqueador.CreateCommand();
+            commit.CommandText = "COMMIT;";
+            await commit.ExecuteNonQueryAsync();
+        });
+
+        var reloj = Stopwatch.StartNew();
+        await cache.SetAsync("hash-concurrente", "Escrito pese a la contención.");
+        reloj.Stop();
+        await soltar;
+
+        Assert.True(reloj.ElapsedMilliseconds >= 300,
+            $"debió esperar al lock, tardó {reloj.ElapsedMilliseconds} ms");
+
+        var (encontrado, resumen) = await cache.TryGetAsync("hash-concurrente");
+        Assert.True(encontrado);
+        Assert.Equal("Escrito pese a la contención.", resumen);
     }
 
     [Fact]

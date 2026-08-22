@@ -12,6 +12,19 @@ ollama serve                                        # requerido solo para `rag a
 
 `rag doctor` valida todo el stack en un comando (Qdrant, modelo ONNX, tokenizador, disco).
 
+### Caché de resúmenes de negocio (SQLite)
+
+`~/Library/Application Support/rag-engine/summary-cache.sqlite3` guarda los resúmenes generados por
+la Fase 2, con clave `content_hash + prompt_version` y **compartida entre todas las colecciones**.
+Es lo que convierte una re-ingesta de horas en uno de minutos: si el contenido del chunk no cambió,
+no se vuelve a llamar a Ollama.
+
+> ⚠️ **Nunca la escribas desde el host y la leas desde el contenedor a la vez.** El contenedor
+> `rag-api` la monta por bind mount y SQLite la abre en modo WAL. El índice WAL vive en memoria
+> compartida (`*-shm`) y exige coherencia de `mmap` entre todos los procesos que abren la base;
+> VirtioFS/gRPC-FUSE no la garantiza entre el host y la VM de Linux. **Baja `rag-api` antes de
+> correr una ingesta con `--con-resumen`.** Ver el runbook de recuperación más abajo.
+
 ## Observabilidad
 
 - **Logs estructurados:** Serilog → `logs/rag-engine-YYYYMMDD.json` (CompactJsonFormatter). La consola solo muestra `Warning+`; el archivo lo tiene todo, incluyendo `CorrelationId` por búsqueda. Fuente de verdad para tiempos de ingesta y conteos:
@@ -61,13 +74,57 @@ en ~700ms sobre el modelo int8 ARM64.
 2. El costo dominante es ONNX; ver palancas en [pipeline-de-ingesta.md](pipeline-de-ingesta.md#rendimiento-medido).
 3. Qdrant con disco lleno o CPU saturada degrada los upserts (aunque `wait:false` los saca de la ruta crítica).
 
+### `SQLite Error 11: 'database disk image is malformed'`
+
+La caché de resúmenes está **corrupta en disco**; no es transitorio y no se cura reiniciando. Toda
+petición a `/api/search` y `/api/ask` revienta en `SummaryCache.TryGetAsync`. Causa conocida:
+escritor nativo en el host (una ingesta con `--con-resumen`) y lector dentro del contenedor sobre
+el mismo archivo en WAL, a través del bind mount de Docker — ver el aviso de la sección
+Infraestructura.
+
+Diagnóstico y recuperación (`.recover` rescató 21.082 de ~21.205 filas, 99,4 %):
+
+```bash
+D=~/Library/Application\ Support/rag-engine
+sqlite3 "$D/summary-cache.sqlite3" "PRAGMA integrity_check;"   # confirma la corrupción
+
+docker stop rag-api                                            # sin lectores durante el swap
+cp "$D/summary-cache.sqlite3" /tmp/cache.corrupt.bak            # SIEMPRE respaldar primero
+sqlite3 /tmp/cache.corrupt.bak ".recover" > /tmp/recover.sql
+rm -f /tmp/rebuilt.sqlite3 && sqlite3 /tmp/rebuilt.sqlite3 < /tmp/recover.sql
+
+sqlite3 /tmp/rebuilt.sqlite3 "PRAGMA integrity_check; SELECT count(*) FROM resumen_cache;"
+mv "$D/summary-cache.sqlite3" "$D/summary-cache.sqlite3.corrupt-$(date +%Y%m%d)"
+rm -f "$D"/summary-cache.sqlite3-wal "$D"/summary-cache.sqlite3-shm
+cp /tmp/rebuilt.sqlite3 "$D/summary-cache.sqlite3"
+docker start rag-api
+```
+
+Las filas basura que `.recover` arrastra las descarta el `INSERT OR IGNORE` del volcado. Perder
+entradas sólo cuesta regenerar esos resúmenes con Ollama en la siguiente ingesta; no hay pérdida
+de datos irrecuperable.
+
+### `dense vector must not be empty` e `Indexed: 0`
+
+Todos los lotes rechazados por Qdrant y la colección sin actualizar. Ocurría al **re-ingestar de
+forma incremental una colección que ya tenía resúmenes**: Qdrant ≥ 1.14 devuelve el denso en el
+oneof `dense` y deja vacío el campo plano legacy `VectorOutput.Data`, que era el que se leía —
+daba `float[0]` en vez de `null`, y ese vector vacío se reenviaba en el upsert. Como el upsert es
+atómico, se perdía el lote entero, puntos sanos incluidos.
+
+Corregido en `a341e06`. Si vuelves a verlo tras actualizar el cliente o el servidor de Qdrant,
+sospecha del mismo patrón en cualquier lectura nueva de vectores. La guarda de "generó chunks pero
+no indexó ninguno" hace que hoy la ingesta aborte en vez de reportar éxito.
+
 ### Falla la compilación de proyectos NUEVOS fuera del repo
 
 El SDK .NET de la máquina puede tener un workload set corrupto (`dotnet workload repair`). Este repo compila porque `Directory.Build.props` fija `MSBuildEnableWorkloadResolver=false`; copia ese archivo a proyectos auxiliares.
 
-### `--force` se cuelga en scripts/CI
+### `--force` en scripts/CI
 
-El prompt de confirmación de Spectre.Console exige TTY. En automatización: `curl -X DELETE http://localhost:6333/collections/<n>` y corre `ingest` sin `--force`.
+El prompt de confirmación exige TTY, pero la CLI ya lo detecta y aborta con un mensaje explícito
+(`Agrega --yes para confirmar sin preguntar`) en vez de colgarse. En automatización:
+`rag ingest ... --force --yes`. Ya no hace falta el rodeo de borrar la colección por REST.
 
 ## Checklist de despliegue en una máquina nueva
 

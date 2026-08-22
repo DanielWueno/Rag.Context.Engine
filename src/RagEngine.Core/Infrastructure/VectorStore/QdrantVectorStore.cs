@@ -192,7 +192,15 @@ public sealed class QdrantVectorStore
             if (point.Vectors.VectorsOptionsCase == VectorsOutput.VectorsOptionsOneofCase.Vectors &&
                 point.Vectors.Vectors.Vectors.TryGetValue(SummaryVectorName, out var vecOutput))
             {
-                summaryVector = vecOutput.Data.ToArray();
+                // Qdrant >= 1.14 entrega el denso en el oneof `dense`; el campo plano
+                // `Data` quedó vacío por compatibilidad. Leerlo directo devolvía
+                // float[0] (no null), y ese vector vacío se reenviaba en el upsert:
+                // Qdrant rechazaba el punto ("dense vector must not be empty") y,
+                // como el upsert es atómico, se perdía el lote entero.
+                var data = vecOutput.VectorCase == VectorOutput.VectorOneofCase.Dense
+                    ? vecOutput.Dense.Data
+                    : vecOutput.Data;
+                summaryVector = data.Count > 0 ? data.ToArray() : null;
             }
 
             result[Guid.Parse(point.Id.Uuid)] = new ExistingResumenState(pending, summaryVector);
@@ -250,7 +258,7 @@ public sealed class QdrantVectorStore
             namedVectors.Vectors[DenseVectorName] = denseVec;
             namedVectors.Vectors[SparseVectorName] = sparseVec;
 
-            if (markResumenPending && item.ExistingResumen?.SummaryVector is { } existingVec)
+            if (markResumenPending && item.ExistingResumen?.SummaryVector is { Length: > 0 } existingVec)
                 namedVectors.Vectors[SummaryVectorName] = existingVec; // preservar: nunca perder un resumen ya generado
 
             point.Vectors = new Vectors { Vectors_ = namedVectors };

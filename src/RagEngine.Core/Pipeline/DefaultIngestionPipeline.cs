@@ -142,6 +142,15 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             await Task.WhenAll(consumerTasks.Append(producerTask));
         }
 
+        // Fase 1 produjo chunks pero Qdrant no aceptó ninguno: antes esto se
+        // registraba como "Ingestion complete. Indexed: 0" y el proceso salía con
+        // éxito, dejando la colección silenciosamente sin actualizar. Es fatal.
+        if (stats.ChunksGenerated > 0 && stats.ChunksIndexed == 0)
+            throw new InvalidOperationException(
+                $"La ingesta generó {stats.ChunksGenerated} chunks pero Qdrant no indexó ninguno " +
+                $"en la colección '{request.CollectionName}'. Revisa los errores de upsert en el log; " +
+                "la colección quedó sin cambios.");
+
         // ── Step 3: Fase 2 — resumen de negocio (opt-in, desacoplada del throughput
         // de Fase 1). Corre igual tanto si Fase 1 acaba de correr como si se saltó
         // por reanudación: siempre opera sobre los puntos marcados resumen_pending=true

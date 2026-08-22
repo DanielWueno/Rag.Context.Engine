@@ -110,6 +110,12 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             }
         }
 
+        // Ids vigentes y archivos efectivamente procesados: alimentan la limpieza de
+        // puntos obsoletos al cerrar la Fase 1. El productor es una sola tarea secuencial,
+        // así que no hacen falta colecciones concurrentes.
+        var generatedIds = new HashSet<Guid>();
+        var processedFiles = new HashSet<string>(StringComparer.Ordinal);
+
         {
             // ── Step 1: Prepare collection ──────────────────────────────────────
             if (request.ForceReindex)
@@ -128,7 +134,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             });
 
             var producerTask = ProduceChunksAsync(
-                request, channel.Writer, progress, stats, cancellationToken);
+                request, channel.Writer, progress, stats, generatedIds, processedFiles, cancellationToken);
 
             // Varios consumidores compiten por el mismo Channel (SingleReader = false):
             // mientras uno espera el upsert de Qdrant, otro vectoriza el siguiente lote.
@@ -150,6 +156,15 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 $"La ingesta generó {stats.ChunksGenerated} chunks pero Qdrant no indexó ninguno " +
                 $"en la colección '{request.CollectionName}'. Revisa los errores de upsert en el log; " +
                 "la colección quedó sin cambios.");
+
+        // Un chunk cuyo archivo cambió (o al que el chunker reagrupó) entra con un Id
+        // nuevo y deja el viejo indexado para siempre. Con --force no aplica: la
+        // colección se acaba de recrear y no hay nada obsoleto que barrer.
+        if (!request.ForceReindex)
+        {
+            stats.PointsDeleted = await _vectorStore.DeleteSupersededPointsAsync(
+                request.CollectionName, generatedIds, processedFiles, cancellationToken);
+        }
 
         // ── Step 3: Fase 2 — resumen de negocio (opt-in, desacoplada del throughput
         // de Fase 1). Corre igual tanto si Fase 1 acaba de correr como si se saltó
@@ -175,8 +190,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             ResumenesSinNegocio: resumenStats?.SinNegocio ?? 0);
 
         _logger.LogInformation(
-            "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Duration: {Elapsed}",
-            summary.FilesScanned, summary.ChunksGenerated, summary.ChunksIndexed, summary.TotalDuration);
+            "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Obsoletos borrados: {Deleted}, Duration: {Elapsed}",
+            summary.FilesScanned, summary.ChunksGenerated, summary.ChunksIndexed, stats.PointsDeleted, summary.TotalDuration);
 
         return summary;
     }
@@ -187,6 +202,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ChannelWriter<CodeChunk> writer,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        HashSet<Guid> generatedIds,
+        HashSet<string> processedFiles,
         CancellationToken ct)
     {
         try
@@ -227,6 +244,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                         if (chunk.Content.AsSpan().Trim().Length < MinIndexableContentChars)
                             continue;
 
+                        generatedIds.Add(chunk.Id);
                         await writer.WriteAsync(chunk, ct);
                         Interlocked.Increment(ref stats.ChunksGenerated);
 
@@ -244,7 +262,10 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "chunking"));
                     _logger.LogWarning(ex, "Failed to chunk {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
+                    continue;
                 }
+
+                processedFiles.Add(artifact.AbsolutePath);
 
                 // Explicit GC hint after processing large C# files with Roslyn
                 if (artifact.SizeBytes > 100_000)
@@ -559,6 +580,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         public int FilesScanned;
         public int ChunksGenerated;
         public int ChunksIndexed;
+        public int PointsDeleted;
         public int FilesSkipped;
     }
 }

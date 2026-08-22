@@ -352,6 +352,77 @@ public sealed class QdrantVectorStore
         return await _client.CountAsync(collectionName, filter, exact: true, cancellationToken: ct);
     }
 
+    /// <summary>
+    /// Borra los puntos que quedaron obsoletos tras una ingesta incremental: los que
+    /// pertenecen a un archivo que SÍ se acaba de procesar pero cuyo Id ya no está entre
+    /// los chunks que ese archivo genera ahora.
+    ///
+    /// Hace falta porque el Id de chunk es UUIDv5(rutaAbsoluta:startLine:hashContenido):
+    /// si el archivo cambia (un pull) o cambia la agrupación del chunker, los chunks
+    /// nuevos entran con Ids nuevos por upsert, pero los viejos se quedan indexados para
+    /// siempre. Sin esto la colección acumula sedimento en cada corrida y sólo se limpia
+    /// con --force.
+    ///
+    /// Sólo toca archivos presentes en <paramref name="processedFilePaths"/>: un archivo
+    /// que la Fase 1 se saltó (ilegible, error de chunking) conserva sus puntos intactos,
+    /// para que un fallo transitorio nunca borre datos buenos. Corolario: los puntos de un
+    /// archivo BORRADO del repo no se limpian aquí — ese caso necesita --force.
+    /// </summary>
+    /// <returns>Número de puntos borrados.</returns>
+    public async Task<int> DeleteSupersededPointsAsync(
+        string collectionName,
+        IReadOnlySet<Guid> currentChunkIds,
+        IReadOnlySet<string> processedFilePaths,
+        CancellationToken ct = default)
+    {
+        if (processedFilePaths.Count == 0) return 0;
+
+        var toDelete = new List<Guid>();
+        PointId? offset = null;
+
+        while (true)
+        {
+            var response = await _client.ScrollAsync(
+                collectionName,
+                limit: 2048,
+                offset: offset,
+                payloadSelector: new WithPayloadSelector
+                {
+                    Include = new PayloadIncludeSelector { Fields = { "file_path" } }
+                },
+                vectorsSelector: new WithVectorsSelector { Enable = false },
+                cancellationToken: ct);
+
+            foreach (var point in response.Result)
+            {
+                if (!point.Payload.TryGetValue("file_path", out var fp)) continue;
+                if (!processedFilePaths.Contains(fp.StringValue)) continue;
+                var id = Guid.Parse(point.Id.Uuid);
+                if (currentChunkIds.Contains(id)) continue;
+                toDelete.Add(id);
+            }
+
+            var next = response.NextPageOffset;
+            if (next is null || next.PointIdOptionsCase == PointId.PointIdOptionsOneofCase.None) break;
+            offset = next;
+        }
+
+        if (toDelete.Count == 0) return 0;
+
+        const int DeleteBatch = 1024;
+        for (int i = 0; i < toDelete.Count; i += DeleteBatch)
+        {
+            var slice = toDelete.GetRange(i, Math.Min(DeleteBatch, toDelete.Count - i));
+            await _client.DeleteAsync(collectionName, slice, wait: true, cancellationToken: ct);
+        }
+
+        _logger.LogInformation(
+            "Limpieza incremental: {Count} puntos obsoletos borrados de '{Collection}'.",
+            toDelete.Count, collectionName);
+
+        return toDelete.Count;
+    }
+
     /// <summary>Un punto reconstruido desde el payload de Qdrant, listo para volver a pasar por el generador de resumen.</summary>
     public sealed record PendingResumenPoint(Guid PointId, CodeChunk Chunk);
 

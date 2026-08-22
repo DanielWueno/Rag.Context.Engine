@@ -48,8 +48,14 @@ public sealed class FileSystemIngestionScanner : IIngestionScanner
 
         _logger.LogInformation("Starting scan of {RootPath}", rootPath);
 
+        var ignore = IgnoreRules.Load(rootPath);
+        if (!ignore.IsEmpty)
+            _logger.LogInformation(
+                "Reglas de exclusión activas: {Count} desde [{Sources}]",
+                ignore.Count, string.Join(", ", ignore.Sources));
+
         int count = 0;
-        await foreach (var artifact in EnumerateRecursiveAsync(root, rootPath, profile, cancellationToken))
+        await foreach (var artifact in EnumerateRecursiveAsync(root, rootPath, profile, ignore, cancellationToken))
         {
             count++;
             yield return artifact;
@@ -62,6 +68,7 @@ public sealed class FileSystemIngestionScanner : IIngestionScanner
         DirectoryInfo dir,
         string rootPath,
         ScanProfile profile,
+        IgnoreRules ignore,
         [EnumeratorCancellation] CancellationToken ct)
     {
         // Enumerate files in current directory
@@ -93,6 +100,12 @@ public sealed class FileSystemIngestionScanner : IIngestionScanner
 
             var language = ExtensionMap.GetValueOrDefault(file.Extension, SourceLanguage.Unknown);
             var relativePath = Path.GetRelativePath(rootPath, file.FullName);
+
+            if (ignore.IsIgnored(relativePath, isDirectory: false))
+            {
+                _logger.LogDebug("Ignorado por reglas de exclusión: {File}", relativePath);
+                continue;
+            }
 
             yield return new RawArtifact(
                 AbsolutePath: file.FullName,
@@ -127,7 +140,18 @@ public sealed class FileSystemIngestionScanner : IIngestionScanner
                 continue;
             }
 
-            await foreach (var artifact in EnumerateRecursiveAsync(subdir, rootPath, profile, ct))
+            // Podar el directorio entero en vez de filtrar archivo a archivo: evita
+            // recorrer árboles grandes que ya sabemos que no entran (bin/, node_modules/).
+            // Con negaciones en juego no se poda: algo de dentro podría estar
+            // re-incluido con !patrón y hay que bajar a comprobarlo archivo a archivo.
+            if (!ignore.HasNegations &&
+                ignore.IsIgnored(Path.GetRelativePath(rootPath, subdir.FullName), isDirectory: true))
+            {
+                _logger.LogDebug("Directorio ignorado por reglas de exclusión: {Dir}", subdir.Name);
+                continue;
+            }
+
+            await foreach (var artifact in EnumerateRecursiveAsync(subdir, rootPath, profile, ignore, ct))
                 yield return artifact;
         }
     }

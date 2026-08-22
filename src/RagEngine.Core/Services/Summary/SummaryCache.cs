@@ -15,6 +15,13 @@ namespace RagEngine.Core.Services.Summary;
 /// </summary>
 public sealed class SummaryCache
 {
+    /// <summary>
+    /// Cuánto espera una conexión a que se libere el lock de escritura antes de
+    /// rendirse con SQLITE_BUSY. Es un ajuste POR CONEXIÓN, no de la base: hay que
+    /// aplicarlo en cada una, no sólo en la de setup.
+    /// </summary>
+    private const int BusyTimeoutMs = 5000;
+
     private readonly string _connectionString;
     private readonly string _promptVersion;
 
@@ -36,7 +43,7 @@ public sealed class SummaryCache
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
         Execute(connection, "PRAGMA journal_mode = WAL;");
-        Execute(connection, "PRAGMA busy_timeout = 5000;");
+        Execute(connection, $"PRAGMA busy_timeout = {BusyTimeoutMs};");
         Execute(connection, """
             CREATE TABLE IF NOT EXISTS resumen_cache (
                 content_hash   TEXT NOT NULL,
@@ -52,13 +59,35 @@ public sealed class SummaryCache
     }
 
     /// <summary>
+    /// Abre una conexión con <c>busy_timeout</c> ya aplicado. El pragma es por conexión y no
+    /// se hereda del pool, así que fijarlo sólo en <see cref="Open"/> dejaba al resto con el
+    /// default 0.
+    ///
+    /// Medido: esto NO era la causa de fallo que aparentaba. Microsoft.Data.Sqlite reintenta
+    /// ante SQLITE_BUSY en la capa de comando, así que un escritor bloqueado espera igual sin
+    /// el pragma. Se aplica como defensa en profundidad —para que el código haga lo que dice
+    /// y para no depender de la política de reintentos del proveedor—, no como corrección de
+    /// un fallo observado.
+    /// </summary>
+    private async Task<SqliteConnection> OpenConnectionAsync(CancellationToken ct)
+    {
+        var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(ct);
+
+        await using var pragma = connection.CreateCommand();
+        pragma.CommandText = $"PRAGMA busy_timeout = {BusyTimeoutMs};";
+        await pragma.ExecuteNonQueryAsync(ct);
+
+        return connection;
+    }
+
+    /// <summary>
     /// Hit → (true, resumen) o (true, null) si el hit fue el centinela SIN_CONTENIDO_DE_NEGOCIO.
     /// Miss → (false, null): nunca generado, o el intento anterior falló (los fallos no se cachean).
     /// </summary>
     public async Task<(bool Found, string? Summary)> TryGetAsync(string contentHash, CancellationToken ct = default)
     {
-        await using var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync(ct);
+        await using var connection = await OpenConnectionAsync(ct);
 
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT resumen, sin_negocio FROM resumen_cache WHERE content_hash = $hash AND prompt_version = $pv;";
@@ -76,8 +105,7 @@ public sealed class SummaryCache
     /// <summary>Guarda un resumen (o null para el centinela). No llamar en fallos: un fallo debe poder reintentarse.</summary>
     public async Task SetAsync(string contentHash, string? summaryOrSentinel, CancellationToken ct = default)
     {
-        await using var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync(ct);
+        await using var connection = await OpenConnectionAsync(ct);
 
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """

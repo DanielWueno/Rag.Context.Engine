@@ -218,6 +218,20 @@
           "fecha": "2026-08-21",
           "por_que_este_modelo": "Una bandera y una guarda por capacidades del terminal.",
           "origen": "Detectado al re-ingestar micro-repo. Piping un 'y' por stdin no ayuda: Spectre decide por capacidades del terminal, no por disponibilidad de entrada."
+        },
+        {
+          "id": "1.15-nohup-huerfano",
+          "titulo": "nohup.out (6 líneas) en la raíz del repo: salida de una corrida fallida de Spectre (`Unknown command 'inges'`). Aparece como untracked en git status.",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "git status sin untracked en la raíz y `git check-ignore -v nohup.out` nombra el patrón que lo cubre",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Borrar un archivo y añadir una línea al .gitignore; lo verifica git.",
+          "archivos": "nohup.out, .gitignore",
+          "rollback": "Trivial: el archivo no lo usa nadie.",
+          "origen": "Detectado el 2026-08-24 al auditar la propuesta de refinamiento arquitectónico. Mismo género que 1.12 (artefacto huérfano en la raíz), pero éste sí tiene causa conocida y trivial."
         }
       ]
     },
@@ -264,14 +278,16 @@
         },
         {
           "id": "2.2-partir-raggenerationservice",
-          "titulo": "Descomponer RagGenerationService (1042 líneas, 12 prompts embebidos) en responsabilidades separadas",
+          "titulo": "Descomponer RagGenerationService (680 líneas) en responsabilidades separadas",
           "modelo": "opus",
           "esfuerzo": "high",
           "multiagente": true,
-          "verificacion": "A/B de respuestas sobre las 89 preguntas de bsuite-repo: cero regresión en 'sin evidencia' y cero fabricación nueva",
+          "verificacion": "A/B de respuestas con el arnés de calidad infra/quality-baseline.py (143 preguntas únicas, de las que 89 vienen del bundle de bsuite-repo): cero regresión en \"sin evidencia\" y cero fabricación nueva. OJO — esto NO mide recall: el arnés no tiene ground-truth de chunk. No existe eval-set de recall sobre bsuite-repo; lo crea el ítem 5.0. La redacción anterior (\"las 89 preguntas de bsuite-repo\") invitaba a citar ese n como si midiera retrieval.",
           "horas_maquina": 3,
           "estado": "pendiente",
-          "por_que_este_modelo": "La regresión aparece como una respuesta peor, no como un test rojo. Es el caso donde el panel adversarial sí gana algo."
+          "por_que_este_modelo": "La regresión aparece como una respuesta peor, no como un test rojo. Es el caso donde el panel adversarial sí gana algo.",
+          "correccion_de_ledger": "2026-08-24: el título decía \"1042 líneas, 12 prompts embebidos\". Hoy son 680 líneas y los prompts ya viven en Services/Generation/Prompts/ (7 clases) porque el ítem 2.3 los externalizó. El alcance baja en consecuencia: ya no incluye sacar prompts, sólo separar responsabilidades.",
+          "nota_de_altitud": "No bloquea, pero el ítem 8.c (formato de diagnóstico en 4 bloques) toca esta misma clase. Hacer 2.2 antes evita tocarla dos veces."
         },
         {
           "id": "2.3-prompts-externalizados",
@@ -331,7 +347,8 @@
           "verificacion": "rag doctor detecta y nombra una colección con esquema desactualizado en vez de fallar en la consulta",
           "horas_maquina": 1,
           "estado": "pendiente",
-          "por_que_este_modelo": "No es hipotético: ya hay una colección perdida (engine-repo, origen irrecuperable). Diseñar la detección es criterio."
+          "por_que_este_modelo": "No es hipotético: ya hay una colección perdida (engine-repo, origen irrecuperable). Diseñar la detección es criterio.",
+          "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6."
         },
         {
           "id": "3.2-api-endurecida",
@@ -427,7 +444,7 @@
       ]
     },
     {
-      "ola": "4",
+      "ola": 4,
       "nombre": "Calidad de respuesta: gate de confianza y estabilidad del rerank",
       "criterio_de_salida": "Una pregunta cuya respuesta SÍ está en el corpus no se pierde por el gate, y el score que decide la banda no cambia según el TopK. Análisis completo en docs/analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md",
       "items": [
@@ -441,7 +458,8 @@
           "horas_maquina": 0.3,
           "estado": "pendiente",
           "por_que_este_modelo": "Es barrido y estadística descriptiva sobre un endpoint existente; no requiere criterio de diseño.",
-          "origen": "Medido el 2026-08-22 con n=1: el par (consulta='como sincroniza la aplicacion de campo cuando recupera senal', chunk=US-33.4) puntúa 0.7046 con topK=5, 0.5844 con topK=10 y 0.7112 con topK=15, determinista dentro de cada k (2 repeticiones idénticas). n=1 no autoriza a concluir la magnitud; este ítem lo mide."
+          "origen": "Medido el 2026-08-22 con n=1: el par (consulta='como sincroniza la aplicacion de campo cuando recupera senal', chunk=US-33.4) puntúa 0.7046 con topK=5, 0.5844 con topK=10 y 0.7112 con topK=15, determinista dentro de cada k (2 repeticiones idénticas). n=1 no autoriza a concluir la magnitud; este ítem lo mide.",
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2."
         },
         {
           "id": "4.2-score-de-gate-estable",
@@ -453,7 +471,8 @@
           "horas_maquina": 0.5,
           "estado": "pendiente",
           "por_que_este_modelo": "Toca inferencia ONNX cuantizada y tiene tres alternativas con distinto coste (padding fijo a 512, lotes por longitud, lote de 1); elegir exige criterio, no sólo ejecutar.",
-          "origen": "Causa identificada el 2026-08-22: el pool de rerank es 3xTopK y RunBatch hace padding dinámico al máximo real del lote (OnnxCrossEncoderReRanker.cs:214) sobre un modelo int8, así que el score de un par depende de sus vecinos de lote. El código ya mitigaba la mitad — ordenar por ChunkId fija la composición para un pool DADO (OnnxCrossEncoderReRanker.cs:69-77) — pero no la invarianza al tamaño del pool."
+          "origen": "Causa identificada el 2026-08-22: el pool de rerank es 3xTopK y RunBatch hace padding dinámico al máximo real del lote (OnnxCrossEncoderReRanker.cs:214) sobre un modelo int8, así que el score de un par depende de sus vecinos de lote. El código ya mitigaba la mitad — ordenar por ChunkId fija la composición para un pool DADO (OnnxCrossEncoderReRanker.cs:69-77) — pero no la invarianza al tamaño del pool.",
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2. Además 4.2 rompe la dependencia gate→rerank: hoy la rama de score del gate sólo dispara con useReRanking=true (RagGenerationService.cs:199), así que el cortafuegos obliga a pagar un rerank cuyo aporte de recall ya se midió en +0/−2."
         },
         {
           "id": "4.3-recalibrar-umbrales-banda",
@@ -465,7 +484,8 @@
           "horas_maquina": 1.0,
           "estado": "pendiente",
           "por_que_este_modelo": "Es calibración con compromiso entre recall y fabricación; equivocarse aquí degrada la confianza del sistema entero.",
-          "origen": "Medido el 2026-08-22 sobre 10 consultas de wiki-solis: la banda sin grounding funciona bien (todo lo genuinamente ausente cae <=0.026 y se rechaza con sensatez, NO tocarla), pero la banda media 0.05-0.60 mete en el mismo saco un 0.074 de basura real y un 0.584 que era el chunk correcto. n=10 no autoriza a mover un umbral."
+          "origen": "Medido el 2026-08-22 sobre 10 consultas de wiki-solis: la banda sin grounding funciona bien (todo lo genuinamente ausente cae <=0.026 y se rechaza con sensatez, NO tocarla), pero la banda media 0.05-0.60 mete en el mismo saco un 0.074 de basura real y un 0.584 que era el chunk correcto. n=10 no autoriza a mover un umbral.",
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2."
         },
         {
           "id": "4.4-fuga-ejemplo-negativo-prompt",
@@ -501,9 +521,310 @@
           "horas_maquina": 0.2,
           "estado": "pendiente",
           "por_que_este_modelo": "Correr un comando ya documentado y comparar dos conteos.",
-          "origen": "Verificado el 2026-08-24: bsuite-repo tiene 22.864 puntos y 272 no están en el set de chunks que el chunker genera hoy. Los 272 se caracterizaron en su momento: su texto sigue presente en los archivos actuales (196 byte a byte, 76 salvo saltos de línea), así que son residuo de un reagrupamiento del chunker, no de un cambio del repo fuente."
+          "origen": "Verificado el 2026-08-24: bsuite-repo tiene 22.864 puntos y 272 no están en el set de chunks que el chunker genera hoy. Los 272 se caracterizaron en su momento: su texto sigue presente en los archivos actuales (196 byte a byte, 76 salvo saltos de línea), así que son residuo de un reagrupamiento del chunker, no de un cambio del repo fuente.",
+          "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6."
+        }
+      ]
+    },
+    {
+      "ola": 5,
+      "nombre": "Contrato estructural de símbolos",
+      "criterio_de_entrada": "3.1 y 4.6 cerrados (corpus limpio) y 5.0 cerrado (hay con qué medir).",
+      "criterio_de_salida": "Todo chunk de C# y TypeScript lleva defined_symbols y consumed_symbols en el payload y en el encabezado embebido, bsuite-repo está re-ingestado, y recall@10 no es peor que la línea base fuera de ±1 pregunta en cada eval-set corrible.",
+      "advertencia_de_coste": "El coste de esta ola es de MINUTOS, no de horas, y eso hay que verificarlo antes de creerlo: la caché de resúmenes se indexa por (content_hash, prompt_version) sobre el contenido CRUDO (ChunkBuilder.cs:82 → DefaultIngestionPipeline.cs:533), no sobre EnrichedContent. Añadir campos al encabezado o al payload no invalida ni una entrada, así que la corrida son ~10-20 min (docs/reingesta-manual.md:25, medido: micro-repo 953 chunks en 8,45 s). La excepción es 5.b, que sí mueve prompt_version. Regla: antes de lanzar cualquier re-ingesta, contar los content_hash ausentes de summary-cache.sqlite3 — ese número es el presupuesto, no una estimación. Y toda re-ingesta va con rag-api DETENIDO (docs/analisis-futuro/concurrencia-y-cache-compartida-en-produccion.md: escribir el SQLite en WAL desde el host y el contenedor a la vez ya costó una corrupción y un .recover).",
+      "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
+      "nota_de_orden": "El array está en orden de ejecución y /plan-siguiente lo respeta: 5.0 primero porque es el instrumento de medición, luego los ítems de coste cero (5.c, 5.d), después la re-ingesta que los valida (5.e), y 5.b al final por ser el único con horas de Ollama y el único independiente del resto.",
+      "items": [
+        {
+          "id": "5.0-eval-set-bsuite-repo",
+          "titulo": "Eval-set de recall sobre bsuite-repo: el instrumento que hoy no existe. Preguntas con chunk-ancla verificado literalmente contra el código, con negativos, versionado ANTES de tocar el retriever.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "≥40 preguntas etiquetadas en docs/eval/bsuite-repo.eval-set.json y un baseline norerank con procedencia completa (commit, pesos RRF, chunking_contract_version, resumen prompt_version). Cada pregunta lleva su chunk-ancla comprobado abriendo el archivo, no inferido. Se incluyen negativos adversariales (preguntas cuya respuesta NO está en el corpus). En el mismo commit se declara el umbral de decisión de las olas 5 y 6.",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Etiquetar es el trabajo: un ancla mal puesta convierte cualquier medición posterior en ruido, y ya pasó en este proyecto (el re-etiquetado de bsuite-auditorias movió 56%→62% sin tocar código).",
+          "archivos": "docs/eval/bsuite-repo.eval-set.json, docs/eval/baselines/",
+          "rollback": "n/a — es el instrumento, no un cambio de comportamiento.",
+          "bloquea": "Bloquea todo criterio de recall de las olas 5 y 6. Hoy hay 61 preguntas etiquetadas repartidas en 3 eval-sets (bsuite-auditorias 16, innovapp-docs 26, tickets-microservice 19) y ninguno es sobre bsuite-repo. Las \"89 preguntas\" que circulan en este ledger y en los documentos de análisis son del arnés de calidad, que no mide recall.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.c-extractor-de-simbolos",
+          "titulo": "Extractor sintáctico de símbolos para C# y TypeScript: defined_symbols y consumed_symbols por chunk.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Tests de tabla con negativos adversariales: `HasPermission(x) && Status == Draft` produce ambos símbolos; un comentario o un string literal que mencione CanCancelOrder NO lo produce; un archivo que no compila no tumba la ingesta.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El algoritmo es recorrido de sintaxis con Roslyn, que ya está en el proyecto; el criterio está en los tests, que el ítem incluye.",
+          "archivos": "src/RagEngine.Core/Infrastructure/Chunking/* (nuevo SymbolExtractor), RoslynCSharpChunkingStrategy.cs, TypeScriptChunkingStrategy.cs",
+          "rollback": "Los campos quedan vacíos y el payload los ignora; nada más depende de ellos hasta 5.d.",
+          "nota_de_alcance": "Sólo C# y TypeScript. Nada de esta ola produce ChunkType.XamlControl ni XamlDataTemplate ni SqlProcedure: siguen siendo valores de enum muertos y se quedan así, porque el corpus objetivo no tiene .xaml ni .sql (BusinessSuite.Xaf: 2.031 .cs, 0 .xaml, 0 .sql).",
+          "limite_conocido": "El join será por NOMBRE, no por referencia resuelta: Roslyn corre en modo sintáctico (CSharpSyntaxTree.ParseText sin Compilation, RoslynCSharpChunkingStrategy.cs:54). Dos CanCancelOrder de módulos distintos colisionan. Es la decisión D-4 del plan, tomada a favor de lo barato; el ítem 6.d mide cuánto ruido mete antes de considerar SemanticModel.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.d-payload-e-indice-de-simbolos",
+          "titulo": "Añadir defined_symbols y consumed_symbols al upsert y crear índice de payload sobre defined_symbols en Qdrant.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "`rag status` muestra el índice creado y un filtro por defined_symbols responde en <50 ms sobre bsuite-repo (medido, no estimado).",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Trece claves de payload ya se escriben en el mismo bloque; añadir dos y un índice es mecánico.",
+          "archivos": "src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs:266-283",
+          "rollback": "Las dos claves sobran sin romper nada (el retriever no las lee hasta 6.a) y el índice se borra con una llamada.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.e-salto-de-contrato-y-rebaseline",
+          "titulo": "Subir ChunkingContract.Version, re-ingestar y re-baselinear.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "`rag eval --baseline` sobre los eval-sets que SE PUEDEN correr: bsuite-auditorias (16), innovapp-docs (26) y el nuevo bsuite-repo de 5.0. tickets-microservice NO cuenta hasta que 3.1 cierre, porque su baseline apunta a micro-repo, que está rota con \"Not existing vector\". Criterio: recall@10 no peor fuera de ±1 pregunta en cada set — con estos n, una pregunta de diferencia no es señal. Antes de lanzar: contar los content_hash ausentes de la caché; si sale ~0 la corrida son minutos, y si sale >2.000 el cambio movió fronteras de chunk y hay que entender por qué antes de seguir. Con rag-api detenido.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El criterio ya está escrito y los comandos están documentados; el juicio está en 5.0 y en 5.c.",
+          "archivos": "src/RagEngine.Core/Infrastructure/Chunking/ChunkingContract.cs, docs/eval/baselines/",
+          "rollback": "Re-ingestar desde el commit anterior: con la caché acertando son otros ~15 min, no una noche.",
+          "nota_de_versionado": "El salto de ChunkingContract.Version es una etiqueta de comparabilidad de baselines, no un peaje. NO agrupar varios cambios de chunking en un solo salto para \"ahorrar\" una re-ingesta: agrupar era la respuesta a un coste que no existe y su precio real es perder atribución de causa, que es exactamente lo que encareció el diagnóstico del boost estructural.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.f-revivir-collection-manifest",
+          "titulo": "Revivir CollectionManifest: escribirlo al crear la colección y validarlo al consultar.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Consultar una colección creada con otro .onnx da un error accionable que nombra el modelo esperado y el encontrado, en vez de fallar con \"Not existing vector name error: dense\".",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El tipo ya existe y define los campos correctos; el trabajo es decidir dónde se escribe y qué hace la validación al fallar.",
+          "archivos": "src/RagEngine.Core/Domain/CollectionManifest.cs:9, Infrastructure/VectorStore/QdrantVectorStore.cs",
+          "rollback": "Dejar de validar; el manifest queda inerte como hoy.",
+          "evidencia": "Verificado el 2026-08-24: un grep de CollectionManifest sobre src/ devuelve SÓLO su propia definición. Nadie escribe ni lee la clave __manifest__. El tipo existe exactamente para el problema que hoy tiene 3.1 abierto.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.b-resumen-por-archivo",
+          "titulo": "Experimento: resumen de negocio por archivo/tipo reutilizado por sus chunks, en vez de por chunk. Ataca el coste de ingestar corpus NUEVO (÷~10 llamadas a Ollama) en lugar de apagar la banda.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": true,
+          "verificacion": "A/B con criterio PRE-REGISTRADO en preguntas, no en puntos porcentuales: sobre el eval-set de 5.0 (≥40) más bsuite-auditorias (16), el modo por archivo no puede perder más de 1 pregunta neta en NINGUNO de los dos. Si pierde más, se descarta y el coste por chunk se acepta como el precio de la banda. Formato de reporte: docs/eval/quality/ab-resumen-*.json.",
+          "horas_maquina": 3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Diseñar el A/B y decidir la granularidad del resumen ES el trabajo; un resumen peor no aparece como test rojo, aparece como un ranking ligeramente peor.",
+          "archivos": "src/RagEngine.Core/Services/Summary/*, Pipeline/DefaultIngestionPipeline.cs:409-586",
+          "rollback": "Bandera de configuración. El modo por chunk sigue siendo el default hasta que el A/B lo gane.",
+          "advertencia_de_coste": "Éste SÍ cuesta horas de Ollama: cambia prompt_version y la granularidad, así que la caché no acierta. Contar los hashes ausentes antes de lanzar; el techo es el coste histórico de la Fase 2 completa. Las horas_maquina=3 son un marcador, no una medición.",
+          "por_que_multiagente": "Un resumen peor degrada el ranking de forma silenciosa: no hay test que se ponga rojo. Es el caso que el ledger reserva para el panel adversarial.",
+          "contexto": "NO confundir con la propuesta del documento externo de ELIMINAR el resumen por chunk. Apagar la banda dense-resumen está medido: −12 pp (56%→44%, n=16) y −37 pts (63%→26%, n=19), y además hace caer el retriever de la fusión ponderada a la nativa de Qdrant (RetrievalFusionOptions.cs:4-7), llevándose la calibración. Este ítem baja el coste sin apagar la señal.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "5.a-chunker-de-xaml",
+          "titulo": "Chunker estructural de XAML (cortar por control / DataTemplate con sus Binding completos).",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "n/a — descartado antes de ejecutarse.",
+          "horas_maquina": 0,
+          "estado": "descartado",
+          "por_que_este_modelo": "n/a",
+          "archivos": "n/a",
+          "rollback": "n/a",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
+          "razon_del_descarte": "Verificado el 2026-08-24 contando el corpus: BusinessSuite.Xaf (→ bsuite-repo) tiene 2.031 archivos .cs y CERO .xaml; Auditoria.Microservice.Api, cero. Los 79 .xaml y las 896 ocurrencias de {Binding viven en Reyma.InnovApp, que NO es una colección indexada ni tiene eval-set. Era el ítem de mayor esfuerzo de la ola contra un lenguaje que el corpus objetivo no contiene. El caso estrella del documento externo (Vista→ViewModel sobre OrderDetailView.xaml) apuntaba justo ahí. CONDICIÓN DE REINGRESO: que Reyma.InnovApp se ingeste como colección propia y tenga un eval-set con preguntas de vista; entonces esto vuelve al plan con el esfuerzo que tiene. Nota independiente: el XAML hoy no queda sin indexar, queda mal cortado — cae a FallbackChunkingStrategy por ventana deslizante (ChunkingStrategyRouter.cs:47-52), que parte los Binding a la mitad."
+        }
+      ]
+    },
+    {
+      "ola": 6,
+      "nombre": "Two-hop en tiempo de consulta",
+      "criterio_de_entrada": "Ola 5 cerrada con recall no peor.",
+      "criterio_de_salida": "El two-hop se puede encender y apagar por bandera, y existe un número medido que dice si sirve — ganado o descartado, las dos salidas son válidas.",
+      "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
+      "nota_de_orden": "Orden OBLIGATORIO 6.c → 6.a. Invertirlo es etiquetar viendo el resultado, que es la forma estándar de conseguir el número que uno quería. El array ya está en ese orden.",
+      "advertencia_de_coste": "Coste de máquina ≈ 0: todo es tiempo de consulta, ninguna re-ingesta. Por eso es la ola barata de iterar, y por eso el criterio de éxito se declara ANTES.",
+      "escepticismo_obligatorio": "Éste es el TERCER intento de mejorar el ranking con señal estructural en este repo. El boost por afinidad de clase dio +6pp en un eval chico y 0pp con regresiones en el corpus grande (revertido por completo); el rerank dejó de sumar recall tras calibrar los pesos (+0/−2, 79%→68%). El two-hop es un mecanismo distinto (expande candidatos en vez de reordenarlos), pero merece el mismo escepticismo: criterio pre-registrado o no se ejecuta.",
+      "items": [
+        {
+          "id": "6.c-preguntas-de-salto",
+          "titulo": "Preguntas de salto ViewModel→Servicio / Controlador→Regla en el eval-set de 5.0, etiquetadas con la REGLA DE NEGOCIO como respuesta correcta, no con el punto de entrada.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "≥20 preguntas de salto MÁS sus negativos: preguntas donde el salto NO debe ayudar, para poder detectar que el two-hop mete ruido en vez de sólo medir dónde ayuda. Versionadas y con baseline corrido ANTES de escribir una línea de 6.a.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El etiquetado decide el resultado del experimento entero. Etiquetar con el punto de entrada como respuesta correcta haría que el two-hop pareciera innecesario, y con la regla mal localizada, que pareciera imprescindible.",
+          "archivos": "docs/eval/bsuite-repo.eval-set.json",
+          "rollback": "n/a — es instrumento.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "6.a-expansion-por-simbolo",
+          "titulo": "Expansión por símbolo: tras la fusión, un segundo QueryAsync filtrado por defined_symbols ∈ consumed_symbols(top) y fusión del conjunto ampliado.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "CRITERIO PRE-REGISTRADO, sobre el eval-set completo de 5.0 (≥40) más las ≥20 de salto de 6.c: el two-hop tiene que ganar ≥4 preguntas netas en el subconjunto de salto y no perder NINGUNA fuera de él. Expresado en preguntas y no en puntos porcentuales porque con n≤80 un punto porcentual no existe. Con menos que eso se descarta, como se descartó el boost estructural.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Decidir cómo entra el segundo salto en la fusión sin romper la calibración de los tres pesos es criterio, no plumbing.",
+          "archivos": "src/RagEngine.Core/Infrastructure/VectorStore/QdrantSemanticRetriever.cs:186-230",
+          "rollback": "TwoHop.Enabled=false en configuración. Sin re-ingesta, sin recompilar.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "6.b-presupuesto-del-segundo-salto",
+          "titulo": "Presupuesto y tope del segundo salto: máximo de símbolos expandidos, máximo de candidatos, latencia.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "El p95 de /api/search no crece más de 150 ms con two-hop ON, medido sobre las mismas preguntas antes y después.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Son topes y una medición de latencia; el diseño lo fija 6.a.",
+          "archivos": "QdrantSemanticRetriever.cs, RetrievalFusionOptions.cs",
+          "rollback": "Bandera.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "6.d-precision-del-join-por-nombre",
+          "titulo": "Medir la precisión del join por nombre: cuántas expansiones traen un símbolo homónimo de otro módulo.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Muestra manual de 30 expansiones, clasificadas a mano en correctas / colisiones. Si más de 1/3 son colisiones, el ruido explica cualquier resultado nulo de 6.a y ESE número es lo que justifica (o no) evaluar SemanticModel.",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es clasificar 30 casos contra el código; el criterio ya está escrito.",
+          "archivos": "QdrantSemanticRetriever.cs",
+          "rollback": "n/a — es medición.",
+          "nota": "Sin este número, un resultado nulo de 6.a es inexplicable: no se sabría si el two-hop no sirve o si el join por nombre lo está ahogando en ruido. Corre aunque 6.a gane.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        }
+      ]
+    },
+    {
+      "ola": 7,
+      "nombre": "Perfiles de colección",
+      "criterio_de_entrada": "Ninguno. Es independiente de las olas 5 y 6 y se puede adelantar.",
+      "criterio_de_salida": "Una colección declara su propio perfil de recuperación y la API valida contra él; el default es byte-equivalente al comportamiento de hoy, verificado con un eval idéntico al baseline.",
+      "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md. Es el hueco real de la rama feat/rag-api-selector-coleccion: el selector de colección existe (Api/Program.cs:141) pero la colección es un string libre y toda la configuración de recuperación es global.",
+      "items": [
+        {
+          "id": "7.a-perfil-por-coleccion",
+          "titulo": "Perfil por colección: pesos de fusión, min_score, rerank sí/no, two_hop sí/no, familia de prompt (código/prosa) y top_k por defecto. Hoy todo eso es global (RetrievalFusionOptions) o se decide por heurística de contenido.",
+          "modelo": "sonnet",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Dos colecciones con perfiles distintos dan resultados distintos para la MISMA query con la misma llamada HTTP, y `rag eval` reproduce ambos. Y el criterio que de verdad importa: sin perfil declarado, el resultado es idéntico al baseline actual — se verifica corriendo un eval contra los baselines existentes, no leyendo el código.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es diseño de configuración con un contrato de compatibilidad hacia atrás; el riesgo está en mover el default sin darse cuenta.",
+          "archivos": "src/RagEngine.Core/Infrastructure/VectorStore/RetrievalFusionOptions.cs, QdrantSemanticRetriever.cs, src/RagEngine.Api/Program.cs",
+          "rollback": "Sin perfil, se usan los globales de hoy.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "7.b-validar-coleccion-en-la-api",
+          "titulo": "Validar el parámetro Collection contra las colecciones existentes en los 3 endpoints; hoy es string libre.",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Una colección inexistente devuelve 400 con ProblemDetails nombrando las disponibles, no un 500 con stack trace.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Una comprobación contra ListCollectionsAsync, que ya se usa en /api/collections.",
+          "archivos": "src/RagEngine.Api/Program.cs:159, :212, :308",
+          "rollback": "Quitar la validación.",
+          "dependencia": "ProblemDetails llega con 3.2 (=8.a). Si 7.b va antes, devolver 400 con un cuerpo simple y alinearlo después.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        },
+        {
+          "id": "7.c-rerank-no-por-defecto",
+          "titulo": "Quitar rerank=true como default silencioso de la API y dejar que lo decida el perfil de colección.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "El eval con perfil \"sin rerank\" iguala los baselines *.norerank.baseline.json existentes. Y antes de tocarlo, comprobar el efecto sobre el gate: la rama de score del gate de confianza sólo dispara con useReRanking=true (RagGenerationService.cs:199), así que apagar el rerank por defecto cambia qué consultas caen en banda baja. NO cerrar este ítem sin 4.2 cerrado.",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El cambio es de tres líneas, pero la interacción con el gate es la parte que puede romper algo en silencio.",
+          "archivos": "src/RagEngine.Api/Program.cs:162, :215, :311",
+          "rollback": "Volver a poner el default en true.",
+          "bloqueado_por": "4.2 (score de gate estable). Ver el campo bloquea de 4.2.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+        }
+      ]
+    },
+    {
+      "ola": 8,
+      "nombre": "Superficie de producción y formato de respuesta",
+      "criterio_de_entrada": "Ninguno para 8.e; 8.f va después de 3.1.",
+      "criterio_de_salida": "La API no se cae ni miente sobre su salud, el camino de generación tiene la misma resiliencia que los otros dos, y la identidad de un chunk no depende de desde dónde se ingestó.",
+      "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
+      "nota_de_reconciliacion": "El plan proponía reetiquetar 3.2 → 8.a y 3.3 → 8.b moviéndolos a esta ola. NO se movieron, y es una desviación deliberada: /plan-siguiente recorre las olas en orden, así que moverlos aquí los habría RETRASADO detrás de las olas 5 a 7 — justo lo contrario de la recomendación D-5 del plan, que dice que si va a haber cualquier consumidor externo, endurecer la API va ANTES del two-hop. Se quedan en la Ola 3, donde se ejecutan antes. 8.d es el ítem 4.5 ya existente y tampoco se duplica. Esta ola contiene sólo lo genuinamente nuevo.",
+      "items": [
+        {
+          "id": "8.c-formato-diagnostico-4-bloques",
+          "titulo": "Formato de respuesta de diagnóstico en 4 bloques: componente y archivo / propiedad de control / regla de negocio / rol requerido.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "El arnés de calidad (infra/quality-baseline.py, 143 preguntas), NO recall — el recall no ve el formato. Criterio: ninguna respuesta que hoy es correcta pasa a ser peor por encajarla en los 4 bloques, y las preguntas que no son de diagnóstico no se deforman para caber. Comprobar ANTES de commitear que el cambio no toca el prompt de resumen: eso movería prompt_version e invalidaría la caché entera.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es un cambio de prompt con un riesgo acotado y un arnés que lo mide.",
+          "archivos": "src/RagEngine.Core/Services/Generation/Prompts/CodeSystemPrompt.cs y/o un prompt nuevo",
+          "rollback": "Revertir el prompt. Cero coste, no toca el índice.",
+          "dependencia": "Mejor después de 2.2, que descompone la clase donde esto vive.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md. Corresponde a la Fase 4 del documento externo, y es la única de sus cuatro fases que entra casi tal cual: es barata, es reversible y no toca retrieval."
+        },
+        {
+          "id": "8.e-resiliencia-en-generacion",
+          "titulo": "El camino de generación conversacional no tiene resiliencia: Polly cubre Qdrant y el generador de resúmenes, pero el IChatCompletionService de Ollama va sobre un HttpClient armado a mano con sólo Timeout.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Matar Ollama a mitad de un /api/ask/stream devuelve un evento de error en el SSE y un ProblemDetails, no una excepción sin manejar. Verificable con curl y `docker stop`, sin inventar el escenario benigno.",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Los dos pipelines de Polly que hay ya son el molde; el trabajo es decidir si se envuelve el servicio o se registra el HttpClient por factory.",
+          "archivos": "src/RagEngine.Core/Extensions/GenerationServiceExtensions.cs:85-98, ServiceCollectionExtensions.cs:105 y :129",
+          "rollback": "Quitar el pipeline; el comportamiento vuelve al actual.",
+          "evidencia": "Verificado el 2026-08-24: AddResiliencePipeline sólo se llama para \"qdrant\" (ServiceCollectionExtensions.cs:105) y para el generador de resúmenes (:129). GenerationServiceExtensions.cs:85 construye `new HttpClient { Timeout = ... }` sin factory, sin retry y sin breaker. Y Microsoft.Extensions.Http.Resilience 10.8.0 está en RagEngine.Core.csproj:19 sin usarse en ninguna línea de src/ (grep de AddStandardResilienceHandler: cero resultados).",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md. Hueco que ni el documento externo ni la primera versión del plan vieron."
+        },
+        {
+          "id": "8.f-identidad-de-chunk-sin-ruta-absoluta",
+          "titulo": "Desacoplar la identidad del chunk de la ruta absoluta: derivar el Id determinista y el file_path del payload de RelativeFilePath + RepositoryName en vez de AbsolutePath.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Ingestar el MISMO repo desde dos rutas distintas (host y contenedor) produce el mismo conteo de puntos, no el doble. Se prueba con el escenario real —la ruta del bind mount del contenedor contra la del host— no con dos carpetas cualquiera. Con rag-api detenido.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Cambia todos los Ids de todos los chunks: hay que decidir la migración y qué pasa con las colecciones existentes. Equivocarse duplica el corpus en silencio.",
+          "archivos": "src/RagEngine.Core/Infrastructure/Chunking/ChunkBuilder.cs:83, Pipeline/DefaultIngestionPipeline.cs:268, Infrastructure/VectorStore/QdrantVectorStore.cs:268",
+          "rollback": "Revertir el cálculo del Id y re-ingestar con --force. Son minutos: no toca content, así que la caché de resúmenes acierta al 100%.",
+          "evidencia": "Verificado el 2026-08-24: DeterministicGuid.CreateForChunk recibe artifact.AbsolutePath (ChunkBuilder.cs:83), el barrido de obsoletos compara rutas absolutas (processedFiles.Add(artifact.AbsolutePath), pipeline:268) y el payload guarda file_path absoluto. No es hipotético: la API corre en Docker y la ingesta corre nativa, así que las dos rutas para el mismo archivo ya existen en esta máquina.",
+          "dependencia": "Va después de 3.1, que es donde se decide la detección de esquema y la migración.",
+          "consecuencia_si_no": "Ingestar el mismo repo desde el contenedor y desde el host produce un set duplicado COMPLETO que el barrido incremental no puede ver, porque para él son archivos distintos.",
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md. Hueco que ni el documento externo ni la primera versión del plan vieron."
         }
       ]
     }
-  ]
+  ],
+  "_nota_operacion_reingesta": "Toda verificación que implique una re-ingesta se corre con rag-api DETENIDO y con la caché de resúmenes escrita desde un solo lado del bind mount. No es celo: el 2026-08-20 el host nativo y el contenedor escribiendo el mismo SQLite en WAL corrompieron summary-cache.sqlite3, y se recuperó con .recover al 99,4%. Ver docs/analisis-futuro/concurrencia-y-cache-compartida-en-produccion.md. El ítem 4.6 ya lo lleva en su criterio; las olas 5 a 8 lo heredan.",
+  "_nota_coste_de_reingesta": "Corrección del 2026-08-24, importante porque estaba mal en la cabeza de todos: la caché de resúmenes se indexa por (content_hash, prompt_version) sobre el contenido CRUDO del chunk (ChunkBuilder.cs:82 → DefaultIngestionPipeline.cs:533), NO sobre EnrichedContent. Consecuencia: cambiar el encabezado embebido o añadir claves al payload NO invalida la caché y cuesta ~10-20 min de embedding+upsert, no 19 h (docs/reingesta-manual.md:25). Sólo cuestan horas de Ollama los cambios que mueven fronteras de chunk (y sólo para los hashes que cambiaron) y los que mueven prompt_version (regeneración total). Regla: antes de lanzar una re-ingesta, CONTAR los content_hash ausentes de la caché. Ese número es el presupuesto; una estimación no lo es.",
+  "_reconciliacion": "2026-08-24: reconciliado contra docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md, que evaluó una propuesta externa de refinamiento arquitectónico y pasó por una segunda revisión adversarial. Se añadieron las olas 5 a 8 y el ítem 1.15; se anotaron las precondiciones de 3.1, 4.1, 4.2, 4.3 y 4.6; se corrigió el título de 2.2 (decía 1042 líneas, son 680 desde que 2.3 externalizó los prompts) y su criterio de verificación, que invitaba a citar 89 preguntas de arnés de calidad como si midieran recall. NADA del ledger vigente se descartó. El único ítem en estado descartado es 5.a (chunker de XAML), que nace descartado con su condición de reingreso escrita. Corregido además un detalle de esquema anterior: la Ola 4 tenía su número como string (\"4\") y las otras como entero, así que un argumento `ola:4` de /plan-siguiente no la habría emparejado. Ahora las 8 son enteros."
 }

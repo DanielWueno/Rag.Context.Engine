@@ -3,7 +3,8 @@
 **Entrada:** *Documento de Evaluación Técnica y Plan de Refinamiento Arquitectónico: Rag.Context.Engine*
 (diagnóstico comparativo contra un asistente comercial + hoja de ruta de 4 fases).
 **Rama:** `feat/rag-api-selector-coleccion`. **Fecha:** 2026-08-24.
-**Alcance de este turno:** sólo este documento. No se tocó código de producto ni el ledger.
+**Alcance:** este documento y el ledger `ejecucion-plan.estado.json` (delta aplicado
+el 2026-08-24, ver §9). No se tocó código de producto.
 
 > **Revisión adversarial del 2026-08-24 (segunda pasada).** Se verificaron las ~30 citas
 > `archivo:línea` de este documento abriendo cada archivo. Cinco afirmaciones cayeron y están
@@ -526,33 +527,44 @@ sin instrumento (§3.5).
 
 ---
 
-## 9. Apéndice: delta propuesto para el ledger *(no aplicado)*
+## 9. Apéndice: delta del ledger *(aplicado el 2026-08-24)*
 
-Este documento **no** modificó `ejecucion-plan.estado.json`. El delta que habría que aplicar, para
-revisión antes de tocarlo (cambia lo que ejecuta `/plan-siguiente`):
+El delta está **aplicado** a `docs/analisis-futuro/ejecucion-plan.estado.json`. El ledger pasó de 35
+a 53 ítems en 8 olas; nada de lo que ya había se descartó. Lo que se hizo:
 
-- **Ascender a bloqueantes** con una nota `bloquea`: `4.1`, `4.2`, `4.3` (bloquean guardrail);
-  `3.1`, `4.6` (bloquean toda medición de two-hop); `5.0` (bloquea todo criterio de recall).
-- **Corregir `2.2`**: el título dice "1042 líneas"; hoy son **680**
-  (`RagGenerationService.cs`), porque `2.3` externalizó los prompts. Y su `verificacion` dice
-  "las 89 preguntas de bsuite-repo": está bien para un A/B de *calidad*, pero hay que decir
-  explícitamente que es el arnés de `infra/quality-baseline.py` y **no** recall, para que nadie
-  vuelva a citar ese n=89 como si midiera retrieval (§3.5).
-- **Nueva Ola 5** "Contrato estructural de símbolos": `5.0` (eval-set de `bsuite-repo`, bloqueante),
-  `5.b`–`5.f`. `5.b` es el único con `multiagente: true`. **`horas_maquina` de `5.e` = 0,3**, no 19:
-  el cambio es de encabezado y la caché acierta. `5.b` es el único ítem de la ola con horas de
-  Ollama, y su presupuesto se cuenta antes de lanzarlo, no se estima.
-- **Nueva Ola 6** "Two-hop en tiempo de consulta": `6.c` primero, luego `6.a`, `6.b`, `6.d`. El
-  criterio de `6.a` va **pre-registrado dentro del ledger y expresado en preguntas ganadas/perdidas**,
-  no en pp — con n≤80 los pp no son señal.
-- **Nueva Ola 7** "Perfiles de colección": `7.a`–`7.c`.
-- **Reetiquetar** `3.2` y `3.3` como Ola 8 (`8.a`, `8.b`) y añadir `8.c` (formato de 4 bloques),
-  `8.d` (= `4.5` existente, sin duplicar), `8.e` (resiliencia en generación) y `8.f` (identidad de
-  chunk sin ruta absoluta).
-- **Nota de operación transversal**, no un ítem: toda `verificacion` que implique re-ingesta debe
-  llevar "con `rag-api` detenido", como ya la lleva `4.6`. Es la mitigación de la corrupción de
-  `summary-cache` del 2026-08-20.
-- **Nuevo ítem menor**: borrar `nohup.out` de la raíz (artefacto de una corrida fallida de Spectre,
-  6 líneas — `Unknown command 'inges'`) y añadirlo al `.gitignore` — hoy aparece como untracked en
-  `git status`.
-- **Nada se descarta del ledger vigente** por este plan.
+- **Precondiciones anotadas** con un campo `bloquea`: `4.1`, `4.2`, `4.3` (bloquean el guardrail;
+  `4.2` además rompe la dependencia gate→rerank) y `3.1`, `4.6` (bloquean toda medición de recall de
+  las olas 5 y 6). `5.0` nace con su propio `bloquea`.
+- **`2.2` corregido**: el título decía "1042 líneas, 12 prompts embebidos" y hoy son 680 sin prompts
+  embebidos, porque `2.3` los externalizó — así que el alcance del ítem baja. Su `verificacion`
+  ahora dice explícitamente que el arnés de 143 preguntas mide **calidad, no recall**, para que nadie
+  vuelva a citar ese n=89 como si midiera retrieval.
+- **Ola 5** "Contrato estructural de símbolos": `5.0` (bloqueante), `5.c`, `5.d`, `5.e`, `5.f`, `5.b`
+  — en ese orden de array, que es el que recorre `/plan-siguiente`: primero el instrumento, luego los
+  ítems de coste cero, después la re-ingesta que los valida, y `5.b` al final por ser el único con
+  horas de Ollama. `horas_maquina` de `5.e` = 0,3, no 19. `5.b` es el único con `multiagente: true`.
+- **`5.a` (chunker de XAML) nace en estado `descartado`**, con la razón medida (0 `.xaml` en el
+  corpus objetivo) y su condición exacta de reingreso escrita. Se registra en vez de omitirse para
+  que no vuelva a proponerse desde cero.
+- **Ola 6** "Two-hop": `6.c` primero por obligación, luego `6.a`, `6.b`, `6.d`. El criterio de `6.a`
+  va pre-registrado **dentro del ledger** y expresado en preguntas ganadas/perdidas. La ola lleva un
+  campo `escepticismo_obligatorio` con los dos intentos anteriores que murieron.
+- **Ola 7** "Perfiles de colección": `7.a`, `7.b`, `7.c`. `7.c` queda `bloqueado_por` `4.2`, porque
+  apagar el rerank por defecto cambia qué consultas caen en banda baja.
+- **Ola 8**: sólo lo genuinamente nuevo — `8.c` (formato de 4 bloques), `8.e` (resiliencia en
+  generación), `8.f` (identidad de chunk sin ruta absoluta).
+- **Desviación deliberada respecto a lo que este apéndice proponía en la versión anterior:** `3.2` y
+  `3.3` **no** se movieron a la Ola 8. `/plan-siguiente` recorre las olas en orden, así que moverlos
+  los habría retrasado detrás de las olas 5 a 7 — exactamente lo contrario de la recomendación D-5.
+  Se quedan en la Ola 3, donde se ejecutan antes. `8.d` es el `4.5` existente y tampoco se duplica.
+  Queda escrito en el campo `nota_de_reconciliacion` de la Ola 8.
+- **Dos notas transversales** en la raíz del ledger: `_nota_operacion_reingesta` (toda re-ingesta con
+  `rag-api` detenido — la alternativa ya costó una corrupción de `summary-cache` y un `.recover`) y
+  `_nota_coste_de_reingesta` (la mecánica real de la caché y la regla de contar los `content_hash`
+  ausentes antes de lanzar).
+- **Ítem menor `1.15`**: borrar `nohup.out` y cubrirlo en `.gitignore`.
+- **Arreglo de esquema anterior**: la Ola 4 tenía su número como string `"4"` y las otras como
+  entero, así que un `ola:4` de `/plan-siguiente` no la habría emparejado. Las 8 son enteros ahora.
+
+Estado del avance tras aplicar el delta: **31 ítems pendientes** repartidos como 3 (Ola 1), 1 (Ola 2),
+5 (Ola 3), 6 (Ola 4), 6 (Ola 5), 4 (Ola 6), 3 (Ola 7) y 3 (Ola 8).

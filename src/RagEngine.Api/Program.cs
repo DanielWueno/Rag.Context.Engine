@@ -5,6 +5,7 @@ using RagEngine.Api;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Services.Generation;
 using RagEngine.Core.Services.Summary;
 using RagEngine.Core.Utilities;
@@ -427,12 +428,28 @@ catch (Exception ex)
 }
 finally
 {
-    // Deliberadamente NO se llama a OnnxRuntimeLifetime.Shutdown() aquí: medido el
-    // 2026-08-21, la API ya cierra con exit 0 y sin el aborto de SIGABRT que sí
-    // sufría el CLI, así que no hay problema que arreglar. Hipótesis a confirmar
-    // (ítem 1.13 del ledger): este host no destruye el contenedor de DI al apagarse,
-    // de modo que la InferenceSession sobrevive al entorno global y nunca se da la
-    // combinación que aborta. Si algún día se añade esa destrucción, habrá que
-    // llamar a Shutdown() aquí también.
+    // Libera el entorno global de ONNX, igual que hace el CLI.
+    //
+    // Aquí hubo una nota que decía lo contrario ("la API ya cierra con exit 0, no hay
+    // problema que arreglar"). Estaba equivocada, y el ítem 1.13 del ledger midió por
+    // qué: aquella medición apagó la API sin haberle hecho ninguna consulta, y la
+    // InferenceSession se construye perezosamente en el primer request. Un host que
+    // nunca vectorizó nada no toca el runtime nativo y, efectivamente, sale 0.
+    //
+    // Con una sola consulta servida, la API aborta exactamente igual que abortaba el
+    // CLI. Medido el 2026-08-24 sobre este host: 3 de 3 apagados con SIGINT tras un
+    // POST /api/search terminaron en exit 134 con 'libc++abi: mutex lock failed';
+    // 2 de 2 apagados sin consulta previa terminaron en 0.
+    //
+    // La otra mitad de la hipótesis vieja —que este host no destruye el contenedor de
+    // DI y por eso la sesión sobrevive— también es falsa: WebApplication.Run() destruye
+    // el host en su propio finally, y una traza en OnnxVectorizationBrain.Dispose
+    // confirmó que corre al recibir SIGINT. La sesión se liberaba bien; lo que quedaba
+    // sin liberar era el OrtEnv global, que es justo lo que arregla Shutdown().
+    //
+    // Va aquí, después de app.Run(), porque para entonces el contenedor ya se destruyó
+    // y no quedan sesiones vivas — la misma precondición que documenta Shutdown().
+    OnnxRuntimeLifetime.Shutdown();
+
     Log.CloseAndFlush();
 }

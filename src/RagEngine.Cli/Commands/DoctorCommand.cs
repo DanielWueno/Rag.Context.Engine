@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -44,7 +45,9 @@ public sealed class DoctorCommand : AsyncCommand
         allClear &= await CheckQdrantAsync();
 
         // 2. ONNX & Tokenizer Check
-        allClear &= CheckOnnxModel();
+        // La dimensión del brain alimenta el chequeo de colecciones: un 'dense' de otro
+        // tamaño es tan inconsultable como uno ausente, y sin este dato no se detecta.
+        allClear &= CheckOnnxModel(out var embeddingDimensions);
 
         // 2b. Cross-Encoder re-ranker (optional — warning only)
         CheckCrossEncoderModel();
@@ -53,7 +56,7 @@ public sealed class DoctorCommand : AsyncCommand
         allClear &= CheckDiskSpace();
 
         // 4. Collections Check
-        allClear &= await CheckCollectionsAsync();
+        allClear &= await CheckCollectionsAsync(embeddingDimensions);
 
         AnsiConsole.WriteLine();
         
@@ -90,8 +93,10 @@ public sealed class DoctorCommand : AsyncCommand
         }
     }
 
-    private bool CheckOnnxModel()
+    private bool CheckOnnxModel(out int? embeddingDimensions)
     {
+        embeddingDimensions = null;
+
         // Resuelto con el mismo criterio que el pipeline de opciones, para que el
         // doctor reporte la ruta que de verdad se va a abrir.
         var modelPath = RagEnginePaths.ResolveModelPath(
@@ -110,7 +115,8 @@ public sealed class DoctorCommand : AsyncCommand
             // Que el archivo exista no garantiza que ONNX pueda abrirlo: un binario
             // de otra arquitectura o corrupto falla aquí. Se reporta la diferencia
             // en vez de dejar que la excepción tumbe el comando.
-            var (loaded, detail) = TryDescribeBrain();
+            var (loaded, dims, detail) = TryDescribeBrain();
+            embeddingDimensions = dims;
 
             if (loaded)
                 AnsiConsole.MarkupLine($"[green]✅ ONNX Model[/]     {modelPath}   [dim](Loaded | {detail})[/]");
@@ -137,12 +143,12 @@ public sealed class DoctorCommand : AsyncCommand
     /// excepción: el doctor tiene que terminar de imprimir el resto de los
     /// chequeos aunque este falle.
     /// </summary>
-    private (bool Loaded, string Detail) TryDescribeBrain()
+    private (bool Loaded, int? Dimensions, string Detail) TryDescribeBrain()
     {
         try
         {
             var brain = _services.GetRequiredService<IVectorizationBrain>();
-            return (true, $"{brain.EmbeddingDimensions} dims");
+            return (true, brain.EmbeddingDimensions, $"{brain.EmbeddingDimensions} dims");
         }
         catch (Exception ex)
         {
@@ -154,7 +160,7 @@ public sealed class DoctorCommand : AsyncCommand
                 root = root.InnerException;
             }
 
-            return (false, root.Message);
+            return (false, null, root.Message);
         }
     }
 
@@ -203,20 +209,19 @@ public sealed class DoctorCommand : AsyncCommand
         }
     }
 
-    private async Task<bool> CheckCollectionsAsync()
+    /// <summary>
+    /// Contar colecciones no diagnostica nada: una colección creada por una versión anterior
+    /// del motor se lista como sana, con puntos y en verde, y sólo revienta cuando alguien la
+    /// consulta ("Not existing vector name error: dense"). Este chequeo le mira el esquema a
+    /// cada una y NOMBRA a la que está rota, que es lo que el ítem pide.
+    /// </summary>
+    private async Task<bool> CheckCollectionsAsync(int? embeddingDimensions)
     {
+        IReadOnlyList<CollectionSchemaReport> reports;
         try
         {
-            var collections = await _qdrant.ListCollectionsAsync();
-            if (collections.Count > 0)
-            {
-                AnsiConsole.MarkupLine($"[green]✅ Colecciones[/]    {collections.Count} colecciones encontradas.");
-            }
-            else
-            {
-                AnsiConsole.MarkupLine("[yellow]⚠️ Colecciones[/]    0 colecciones encontradas → Ejecuta 'rag ingest'");
-            }
-            return true;
+            var store = _services.GetRequiredService<QdrantVectorStore>();
+            reports = await store.InspectCollectionSchemasAsync(embeddingDimensions);
         }
         catch (Exception ex)
         {
@@ -225,5 +230,69 @@ public sealed class DoctorCommand : AsyncCommand
             AnsiConsole.MarkupLine($"[red]❌ Colecciones[/]    [red](No se pudieron listar: {Markup.Escape(ex.Message)})[/]");
             return false;
         }
+
+        if (reports.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]⚠️ Colecciones[/]    0 colecciones encontradas → Ejecuta 'rag ingest'");
+            return true;
+        }
+
+        var broken = reports.Where(r => r.Status == CollectionSchemaStatus.Incompatible).ToList();
+        var legacy = reports.Where(r => r.Status == CollectionSchemaStatus.Legacy).ToList();
+
+        if (broken.Count == 0)
+        {
+            AnsiConsole.MarkupLine(
+                $"[green]✅ Colecciones[/]    {reports.Count} colecciones, todas consultables" +
+                (legacy.Count > 0 ? $"   [dim]({legacy.Count} sin vector de resumen)[/]" : ""));
+        }
+        else
+        {
+            AnsiConsole.MarkupLine(
+                $"[red]❌ Colecciones[/]    {broken.Count} de {reports.Count} con esquema incompatible: " +
+                $"[red]{Markup.Escape(string.Join(", ", broken.Select(b => b.Name)))}[/]");
+        }
+
+        // El detalle va siempre, no sólo cuando falla: saber que una colección busca en 2
+        // bandas y no en 3 explica diferencias de recall que si no parecen ruido.
+        if (embeddingDimensions is null)
+        {
+            AnsiConsole.MarkupLine(
+                "[dim]   (el modelo no cargó: no se puede verificar que la dimensión de 'dense' coincida)[/]");
+        }
+
+        var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
+        table.AddColumn("Colección");
+        table.AddColumn(new TableColumn("Puntos").RightAligned());
+        table.AddColumn("Esquema");
+        table.AddColumn("Detalle");
+
+        foreach (var r in reports)
+        {
+            var (icon, color) = r.Status switch
+            {
+                CollectionSchemaStatus.Current => ("✅", "green"),
+                CollectionSchemaStatus.Legacy => ("⚠️", "yellow"),
+                _ => ("❌", "red")
+            };
+
+            var detail = r.Problems.Concat(r.Notes).ToList();
+            if (r.Remedy is not null)
+            {
+                detail.Add($"→ {r.Remedy}");
+            }
+
+            table.AddRow(
+                new Markup($"[{color}]{icon} {Markup.Escape(r.Name)}[/]"),
+                new Markup($"[dim]{r.PointsCount}[/]"),
+                new Markup($"[{color}]{r.Status}[/]"),
+                new Markup(Markup.Escape(detail.Count == 0 ? "—" : string.Join("\n", detail))));
+        }
+
+        AnsiConsole.Write(table);
+
+        // Una colección rota hace fallar el doctor: es exactamente el fallo que este ítem
+        // quiere adelantar a la consulta. Las 'Legacy' no, porque son consultables.
+        return broken.Count == 0;
     }
 }

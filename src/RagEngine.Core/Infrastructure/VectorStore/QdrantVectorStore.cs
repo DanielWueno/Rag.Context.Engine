@@ -160,6 +160,85 @@ public sealed class QdrantVectorStore
     private void InvalidateSchemaCache(string collectionName) => _schemaCache.TryRemove(collectionName, out _);
 
     /// <summary>
+    /// Lee el esquema REAL de todas las colecciones del servidor y lo clasifica contra el que
+    /// crea este motor. Sirve al diagnóstico: una colección creada por una versión anterior se
+    /// lista como sana y sólo revienta en la consulta, así que hay que ir a mirarle el esquema.
+    /// Una colección que falla al inspeccionarse no tumba al resto: se reporta como incompatible
+    /// con el motivo, porque desde el punto de vista de quien consulta es igual de inservible.
+    /// </summary>
+    public async Task<IReadOnlyList<CollectionSchemaReport>> InspectCollectionSchemasAsync(
+        int? expectedDimension,
+        CancellationToken ct = default)
+    {
+        var names = await _client.ListCollectionsAsync(ct);
+        var reports = new List<CollectionSchemaReport>();
+
+        foreach (var name in names.OrderBy(n => n, StringComparer.Ordinal))
+        {
+            try
+            {
+                var snapshot = await DescribeCollectionSchemaAsync(name, ct);
+                reports.Add(CollectionSchemaDiagnostics.Classify(snapshot, expectedDimension));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo inspeccionar el esquema de la colección {Name}.", name);
+                reports.Add(new CollectionSchemaReport(
+                    name,
+                    CollectionSchemaStatus.Incompatible,
+                    new[] { $"no se pudo leer su esquema: {ex.Message}" },
+                    Array.Empty<string>(),
+                    Remedy: null,
+                    PointsCount: 0));
+            }
+        }
+
+        return reports;
+    }
+
+    /// <summary>
+    /// Traduce la configuración gRPC de una colección a hechos planos. Es el único punto que
+    /// conoce los tipos de Qdrant; la clasificación de arriba es pura y se prueba sin servidor.
+    /// </summary>
+    public async Task<CollectionSchemaSnapshot> DescribeCollectionSchemaAsync(
+        string collectionName,
+        CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        var vectorsConfig = info.Config?.Params?.VectorsConfig;
+
+        var dense = new Dictionary<string, ulong>(StringComparer.Ordinal);
+        ulong? anonymousSize = null;
+        var usesNamedVectors = false;
+
+        switch (vectorsConfig?.ConfigCase)
+        {
+            case VectorsConfig.ConfigOneofCase.ParamsMap:
+                usesNamedVectors = true;
+                foreach (var (name, p) in vectorsConfig.ParamsMap.Map)
+                {
+                    dense[name] = p.Size;
+                }
+
+                break;
+
+            case VectorsConfig.ConfigOneofCase.Params:
+                anonymousSize = vectorsConfig.Params.Size;
+                break;
+        }
+
+        var sparse = info.Config?.Params?.SparseVectorsConfig?.Map.Keys.ToArray() ?? Array.Empty<string>();
+
+        return new CollectionSchemaSnapshot(
+            collectionName,
+            usesNamedVectors,
+            dense,
+            sparse,
+            anonymousSize,
+            info.PointsCount);
+    }
+
+    /// <summary>
     /// Estado de resumen que YA existía para un chunk antes de este upsert — null significa
     /// "punto nunca visto" (necesita resumen). Se usa para que re-ingestar un repo (archivos
     /// nuevos o cambiados, algo que SIEMPRE va a pasar en un repo de código real) nunca

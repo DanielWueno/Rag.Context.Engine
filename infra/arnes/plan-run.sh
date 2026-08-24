@@ -4,10 +4,10 @@
 #               contexto limpio, anunciándolo antes.
 # ============================================================
 # Uso:
-#   bash infra/plan-run.sh              # el siguiente pendiente
-#   bash infra/plan-run.sh 5.0          # un ítem concreto
-#   bash infra/plan-run.sh ola:5        # el siguiente de la Ola 5
-#   bash infra/plan-run.sh 5.0 --solo-anunciar
+#   bash infra/arnes/plan-run.sh              # el siguiente pendiente
+#   bash infra/arnes/plan-run.sh 5.0          # un ítem concreto
+#   bash infra/arnes/plan-run.sh ola:5        # el siguiente de la Ola 5
+#   bash infra/arnes/plan-run.sh 5.0 --solo-anunciar
 #
 # Por qué existe: /plan-siguiente delega la ejecución a un
 # subagente, así que ESA parte ya corre en contexto limpio, pero
@@ -25,8 +25,10 @@ GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'
 CYAN='\033[0;36m'; NC='\033[0m'; BOLD='\033[1m'; DIM='\033[2m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(dirname "$SCRIPT_DIR")"
-LEDGER="$ROOT/docs/analisis-futuro/ejecucion-plan.estado.json"
+# Raíz del proyecto: la del repo git si estamos dentro de uno, si no dos niveles
+# por encima del script (infra/arnes/ -> raíz). No se asume dónde vive el arnés.
+ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || (cd "$SCRIPT_DIR/../.." && pwd))"
+LEDGER="$(cd "$ROOT" && python3 "$SCRIPT_DIR/ledger_path.py" 2>/dev/null || true)"
 
 ARG="${1:-}"
 SOLO_ANUNCIAR=0
@@ -34,7 +36,14 @@ SOLO_ANUNCIAR=0
 [[ "$ARG" == "--solo-anunciar" ]] && ARG=""
 
 command -v claude >/dev/null || { echo -e "${RED}✗${NC} 'claude' no está en el PATH."; exit 1; }
-[[ -f "$LEDGER" ]] || { echo -e "${RED}✗${NC} No encuentro el ledger: $LEDGER"; exit 1; }
+if [[ -z "$LEDGER" || ! -f "$LEDGER" ]]; then
+  echo -e "${RED}✗${NC} No encuentro el ledger."
+  echo "   Se buscó en las rutas convencionales bajo $ROOT."
+  echo "   Crea uno con:  cp $SCRIPT_DIR/ledger.plantilla.json docs/plan/ejecucion-plan.estado.json"
+  echo "   o apunta a él: export PLAN_LEDGER=/ruta/al/ejecucion-plan.estado.json"
+  echo "   Guía completa: $SCRIPT_DIR/README.md"
+  exit 1
+fi
 
 # ── Resolver el ítem desde el ledger (coste: cero tokens) ────────────────────
 FICHA="$(python3 - "$LEDGER" "$ARG" <<'PY'
@@ -162,5 +171,5 @@ for o in d['olas']:
         if it['id'] == sys.argv[2]:
             print(f"  estado en el ledger: {it['estado']}")
 PY
-echo -e "${DIM}  siguiente: bash infra/plan-run.sh${NC}"
+echo -e "${DIM}  siguiente: bash infra/arnes/plan-run.sh${NC}"
 exit $CODE

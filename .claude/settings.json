@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && python3 infra/plan-siguiente-linea.py 2>/dev/null || true",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && python3 infra/arnes/plan-siguiente-linea.py 2>/dev/null || true",
             "timeout": 5,
             "statusMessage": "Leyendo el ledger del plan"
           }

@@ -20,6 +20,10 @@ logs/
 appsettings.*.json
 !appsettings.json
 
+# nohup: salida de terminales desatendidas / scripts sin redireccion explicita.
+# Mismo genero que 1.12 (artefactos en la raiz del repo).
+nohup.out
+
 # Claude Code: estado local de la máquina, no del repo.
 # .claude/commands/ y .claude/settings.json SÍ se versionan: son el arnés de
 # ejecución del plan (los dos comandos y el hook que anuncia el ítem siguiente).

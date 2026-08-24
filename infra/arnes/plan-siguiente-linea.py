@@ -4,7 +4,7 @@
 Hook SessionStart: escribe en el contexto de la sesión, en dos líneas, qué ítem
 del plan toca ahora.
 
-Por qué existe: con `infra/plan-run.sh` cada ítem corre en una sesión nueva, y
+Por qué existe: con `infra/arnes/plan-run.sh` cada ítem corre en una sesión nueva, y
 una sesión nueva no sabe nada. Esto hace que el "qué toca" aparezca solo tras un
 /clear o al abrir una ventana, sin gastar una llamada al modelo para averiguarlo.
 
@@ -14,18 +14,19 @@ cada arranque es peor que no tener hook.
 """
 import json, os, sys
 
-LEDGER = os.path.join(
-    os.environ.get('CLAUDE_PROJECT_DIR', '.'),
-    'docs', 'analisis-futuro', 'ejecucion-plan.estado.json')
-
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ledger_path import resolver  # noqa: E402
 
 def main():
+    ruta = resolver()
+    if not ruta:
+        return 0  # silencio deliberado: ver docstring
     try:
-        with open(LEDGER, encoding='utf-8') as fh:
+        with open(ruta, encoding='utf-8') as fh:
             data = json.load(fh)
         olas = data['olas']
     except Exception:
-        return 0  # silencio deliberado: ver docstring
+        return 0
 
     # Un ítem en_curso manda sobre el siguiente pendiente: el protocolo de
     # /plan-siguiente pide retomarlo antes de tomar uno nuevo.
@@ -59,7 +60,7 @@ def main():
     if elegido.get('bloqueado_por'):
         linea += f"\nBLOQUEADO POR: {' '.join(elegido['bloqueado_por'].split())}"
     linea += ("\nNo lo ejecutes por iniciativa propia: se lanza con "
-              "`bash infra/plan-run.sh` (sesión limpia) o `/plan-siguiente`.")
+              "`bash infra/arnes/plan-run.sh` (sesión limpia) o `/plan-siguiente`.")
 
     json.dump({'hookSpecificOutput': {
         'hookEventName': 'SessionStart',

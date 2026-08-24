@@ -61,12 +61,14 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 | [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |
 | [docs/configuracion.md](docs/configuracion.md) | `appsettings.json`, gestión de modelos, cuándo re-ingestar |
 | [docs/operaciones.md](docs/operaciones.md) | Logs, métricas, troubleshooting y runbook |
+| [infra/arnes/README.md](infra/arnes/README.md) | **Arnés de ejecución de planes.** Cómo se trabaja aquí en tareas largas con un asistente: el ledger, los comandos, un ítem por sesión limpia. Portable a otros repos con `bash infra/arnes/instalar.sh`. |
 
 ## Estructura de la solución
 
 ```
 Rag.Context.Engine/
 ├── infra/                  # docker-compose (Qdrant) + descarga de modelos
+│   └── arnes/              # Arnés de ejecución de planes (portable, con guía e instalador)
 ├── docs/                   # Documentación formal del sistema
 ├── Fase 1..5 - *.md        # Plan de proyecto interno (diseño, roadmap, riesgos)
 └── src/

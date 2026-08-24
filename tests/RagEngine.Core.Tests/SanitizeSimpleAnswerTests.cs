@@ -26,7 +26,7 @@ public class SanitizeSimpleAnswerTests
     {
         var entrada = "Para cancelar:\n```csharp\nvar x = repo.GetById(id);\n```\nY listo.";
 
-        var salida = RagGenerationService.SanitizeSimpleAnswer(entrada);
+        var salida = SimpleAnswerSanitizer.Sanitize(entrada);
 
         Assert.DoesNotContain("repo.GetById", salida);
         Assert.DoesNotContain("var x", salida);
@@ -40,7 +40,7 @@ public class SanitizeSimpleAnswerTests
     {
         var entrada = "Antes\n```\n\n```\nDespués";
 
-        var salida = RagGenerationService.SanitizeSimpleAnswer(entrada);
+        var salida = SimpleAnswerSanitizer.Sanitize(entrada);
 
         Assert.DoesNotContain("```", salida);
         Assert.DoesNotContain("omitió", salida);
@@ -56,7 +56,7 @@ public class SanitizeSimpleAnswerTests
         // paso de identificadores en texto plano.
         var entrada = "Mira esto:\n```csharp\nservicio.GuardarOrden(orden);";
 
-        var salida = RagGenerationService.SanitizeSimpleAnswer(entrada);
+        var salida = SimpleAnswerSanitizer.Sanitize(entrada);
 
         Assert.DoesNotContain("GuardarOrden", salida);
     }
@@ -69,7 +69,7 @@ public class SanitizeSimpleAnswerTests
     [InlineData("La clase `ServicioCliente` lo resuelve.", "ServicioCliente")]
     public void SpanEnLinea_ConFormaDeIdentificador_SeHumaniza(string entrada, string identificador)
     {
-        var salida = RagGenerationService.SanitizeSimpleAnswer(entrada);
+        var salida = SimpleAnswerSanitizer.Sanitize(entrada);
 
         Assert.DoesNotContain(identificador, salida);
         Assert.DoesNotContain("`", salida);
@@ -80,7 +80,7 @@ public class SanitizeSimpleAnswerTests
     {
         var entrada = "Ejecuta `SELECT * FROM tabla` para verlo.";
 
-        var salida = RagGenerationService.SanitizeSimpleAnswer(entrada);
+        var salida = SimpleAnswerSanitizer.Sanitize(entrada);
 
         Assert.DoesNotContain("SELECT", salida);
         Assert.DoesNotContain("`", salida);
@@ -95,7 +95,7 @@ public class SanitizeSimpleAnswerTests
     [InlineData("fecha_de_cierre", "fecha de cierre")]
     public void Identificador_SeConvierteEnPalabrasLegibles(string identificador, string esperado)
     {
-        var salida = RagGenerationService.SanitizeSimpleAnswer($"El valor {identificador} importa.");
+        var salida = SimpleAnswerSanitizer.Sanitize($"El valor {identificador} importa.");
 
         Assert.Contains(esperado, salida);
         Assert.DoesNotContain(identificador, salida);
@@ -113,7 +113,7 @@ public class SanitizeSimpleAnswerTests
         // Una sola palabra capitalizada es un nombre propio legítimo, no un
         // identificador. Que el sanitizador sea conservador aquí es DELIBERADO:
         // ver el comentario de CamelHumpIdentifierPattern.
-        var salida = RagGenerationService.SanitizeSimpleAnswer(prosa);
+        var salida = SimpleAnswerSanitizer.Sanitize(prosa);
 
         Assert.Equal(prosa, salida);
     }
@@ -124,7 +124,7 @@ public class SanitizeSimpleAnswerTests
         var prosa = "¿Quién puede cancelar? Únicamente quien reportó la petición, "
                   + "según la regla de negocio número 2.2 del área de operación.";
 
-        var salida = RagGenerationService.SanitizeSimpleAnswer(prosa);
+        var salida = SimpleAnswerSanitizer.Sanitize(prosa);
 
         Assert.Equal(prosa, salida);
     }
@@ -136,7 +136,7 @@ public class SanitizeSimpleAnswerTests
     [InlineData(null)]
     public void EntradaVaciaONula_SeDevuelveTalCual(string? entrada)
     {
-        Assert.Equal(entrada, RagGenerationService.SanitizeSimpleAnswer(entrada!));
+        Assert.Equal(entrada, SimpleAnswerSanitizer.Sanitize(entrada!));
     }
 
     [Fact]
@@ -146,8 +146,8 @@ public class SanitizeSimpleAnswerTests
         // fuera idempotente, un fragmento podría degradarse en cada pasada.
         var entrada = "El campo `IsAuditado` y la clase ServicioCliente aparecen aquí.";
 
-        var unaVez = RagGenerationService.SanitizeSimpleAnswer(entrada);
-        var dosVeces = RagGenerationService.SanitizeSimpleAnswer(unaVez);
+        var unaVez = SimpleAnswerSanitizer.Sanitize(entrada);
+        var dosVeces = SimpleAnswerSanitizer.Sanitize(unaVez);
 
         Assert.Equal(unaVez, dosVeces);
     }

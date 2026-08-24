@@ -291,11 +291,20 @@
           "multiagente": true,
           "verificacion": "A/B de respuestas con el arnés de calidad infra/quality-baseline.py (143 preguntas únicas, de las que 89 vienen del bundle de bsuite-repo): cero regresión en \"sin evidencia\" y cero fabricación nueva. OJO — esto NO mide recall: el arnés no tiene ground-truth de chunk. No existe eval-set de recall sobre bsuite-repo; lo crea el ítem 5.0. La redacción anterior (\"las 89 preguntas de bsuite-repo\") invitaba a citar ese n como si midiera retrieval.",
           "horas_maquina": 3,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "La regresión aparece como una respuesta peor, no como un test rojo. Es el caso donde el panel adversarial sí gana algo.",
           "correccion_de_ledger": "2026-08-24: el título decía \"1042 líneas, 12 prompts embebidos\". Hoy son 680 líneas y los prompts ya viven en Services/Generation/Prompts/ (7 clases) porque el ítem 2.3 los externalizó. El alcance baja en consecuencia: ya no incluye sacar prompts, sólo separar responsabilidades.",
           "nota_de_altitud": "No bloquea, pero el ítem 8.c (formato de diagnóstico en 4 bloques) toca esta misma clase. Hacer 2.2 antes evita tocarla dos veces.",
-          "rollback": "git revert del commit de refactor. Es un movimiento puro de código: no toca prompts (ya viven en Services/Generation/Prompts/), ni configuración, ni el esquema de los puntos, así que revertir no obliga a re-ingestar ni invalida la caché de resúmenes. Hacerlo ANTES de 8.c: si 8.c ya construyó sobre las clases nuevas, el revert deja de ser limpio."
+          "rollback": "git revert del commit de refactor. Es un movimiento puro de código: no toca prompts (ya viven en Services/Generation/Prompts/), ni configuración, ni el esquema de los puntos, así que revertir no obliga a re-ingestar ni invalida la caché de resúmenes. Hacerlo ANTES de 8.c: si 8.c ya construyó sobre las clases nuevas, el revert deja de ser limpio.",
+          "fecha": "2026-08-24",
+          "resultado": "RagGenerationService pasa de 680 a 248 lineas, repartido en cinco colaboradores con una responsabilidad cada uno: ConfidenceGate (bandas), GenerationContextAssembler (swap por resumen + bloque de contexto), SystemPromptComposer (eleccion y composicion de plantilla), ChatAnswerStreamer (unica pieza que toca el Kernel) y SimpleAnswerSanitizer (filtro Simple). El ctor del servicio pasa a internal y los cuatro registros de DI a fabricas explicitas. Prompts sin tocar (PromptHashesTests verde, los 8 hashes).",
+          "evidencia": "(1) A/B del arnes infra/quality-baseline.py, 142 preguntas efectivas de las 143 (la 143 es de bsuite-auditorias-baseline, coleccion que no existe en Qdrant, y falla igual en ambas corridas): docs/eval/quality/2.2-refactor-antes.json vs -despues.json. Las cinco metricas de postura salen IDENTICAS: rechazo_pleno 27,5%, banda_baja 23,9%, directo 48,6%, directo_con_score_bajo 33,1%, simple_con_tecnicismos 6,5%. (2) Comparacion pregunta a pregunta, no solo agregada: score_top y numero de fuentes identicos en las 142 -> retrieval y gate reciben y producen exactamente lo mismo. 66/142 respuestas byte-identicas; el resto difiere por muestreo del LLM (temperature 0.1), no por el refactor. (3) Golden de equivalencia capturado ANTES de tocar nada, por reflexion sobre los estaticos privados del servicio original: tests/RagEngine.Core.Tests/GoldenMaster/generacion-contexto.json fija el bloque de contexto byte a byte (6 casos) y que plantilla se elige (6 casos). Verificado por mutacion: cambiar la regla de empate docs/codigo (>= por >) o el guardia de presupuesto (continue por break) pone 2 tests en rojo. (4) 107/107 tests verdes, y 103/103 tambien bajo LC_ALL=de_DE.UTF-8.",
+          "escepticismo_n1": "El A/B marco 2 cambios de postura, uno de ellos como 'fabricacion nueva' ('Explicame mejor el numero 47', rechazo_pleno -> directo). No se acepto la explicacion facil: se leyeron las dos respuestas y AMBAS son rechazos -- el clasificador del arnes busca 'no tengo informacion' y la frase decia 'no tengo NINGUNA informacion relevante', asi que el substring no casa. Falso negativo del clasificador, no fabricacion. Ademas se repitieron las dos preguntas 8 veces contra CADA binario: distribuciones identicas (numero-47 rechazo_pleno 8/8 en ambos; mouse directo 8/8 en ambos). Los dos vuelcos del A/B eran muestreo del LLM en el camino sin anclaje, donde no hay contexto recuperado y la redaccion varia sola.",
+          "cambio_observable_asumido": "Las categorias de log del turno ya no son todas RagGenerationService: cada colaborador registra con la suya. Verificado que nada depende de ello -- los appsettings.json de API y CLI filtran por el prefijo 'RagEngine', que las cubre todas, y ningun script hace grep sobre la categoria. Anotado en docs/arquitectura.md porque un filtro escrito contra el nombre completo del servicio si se veria afectado.",
+          "panel_multiagente": "3 revisores adversariales (equivalencia semantica / ciclo de vida y DI / casos limite y contrato). Los tres coinciden en que la salida generada no cambia, cada uno por su via: diff normalizado de los cuerpos movidos y recuento de lecturas de Options (6 antes, 6 despues, mismo orden); construccion del grafo real de DI con ValidateOnBuild+ValidateScopes (cero captive dependencies, SummaryCache abre conexion por operacion y ya era Singleton); y verificacion de que ni un '!' es nuevo. Dos hallazgos exigieron accion y se cerraron dentro del item: (a) el golden que yo mismo escribi dependia de la locale (la cabecera formatea el score con {0:F2}, que usa CurrentCulture) -- medido con LC_ALL=de_DE.UTF-8, tumbaba 5 de 6 casos; envuelto en cultura invariante. (b) SystemPromptComposer.ComposeGrounded, funcion creada en este refactor, tenia dos huecos posicionales sin ningun test: invertirlos mandaria la frase de fallback como contexto en TODOS los prompts anclados con el compilador callado. Cuatro tests que lo fijan, verificados por mutacion.",
+          "red_de_seguridad_repuesta": "Los registros pasaron de por-tipo a fabricas explicitas (los colaboradores son internal y ActivatorUtilities solo mira ctores publicos), y ValidateOnBuild no puede introspeccionar un delegado: el camino de generacion quedaba fuera de la validacion de arranque. CompositionRootTests lo repone y ademas resuelve de verdad IRagGenerationService desde un scope, que es lo que ValidateOnBuild nunca hizo. Corre en 1 s sin Qdrant, sin Ollama y sin modelos ONNX.",
+          "documentacion": "docs/arquitectura.md actualizado: nodo del mermaid, tabla de carpetas de Core y la seccion del servicio, que pasa a una tabla de 7 pasos mas los detalles no obvios (presupuesto de 12k sin truncar la cola, el gate como garantia estructural, por que Simple no puede hacer streaming, umbrales por turno, categorias de log). Los docs/analisis-futuro/*.md NO se tocan a proposito: son registros fechados de investigaciones.",
+          "items_derivados": "Anotados como pendientes, no ejecutados: 3.9 (cultura en la cabecera del chunk: la API fija InvariantGlobalization y el CLI no, asi que hoy el mismo chunk llega al LLM con distinto separador decimal segun el host), 3.10 (guardia de crecimiento del enum para IsDocumentation), 4.7 (Program.cs:ShouldSuppressSources duplica la regla de banda que ahora vive en ConfidenceGate; importa porque 4.2 y 4.3 recalibran justo esos umbrales) y 4.8 (ConfidenceGate, ChatAnswerStreamer y el intercambio por resumen siguen sin tests de comportamiento: el 2.2 los hizo probables, no los probo; debe ir ANTES de 4.2/4.3)."
         },
         {
           "id": "2.3-prompts-externalizados",
@@ -453,6 +462,32 @@
           "lo_que_no_funciono": "1) La frase degenerada de banda baja SIGUE apareciendo: 'el fragmento mas cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta'. El caso (b) del addendum solo tomo parcialmente. 2) 'Procesos que influyen en la innovapp?' EMPEORO: 372 -> 524 palabras, sigue fabricando. 3) 'Hola' y 'Continua' siguen igual (93 palabras con tecnicismos PascalCase): van por otro camino de codigo que estos prompts no tocan.",
           "errores_de_metodo_cometidos": "1) La primera medicion fue INVALIDA: compile en Release y corri con `dotnet run --no-build`, que usa Debug, asi que la instancia sirvio los prompts VIEJOS. El DLL de Debug era 18 minutos anterior a la edicion. Detectado comparando marcas de tiempo; se re-verifico buscando la marca del prompt nuevo dentro del DLL en UTF-16. 2) El detector de posturas conto los rechazos correctos como 'directo' porque no llevan las frases de la plantilla, y reporto una REGRESION de +10pp donde habia una mejora de -5pp. Corregido y re-puntuado sobre los artefactos guardados, sin regenerar. 3) Un edit del prompt fallo su assert y no se aplico; la corrida siguiente uso el prompt anterior. Leccion recurrente: verificar que el binario que responde contiene el cambio, no que el archivo lo tiene.",
           "medicion_final": "Corrida definitiva (docs/eval/quality/linea-base-post-ajustes.json), mismas 40 preguntas, binario verificado: rechazo pleno 15% -> 30%, banda baja 40% -> 32.5%, directo con score bajo 22.5% -> 15%, palabras mediana 63 -> 54.5, respuestas cortas 12.5% -> 35%. Ingles filtrado: 0 de 40 (estaba en 3 de 4 rechazos antes del ultimo ajuste). Frase degenerada de banda baja: SIGUE en 5 de 40 — el caso (b) del addendum no basto. Este archivo es la LINEA BASE contra la que medir la re-ingesta."
+        },
+        {
+          "id": "3.9-cultura-en-cabecera-de-chunk",
+          "titulo": "El score de la cabecera del chunk se formatea con la cultura de la máquina: la API imprime 0.91 y el CLI 0,91 en un equipo es-ES",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "horas_maquina": 0.1,
+          "verificacion": "`LC_ALL=de_DE.UTF-8 dotnet test RagEngine.slnx` verde SIN el envoltorio ConCulturaInvariante de GenerationContextGoldenTests (quitarlo es parte del ítem: deja de hacer falta si el formato es invariante). Y un test que afirme que BuildChunkHeader produce 'Score: 0.91' bajo CultureInfo de-DE.",
+          "por_que_este_modelo": "Es un `CultureInfo.InvariantCulture` en un `{0:F2}` y un csproj; el criterio ya está escrito.",
+          "origen": "Panel adversarial del ítem 2.2 (2026-08-24), lente de casos límite. GenerationContextAssembler.cs:191 usa `{result.SimilarityScore:F2}` sin cultura explícita. Medido: `LC_ALL=de_DE.UTF-8` tumbaba 5 de los 6 casos del golden nuevo. Además RagEngine.Api.csproj:20 fija InvariantGlobalization=true y RagEngine.Cli.csproj NO, así que hoy el MISMO chunk llega al LLM con distinto separador decimal según el host. Preexistente al 2.2; el 2.2 sólo lo hizo medible.",
+          "rollback": "git revert del commit. Es un cambio de formato local a una función pura; si el golden se regenerara con coma, revertir exige regenerarlo de vuelta bajo cultura invariante.",
+          "estado": "pendiente"
+        },
+        {
+          "id": "3.10-guardia-de-crecimiento-para-isdocumentation",
+          "titulo": "IsDocumentation() no tiene guardia de crecimiento del enum; su gemela IsProse() sí, y están a tres líneas una de otra",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "horas_maquina": 0,
+          "verificacion": "Un test al estilo de SourceLanguageProseTests que afirme `Enum.GetValues<SourceLanguage>().Where(IsDocumentation) == [Markdown, PlainText]`. Verificarlo añadiendo un valor de prueba al enum en local y comprobando que el test se pone rojo; revertir el valor de prueba.",
+          "por_que_este_modelo": "Copiar la forma de un test que ya existe al lado. No hay criterio que decidir.",
+          "origen": "Panel adversarial del ítem 2.2 (2026-08-24). Si se añade SourceLanguage.AsciiDoc, IsProse rompe su test (bien) e IsDocumentation devuelve false en silencio: la cabecera etiqueta 'Method' en vez de 'Section' y en modo Technical se elige CodeSystemPrompt en vez del de documentos. Ningún test falla hoy.",
+          "rollback": "git revert del commit. Sólo añade un test.",
+          "estado": "pendiente"
         }
       ]
     },
@@ -543,6 +578,34 @@
           "origen": "Verificado el 2026-08-24: bsuite-repo tiene 22.864 puntos y 272 no están en el set de chunks que el chunker genera hoy. Los 272 se caracterizaron en su momento: su texto sigue presente en los archivos actuales (196 byte a byte, 76 salvo saltos de línea), así que son residuo de un reagrupamiento del chunker, no de un cambio del repo fuente.",
           "resultado": "Ingesta incremental ejecutada con `rag ingest --con-resumen` (sin --force, rag-api detenido). Output: 2.103 archivos, 22.592 chunks generados, 22.592 indexados, 272 obsoletos borrados en 2m50s. Verificado: colección quedó en 22.592 puntos exactos (22.864 - 272). Summary-cache.sqlite3 legible con 18.784 registros, cero corrupción. Colección lista para medición de recall sin contaminación de chunks de chunking anterior.",
           "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6."
+        },
+        {
+          "id": "4.7-regla-de-banda-duplicada-en-la-api",
+          "titulo": "Program.cs:ShouldSuppressSources reimplementa la regla de banda baja que ahora vive en ConfidenceGate, y con una asimetría (exige results.Count > 0)",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "horas_maquina": 0.2,
+          "verificacion": "Un solo sitio decide la banda: la API consume el veredicto de ConfidenceGate en vez de recalcularlo. Se comprueba cambiando LowConfidenceThreshold en configuración y verificando que la supresión de `sources` en /api/ask cambia acorde SIN tocar Program.cs. Test que fije que ambos caminos coinciden en el borde exacto del umbral.",
+          "por_que_este_modelo": "Mover una decisión de sitio sin cambiar el contrato del endpoint; el riesgo es la asimetría del borde, que hay que preservar o corregir a conciencia.",
+          "origen": "Encontrado al cerrar el ítem 2.2 (2026-08-24). Importa AHORA porque 4.2 y 4.3 recalibran justo esos umbrales: la copia de la API se quedaría atrás en silencio y las fuentes dejarían de concordar con la respuesta.",
+          "bloqueado_por": "4.3-recalibrar-umbrales-banda",
+          "rollback": "git revert del commit. No toca ingesta ni esquema.",
+          "estado": "pendiente"
+        },
+        {
+          "id": "4.8-tests-de-comportamiento-de-los-colaboradores-de-generacion",
+          "titulo": "ConfidenceGate, ChatAnswerStreamer y el intercambio por resumen no tienen ni un test de comportamiento: el ítem 2.2 los hizo probables, pero no los probó",
+          "modelo": "sonnet",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "horas_maquina": 0.3,
+          "verificacion": "Tests que fijen, como mínimo: (a) ConfidenceGate — Count==0 sin anclaje; useReRanking==false NO aplica el umbral (la distinción RRF vs sigmoide); topScore == LowConfidenceThreshold exacto SÍ ancla (el `<` es estricto); banda media devuelve addendum. (b) Intercambio por resumen — flag apagado deja los chunks intactos; la guardia coveredCount>0 contra un umbral mal configurado a 0; cobertura >= umbral excluye los no cubiertos; cobertura < umbral los conserva crudos; StripEntityPrefix aplicado. (c) ChatAnswerStreamer — mapeo de ChatRole, filtro de fragmentos vacíos, orden system-primero, con un IChatCompletionService falso. Cada test debe verificarse por mutación: romper la regla a propósito y ver el rojo.",
+          "por_que_este_modelo": "El trabajo es diseñar el oráculo de cada regla, no teclearlo. Pero las reglas ya están escritas y aisladas por el 2.2.",
+          "origen": "Panel adversarial del ítem 2.2 (2026-08-24), lente de cobertura. El 2.2 separó las responsabilidades y verificó que la partición no cambió nada (golden byte a byte + A/B del arnés), pero NO añadió cobertura de comportamiento nueva: eso es trabajo aparte y se anota aquí en vez de desbordar el ítem. Paga sobre todo a 4.2 y 4.3, que recalibran justo ConfidenceGate.",
+          "dependencia": "Debe ir ANTES de 4.2 y 4.3: recalibrar un umbral sin un test que fije el borde es cambiar a ciegas.",
+          "rollback": "git revert del commit. Sólo añade tests.",
+          "estado": "pendiente"
         }
       ]
     },

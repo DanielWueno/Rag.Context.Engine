@@ -102,6 +102,16 @@ Lecturas:
 
 ## Plan
 
+**Registrado en el ledger como Ola 4** (`ejecucion-plan.estado.json`), así que `/plan-estado` y
+`/plan-siguiente` lo ven. Los ids son `4.1-medir-invarianza-topk`, `4.2-score-de-gate-estable`,
+`4.3-recalibrar-umbrales-banda`, `4.4-fuga-ejemplo-negativo-prompt`,
+`4.5-regresion-bandas-y-estabilidad` y `4.6-limpiar-huerfanos-bsuite-repo`. Este documento es el
+razonamiento; el ledger es el estado.
+
+> Ojo con el orden: `/plan-siguiente` toma el primer `pendiente` respetando el orden de olas, así
+> que llegará a la Ola 4 después de los 8 pendientes de las olas 1-3. Si el gate se considera más
+> urgente que la deuda estructural, hay que mover los ítems o la ola.
+
 Un ítem por sesión, commit al cerrar cada uno. El orden importa: 2 antes que 4, porque recalibrar
 o afinar el prompt sobre un score inestable es tirar el trabajo.
 

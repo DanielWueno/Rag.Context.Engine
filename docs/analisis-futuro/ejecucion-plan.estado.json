@@ -425,6 +425,85 @@
           "medicion_final": "Corrida definitiva (docs/eval/quality/linea-base-post-ajustes.json), mismas 40 preguntas, binario verificado: rechazo pleno 15% -> 30%, banda baja 40% -> 32.5%, directo con score bajo 22.5% -> 15%, palabras mediana 63 -> 54.5, respuestas cortas 12.5% -> 35%. Ingles filtrado: 0 de 40 (estaba en 3 de 4 rechazos antes del ultimo ajuste). Frase degenerada de banda baja: SIGUE en 5 de 40 — el caso (b) del addendum no basto. Este archivo es la LINEA BASE contra la que medir la re-ingesta."
         }
       ]
+    },
+    {
+      "ola": "4",
+      "nombre": "Calidad de respuesta: gate de confianza y estabilidad del rerank",
+      "criterio_de_salida": "Una pregunta cuya respuesta SÍ está en el corpus no se pierde por el gate, y el score que decide la banda no cambia según el TopK. Análisis completo en docs/analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md",
+      "items": [
+        {
+          "id": "4.1-medir-invarianza-topk",
+          "titulo": "Cuantificar la no-invarianza del score de rerank al TopK sobre >=20 consultas de wiki-solis e innovapp-docs, barriendo TopK en {3,5,8,10,15,20} y registrando el score del MISMO chunk ganador.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Distribución del rango (max-min) por consulta. Si la mediana del rango supera 0.05, el gate por umbral absoluto no es defendible y 4.2 pasa a obligatorio. Publicar la tabla en el documento de análisis.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es barrido y estadística descriptiva sobre un endpoint existente; no requiere criterio de diseño.",
+          "origen": "Medido el 2026-08-22 con n=1: el par (consulta='como sincroniza la aplicacion de campo cuando recupera senal', chunk=US-33.4) puntúa 0.7046 con topK=5, 0.5844 con topK=10 y 0.7112 con topK=15, determinista dentro de cada k (2 repeticiones idénticas). n=1 no autoriza a concluir la magnitud; este ítem lo mide."
+        },
+        {
+          "id": "4.2-score-de-gate-estable",
+          "titulo": "Hacer que el score que alimenta el gate de confianza sea invariante a la composición del lote. Recomendado: puntuar el candidato ganador solo, en un lote de tamaño 1, después del rerank.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "El score del chunk #1 idéntico (+-0.001) para todo TopK del barrido de 4.1. Medir además el coste: hoy un pool de 30 tarda ~1000 ms; registrar cuánto sube. Bandera de configuración CrossEncoder:StableGateScore, default off hasta validar, para revertir sin recompilar.",
+          "horas_maquina": 0.5,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Toca inferencia ONNX cuantizada y tiene tres alternativas con distinto coste (padding fijo a 512, lotes por longitud, lote de 1); elegir exige criterio, no sólo ejecutar.",
+          "origen": "Causa identificada el 2026-08-22: el pool de rerank es 3xTopK y RunBatch hace padding dinámico al máximo real del lote (OnnxCrossEncoderReRanker.cs:214) sobre un modelo int8, así que el score de un par depende de sus vecinos de lote. El código ya mitigaba la mitad — ordenar por ChunkId fija la composición para un pool DADO (OnnxCrossEncoderReRanker.cs:69-77) — pero no la invarianza al tamaño del pool."
+        },
+        {
+          "id": "4.3-recalibrar-umbrales-banda",
+          "titulo": "Recalibrar LowConfidenceThreshold (0.05) y HighConfidenceThreshold (0.60) con datos etiquetados. Sólo después de 4.2.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Sobre innovapp-docs.eval-set.json y bsuite-auditorias, etiquetar cada consulta como 'el corpus SÍ contiene la respuesta' / 'no la contiene' e incluir negativos adversariales, no sólo positivos. Umbrales que aumenten las respuestas correctas entregadas sin aumentar las fabricaciones respecto a la línea base, medido con infra/quality-baseline.py.",
+          "horas_maquina": 1.0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es calibración con compromiso entre recall y fabricación; equivocarse aquí degrada la confianza del sistema entero.",
+          "origen": "Medido el 2026-08-22 sobre 10 consultas de wiki-solis: la banda sin grounding funciona bien (todo lo genuinamente ausente cae <=0.026 y se rechaza con sensatez, NO tocarla), pero la banda media 0.05-0.60 mete en el mismo saco un 0.074 de basura real y un 0.584 que era el chunk correcto. n=10 no autoriza a mover un umbral."
+        },
+        {
+          "id": "4.4-fuga-ejemplo-negativo-prompt",
+          "titulo": "LowConfidencePrompt.Addendum lleva como ejemplo de 'lo que NO hay que hacer' exactamente la frase que el modelo emite. Reescribir la rama (b) para DESCRIBIR la forma prohibida en vez de citarla, y añadir un ejemplo POSITIVO del texto deseado.",
+          "modelo": "opus",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "0 apariciones de la frase fugada en un barrido de >=20 consultas que caigan en banda media, y ninguna regresión en las bandas alta y sin-grounding. Actualizar el hash de LowConfidencePrompt en PromptHashesTests y justificarlo en el commit; NO invalida la caché de resúmenes (sólo el prompt de resumen alimenta prompt_version).",
+          "horas_maquina": 0.4,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Redactar un prompt que un 7B obedezca es donde este proyecto ya ha fallado dos veces (regla abstracta insuficiente, y ahora ejemplo concreto copiado al revés).",
+          "origen": "Reproducido el 2026-08-22 en 2 de 3 consultas de banda media. Es la contrapartida de guardrail-banda-baja-conversacional: la regla abstracta no bastaba y se añadió un ejemplo concreto; ahora el modelo imita el ejemplo concreto y la etiqueta 'what NOT to do' no lo frena."
+        },
+        {
+          "id": "4.5-regresion-bandas-y-estabilidad",
+          "titulo": "Prueba de regresión permanente que barra las tres bandas de confianza y falle si aparece la frase fugada o si el score del #1 varía con el TopK.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "La prueba falla si se revierte 4.2 o 4.4, y pasa con ambos aplicados. Debe correr sin Ollama (sólo retrieval + rerank) para no depender de generación.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es escribir un test contra comportamiento ya caracterizado.",
+          "origen": "Sin esto, 4.2 y 4.4 se re-rompen en silencio: ambos fallos ya habían sido observados antes y volvieron."
+        },
+        {
+          "id": "4.6-limpiar-huerfanos-bsuite-repo",
+          "titulo": "bsuite-repo arrastra 272 puntos obsoletos de un chunking anterior, porque su última ingesta fue ANTES de que existiera la limpieza incremental (e559d80).",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Una ingesta incremental con --con-resumen (sin --force, y con rag-api detenido) debe reportar 'Obsoletos borrados: 272' y dejar la colección en 22.592 puntos. Verificar que los 12.668 resúmenes sobreviven.",
+          "horas_maquina": 0.2,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Correr un comando ya documentado y comparar dos conteos.",
+          "origen": "Verificado el 2026-08-24: bsuite-repo tiene 22.864 puntos y 272 no están en el set de chunks que el chunker genera hoy. Los 272 se caracterizaron en su momento: su texto sigue presente en los archivos actuales (196 byte a byte, 76 salvo saltos de línea), así que son residuo de un reagrupamiento del chunker, no de un cambio del repo fuente."
+        }
+      ]
     }
   ]
 }

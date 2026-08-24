@@ -20,7 +20,8 @@
 #                   Se NIEGA si el ítem pide más de 1 hora de máquina, si lleva
 #                   multiagente o si está bloqueado: en modo -p no hay a quién
 #                   preguntar, y el protocolo exige preguntar en esos casos.
-#                   --igual salta esas guardas bajo tu responsabilidad.
+#                   --igual salta esas guardas bajo tu responsabilidad, y
+#                   también la comprobación de que la ficha esté completa.
 #                   Acepta un techo de gasto: --desatendido=3  (dólares, def. 5)
 #
 # Por qué existe: /plan-siguiente delega la ejecución a un
@@ -152,6 +153,29 @@ echo -e "  ${DIM}verificación:${NC} $VERIF" | fold -s -w 76 | sed '2,$s/^/     
 echo
 
 [[ $SOLO_ANUNCIAR -eq 1 ]] && exit 0
+
+# ── El ítem está bien escrito ───────────────────────────────────────────────
+# Va ANTES de las puertas de gasto y antes de arrancar `claude`: un ítem sin
+# plan de reversión escrito no debe consumir ni tokens ni horas de máquina. Los
+# slash commands ya validaban, pero al CERRAR, que es tarde para no gastar.
+# El fallo se ve entero (el validador dice qué campo falta) y se puede saltar
+# con --igual, como las demás guardas.
+if ! python3 "$SCRIPT_DIR/validar-ledger.py" --item "$ID" "$LEDGER"; then
+  if [[ $FORZAR -eq 0 ]]; then
+    echo -e "${RED}✗${NC} No lanzo ${BOLD}$ID${NC}: la ficha está incompleta."
+    echo -e "${DIM}   Complétala en $LEDGER, o añade --igual para ejecutarlo así.${NC}"
+    exit 1
+  fi
+  echo -e "${YELLOW}⚠${NC}  Ficha incompleta, sigo por --igual."
+fi
+
+# El resto del ledger no bloquea este ítem, pero un id duplicado o un `ola` como
+# string hacen que la PRÓXIMA invocación elija mal, y eso se descubre tarde.
+if ! SALIDA_LEDGER="$(python3 "$SCRIPT_DIR/validar-ledger.py" "$LEDGER" 2>&1)"; then
+  echo -e "${YELLOW}⚠${NC}  El ledger tiene problemas (no bloquean este ítem):"
+  sed 's/^/     /' <<<"$SALIDA_LEDGER"
+  echo
+fi
 
 # ── Puertas antes de gastar ─────────────────────────────────────────────────
 # Las mismas tres condiciones se juzgan distinto según el modo: con alguien

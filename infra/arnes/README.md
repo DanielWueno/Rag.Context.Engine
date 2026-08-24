@@ -35,7 +35,7 @@ memoria de una conversación**, y se ejecuta un ítem por sesión.
 | `/plan-estado` | El avance sin ejecutar nada. Corre en el modelo barato; cuesta casi nada. |
 | `infra/arnes/plan-run.sh` | Lanza un ítem en una **sesión nueva** de Claude Code: contexto limpio de verdad, no un `/clear`. Anuncia el ítem antes y frena si algo no cuadra. |
 | Hook `SessionStart` | Cada sesión arranca sabiendo qué ítem toca. Lo resuelve un script, así que averiguarlo cuesta cero tokens. |
-| `infra/arnes/validar-ledger.py` | Comprueba que el ledger está bien formado. Un campo mal escrito no rompe nada visiblemente: sólo hace que la próxima invocación elija mal. |
+| `infra/arnes/validar-ledger.py` | Comprueba que el ledger está bien formado. Un campo mal escrito no rompe nada visiblemente: sólo hace que la próxima invocación elija mal. Con `--item ID` juzga una sola ficha, que es como lo llama `plan-run.sh` antes de gastar. |
 | `infra/arnes/instalar.sh` | Copia todo esto a otro repositorio. |
 
 ---
@@ -66,6 +66,22 @@ Las banderas van en cualquier orden y se combinan con el id.
 hay a quién preguntar, y el protocolo exige preguntar justo en esos casos. Una pregunta que nadie
 puede responder no es una puerta, es un cuelgue. `--igual` salta las guardas bajo tu
 responsabilidad.
+
+### La ficha tiene que estar completa antes de gastar
+
+Antes de cualquier puerta de gasto y antes de arrancar la sesión, `plan-run.sh` valida **la ficha
+del ítem que va a ejecutar**. Si le falta un campo obligatorio, no lanza nada: exit 1 y el
+validador dice cuál. Esto ocurre en *todos* los modos, no sólo en `--desatendido`.
+
+`rollback` es obligatorio en los ítems `pendiente` y `en_curso`, y no en los ya cerrados. Es la
+regla que la plantilla ya enunciaba —*si no sabes escribir cómo se revierte, el ítem no está listo
+para ejecutarse*— y no se puede aplicar hacia atrás: los ítems cerrados antes de que el campo
+existiera no se van a volver a tocar, y reclamárselo sería ruido permanente. Un `"rollback": ""`
+cuenta como ausente: un campo en blanco no es un plan de reversión.
+
+Los slash commands ya validaban el ledger, pero **al cerrar**. Eso descubre el campo que falta
+después de haber pagado la sesión; esta guarda lo descubre antes. `--igual` la salta, como las
+demás.
 
 Regla práctica: **si el ledger dice `haiku` y 0 horas, `--desatendido` es seguro; si dice `opus`,
 quédate delante.** El campo `modelo` ya codifica cuánto criterio hace falta.
@@ -227,7 +243,7 @@ infra/arnes/
   plan-run.sh                lanza un ítem en sesión limpia
   plan-siguiente-linea.py    el hook SessionStart
   ledger_path.py             localiza el ledger (PLAN_LEDGER manda)
-  validar-ledger.py          valida el ledger; sale 1 y dice qué falta
+  validar-ledger.py          valida el ledger (o una ficha, con --item); sale 1 y dice qué falta
   ledger.plantilla.json      semilla para un proyecto nuevo
   instalar.sh                copia el arnés a otro repositorio
 .claude/commands/

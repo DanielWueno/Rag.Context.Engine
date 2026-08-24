@@ -292,7 +292,8 @@
           "estado": "pendiente",
           "por_que_este_modelo": "La regresión aparece como una respuesta peor, no como un test rojo. Es el caso donde el panel adversarial sí gana algo.",
           "correccion_de_ledger": "2026-08-24: el título decía \"1042 líneas, 12 prompts embebidos\". Hoy son 680 líneas y los prompts ya viven en Services/Generation/Prompts/ (7 clases) porque el ítem 2.3 los externalizó. El alcance baja en consecuencia: ya no incluye sacar prompts, sólo separar responsabilidades.",
-          "nota_de_altitud": "No bloquea, pero el ítem 8.c (formato de diagnóstico en 4 bloques) toca esta misma clase. Hacer 2.2 antes evita tocarla dos veces."
+          "nota_de_altitud": "No bloquea, pero el ítem 8.c (formato de diagnóstico en 4 bloques) toca esta misma clase. Hacer 2.2 antes evita tocarla dos veces.",
+          "rollback": "git revert del commit de refactor. Es un movimiento puro de código: no toca prompts (ya viven en Services/Generation/Prompts/), ni configuración, ni el esquema de los puntos, así que revertir no obliga a re-ingestar ni invalida la caché de resúmenes. Hacerlo ANTES de 8.c: si 8.c ya construyó sobre las clases nuevas, el revert deja de ser limpio."
         },
         {
           "id": "2.3-prompts-externalizados",
@@ -353,7 +354,8 @@
           "horas_maquina": 1,
           "estado": "pendiente",
           "por_que_este_modelo": "No es hipotético: ya hay una colección perdida (engine-repo, origen irrecuperable). Diseñar la detección es criterio.",
-          "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6."
+          "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6.",
+          "rollback": "La detección en `rag doctor` es de sólo lectura: se revierte con el commit y el diagnóstico vuelve a fallar en la consulta, que es el estado de hoy. Si la parte de migración llega a recrear engine-repo o micro-repo, el peor caso es dejarlas como están ahora — ya están rotas con 'Not existing vector name error: dense', así que no hay estado bueno que perder. NO tocar las colecciones que sí funcionan (bsuite-repo, innovapp-docs): recrearlas cuesta una noche de ingesta."
         },
         {
           "id": "3.2-api-endurecida",
@@ -364,7 +366,8 @@
           "verificacion": "health falla cuando Qdrant está apagado; un payload malformado devuelve ProblemDetails y no un 500 pelado",
           "horas_maquina": 0.5,
           "estado": "pendiente",
-          "por_que_este_modelo": "Terreno conocido de ASP.NET, criterio de éxito observable con curl."
+          "por_que_este_modelo": "Terreno conocido de ASP.NET, criterio de éxito observable con curl.",
+          "rollback": "git revert. Todo es middleware y configuración de arranque, sin estado persistido. El único riesgo de romper a un consumidor es el CORS explícito, y hoy no hay cliente en producción; si apareciera, la lista de orígenes es configuración, no código."
         },
         {
           "id": "3.3-exportador-otel",
@@ -375,7 +378,8 @@
           "verificacion": "dotnet-counters o un endpoint Prometheus muestra los 4 instrumentos",
           "horas_maquina": 0.2,
           "estado": "pendiente",
-          "por_que_este_modelo": "Los instrumentos ya están escritos; falta el paquete y el wiring."
+          "por_que_este_modelo": "Los instrumentos ya están escritos; falta el paquete y el wiring.",
+          "rollback": "Quitar el exportador. Los 4 instrumentos del Meter ya existen y hoy nadie los recoge, así que revertir devuelve exactamente el estado actual: se siguen emitiendo al vacío."
         },
         {
           "id": "3.4-docs-fieles",
@@ -386,7 +390,8 @@
           "verificacion": "Cada comando citado en el README se ejecuta tal cual y funciona",
           "horas_maquina": 0.5,
           "estado": "pendiente",
-          "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio."
+          "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio.",
+          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover."
         },
         {
           "id": "3.5-portabilidad-x64",
@@ -397,7 +402,8 @@
           "verificacion": "Requiere una máquina x64 real para probarlo de verdad. Si no hay, marcar bloqueado y decirlo.",
           "horas_maquina": 1,
           "estado": "pendiente",
-          "por_que_este_modelo": "El riesgo es el exit 134 de ONNX en ARM ya conocido; la lógica es simple, la prueba honesta necesita hardware."
+          "por_que_este_modelo": "El riesgo es el exit 134 de ONNX en ARM ya conocido; la lógica es simple, la prueba honesta necesita hardware.",
+          "rollback": "La selección por arquitectura mantiene arm64 como caso por defecto, así que el riesgo real es romper la única máquina disponible. Verificar en arm64 en el mismo commit; si falla, git revert deja la ruta al binario hardcodeada como hoy. Si no hay máquina x64 para probar la rama nueva, marcar el ítem bloqueado en vez de darlo por hecho."
         },
         {
           "id": "3.6-arnes-de-calidad-de-respuesta",
@@ -464,7 +470,8 @@
           "estado": "pendiente",
           "por_que_este_modelo": "Es barrido y estadística descriptiva sobre un endpoint existente; no requiere criterio de diseño.",
           "origen": "Medido el 2026-08-22 con n=1: el par (consulta='como sincroniza la aplicacion de campo cuando recupera senal', chunk=US-33.4) puntúa 0.7046 con topK=5, 0.5844 con topK=10 y 0.7112 con topK=15, determinista dentro de cada k (2 repeticiones idénticas). n=1 no autoriza a concluir la magnitud; este ítem lo mide.",
-          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2."
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2.",
+          "rollback": "n/a — es medición, no cambio de comportamiento: sólo produce una tabla en el documento de análisis. No toca código de producción."
         },
         {
           "id": "4.2-score-de-gate-estable",
@@ -477,7 +484,8 @@
           "estado": "pendiente",
           "por_que_este_modelo": "Toca inferencia ONNX cuantizada y tiene tres alternativas con distinto coste (padding fijo a 512, lotes por longitud, lote de 1); elegir exige criterio, no sólo ejecutar.",
           "origen": "Causa identificada el 2026-08-22: el pool de rerank es 3xTopK y RunBatch hace padding dinámico al máximo real del lote (OnnxCrossEncoderReRanker.cs:214) sobre un modelo int8, así que el score de un par depende de sus vecinos de lote. El código ya mitigaba la mitad — ordenar por ChunkId fija la composición para un pool DADO (OnnxCrossEncoderReRanker.cs:69-77) — pero no la invarianza al tamaño del pool.",
-          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2. Además 4.2 rompe la dependencia gate→rerank: hoy la rama de score del gate sólo dispara con useReRanking=true (RagGenerationService.cs:199), así que el cortafuegos obliga a pagar un rerank cuyo aporte de recall ya se midió en +0/−2."
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2. Además 4.2 rompe la dependencia gate→rerank: hoy la rama de score del gate sólo dispara con useReRanking=true (RagGenerationService.cs:199), así que el cortafuegos obliga a pagar un rerank cuyo aporte de recall ya se midió en +0/−2.",
+          "rollback": "Bandera CrossEncoder:StableGateScore, default off: se revierte apagándola en configuración, sin recompilar ni re-ingestar. Si además hay que revertir el código, git revert del commit; el cambio vive dentro de OnnxCrossEncoderReRanker y no altera el payload de los puntos. Ojo con el orden: 4.3 recalibra umbrales SOBRE este score, así que revertir 4.2 obliga a revertir también 4.3."
         },
         {
           "id": "4.3-recalibrar-umbrales-banda",
@@ -490,7 +498,8 @@
           "estado": "pendiente",
           "por_que_este_modelo": "Es calibración con compromiso entre recall y fabricación; equivocarse aquí degrada la confianza del sistema entero.",
           "origen": "Medido el 2026-08-22 sobre 10 consultas de wiki-solis: la banda sin grounding funciona bien (todo lo genuinamente ausente cae <=0.026 y se rechaza con sensatez, NO tocarla), pero la banda media 0.05-0.60 mete en el mismo saco un 0.074 de basura real y un 0.584 que era el chunk correcto. n=10 no autoriza a mover un umbral.",
-          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2."
+          "bloquea": "Bloquea todo trabajo sobre el guardrail de dominio, incluida cualquier propuesta de umbral fijo (tipo 0.20) sobre el top-1 del cross-encoder: calibrar un corte sobre un score que no es invariante al TopK es tirar el trabajo. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §3.2.",
+          "rollback": "LowConfidenceThreshold y HighConfidenceThreshold son configuración: restaurar 0.05 y 0.60 y listo, sin recompilar ni re-ingestar. Anotar en el commit los valores anteriores para no tener que buscarlos en el historial. NO recalibrar la banda sin grounding: hoy funciona bien (todo lo genuinamente ausente cae <=0.026) y no está en alcance."
         },
         {
           "id": "4.4-fuga-ejemplo-negativo-prompt",
@@ -502,7 +511,8 @@
           "horas_maquina": 0.4,
           "estado": "pendiente",
           "por_que_este_modelo": "Redactar un prompt que un 7B obedezca es donde este proyecto ya ha fallado dos veces (regla abstracta insuficiente, y ahora ejemplo concreto copiado al revés).",
-          "origen": "Reproducido el 2026-08-22 en 2 de 3 consultas de banda media. Es la contrapartida de guardrail-banda-baja-conversacional: la regla abstracta no bastaba y se añadió un ejemplo concreto; ahora el modelo imita el ejemplo concreto y la etiqueta 'what NOT to do' no lo frena."
+          "origen": "Reproducido el 2026-08-22 en 2 de 3 consultas de banda media. Es la contrapartida de guardrail-banda-baja-conversacional: la regla abstracta no bastaba y se añadió un ejemplo concreto; ahora el modelo imita el ejemplo concreto y la etiqueta 'what NOT to do' no lo frena.",
+          "rollback": "git revert de la clase de prompt y del hash en PromptHashesTests. Es un cambio de texto de prompt: no invalida la caché de resúmenes (sólo el prompt de resumen alimenta prompt_version), así que revertir no cuesta re-ingesta. El fallo vuelve a aparecer, que es el estado de hoy."
         },
         {
           "id": "4.5-regresion-bandas-y-estabilidad",
@@ -514,7 +524,8 @@
           "horas_maquina": 0.3,
           "estado": "pendiente",
           "por_que_este_modelo": "Es escribir un test contra comportamiento ya caracterizado.",
-          "origen": "Sin esto, 4.2 y 4.4 se re-rompen en silencio: ambos fallos ya habían sido observados antes y volvieron."
+          "origen": "Sin esto, 4.2 y 4.4 se re-rompen en silencio: ambos fallos ya habían sido observados antes y volvieron.",
+          "rollback": "Borrar o marcar como skip la prueba. Es un instrumento, no un cambio de comportamiento; si resulta inestable, un skip con la razón escrita es preferible a dejarla en rojo permanente y perder la señal del resto de la suite."
         },
         {
           "id": "4.6-limpiar-huerfanos-bsuite-repo",

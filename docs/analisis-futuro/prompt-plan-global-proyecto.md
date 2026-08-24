@@ -263,6 +263,7 @@ Para que ejecutar el plan no se coma tu límite de golpe ni pierda trabajo al co
 | `/plan-siguiente` | Ejecuta **un** ítem, lo verifica, actualiza el ledger, commitea y **se detiene**. Pregunta antes de lanzar cualquier ítem de más de 1 hora de máquina. Acepta un id o `ola:N`. |
 | `/plan-estado` | Estado del avance sin ejecutar nada. Corre en Haiku, cuesta casi nada. |
 | `infra/plan-run.sh` | Lanza **un** ítem en una sesión de `claude` NUEVA: contexto limpio de verdad, no un `/clear` sobre la sesión en curso. Anuncia el ítem antes —título, modelo, esfuerzo, horas, bloqueos y avisos de coste— leyéndolo del ledger con python, así que el anuncio cuesta cero tokens. Pasa `--model` y `--effort` desde el propio ledger, nombra la sesión (`-n "plan 5.0"`) para que sea identificable en `/resume`, y frena antes de gastar si el ítem está bloqueado, pasa de 1 hora de máquina o el árbol tiene cambios sin commitear. Acepta un id, `ola:N`, nada (siguiente pendiente) o `--solo-anunciar`. |
+| Hook `SessionStart` | `.claude/settings.json` llama a `infra/plan-siguiente-linea.py` en cada arranque de sesión: dos líneas diciendo qué ítem toca, con su ola, modelo, esfuerzo, horas y bloqueos. Así el «qué sigue» aparece solo tras un `/clear` o al abrir una ventana nueva, sin gastar una llamada al modelo para averiguarlo. Calla del todo si el ledger falta o no se puede leer, y avisa de que el ítem no se ejecuta por iniciativa propia. |
 
 Cómo se traduce lo que querías:
 

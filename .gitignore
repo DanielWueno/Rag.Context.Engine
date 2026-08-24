@@ -21,6 +21,7 @@ appsettings.*.json
 !appsettings.json
 
 # Claude Code: estado local de la máquina, no del repo.
-# .claude/commands/ SÍ se versiona: es parte del arnés de ejecución del plan.
+# .claude/commands/ y .claude/settings.json SÍ se versionan: son el arnés de
+# ejecución del plan (los dos comandos y el hook que anuncia el ítem siguiente).
 .claude/settings.local.json
 .claude/scheduled_tasks.lock

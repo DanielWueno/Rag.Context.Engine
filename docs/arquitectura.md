@@ -23,7 +23,7 @@ flowchart LR
         Q[Query] --> R[QdrantSemanticRetriever<br/>prefetch denso + disperso → RRF]
         R -.-> RR[OnnxCrossEncoderReRanker<br/>opt-in --rerank]
         RR -.-> R
-        R --> S[RagGenerationService<br/>contexto + prompt]
+        R --> S[RagGenerationService<br/>orquesta: gate → contexto → prompt]
         S --> T[Ollama / Semantic Kernel]
     end
     G -.-> R
@@ -48,7 +48,7 @@ Dentro de `RagEngine.Core`:
 | `Infrastructure/VectorStore` | `QdrantVectorStore` (colecciones/upsert) y `QdrantSemanticRetriever` (búsqueda híbrida) |
 | `Infrastructure/Reranking` | `OnnxCrossEncoderReRanker` — re-scoring opt-in del pool 3×TopK (`--rerank`) |
 | `Pipeline/` | `DefaultIngestionPipeline` (orquestador productor/consumidores) y `ContextAssembler` |
-| `Services/Generation` | `RagGenerationService` — ensamblado de contexto + streaming del LLM |
+| `Services/Generation` | `RagGenerationService` (orquestador) y sus colaboradores: `ConfidenceGate`, `GenerationContextAssembler`, `SystemPromptComposer`, `ChatAnswerStreamer`, `SimpleAnswerSanitizer`. Los textos de prompt viven en `Services/Generation/Prompts/` |
 | `Diagnostics/` | `RagEngineMetrics` (System.Diagnostics.Metrics) |
 
 ## Componentes del núcleo
@@ -85,9 +85,47 @@ afecta al flujo por defecto. El score resultante (sigmoide del logit) reemplaza 
 
 Productor (scan → chunk) y **N consumidores** (vectorizar → upsert) desacoplados por un `Channel` acotado (backpressure a 512 chunks). Detalle y números: [pipeline-de-ingesta.md](pipeline-de-ingesta.md).
 
-### RagGenerationService
+### RagGenerationService y sus colaboradores
 
-Ensambla el contexto (chunks rankeados, presupuesto de 12k chars, los chunks que no caben se **omiten sin truncar la cola**), construye un system prompt estricto de grounding (responde en el idioma de la pregunta; los atributos declarativos cuentan como reglas de negocio) y hace streaming desde Ollama vía Semantic Kernel.
+`RagGenerationService` **sólo orquesta**: encadena los pasos del turno y decide el camino. El
+trabajo de cada paso vive en una clase con una responsabilidad. La separación es del ítem 2.2 del
+plan de ingeniería; antes las seis vivían en un archivo de 680 líneas, y tocar una obligaba a leer
+las otras cinco.
+
+| Paso | Clase | Qué hace |
+|---|---|---|
+| 0 | `SemanticMetaIntentDetector` | Corta antes de buscar si la pregunta es sobre el propio asistente |
+| 1 | `ISemanticRetriever` | Recupera el top-K (el servicio sólo envuelve el `try/catch`) |
+| 2 | `ConfidenceGate` | Decide la banda: sin anclaje, banda media (con matiz) o banda alta |
+| 3 | `GenerationContextAssembler` | Resuelve el contenido de cada chunk y arma el bloque de contexto |
+| 4 | `SystemPromptComposer` | Elige la plantilla (código / documentos / Simple) y la compone |
+| 5 | `ChatAnswerStreamer` | Única pieza que toca el `Kernel`; emite los fragmentos |
+| 6 | `SimpleAnswerSanitizer` | Filtro determinista posterior, sólo en modo Simple |
+
+Detalles que no son obvios y conviene no re-descubrir:
+
+- **Presupuesto de contexto:** 12k caracteres. Los chunks que no caben se **omiten sin truncar la
+  cola** — un chunk gigante a mitad del ranking no descarta a los que vienen detrás. El número de
+  chunk en la cabecera se incrementa igual, así que la numeración refleja el ranking, no lo que entró.
+- **El gate corta de verdad:** cuando `ConfidenceGate` dice que no hay anclaje, los chunks
+  recuperados **no se vuelven a tocar**; se conversa sin contexto. Es garantía estructural, no una
+  instrucción al modelo — ver
+  [guardrail-banda-baja-conversacional.md](analisis-futuro/guardrail-banda-baja-conversacional.md).
+- **Modo Simple no puede hacer streaming token a token:** el sanitizador necesita el texto completo
+  para casar cercas e identificadores que se abren y cierran en fragmentos distintos, así que ese
+  camino bufferiza. Los demás emiten según llegan.
+- **Los umbrales se leen por turno** vía `IOptionsMonitor`, para que la bandera de rollback surta
+  efecto con un reinicio y sin recompilar.
+- **Los logs del turno ya no salen todos bajo una misma categoría.** Cada colaborador registra con
+  la suya (`…Generation.ConfidenceGate`, `…Generation.ChatAnswerStreamer`,
+  `…Generation.GenerationContextAssembler`), no bajo `…Generation.RagGenerationService` como antes
+  de partir la clase. El filtro `"RagEngine": "Information"` de `appsettings.json` las cubre todas;
+  un filtro escrito contra el nombre completo del servicio, no.
+
+**Cómo se prueba que no cambió nada al partirlo:** `GenerationContextGoldenTests` compara el bloque
+de contexto byte a byte y la plantilla elegida contra un golden capturado ejecutando el código
+**previo** a la descomposición (`tests/RagEngine.Core.Tests/GoldenMaster/generacion-contexto.json`).
+Los textos de prompt los cubre aparte `PromptHashesTests`.
 
 ## Decisiones de diseño clave
 

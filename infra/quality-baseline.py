@@ -29,7 +29,7 @@ import argparse, glob, json, os, re, statistics, sys, time
 import urllib.request
 
 # ── Heurísticas de "sigue siendo técnico" ────────────────────────────────────
-# Mismas formas que persigue RagGenerationService.SanitizeSimpleAnswer. Si algo
+# Mismas formas que persigue SimpleAnswerSanitizer.Sanitize. Si algo
 # de esto sobrevive en una respuesta de modo Simple, el filtro no alcanzó.
 PATRONES_TECNICOS = {
     "bloque_cercado":   re.compile(r"```"),

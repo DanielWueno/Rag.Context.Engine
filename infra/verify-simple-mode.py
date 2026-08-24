@@ -6,7 +6,7 @@ cuantitativa del filtro determinístico de ResponseMode.Simple.
 Re-corre las preguntas históricas de un log de rag-api-*.json (por defecto,
 las de la colección bsuite-repo en modo Simple) contra un contenedor real ya
 reconstruido, y marca cada respuesta con el mismo tipo de heurística que usa
-RagGenerationService.SanitizeSimpleAnswer (bloques ```, backticks, atributos
+SimpleAnswerSanitizer.Sanitize (bloques ```, backticks, atributos
 [Xxx(...)], identificadores Dotted.PascalCase, snake_case, y PascalCase
 compuesto tipo GenerarPlanAuditoria).
 
@@ -37,7 +37,7 @@ import urllib.error
 import urllib.request
 
 # Mirror exacto de los patrones en
-# src/RagEngine.Core/Services/Generation/RagGenerationService.cs
+# src/RagEngine.Core/Services/Generation/SimpleAnswerSanitizer.cs
 # (FencedCodeBlockPattern, InlineCodeSpanPattern, AttributeDecorationPattern,
 # DottedIdentifierPattern, SnakeCaseIdentifierPattern, CamelHumpIdentifierPattern).
 # Si esos regex cambian ahí, deben actualizarse acá también.

@@ -1,0 +1,14 @@
+{
+  "contexto:vacio": "",
+  "contexto:un-chunk-de-codigo-completo": "[Chunk #1 | Score: 0.91]\nRepository : bsuite-repo\nFile       : src/Services/AuditoriaService.cs (lines 42–78)\nNamespace  : BSuite.Auditorias\nClass      : AuditoriaService\nMethod     : GenerarPlanAuditoria\npublic Task<Plan> GenerarPlanAuditoria(int id) => _repo.PlanAsync(id);",
+  "contexto:codigo-sin-namespace-ni-clase": "[Chunk #1 | Score: 0.40]\nRepository : bsuite-repo\nFile       : src/Program.cs (lines 3–5)\nvar x = 1;",
+  "contexto:markdown-usa-etiqueta-section": "[Chunk #1 | Score: 0.78]\nRepository : innovapp-docs\nFile       : docs/us-17.md (lines 10–25)\nSection    : US-17.2 — Finalización automática\nLa auditoría se finaliza automáticamente al cerrar el último hallazgo.",
+  "contexto:mezcla-ordenada": "[Chunk #1 | Score: 0.91]\nRepository : bsuite-repo\nFile       : src/Services/AuditoriaService.cs (lines 42–78)\nNamespace  : BSuite.Auditorias\nClass      : AuditoriaService\nMethod     : GenerarPlanAuditoria\npublic Task<Plan> GenerarPlanAuditoria(int id) => _repo.PlanAsync(id);\n\n---\n\n[Chunk #2 | Score: 0.78]\nRepository : innovapp-docs\nFile       : docs/us-17.md (lines 10–25)\nSection    : US-17.2 — Finalización automática\nLa auditoría se finaliza automáticamente al cerrar el último hallazgo.\n\n---\n\n[Chunk #3 | Score: 0.40]\nRepository : bsuite-repo\nFile       : src/Program.cs (lines 3–5)\nvar x = 1;\n\n---\n\n[Chunk #4 | Score: 0.61]\nRepository : innovapp-docs\nFile       : docs/notas.txt (lines 1–2)\nNota operativa: el cierre requiere firma del auditor.",
+  "contexto:gigante-en-medio-no-trunca-la-cola": "[Chunk #1 | Score: 0.91]\nRepository : bsuite-repo\nFile       : src/Services/AuditoriaService.cs (lines 42–78)\nNamespace  : BSuite.Auditorias\nClass      : AuditoriaService\nMethod     : GenerarPlanAuditoria\npublic Task<Plan> GenerarPlanAuditoria(int id) => _repo.PlanAsync(id);\n\n---\n\n[Chunk #3 | Score: 0.78]\nRepository : innovapp-docs\nFile       : docs/us-17.md (lines 10–25)\nSection    : US-17.2 — Finalización automática\nLa auditoría se finaliza automáticamente al cerrar el último hallazgo.",
+  "plantilla:simple-gana-aunque-sea-todo-codigo": "0d29eb17a902a5d2",
+  "plantilla:simple-gana-aunque-sea-todo-docs": "0d29eb17a902a5d2",
+  "plantilla:tecnico-mayoria-codigo": "d32cd4727304ccc0",
+  "plantilla:tecnico-empate-va-a-docs": "a3ba96b72efbd120",
+  "plantilla:tecnico-todo-docs": "a3ba96b72efbd120",
+  "plantilla:tecnico-todo-codigo": "d32cd4727304ccc0"
+}

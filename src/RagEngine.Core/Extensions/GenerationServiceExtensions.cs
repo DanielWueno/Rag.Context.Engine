@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Services.Summary;
 
 namespace RagEngine.Core.Extensions;
 
@@ -70,7 +72,7 @@ public static class GenerationServiceExtensions
         //    • Kernel construction is NOT cheap: it validates the endpoint,
         //      creates the HttpClient pipeline, and sets up middleware.
         //    • The Kernel itself is stateless between calls — ChatHistory lives
-        //      on the stack inside RagGenerationService.AskStreamingAsync.
+        //      on the stack inside ChatAnswerStreamer.StreamAsync.
         //    • Matches how SK is documented for hosted-service scenarios.
         //
         //  Why AddOpenAIChatCompletion and not a dedicated Ollama package?
@@ -100,12 +102,39 @@ public static class GenerationServiceExtensions
             return builder.Build();
         });
 
-        // ── 3. Register the RAG orchestrator ─────────────────────────────────
+        // ── 3. Colaboradores de generación (ítem 2.2: un rol, una clase) ─────
+        //
+        //  Singleton porque todas sus dependencias lo son (Kernel, SummaryCache,
+        //  IOptionsMonitor, ILogger) y ninguno guarda estado entre turnos. Registrarlos
+        //  Scoped sería igual de correcto pero pagaría una construcción por petición
+        //  sin ganar nada; registrarlos aquí y no dentro de RagGenerationService es lo
+        //  que permite sustituirlos en un test sin levantar la tubería entera.
+        //  Fábricas explícitas: los colaboradores son internal, y ActivatorUtilities
+        //  —lo que usa AddSingleton<T>()— sólo mira constructores públicos.
+        services.AddSingleton(sp => new ConfidenceGate(
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<ILogger<ConfidenceGate>>()));
+        services.AddSingleton(sp => new GenerationContextAssembler(
+            sp.GetRequiredService<SummaryCache>(),
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<ILogger<GenerationContextAssembler>>()));
+        services.AddSingleton(sp => new ChatAnswerStreamer(
+            sp.GetRequiredService<Kernel>(),
+            sp.GetRequiredService<ILogger<ChatAnswerStreamer>>()));
+
+        // ── 4. Register the RAG orchestrator ─────────────────────────────────
         //
         //  Scoped (not Singleton) because ISemanticRetriever is Scoped.
         //  Each CLI command execution gets its own scope (via SpectreHostTypeRegistrar),
         //  so this is effectively one instance per command invocation.
-        services.AddScoped<IRagGenerationService, RagGenerationService>();
+        services.AddScoped<IRagGenerationService>(sp => new RagGenerationService(
+            sp.GetRequiredService<ISemanticRetriever>(),
+            sp.GetRequiredService<ILogger<RagGenerationService>>(),
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<IMetaIntentDetector>(),
+            sp.GetRequiredService<ConfidenceGate>(),
+            sp.GetRequiredService<GenerationContextAssembler>(),
+            sp.GetRequiredService<ChatAnswerStreamer>()));
 
         return services;
     }

@@ -51,6 +51,25 @@ bash infra/arnes/plan-run.sh 5.0               # ejecutar uno concreto
 bash infra/arnes/plan-run.sh ola:5             # el siguiente de una ola
 ```
 
+Las banderas van en cualquier orden y se combinan con el id.
+
+### Cuánta supervisión
+
+| Modo | Qué cambia | Cuándo |
+|---|---|---|
+| *(por defecto)* | Sesión interactiva. Apruebas los permisos y las confirmaciones. | Casi siempre. Es el que no te sorprende. |
+| `--auto` | Interactiva, pero el clasificador de auto mode resuelve los permisos rutinarios. Lo destructivo sigue frenando y tú sigues delante para confirmar una corrida larga. | Ítems con mucho toqueteo de archivos donde aprobar uno por uno sólo cansa. La primera vez, Claude Code pide aceptar el modo. |
+| `--desatendido[=N]` | Sin sesión interactiva (`claude -p`), con techo de gasto en dólares (`N`, por defecto 5). | Los ítems mecánicos: `haiku`, cero horas de máquina. Revisas el commit al terminar, no durante. |
+
+`--desatendido` **se niega** —y dice por qué— si el ítem pide más de una hora de máquina, lleva
+`multiagente`, está bloqueado, o el árbol tiene cambios sin commitear. No es celo: en modo `-p` no
+hay a quién preguntar, y el protocolo exige preguntar justo en esos casos. Una pregunta que nadie
+puede responder no es una puerta, es un cuelgue. `--igual` salta las guardas bajo tu
+responsabilidad.
+
+Regla práctica: **si el ledger dice `haiku` y 0 horas, `--desatendido` es seguro; si dice `opus`,
+quédate delante.** El campo `modelo` ya codifica cuánto criterio hace falta.
+
 Dentro de una sesión de Claude Code ya abierta, lo mismo se pide con `/plan-estado` y
 `/plan-siguiente`. La diferencia es el contexto: `plan-run.sh` arranca un proceso nuevo, así que el
 ítem no hereda nada de lo que estuvieras haciendo antes.

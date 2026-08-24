@@ -232,11 +232,13 @@
           "multiagente": false,
           "verificacion": "git status sin untracked en la raíz y `git check-ignore -v nohup.out` nombra el patrón que lo cubre",
           "horas_maquina": 0,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Borrar un archivo y añadir una línea al .gitignore; lo verifica git.",
           "archivos": "nohup.out, .gitignore",
           "rollback": "Trivial: el archivo no lo usa nadie.",
-          "origen": "Detectado el 2026-08-24 al auditar la propuesta de refinamiento arquitectónico. Mismo género que 1.12 (artefacto huérfano en la raíz), pero éste sí tiene causa conocida y trivial."
+          "origen": "Detectado el 2026-08-24 al auditar la propuesta de refinamiento arquitectónico. Mismo género que 1.12 (artefacto huérfano en la raíz), pero éste sí tiene causa conocida y trivial.",
+          "fecha": "2026-08-24",
+          "resultado": "nohup.out eliminado del árbol. .gitignore actualizado con patrón nohup.out en línea 25. Verificación: git status sin untracked en la raíz, git check-ignore -v nohup.out identifica el patrón en .gitignore:25."
         }
       ]
     },

@@ -519,9 +519,11 @@
           "multiagente": false,
           "verificacion": "Una ingesta incremental con --con-resumen (sin --force, y con rag-api detenido) debe reportar 'Obsoletos borrados: 272' y dejar la colección en 22.592 puntos. Verificar que los 12.668 resúmenes sobreviven.",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
+          "fecha": "2026-08-24",
           "por_que_este_modelo": "Correr un comando ya documentado y comparar dos conteos.",
           "origen": "Verificado el 2026-08-24: bsuite-repo tiene 22.864 puntos y 272 no están en el set de chunks que el chunker genera hoy. Los 272 se caracterizaron en su momento: su texto sigue presente en los archivos actuales (196 byte a byte, 76 salvo saltos de línea), así que son residuo de un reagrupamiento del chunker, no de un cambio del repo fuente.",
+          "resultado": "Ingesta incremental ejecutada con `rag ingest --con-resumen` (sin --force, rag-api detenido). Output: 2.103 archivos, 22.592 chunks generados, 22.592 indexados, 272 obsoletos borrados en 2m50s. Verificado: colección quedó en 22.592 puntos exactos (22.864 - 272). Summary-cache.sqlite3 legible con 18.784 registros, cero corrupción. Colección lista para medición de recall sin contaminación de chunks de chunking anterior.",
           "bloquea": "Bloquea toda medición de recall de las olas 5 y 6: no se mide retrieval sobre un corpus con puntos de un chunking anterior ni sobre colecciones con esquema roto. Ver docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md §6."
         }
       ]

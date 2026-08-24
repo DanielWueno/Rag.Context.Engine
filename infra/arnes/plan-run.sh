@@ -7,7 +7,21 @@
 #   bash infra/arnes/plan-run.sh              # el siguiente pendiente
 #   bash infra/arnes/plan-run.sh 5.0          # un ítem concreto
 #   bash infra/arnes/plan-run.sh ola:5        # el siguiente de la Ola 5
-#   bash infra/arnes/plan-run.sh 5.0 --solo-anunciar
+#   bash infra/arnes/plan-run.sh 5.0 --solo-anunciar    # sólo la ficha, no ejecuta
+#   bash infra/arnes/plan-run.sh 5.0 --auto             # menos prompts de permisos
+#   bash infra/arnes/plan-run.sh 4.6 --desatendido      # sin nadie delante (con guardas)
+#
+# Modos de permisos:
+#   (por defecto)   interactivo. Apruebas lo que pida. Es lo correcto casi siempre.
+#   --auto          interactivo, pero con el clasificador de auto mode decidiendo
+#                   los permisos rutinarios. Sigue frenando lo destructivo y sigue
+#                   habiendo alguien para confirmar una corrida larga.
+#   --desatendido   sin sesión interactiva (claude -p). Para los ítems mecánicos.
+#                   Se NIEGA si el ítem pide más de 1 hora de máquina, si lleva
+#                   multiagente o si está bloqueado: en modo -p no hay a quién
+#                   preguntar, y el protocolo exige preguntar en esos casos.
+#                   --igual salta esas guardas bajo tu responsabilidad.
+#                   Acepta un techo de gasto: --desatendido=3  (dólares, def. 5)
 #
 # Por qué existe: /plan-siguiente delega la ejecución a un
 # subagente, así que ESA parte ya corre en contexto limpio, pero
@@ -30,10 +44,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || (cd "$SCRIPT_DIR/../.." && pwd))"
 LEDGER="$(cd "$ROOT" && python3 "$SCRIPT_DIR/ledger_path.py" 2>/dev/null || true)"
 
-ARG="${1:-}"
-SOLO_ANUNCIAR=0
-[[ "${2:-}" == "--solo-anunciar" || "$ARG" == "--solo-anunciar" ]] && SOLO_ANUNCIAR=1
-[[ "$ARG" == "--solo-anunciar" ]] && ARG=""
+# Las banderas se aceptan en cualquier posición: el primer argumento que no
+# empiece por "--" es el id o el ola:N.
+ARG=""; SOLO_ANUNCIAR=0; MODO="interactivo"; PRESUPUESTO=5; FORZAR=0
+for a in "$@"; do
+  case "$a" in
+    --solo-anunciar|--anunciar) SOLO_ANUNCIAR=1 ;;
+    --auto)                     MODO="auto" ;;
+    --desatendido)              MODO="desatendido" ;;
+    --desatendido=*)            MODO="desatendido"; PRESUPUESTO="${a#*=}" ;;
+    --igual|--force)            FORZAR=1 ;;
+    -h|--help)                  sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --*) echo "Bandera desconocida: $a (usa --help)"; exit 1 ;;
+    *)   [[ -z "$ARG" ]] && ARG="$a" || { echo "Sobra el argumento: $a"; exit 1; } ;;
+  esac
+done
 
 command -v claude >/dev/null || { echo -e "${RED}✗${NC} 'claude' no está en el PATH."; exit 1; }
 if [[ -z "$LEDGER" || ! -f "$LEDGER" ]]; then
@@ -129,33 +154,74 @@ echo
 [[ $SOLO_ANUNCIAR -eq 1 ]] && exit 0
 
 # ── Puertas antes de gastar ─────────────────────────────────────────────────
-if [[ -n "$BLOQ_POR" ]]; then
-  read -r -p "$(echo -e "${RED}Está bloqueado.${NC} ¿Ejecutar de todas formas? [s/N] ")" r
-  [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
-fi
-if awk "BEGIN{exit !($HORAS > 1)}"; then
-  echo -e "${YELLOW}⚠${NC}  $HORAS horas de máquina. No se lanza por iniciativa propia."
-  read -r -p "   ¿Confirmas? [s/N] " r
-  [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
-fi
-if ! git -C "$ROOT" diff --quiet || ! git -C "$ROOT" diff --cached --quiet; then
-  echo -e "${YELLOW}⚠${NC}  El árbol tiene cambios sin commitear. El ítem cierra con commit y los arrastraría."
-  git -C "$ROOT" status --short | sed 's/^/     /'
-  read -r -p "   ¿Sigo? [s/N] " r
-  [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
+# Las mismas tres condiciones se juzgan distinto según el modo: con alguien
+# delante se preguntan, y sin nadie delante se rechazan. Una pregunta que nadie
+# puede responder no es una puerta, es un cuelgue.
+ARBOL_SUCIO=0
+git -C "$ROOT" diff --quiet && git -C "$ROOT" diff --cached --quiet || ARBOL_SUCIO=1
+CARO=0
+awk "BEGIN{exit !($HORAS > 1)}" && CARO=1
+
+if [[ "$MODO" == "desatendido" ]]; then
+  RAZONES=()
+  [[ $CARO -eq 1 ]]       && RAZONES+=("pide $HORAS h de máquina y nadie podría confirmarlo")
+  [[ "$MULTI" == "sí" ]]  && RAZONES+=("lleva multiagente, que el ledger reserva para lo supervisado")
+  [[ -n "$BLOQ_POR" ]]    && RAZONES+=("está bloqueado por $BLOQ_POR")
+  [[ $ARBOL_SUCIO -eq 1 ]] && RAZONES+=("el árbol tiene cambios sin commitear y el ítem los arrastraría al commit")
+  if [[ ${#RAZONES[@]} -gt 0 && $FORZAR -eq 0 ]]; then
+    echo -e "${RED}✗${NC} No lanzo ${BOLD}$ID${NC} desatendido:"
+    for r in "${RAZONES[@]}"; do echo "   · $r"; done
+    echo -e "${DIM}   Córrelo interactivo (sin --desatendido) o añade --igual si sabes lo que haces.${NC}"
+    exit 1
+  fi
+else
+  if [[ -n "$BLOQ_POR" ]]; then
+    read -r -p "$(echo -e "${RED}Está bloqueado.${NC} ¿Ejecutar de todas formas? [s/N] ")" r
+    [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
+  fi
+  if [[ $CARO -eq 1 ]]; then
+    echo -e "${YELLOW}⚠${NC}  $HORAS horas de máquina. No se lanza por iniciativa propia."
+    read -r -p "   ¿Confirmas? [s/N] " r
+    [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
+  fi
+  if [[ $ARBOL_SUCIO -eq 1 ]]; then
+    echo -e "${YELLOW}⚠${NC}  El árbol tiene cambios sin commitear. El ítem cierra con commit y los arrastraría."
+    git -C "$ROOT" status --short | sed 's/^/     /'
+    read -r -p "   ¿Sigo? [s/N] " r
+    [[ "$r" =~ ^[sSyY]$ ]] || { echo "Cancelado."; exit 0; }
+  fi
 fi
 
 # ── Ejecución en contexto limpio ────────────────────────────────────────────
 # Sesión nueva: no es un /clear sobre la sesión actual, es otro proceso.
 # El nombre (-n) la hace identificable en /resume y en el título del terminal.
 NOMBRE="plan $ID"
-echo -e "${GREEN}▶${NC} Sesión nueva ${BOLD}\"$NOMBRE\"${NC} — modelo $MODELO, esfuerzo $ESFUERZO"
-echo -e "${DIM}   (interactiva a propósito: el protocolo pide confirmación antes de una ingesta larga${NC}"
-echo -e "${DIM}    y los permisos de escritura y commit se aprueban aquí)${NC}"
+ARGS_CLAUDE=(-n "$NOMBRE" --model "$MODELO" --effort "$ESFUERZO")
+
+case "$MODO" in
+  interactivo)
+    echo -e "${GREEN}▶${NC} Sesión nueva ${BOLD}\"$NOMBRE\"${NC} — $MODELO / $ESFUERZO / interactivo"
+    echo -e "${DIM}   Apruebas los permisos y las confirmaciones aquí.${NC}"
+    ;;
+  auto)
+    ARGS_CLAUDE+=(--permission-mode auto)
+    echo -e "${GREEN}▶${NC} Sesión nueva ${BOLD}\"$NOMBRE\"${NC} — $MODELO / $ESFUERZO / ${YELLOW}auto${NC}"
+    echo -e "${DIM}   El clasificador decide los permisos rutinarios; lo destructivo sigue frenando,${NC}"
+    echo -e "${DIM}   y sigues estando delante para confirmar una corrida larga.${NC}"
+    echo -e "${DIM}   La primera vez, Claude Code te pedirá aceptar el modo auto.${NC}"
+    ;;
+  desatendido)
+    # Las guardas ya se evaluaron arriba: aquí sólo se arma la llamada.
+    ARGS_CLAUDE+=(-p --permission-mode acceptEdits --max-budget-usd "$PRESUPUESTO")
+    echo -e "${GREEN}▶${NC} ${BOLD}\"$NOMBRE\"${NC} — $MODELO / $ESFUERZO / ${YELLOW}desatendido${NC}, techo \$$PRESUPUESTO"
+    [[ ${#RAZONES[@]} -gt 0 ]] && echo -e "   ${RED}Guardas saltadas con --igual.${NC}"
+    echo -e "${DIM}   Sin sesión interactiva: revisa el commit al terminar, no durante.${NC}"
+    ;;
+esac
 echo
 
 set +e
-claude -n "$NOMBRE" --model "$MODELO" --effort "$ESFUERZO" "/plan-siguiente $ID"
+claude "${ARGS_CLAUDE[@]}" "/plan-siguiente $ID"
 CODE=$?
 set -e
 

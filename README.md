@@ -61,7 +61,7 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 | [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |
 | [docs/configuracion.md](docs/configuracion.md) | `appsettings.json`, gestión de modelos, cuándo re-ingestar |
 | [docs/operaciones.md](docs/operaciones.md) | Logs, métricas, troubleshooting y runbook |
-| [infra/arnes/README.md](infra/arnes/README.md) | **Arnés de ejecución de planes.** Cómo se trabaja aquí en tareas largas con un asistente: el ledger, los comandos, un ítem por sesión limpia. Portable a otros repos con `bash infra/arnes/instalar.sh`. |
+| [arnes-plan](https://github.com/DanielWueno/arnes-plan) | **Arnés de ejecución de planes.** Cómo se trabaja aquí en tareas largas con un asistente: el ledger, los comandos, un ítem por sesión limpia. Ya no vive en este repo: es un plugin de Claude Code (`claude plugin marketplace add DanielWueno/arnes-plan`). Lo que sí es de aquí es el ledger, en `docs/analisis-futuro/ejecucion-plan.estado.json`. |
 
 ## Estructura de la solución
 

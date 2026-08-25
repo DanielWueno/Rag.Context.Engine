@@ -1,5 +1,6 @@
 {
   "_leeme": "Ledger de ejecución del plan de ingeniería. Fuente de verdad del avance: sobrevive al reinicio del límite de sesión, a un /clear y a cerrar la terminal. Se avanza con /plan-siguiente (un ítem por invocación, commit al final). Estados: pendiente | en_curso | hecho | bloqueado | descartado.",
+  "schema_version": 1,
   "_provisional": "Sembrado desde la auditoría del 2026-08-20. Cuando exista docs/analisis-futuro/plan-global-ingenieria.md, reconciliar: los ítems del plan manda, estos son la semilla.",
   "_moneda": "horas_maquina = tiempo de ingesta/eval/build, NO tokens. Es el recurso escaso real.",
   "olas": [
@@ -391,7 +392,7 @@
           "horas_maquina": 0.5,
           "estado": "pendiente",
           "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio.",
-          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover."
+          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Incluye reescribir las referencias muertas a infra/arnes/ que quedaron en docs/analisis-futuro/prompt-plan-global-proyecto.md al extraerse el arnés a su propio repositorio (github.com/DanielWueno/arnes-plan)."
         },
         {
           "id": "3.5-portabilidad-x64",

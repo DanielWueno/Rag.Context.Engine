@@ -31,25 +31,6 @@ public class GenerationContextGoldenTests
         return JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(ruta))!;
     }
 
-    /// <summary>
-    /// Ejecuta bajo cultura invariante.
-    ///
-    /// No es celo: la cabecera del chunk formatea el score con <c>{0:F2}</c>, que usa
-    /// <c>CurrentCulture</c>. En una máquina es-ES o de-DE el golden sale <c>0,91</c> y
-    /// 5 de los 6 casos se caen — un rojo falso que además invita a re-baselinizar en
-    /// silencio contra la coma. La dependencia de cultura es del código de producción y
-    /// es ANTERIOR a esta descomposición (ver el ítem del ledger sobre <c>F2</c> y
-    /// <c>InvariantGlobalization</c>); lo que este envoltorio garantiza es que el test
-    /// mide el refactor y no la locale del agente de CI.
-    /// </summary>
-    private static T ConCulturaInvariante<T>(Func<T> accion)
-    {
-        var previa = CultureInfo.CurrentCulture;
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        try { return accion(); }
-        finally { CultureInfo.CurrentCulture = previa; }
-    }
-
     private static string Sha(string valor) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(valor)))[..16].ToLowerInvariant();
 
@@ -75,7 +56,7 @@ public class GenerationContextGoldenTests
     {
         var chunks = GenerationGoldenCasos.Contexto.Single(c => c.Nombre == nombre).Chunks;
 
-        var real = ConCulturaInvariante(() => GenerationContextAssembler.BuildContextBlock(chunks));
+        var real = GenerationContextAssembler.BuildContextBlock(chunks);
 
         Assert.Equal(Golden["contexto:" + nombre], real);
     }
@@ -89,6 +70,33 @@ public class GenerationContextGoldenTests
         var real = SystemPromptComposer.SelectTemplate(caso.Chunks, caso.Modo);
 
         Assert.Equal(Golden["plantilla:" + nombre], Sha(real));
+    }
+
+    /// <summary>
+    /// El score de la cabecera del chunk se formatea con <c>CultureInfo.InvariantCulture</c>
+    /// explícito en producción (ver <c>GenerationContextAssembler.BuildChunkHeader</c>), así
+    /// que el resultado no debe depender de <c>CurrentCulture</c>. Este test lo fija bajo
+    /// de-DE, donde el separador decimal es coma: si el formateo interno perdiera la cultura
+    /// explícita, "Score: 0.91" se convertiría en "Score: 0,91" y este test lo detectaría.
+    /// </summary>
+    [Fact]
+    public void ElScoreDeLaCabeceraEsInvariantePorCulturaDeDe()
+    {
+        var previa = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+        try
+        {
+            var chunks = GenerationGoldenCasos.Contexto.Single(c => c.Nombre == "un-chunk-de-codigo-completo").Chunks;
+
+            var real = GenerationContextAssembler.BuildContextBlock(chunks);
+
+            Assert.Contains("Score: 0.91", real);
+            Assert.DoesNotContain("Score: 0,91", real);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previa;
+        }
     }
 
     /// <summary>

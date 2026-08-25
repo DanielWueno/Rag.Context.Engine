@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -188,7 +189,7 @@ internal sealed class GenerationContextAssembler
         var m  = result.Metadata;
         var sb = new StringBuilder();
 
-        sb.AppendLine($"[Chunk #{index} | Score: {result.SimilarityScore:F2}]");
+        sb.AppendLine($"[Chunk #{index} | Score: {result.SimilarityScore.ToString("F2", CultureInfo.InvariantCulture)}]");
         sb.AppendLine($"Repository : {m.RepositoryName}");
         sb.AppendLine($"File       : {m.RelativeFilePath} (lines {m.StartLine}–{m.EndLine})");
 

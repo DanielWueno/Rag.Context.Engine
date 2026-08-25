@@ -490,10 +490,13 @@
           "multiagente": false,
           "horas_maquina": 0.1,
           "verificacion": "`LC_ALL=de_DE.UTF-8 dotnet test RagEngine.slnx` verde SIN el envoltorio ConCulturaInvariante de GenerationContextGoldenTests (quitarlo es parte del ítem: deja de hacer falta si el formato es invariante). Y un test que afirme que BuildChunkHeader produce 'Score: 0.91' bajo CultureInfo de-DE.",
+          "verificacion_comando": "! grep -q ConCulturaInvariante tests/RagEngine.Core.Tests/GenerationContextGoldenTests.cs && LC_ALL=de_DE.UTF-8 dotnet test RagEngine.slnx",
           "por_que_este_modelo": "Es un `CultureInfo.InvariantCulture` en un `{0:F2}` y un csproj; el criterio ya está escrito.",
           "origen": "Panel adversarial del ítem 2.2 (2026-08-24), lente de casos límite. GenerationContextAssembler.cs:191 usa `{result.SimilarityScore:F2}` sin cultura explícita. Medido: `LC_ALL=de_DE.UTF-8` tumbaba 5 de los 6 casos del golden nuevo. Además RagEngine.Api.csproj:20 fija InvariantGlobalization=true y RagEngine.Cli.csproj NO, así que hoy el MISMO chunk llega al LLM con distinto separador decimal según el host. Preexistente al 2.2; el 2.2 sólo lo hizo medible.",
           "rollback": "git revert del commit. Es un cambio de formato local a una función pura; si el golden se regenerara con coma, revertir exige regenerarlo de vuelta bajo cultura invariante.",
-          "estado": "pendiente"
+          "estado": "hecho",
+          "fecha": "2026-08-25",
+          "resultado": "GenerationContextAssembler.BuildChunkHeader ahora formatea el score con CultureInfo.InvariantCulture explícita en vez de {0:F2} implícito. Se quitó el envoltorio ConCulturaInvariante de GenerationContextGoldenTests.cs (ya no hace falta) y se añadió el test ElScoreDeLaCabeceraEsInvariantePorCulturaDeDe que fija CultureInfo.CurrentCulture=de-DE y confirma 'Score: 0.91' (no 'Score: 0,91'). Verificado con el comando exacto de la ficha: LC_ALL=de_DE.UTF-8 dotnet test RagEngine.slnx -> 123 tests, 0 fallos. dotnet build sin advertencias ni errores nuevos."
         },
         {
           "id": "3.10-guardia-de-crecimiento-para-isdocumentation",

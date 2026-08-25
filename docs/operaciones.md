@@ -34,7 +34,7 @@ grep -h "Ingestion complete" logs/rag-engine-*.json | tail -3
 grep -h "Search completed"  logs/rag-engine-*.json | tail -10
 ```
 
-- **Métricas** (`System.Diagnostics.Metrics`, medidor `RagEngine`): `chunks_indexed_total`, `ingestion_errors_total` (etiquetadas por etapa), `search_latency_ms`, `search_errors_total`.
+- **Métricas** (`System.Diagnostics.Metrics`, medidor `RagEngine`): `chunks_indexed_total`, `ingestion_errors_total` (etiquetadas por etapa), `search_latency_ms`, `search_errors_total`. Verificables con `dotnet-counters monitor -p <PID> --counters RagEngine` (requiere [dotnet-counters](https://github.com/dotnet/diagnostics)) o `curl http://localhost:5080/api/test-metrics` en la API para registrar valores de prueba.
 - **Resiliencia:** las llamadas a Qdrant pasan por Polly (3 reintentos exponenciales + circuit breaker 50%/30s). Los reintentos se loguean con `Execution attempt`.
 
 ## Troubleshooting

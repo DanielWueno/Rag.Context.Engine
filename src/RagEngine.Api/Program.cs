@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RagEngine.Api;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Vectorization;
@@ -57,6 +58,13 @@ try
 
     builder.Services.AddRagEngineCore(builder.Configuration);
     builder.Services.AddRagEngineGeneration(builder.Configuration);
+
+    // Listener de métricas para detectar los instrumentos del Meter Rag.Context.Engine
+    builder.Services.AddHostedService<MetricsListener>();
+
+    // Exportador simple de métricas para verificar que los instrumentos funcionan
+    builder.Services.AddSingleton(sp =>
+        new SimpleMetricsExporter(sp.GetRequiredService<ILogger<SimpleMetricsExporter>>()));
 
     // AddProblemDetails() habilita el relleno automático de ProblemDetails que ya
     // hace el propio binding de minimal API cuando el body no parsea como JSON
@@ -294,6 +302,19 @@ try
     {
         var collections = await qdrant.ListCollectionsAsync(cancellationToken);
         return Results.Ok(new { collections, @default = defaultCollection });
+    });
+
+    // Endpoint de prueba para verificar que los instrumentos de métricas están activos
+    // Registra valores en los 4 contadores del Meter: ChunksIndexedTotal, IngestionErrorsTotal,
+    // SearchLatencyMs, SearchErrorsTotal
+    app.MapGet("/api/test-metrics", () =>
+    {
+        RagEngineMetrics.ChunksIndexedTotal.Add(10, new KeyValuePair<string, object?>("collection", "test"));
+        RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "test"));
+        RagEngineMetrics.SearchLatencyMs.Record(42.5, new KeyValuePair<string, object?>("collection", "test"));
+        RagEngineMetrics.SearchErrorsTotal.Add(1, new KeyValuePair<string, object?>("collection", "test"));
+
+        return Results.Ok(new { message = "Metrics recorded. Check with: dotnet-counters monitor -p <PID> --counters 'Rag.Context.Engine'" });
     });
 
     app.MapPost("/api/search", async (

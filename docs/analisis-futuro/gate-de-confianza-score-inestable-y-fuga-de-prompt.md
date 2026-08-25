@@ -132,6 +132,87 @@ done
 **Criterio de salida:** distribución del rango `max-min` por consulta. Si la mediana del rango
 supera 0.05, el gate por umbral absoluto no es defendible tal como está y el ítem 2 es obligatorio.
 
+#### Resultado de la medición (2026-08-25)
+
+Barrido real ejecutado con el CLI (`RagEngine.Cli.dll search ... --rerank --output json`) contra el
+build Release, sobre 22 consultas reales (11 de `docs/eval/innovapp-docs.eval-set.json` sobre
+`innovapp-docs`, 11 manuales sobre `wiki-solis`), `TopK ∈ {3,5,8,10,15,20}` — 132 invocaciones,
+ninguna tardó más de ~3.2 s (sin señales de recarga de modelo por invocación). El "chunk ganador"
+de cada consulta es el `chunk_id` top-1 de la corrida con `TopK=10`; se rastreó su
+`similarity_score` en las otras 5 corridas, registrando "fuera del pool" cuando no aparecía.
+
+#### Tabla de detalle por consulta (score del chunk ganador de k=10, por TopK)
+
+| # | Colección | Consulta | Sección del chunk ganador | k=3 | k=5 | k=8 | k=10 | k=15 | k=20 |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | innovapp-docs | ¿Quién puede cancelar un ticket que está en estatus Registrado? | Reglas de negocio | fuera del pool | fuera del pool | 0.9951 | 0.9970 | 0.9963 | 0.9934 |
+| 2 | innovapp-docs | ¿Qué es el Folio Único de Atención? | Reglas de negocio | 0.9991 | 0.9991 | 0.9992 | 0.9982 | 0.9991 | 0.9988 |
+| 3 | innovapp-docs | ¿Cómo se marca una notificación como leída? | Reglas de negocio | 0.9984 | 0.9988 | 0.9986 | 0.9989 | 0.9988 | 0.9984 |
+| 4 | innovapp-docs | ¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'? | Objetivo | 0.9972 | 0.9954 | 0.9965 | 0.9976 | 0.9975 | 0.9956 |
+| 5 | innovapp-docs | Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo? | US-2.1 — Cancelación de la propia petición | fuera del pool | fuera del pool | 0.8435 | 0.9250 | 0.8778 | 0.7873 |
+| 6 | innovapp-docs | ¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio? | Descripción | fuera del pool | fuera del pool | fuera del pool | 0.0157 | 0.0145 | 0.0151 |
+| 7 | innovapp-docs | ¿Me avisan por correo cuando resuelven mi problema? | US-43.1 — Generación de la notificación in-app | 0.0834 | 0.0760 | 0.0955 | 0.0674 | 0.0675 | 0.1060 |
+| 8 | innovapp-docs | ¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket? | Descripción | fuera del pool | fuera del pool | fuera del pool | 0.8501 | 0.8932 | 0.9075 |
+| 9 | innovapp-docs | ¿Puedo cancelar mi ticket en cualquier momento? | Criterios de Aceptación | 0.2967 | 0.3288 | 0.2899 | 0.3657 | 0.3165 | 0.2813 |
+| 10 | innovapp-docs | ¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso? | Componentes del Timeline de Trayectoria | fuera del pool | fuera del pool | 0.6864 | 0.7160 | 0.7627 | 0.7219 |
+| 11 | innovapp-docs | ¿Cómo solicito mis vacaciones o días económicos? | 5.1 — Regresión de Ticket (ciclo completo) | 0.0298 | 0.0407 | 0.0300 | 0.0271 | 0.0410 | 0.0351 |
+| 12 | wiki-solis | InovApp | RF-32 — Alcance funcional de InovApp | fuera del pool | 0.9844 | 0.9767 | 0.9803 | 0.9886 | 0.9913 |
+| 13 | wiki-solis | Que puede hacer un auditor desde la app movil? | US-33.4 — Lógica y estructura offline para app móvil | 0.9689 | 0.9539 | 0.9818 | 0.9742 | 0.9797 | 0.9638 |
+| 14 | wiki-solis | como sincroniza la aplicacion de campo cuando recupera senal | US-33.4 — Lógica y estructura offline para app móvil | 0.5893 | 0.6554 | 0.6021 | 0.6787 | 0.6643 | 0.5490 |
+| 15 | wiki-solis | quien puede dar avance a una revision en curso | Descripción | 0.1036 | 0.1685 | 0.2450 | 0.1732 | 0.1430 | 0.0981 |
+| 16 | wiki-solis | Procesos, reglas o demas relacionados con innovapp? | Reglas de negocio | 0.1072 | 0.0861 | 0.0827 | 0.1420 | 0.0655 | 0.1004 |
+| 17 | wiki-solis | Se menciona algo de un sistema movil, una api, microservicio, innovapp? | US-33.4 — Lógica y estructura offline para app móvil | 0.0109 | 0.0094 | 0.0245 | 0.0242 | 0.0033 | 0.0064 |
+| 18 | wiki-solis | Que informacion hay sobre integraciones? | Riesgos (RGO) | 0.0266 | 0.0262 | 0.0325 | 0.0264 | 0.0166 | 0.0150 |
+| 19 | wiki-solis | procedimiento para renovar el pasaporte | RF-15 — Transición del Ticket a "Proceso" con la Persona Asignada del wizard y su historial de asignaciones | fuera del pool | fuera del pool | 0.0198 | 0.0150 | 0.0138 | 0.0177 |
+| 20 | wiki-solis | receta de paella valenciana | Mapa de Estados | fuera del pool | 0.0114 | 0.0109 | 0.0068 | 0.0125 | 0.0092 |
+| 21 | wiki-solis | Segmentación por departamento en catálogos, procesos y monitores? | RF-13 — Segmentación por departamento en catálogos, procesos y monitores | 0.9998 | 0.9998 | 0.9998 | 0.9998 | 0.9998 | 0.9999 |
+| 22 | wiki-solis | Que reglas se siguen para poder aplica la firma? | US-31.2 — Trazabilidad de la firma en bitácora | 0.0591 | 0.0472 | 0.0407 | 0.0445 | 0.0468 | 0.0463 |
+
+#### Tabla resumen: rango (max-min) por consulta
+
+| # | Colección | Consulta | Rango (max-min) | Fuera del pool (de 6) |
+|---|---|---|---|---|
+| 1 | innovapp-docs | ¿Quién puede cancelar un ticket que está en estatus Registrado? | 0.0036 | 2 |
+| 2 | innovapp-docs | ¿Qué es el Folio Único de Atención? | 0.0010 | 0 |
+| 3 | innovapp-docs | ¿Cómo se marca una notificación como leída? | 0.0005 | 0 |
+| 4 | innovapp-docs | ¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'? | 0.0022 | 0 |
+| 5 | innovapp-docs | Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo? | 0.1377 | 2 |
+| 6 | innovapp-docs | ¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio? | 0.0013 | 3 |
+| 7 | innovapp-docs | ¿Me avisan por correo cuando resuelven mi problema? | 0.0386 | 0 |
+| 8 | innovapp-docs | ¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket? | 0.0574 | 3 |
+| 9 | innovapp-docs | ¿Puedo cancelar mi ticket en cualquier momento? | 0.0843 | 0 |
+| 10 | innovapp-docs | ¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso? | 0.0764 | 2 |
+| 11 | innovapp-docs | ¿Cómo solicito mis vacaciones o días económicos? | 0.0139 | 0 |
+| 12 | wiki-solis | InovApp | 0.0145 | 1 |
+| 13 | wiki-solis | Que puede hacer un auditor desde la app movil? | 0.0279 | 0 |
+| 14 | wiki-solis | como sincroniza la aplicacion de campo cuando recupera senal | 0.1297 | 0 |
+| 15 | wiki-solis | quien puede dar avance a una revision en curso | 0.1470 | 0 |
+| 16 | wiki-solis | Procesos, reglas o demas relacionados con innovapp? | 0.0765 | 0 |
+| 17 | wiki-solis | Se menciona algo de un sistema movil, una api, microservicio, innovapp? | 0.0212 | 0 |
+| 18 | wiki-solis | Que informacion hay sobre integraciones? | 0.0175 | 0 |
+| 19 | wiki-solis | procedimiento para renovar el pasaporte | 0.0060 | 2 |
+| 20 | wiki-solis | receta de paella valenciana | 0.0057 | 1 |
+| 21 | wiki-solis | Segmentación por departamento en catálogos, procesos y monitores? | 0.0001 | 0 |
+| 22 | wiki-solis | Que reglas se siguen para poder aplica la firma? | 0.0183 | 0 |
+
+**Mediana del rango sobre las 22 consultas (todas tuvieron al menos un score válido): 0.0179.**
+**7 de 22 consultas (32 %) superan individualmente el umbral de 0.05**, con casos hasta 0.147
+(#15, `quien puede dar avance a una revision en curso`) y 0.138 (#5, cancelar ticket propio).
+
+**Conclusión:** la *mediana* (0.0179) **no supera** los 0.05 del criterio literal del ítem, así que
+el ítem 2 (ítem 4.2 del ledger) no queda disparado automáticamente por ese criterio estricto. Pero
+la distribución es de cola larga y no despreciable: casi un tercio de las consultas cruza el umbral
+individualmente, con rangos hasta ~3× el corte, y el patrón repite el hallazgo n=1 original
+(`como sincroniza...` → US-33.4, rango 0.1297 en esta corrida — no reproduce los valores exactos del
+Hallazgo 2 original, que salieron de otra corrida anterior; el score exacto no es reproducible bit a
+bit entre ejecuciones, algo ya documentado como no-determinismo de Qdrant en empates de score, pero
+la magnitud de la variación por `TopK` sí es consistente). Dado que el criterio del ítem se definió
+sobre la mediana y esta no lo cruza, el ítem 4.2 **no pasa a obligatorio por el criterio literal**;
+sin embargo, con un tercio de consultas mostrando inestabilidad de esta magnitud, el gate por umbral
+absoluto sigue sin ser plenamente defendible para el subconjunto de cola larga, y conviene tratar el
+ítem 4.2 como recomendado aunque no obligatorio, o acotar su alcance a estabilizar sólo el score que
+alimenta el gate (opción 3 del ítem 2) sin necesidad de resolver todo el batching.
+
 ### Ítem 2 — Hacer el score invariante a la composición del lote (implementación)
 
 Tres opciones, medir coste antes de elegir:

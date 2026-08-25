@@ -69,12 +69,15 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 Rag.Context.Engine/
 ├── infra/                  # docker-compose (Qdrant) + descarga de modelos
 │   └── arnes/              # Arnés de ejecución de planes (portable, con guía e instalador)
-├── docs/                   # Documentación formal del sistema
-├── Fase 1..5 - *.md        # Plan de proyecto interno (diseño, roadmap, riesgos)
-└── src/
-    ├── RagEngine.Core/     # Toda la lógica: abstracciones, dominio, pipeline,
-    │                       # chunking (Roslyn/TS/Markdown), vectorización, Qdrant
-    └── RagEngine.Cli/      # Entry point: comandos Spectre.Console
+├── docs/                   # Documentación formal del sistema + Plan de proyecto (Fase 1..5)
+├── src/
+│   ├── RagEngine.Core/     # Toda la lógica: abstracciones, dominio, pipeline,
+│   │                       # chunking (Roslyn/TS/Markdown), vectorización, Qdrant
+│   ├── RagEngine.Api/      # API HTTP: endpoints de búsqueda y generación
+│   └── RagEngine.Cli/      # Entry point: comandos Spectre.Console
+├── tests/                  # Suite de tests unitarios
+├── poc/                    # Proof-of-concepts (búsqueda libre, etc.)
+└── replicate-env/          # Ambiente de replicación con cache de resúmenes
 ```
 
 ## Principios

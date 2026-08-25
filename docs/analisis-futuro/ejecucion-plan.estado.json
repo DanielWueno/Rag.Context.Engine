@@ -409,7 +409,8 @@
           "multiagente": false,
           "verificacion": "Cada comando citado en el README se ejecuta tal cual y funciona",
           "horas_maquina": 0.5,
-          "estado": "pendiente",
+          "estado": "en_curso",
+          "fecha": "2026-08-25",
           "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio.",
           "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover."
         },

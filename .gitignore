@@ -27,6 +27,6 @@ nohup.out
 # Claude Code: estado local de la máquina, no del repo.
 # .claude/commands/ y .claude/settings.json SÍ se versionan: son el arnés de
 # ejecución del plan (los dos comandos y el hook que anuncia el ítem siguiente).
-# El arnés completo, con su guía e instalador, vive en infra/arnes/.
+# El arnés vive fuera de este repo: github.com/DanielWueno/arnes-plan
 .claude/settings.local.json
 .claude/scheduled_tasks.lock

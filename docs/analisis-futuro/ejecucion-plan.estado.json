@@ -1,5 +1,6 @@
 {
   "_leeme": "Ledger de ejecución del plan de ingeniería. Fuente de verdad del avance: sobrevive al reinicio del límite de sesión, a un /clear y a cerrar la terminal. Se avanza con /plan-siguiente (un ítem por invocación, commit al final). Estados: pendiente | en_curso | hecho | bloqueado | descartado.",
+  "schema_version": 1,
   "_provisional": "Sembrado desde la auditoría del 2026-08-20. Cuando exista docs/analisis-futuro/plan-global-ingenieria.md, reconciliar: los ítems del plan manda, estos son la semilla.",
   "_moneda": "horas_maquina = tiempo de ingesta/eval/build, NO tokens. Es el recurso escaso real.",
   "olas": [
@@ -412,7 +413,7 @@
           "estado": "hecho",
           "fecha": "2026-08-25",
           "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio.",
-          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover.",
+          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover. Incluye reescribir las referencias muertas a infra/arnes/ que quedaron en docs/analisis-futuro/prompt-plan-global-proyecto.md al extraerse el arnés a su propio repositorio (github.com/DanielWueno/arnes-plan).",
           "resultado": "VERIFICADOS todos los comandos del README ejecutables: docker compose, bash infra/download-model.sh, dotnet build (0 errores, 0 advertencias), dotnet run ingest/search/ask, rag status, rag doctor. Movidos 5 archivos 'Fase N - *.md' a docs/ sin referencias en arnés. Actualizado README.md reflejando nueva estructura. Creados LICENSE (MIT) y CLAUDE.md con guía de desarrollo. Commit c94d54d."
         },
         {

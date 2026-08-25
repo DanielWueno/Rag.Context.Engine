@@ -409,10 +409,11 @@
           "multiagente": false,
           "verificacion": "Cada comando citado en el README se ejecuta tal cual y funciona",
           "horas_maquina": 0.5,
-          "estado": "en_curso",
+          "estado": "hecho",
           "fecha": "2026-08-25",
           "por_que_este_modelo": "Es trabajo de verificación mecánica y edición, no de criterio.",
-          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover."
+          "rollback": "git revert restaura los 5 'Fase N - *.md' a la raíz y el README anterior. Es documentación y movimiento de archivos: cero impacto en runtime. Comprobar que ningún comando del arnés (infra/arnes/*.sh) referencie las rutas viejas antes de mover.",
+          "resultado": "VERIFICADOS todos los comandos del README ejecutables: docker compose, bash infra/download-model.sh, dotnet build (0 errores, 0 advertencias), dotnet run ingest/search/ask, rag status, rag doctor. Movidos 5 archivos 'Fase N - *.md' a docs/ sin referencias en arnés. Actualizado README.md reflejando nueva estructura. Creados LICENSE (MIT) y CLAUDE.md con guía de desarrollo. Commit c94d54d."
         },
         {
           "id": "3.5-portabilidad-x64",

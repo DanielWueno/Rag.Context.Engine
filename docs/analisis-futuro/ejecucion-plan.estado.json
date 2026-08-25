@@ -379,9 +379,13 @@
           "multiagente": false,
           "verificacion": "health falla cuando Qdrant está apagado; un payload malformado devuelve ProblemDetails y no un 500 pelado",
           "horas_maquina": 0.5,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Terreno conocido de ASP.NET, criterio de éxito observable con curl.",
-          "rollback": "git revert. Todo es middleware y configuración de arranque, sin estado persistido. El único riesgo de romper a un consumidor es el CORS explícito, y hoy no hay cliente en producción; si apareciera, la lista de orígenes es configuración, no código."
+          "rollback": "git revert. Todo es middleware y configuración de arranque, sin estado persistido. El único riesgo de romper a un consumidor es el CORS explícito, y hoy no hay cliente en producción; si apareciera, la lista de orígenes es configuración, no código.",
+          "fecha": "2026-08-24",
+          "resultado": "Program.cs: AddProblemDetails() + UseExceptionHandler (excepción no capturada -> 500 application/problem+json) y UseStatusCodePages() (JSON malformado o binding roto -> 400 application/problem+json, en vez del 400/500 vacíos que dejaba el binding automático de minimal API por sí solo). /api/health verifica los tres componentes reales: Qdrant (ListCollectionsAsync), Ollama (GET {Endpoint}/models con timeout propio de 3s, desacoplado del timeout de 120s de generación) e IVectorizationBrain (resuelto perezosamente desde IServiceProvider igual que DoctorCommand, sin abrir una sesión ONNX nueva — solo lee EmbeddingDimensions de la ya registrada). 200 solo si los tres están sanos; si no, 503 con un diccionario 'checks' nombrando cuál falló. Límite de body a 1 MB vía Kestrel MaxRequestBodySize (413 si se excede). CORS con política nombrada y orígenes configurables desde Cors:AllowedOrigins (default vacío = ningún origen recibe headers Access-Control-Allow-*).",
+          "verificacion_real": "Verificado de forma independiente además de por el subagente que implementó: (1) health con todo arriba -> 200 {status:ok, checks:{qdrant:ok,ollama:ok,onnx:'ok (384 dims)'}}. (2) POST /api/search con JSON malformado ('{\"query\": bad json') -> 400 application/problem+json, no 500. (3) POST /api/search con tipo incorrecto (TopK:'no-es-numero') -> 400 application/problem+json. (4) Escenario de riesgo real: API levantada con Qdrant__GrpcPort=9999 (puerto sin nada escuchando, SIN tocar el contenedor qdrant-local real) -> /api/health responde 503 nombrando 'qdrant: down: ...Connection refused', con ollama/onnx aún en ok. Instancia de verificación detenida y puerto liberado al terminar; qdrant-local intacto durante toda la prueba. dotnet build de la solución completa: 0 advertencias, 0 errores. El subagente que implementó ya había verificado además el límite de 1 MB (413) y CORS (headers presentes/ausentes según Cors:AllowedOrigins) con curl real; no se repitieron esas dos por no requerir un escenario de riesgo, solo confirmación mecánica ya hecha.",
+          "commit": "7754a1c"
         },
         {
           "id": "3.3-exportador-otel",

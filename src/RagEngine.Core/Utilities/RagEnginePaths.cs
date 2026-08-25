@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace RagEngine.Core.Utilities;
@@ -35,6 +36,9 @@ public static class RagEnginePaths
     private static readonly Regex VariableToken = new(
         @"\$\{(?<name>[A-Za-z_][A-Za-z0-9_]*)\}",
         RegexOptions.Compiled);
+
+    /// <summary>Sufijo que marca un binario ONNX optimizado (int8) para Apple Silicon.</summary>
+    private const string Arm64QuantizedSuffix = "_qint8_arm64";
 
     /// <summary>
     /// Directorio de modelos por defecto: <c>~/models</c>. Es donde
@@ -97,16 +101,23 @@ public static class RagEnginePaths
     {
         string expanded = Expand(configuredPath);
 
-        if (string.IsNullOrWhiteSpace(expanded) || Path.IsPathRooted(expanded))
+        if (string.IsNullOrWhiteSpace(expanded))
         {
             return expanded;
         }
 
         // Un token sin resolver ya es informativo: no lo enterremos bajo el
-        // directorio de modelos, porque el mensaje de error sería confuso.
+        // directorio de modelos, porque el mensaje de error sería confuso. La
+        // selección por arquitectura tampoco aplica: no hay archivo real que
+        // elegir todavía.
         if (VariableToken.IsMatch(expanded))
         {
             return expanded;
+        }
+
+        if (Path.IsPathRooted(expanded))
+        {
+            return SelectArchitectureBinary(expanded);
         }
 
         string modelsDir = Environment.GetEnvironmentVariable(ModelsDirVariable) is { Length: > 0 } fromEnv
@@ -120,7 +131,37 @@ public static class RagEnginePaths
             ? expanded["models/".Length..]
             : expanded;
 
-        return Path.Combine(modelsDir, relative);
+        return SelectArchitectureBinary(Path.Combine(modelsDir, relative));
+    }
+
+    /// <summary>
+    /// Si <paramref name="path"/> apunta a un binario ONNX con el sufijo
+    /// <c>_qint8_arm64</c> (optimizado para Apple Silicon), lo deja tal cual en
+    /// arm64 y cae al binario genérico (sin el sufijo, p. ej. <c>model.onnx</c>)
+    /// en cualquier otra arquitectura. Una ruta sin ese sufijo — configuración
+    /// explícita del usuario — nunca se toca.
+    /// </summary>
+    public static string SelectArchitectureBinary(string path) =>
+        SelectArchitectureBinary(path, RuntimeInformation.ProcessArchitecture);
+
+    /// <summary>
+    /// Variante pura de <see cref="SelectArchitectureBinary(string)"/> que recibe
+    /// la arquitectura como parámetro, para poder testear ambas ramas sin
+    /// depender del proceso real.
+    /// </summary>
+    public static string SelectArchitectureBinary(string path, Architecture architecture)
+    {
+        if (string.IsNullOrEmpty(path) || !path.Contains(Arm64QuantizedSuffix, StringComparison.Ordinal))
+        {
+            return path;
+        }
+
+        if (architecture == Architecture.Arm64)
+        {
+            return path;
+        }
+
+        return path.Replace(Arm64QuantizedSuffix, string.Empty, StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -423,9 +423,12 @@
           "multiagente": false,
           "verificacion": "Requiere una máquina x64 real para probarlo de verdad. Si no hay, marcar bloqueado y decirlo.",
           "horas_maquina": 1,
-          "estado": "pendiente",
+          "estado": "bloqueado",
           "por_que_este_modelo": "El riesgo es el exit 134 de ONNX en ARM ya conocido; la lógica es simple, la prueba honesta necesita hardware.",
-          "rollback": "La selección por arquitectura mantiene arm64 como caso por defecto, así que el riesgo real es romper la única máquina disponible. Verificar en arm64 en el mismo commit; si falla, git revert deja la ruta al binario hardcodeada como hoy. Si no hay máquina x64 para probar la rama nueva, marcar el ítem bloqueado en vez de darlo por hecho."
+          "rollback": "La selección por arquitectura mantiene arm64 como caso por defecto, así que el riesgo real es romper la única máquina disponible. Verificar en arm64 en el mismo commit; si falla, git revert deja la ruta al binario hardcodeada como hoy. Si no hay máquina x64 para probar la rama nueva, marcar el ítem bloqueado en vez de darlo por hecho.",
+          "fecha_inicio": "2026-08-25",
+          "fecha_bloqueo": "2026-08-25",
+          "razon_bloqueo": "Implementado y verificado en arm64 (dotnet build sin advertencias, 122/122 tests incl. 4 nuevos para RagEnginePaths.SelectArchitectureBinary, rag doctor confirma que arm64 sigue resolviendo model_qint8_arm64.onnx sin cambios). La rama x64 (cae a model.onnx generico) solo se probo con el overload puro que recibe la arquitectura como parametro, nunca contra un runtime x64 real ni el archivo model.onnx real en esa arquitectura, porque no hay maquina x64 disponible. Falta esa verificacion para cerrar el item segun su propio criterio."
         },
         {
           "id": "3.6-arnes-de-calidad-de-respuesta",

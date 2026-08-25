@@ -509,7 +509,9 @@
           "por_que_este_modelo": "Copiar la forma de un test que ya existe al lado. No hay criterio que decidir.",
           "origen": "Panel adversarial del ítem 2.2 (2026-08-24). Si se añade SourceLanguage.AsciiDoc, IsProse rompe su test (bien) e IsDocumentation devuelve false en silencio: la cabecera etiqueta 'Method' en vez de 'Section' y en modo Technical se elige CodeSystemPrompt en vez del de documentos. Ningún test falla hoy.",
           "rollback": "git revert del commit. Sólo añade un test.",
-          "estado": "pendiente"
+          "estado": "hecho",
+          "fecha": "2026-08-25",
+          "resultado": "Test SourceLanguageDocumentationTests agregado en tests/RagEngine.Core.Tests/, verifica que Enum.GetValues<SourceLanguage>().Where(IsDocumentation) == [Markdown, PlainText]. Verificado: con enum adicional RestructuredText el test falla (rojo) — es sensible a cambios. Revertido y pasa (verde). dotnet build: 132 tests verdes, 0 advertencias."
         }
       ]
     },

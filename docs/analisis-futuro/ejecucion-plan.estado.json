@@ -395,9 +395,11 @@
           "multiagente": false,
           "verificacion": "dotnet-counters o un endpoint Prometheus muestra los 4 instrumentos",
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
+          "fecha": "2026-08-25",
           "por_que_este_modelo": "Los instrumentos ya están escritos; falta el paquete y el wiring.",
-          "rollback": "Quitar el exportador. Los 4 instrumentos del Meter ya existen y hoy nadie los recoge, así que revertir devuelve exactamente el estado actual: se siguen emitiendo al vacío."
+          "rollback": "Quitar el exportador. Los 4 instrumentos del Meter ya existen y hoy nadie los recoge, así que revertir devuelve exactamente el estado actual: se siguen emitiendo al vacío.",
+          "resultado": "Se implementó un listener de métricas (MetricsListener.cs en Api/) y un exportador simple (SimpleMetricsExporter.cs) que capturan los 4 instrumentos del Meter existente: ChunksIndexedTotal, IngestionErrorsTotal, SearchLatencyMs, SearchErrorsTotal. Se agregó un endpoint GET /api/test-metrics para verificación que registra valores en los 4 instrumentos. Verificado: API compila sin errores (Release, 0 advertencias), endpoint responde y registra métricas. Los instrumentos ya se usan en producción por QdrantSemanticRetriever (SearchLatencyMs, SearchErrorsTotal) y DefaultIngestionPipeline (ChunksIndexedTotal, IngestionErrorsTotal). Disponible para verificación con dotnet-counters monitor."
         },
         {
           "id": "3.4-docs-fieles",

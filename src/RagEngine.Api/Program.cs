@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RagEngine.Api;
 using RagEngine.Core.Abstractions;
@@ -55,6 +58,39 @@ try
     builder.Services.AddRagEngineCore(builder.Configuration);
     builder.Services.AddRagEngineGeneration(builder.Configuration);
 
+    // AddProblemDetails() habilita el relleno automático de ProblemDetails que ya
+    // hace el propio binding de minimal API cuando el body no parsea como JSON
+    // (RequestDelegateFactory captura el JsonException y, si encuentra
+    // IProblemDetailsService registrado, lo usa en vez de devolver un 400 vacío).
+    // El exception handler de abajo lo reusa para las excepciones no capturadas.
+    builder.Services.AddProblemDetails();
+
+    // Cliente aparte del que arma GenerationServiceExtensions para el Kernel de SK:
+    // ese HttpClient apunta a Ollama con el timeout largo de generación
+    // (Ollama:TimeoutSeconds, hasta 120s) y no se expone como servicio. El chequeo de
+    // salud necesita un timeout corto propio — no tiene sentido que /api/health cuelgue
+    // 120s solo porque Ollama está caído.
+    builder.Services.AddHttpClient();
+
+    // "Cors:AllowedOrigins" con default vacío: sin nadie configurado, ningún origen
+    // cross-site recibe los headers Access-Control-Allow-*. Este host es para LAN/VPN
+    // interna (ver cabecera del archivo) — no hay cliente en producción hoy que lo
+    // necesite (ver ledger, ítem de rollback de Fase 2), así que "restrictivo por
+    // defecto" no le quita nada a nadie todavía.
+    const string ApiCorsPolicy = "ApiCorsPolicy";
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    builder.Services.AddCors(options => options.AddPolicy(ApiCorsPolicy, policy =>
+    {
+        if (allowedOrigins.Length > 0)
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+    }));
+
+    // Límite conservador de tamaño de body: este host solo recibe queries de texto
+    // (RagQueryRequest) — 1 MB deja margen de sobra para historial de chat largo sin
+    // dejar que un request arbitrariamente grande consuma memoria sin límite.
+    const long MaxRequestBodyBytes = 1 * 1024 * 1024;
+    builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = MaxRequestBodyBytes);
+
     // Escucha en todas las interfaces para que el equipo pueda alcanzarlo por LAN,
     // no solo localhost.
     //
@@ -84,6 +120,39 @@ try
             "el filtro post-generación de Fase 1 (streaming crudo, sin buffer). Revisar " +
             "docs/analisis-futuro/modo-respuesta-simple-codigo.md antes de dejarlo así por mucho tiempo.");
     }
+
+    // Traduce cualquier excepción no capturada por un endpoint a ProblemDetails
+    // (application/problem+json, status 500) en vez del 500 con detalle de
+    // desarrollador (HTML o texto plano) que da UseDeveloperExceptionPage o el
+    // handler por defecto sin esto. IProblemDetailsService ya sabe rellenar
+    // type/title/status — solo hace falta apuntarle el código de estado.
+    app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
+    {
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        context.RequestServices.GetRequiredService<ILogger<Program>>()
+            .LogError(feature?.Error, "Excepción no manejada en {Path}", feature?.Path);
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        var problemDetailsService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
+        await problemDetailsService.WriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = context,
+            ProblemDetails =
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Ocurrió un error interno procesando la solicitud."
+            }
+        });
+    }));
+
+    // El binding automático de minimal API (JSON malformado, o un campo que no
+    // castea al tipo esperado) ya deja el response en 400 sin cuerpo — no lanza una
+    // excepción que UseExceptionHandler pueda interceptar. UseStatusCodePages() es lo
+    // que, con AddProblemDetails() registrado arriba, rellena ese response vacío con
+    // el cuerpo application/problem+json en vez de dejarlo en Content-Length: 0.
+    app.UseStatusCodePages();
+
+    app.UseCors(ApiCorsPolicy);
 
     app.UseDefaultFiles();
     app.UseStaticFiles();
@@ -134,7 +203,87 @@ try
             .ToList();
     }
 
-    app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+    // Chequeo real de los tres componentes de los que depende el motor: Qdrant, Ollama
+    // y el brain de vectorización ONNX. IVectorizationBrain se resuelve desde el
+    // IServiceProvider (no por parámetro del delegate) por el mismo motivo que
+    // DoctorCommand lo resuelve perezosamente desde _services: es singleton y su
+    // InferenceSession ya se construyó en el primer uso real (embeddings/reranker),
+    // así que esto NO abre una sesión ONNX nueva por llamada — solo lee
+    // EmbeddingDimensions de la que ya vive en el contenedor. Si el modelo faltara,
+    // ese GetRequiredService fallaría aquí (dentro del try), no en el arranque del host.
+    app.MapGet("/api/health", async (
+        Qdrant.Client.QdrantClient qdrant,
+        IHttpClientFactory httpClientFactory,
+        IOptions<OllamaOptions> ollamaOptions,
+        IServiceProvider services,
+        CancellationToken cancellationToken) =>
+    {
+        var checks = new Dictionary<string, string>();
+        var healthy = true;
+
+        try
+        {
+            await qdrant.ListCollectionsAsync(cancellationToken);
+            checks["qdrant"] = "ok";
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["qdrant"] = $"down: {ex.Message}";
+        }
+
+        try
+        {
+            // GET a /v1/models (OpenAI-compatible, lo que Ollama expone en el
+            // Endpoint configurado): barato, no carga ningún modelo en memoria, solo
+            // confirma que el proceso de Ollama responde. Timeout corto y propio —
+            // Ollama:TimeoutSeconds (hasta 120s) es para generación, no para esto.
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(3);
+            var response = await httpClient.GetAsync(
+                $"{ollamaOptions.Value.Endpoint.TrimEnd('/')}/models", cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                checks["ollama"] = "ok";
+            }
+            else
+            {
+                healthy = false;
+                checks["ollama"] = $"down: status {(int)response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["ollama"] = $"down: {ex.Message}";
+        }
+
+        try
+        {
+            var brain = services.GetRequiredService<IVectorizationBrain>();
+            if (brain.EmbeddingDimensions > 0)
+            {
+                checks["onnx"] = $"ok ({brain.EmbeddingDimensions} dims)";
+            }
+            else
+            {
+                healthy = false;
+                checks["onnx"] = "down: EmbeddingDimensions <= 0";
+            }
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["onnx"] = $"down: {ex.Message}";
+        }
+
+        return healthy
+            ? Results.Ok(new { status = "ok", checks })
+            : Results.Problem(
+                title: "Uno o más componentes del motor RAG no están disponibles.",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                extensions: new Dictionary<string, object?> { ["checks"] = checks });
+    });
 
     // Alimenta el selector de colección de la página — así el equipo no
     // depende de que quede fija a un proyecto (hoy innovapp-docs, mañana

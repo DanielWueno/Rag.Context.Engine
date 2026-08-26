@@ -18,7 +18,8 @@
     "ModelPath": "${RAG_MODELS_DIR}/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
     "VocabPath": "${RAG_MODELS_DIR}/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
     "MaxSequenceLength": 512,           // XLM-R admite hasta 512; no hay índice que re-ingestar
-    "BatchSize": 8                      // secuencias más largas que el bi-encoder → batch menor
+    "BatchSize": 8,                     // secuencias más largas que el bi-encoder → batch menor
+    "StableGateScore": false            // score del #1 recalculado en lote de 1 (ver abajo)
   },
   "Qdrant":   { "Host": "localhost", "GrpcPort": 6334, "HttpPort": 6333 },
   "Ingestion":{ "DefaultCollection": "rag-engine", "RepositoryName": "my-repo", "BatchSize": 32 },
@@ -33,6 +34,34 @@
 | `TokenizerType` | Debe corresponder a la familia del modelo: `vocab.txt` → `WordPiece`; `sentencepiece.bpe.model` → `SentencePiece`. Un mismatch produce embeddings basura *sin error visible*. |
 | `EmbeddingDimensions` | Debe coincidir con el modelo (384 en ambos MiniLM) y con las colecciones ya creadas. |
 | `MaxSequenceLength` | Techo de truncamiento. El costo de inferencia escala con la longitud real del lote (padding dinámico), así que subirlo solo afecta a los chunks largos. |
+| `StableGateScore` | Con `true`, el score del resultado #1 se recalcula en un lote de tamaño 1 tras el re-rank. Ver [Score estable del gate](#score-estable-del-gate-crossencoderstablegatescore). |
+
+## Score estable del gate (`CrossEncoder:StableGateScore`)
+
+El re-rank agrupa los candidatos en lotes y hace padding dinámico al máximo real de cada lote. Sobre
+un modelo cuantizado a int8 eso hace que el score de un par dependa de sus vecinos de lote, y como el
+pool de candidatos es `3 × TopK`, el mismo par puntúa distinto según el `TopK` pedido. El gate de
+confianza lee justamente ese número (el score del resultado #1), así que un umbral absoluto calibrado
+sobre él no se sostiene.
+
+Con `StableGateScore: true` el ganador se vuelve a puntuar **solo**, en un lote de tamaño 1: `seqLen`
+pasa a ser la longitud del propio par y el score queda como función únicamente de (consulta, chunk).
+
+| | Rango del score del #1 al variar `TopK` ∈ {3,5,8,10,15,20} |
+|---|---|
+| `false` (default) | mediana 0,023 · máximo 0,147 · 19 de 22 consultas por encima de ±0,001 |
+| `true` | 0,000000 en las 22 consultas — bit a bit idéntico |
+
+**Coste:** una inferencia extra por consulta, 15 ms de mediana (máximo 33 ms) — por debajo del ruido
+de corrida a corrida del propio re-rank, que sobre un pool de 30 tarda ~1.090 ms.
+
+**Qué NO cambia:** el orden de los resultados. Lo sigue decidiendo la pasada por lotes; sólo se
+sustituye el número de la posición #1, que puede quedar por debajo del score de la posición #2.
+
+Default `false` a propósito: los umbrales `LowConfidenceThreshold` / `HighConfidenceThreshold`
+vigentes están calibrados sobre el score por lotes. Encenderla sin recalibrarlos mueve las bandas.
+Medición completa en
+[gate-de-confianza-score-inestable-y-fuga-de-prompt.md](analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md).
 
 ## Rutas y portabilidad
 

@@ -232,6 +232,117 @@ Tres opciones, medir coste antes de elegir:
 ítem 1. **Rollback:** dejarlo tras una bandera de configuración `CrossEncoder:StableGateScore`
 (default off hasta validar) para poder volver sin recompilar.
 
+#### Resultado de la implementación (2026-08-25)
+
+Implementada la **opción 3**. `CrossEncoderOptions.StableGateScore` (default `false`) añade, al final
+de `OnnxCrossEncoderReRanker.ReRankAsync`, una segunda llamada a `ScorePairs` con una lista de **un
+solo elemento** — el ganador —, y ese valor sustituye el score de la posición #1. Con un lote de uno,
+`seqLen` es la longitud del propio par y deja de depender del vecino más largo del lote, y por tanto
+del `TopK`, que es quien fija el tamaño del pool (`3 × TopK`).
+
+Decisión explícita: **no se reordena**. El ranking lo sigue decidiendo la pasada por lotes y el
+ganador se queda en #1 aunque su score estable caiga por debajo del de la posición #2. Estabilizar el
+gate no es rehacer el ranking; eso exigiría puntuar los `TopK` en lotes de 1, que no es lo que pide
+este ítem.
+
+##### Verificación del criterio
+
+Se repitió el barrido del ítem 1 — las mismas 22 consultas × `TopK ∈ {3,5,8,10,15,20}` — dos veces,
+con la bandera apagada y encendida: 264 invocaciones del CLI Release. Para cada consulta se agrupan
+las 6 corridas por el `chunk_id` que quedó en #1 y se mide el rango (max−min) **dentro de cada
+grupo** — comparar entre chunks distintos no diría nada, porque son pares distintos.
+
+| # | Colección | Consulta | chunks distintos en #1 | rango máx `off` | rango máx `on` |
+|---|---|---|---|---|---|
+| 1 | innovapp-docs | ¿Quién puede cancelar un ticket que está en estatus Registrado? | 2 | 0.043225 | **0.000000** |
+| 2 | innovapp-docs | ¿Qué es el Folio Único de Atención? | 1 | 0.000995 | **0.000000** |
+| 3 | innovapp-docs | ¿Cómo se marca una notificación como leída? | 1 | 0.000498 | **0.000000** |
+| 4 | innovapp-docs | ¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'? | 1 | 0.002232 | **0.000000** |
+| 5 | innovapp-docs | Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo? | 2 | 0.137687 | **0.000000** |
+| 6 | innovapp-docs | ¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio? | 4 | 0.005341 | **0.000000** |
+| 7 | innovapp-docs | ¿Me avisan por correo cuando resuelven mi problema? | 1 | 0.039669 | **0.000000** |
+| 8 | innovapp-docs | ¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket? | 4 | 0.057412 | **0.000000** |
+| 9 | innovapp-docs | ¿Puedo cancelar mi ticket en cualquier momento? | 2 | 0.084326 | **0.000000** |
+| 10 | innovapp-docs | ¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso? | 2 | 0.078000 | **0.000000** |
+| 11 | innovapp-docs | ¿Cómo solicito mis vacaciones o días económicos? | 1 | 0.013869 | **0.000000** |
+| 12 | wiki-solis | InovApp | 2 | 0.014542 | **0.000000** |
+| 13 | wiki-solis | Que puede hacer un auditor desde la app movil? | 1 | 0.027927 | **0.000000** |
+| 14 | wiki-solis | como sincroniza la aplicacion de campo cuando recupera senal | 1 | 0.129684 | **0.000000** |
+| 15 | wiki-solis | quien puede dar avance a una revision en curso | 1 | 0.146995 | **0.000000** |
+| 16 | wiki-solis | Procesos, reglas o demas relacionados con innovapp? | 3 | 0.059242 | **0.000000** |
+| 17 | wiki-solis | Se menciona algo de un sistema movil, una api, microservicio, innovapp? | 2 | 0.045540 | **0.000000** |
+| 18 | wiki-solis | Que informacion hay sobre integraciones? | 3 | 0.007380 | **0.000000** |
+| 19 | wiki-solis | procedimiento para renovar el pasaporte | 5 | 0.004858 | **0.000000** |
+| 20 | wiki-solis | receta de paella valenciana | 2 | 0.005712 | **0.000000** |
+| 21 | wiki-solis | Segmentación por departamento en catálogos, procesos y monitores? | 1 | 0.000072 | **0.000000** |
+| 22 | wiki-solis | Que reglas se siguen para poder aplica la firma? | 1 | 0.018347 | **0.000000** |
+
+**Con la bandera encendida el rango es 0,000000 — idéntico bit a bit — en las 22 consultas**, muy por
+debajo de los ±0,001 del criterio. Con la bandera apagada, 19 de 22 lo superan, con mediana 0,0231 y
+máximo 0,1470.
+
+Las 22 consultas tuvieron al menos un grupo comparable; en 12 de ellas el mismo chunk quedó en #1 en
+las 6 corridas, así que la comparación cubre el barrido entero y no un par de puntos sueltos. Que en
+las otras 10 cambie el chunk de #1 según el `TopK` es variación del *ranking* — el pool es distinto —,
+no del score, y queda fuera del alcance de este ítem.
+
+##### Score del #1 por `TopK`, con la bandera encendida
+
+| # | Consulta | k=3 | k=5 | k=8 | k=10 | k=15 | k=20 |
+|---|---|---|---|---|---|---|---|
+| 1 | ¿Quién puede cancelar un ticket que está en estatus Registrado? | 0.955106 \* | 0.955106 \* | 0.994751 | 0.994751 | 0.994751 | 0.994751 |
+| 2 | ¿Qué es el Folio Único de Atención? | 0.999119 | 0.999119 | 0.999119 | 0.999119 | 0.999119 | 0.999119 |
+| 3 | ¿Cómo se marca una notificación como leída? | 0.998820 | 0.998820 | 0.998820 | 0.998820 | 0.998820 | 0.998820 |
+| 4 | ¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'? | 0.996576 | 0.996576 | 0.996576 | 0.996576 | 0.996576 | 0.996576 |
+| 5 | Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo? | 0.396912 \* | 0.396912 \* | 0.899764 | 0.899764 | 0.899764 | 0.899764 |
+| 6 | ¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio? | 0.010405 \* | 0.015336 \* | 0.015336 \* | 0.014766 | 0.014766 | 0.068448 \* |
+| 7 | ¿Me avisan por correo cuando resuelven mi problema? | 0.086543 | 0.086543 | 0.086543 | 0.086543 | 0.086543 | 0.086543 |
+| 8 | ¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket? | 0.133344 \* | 0.406648 \* | 0.577610 \* | 0.874198 | 0.874198 | 0.874198 |
+| 9 | ¿Puedo cancelar mi ticket en cualquier momento? | 0.390129 | 0.390129 | 0.260304 \* | 0.390129 | 0.390129 | 0.390129 |
+| 10 | ¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso? | 0.579922 \* | 0.579922 \* | 0.579922 \* | 0.754444 | 0.754444 | 0.754444 |
+| 11 | ¿Cómo solicito mis vacaciones o días económicos? | 0.031463 | 0.031463 | 0.031463 | 0.031463 | 0.031463 | 0.031463 |
+| 12 | InovApp | 0.954958 \* | 0.954958 \* | 0.982839 | 0.982839 | 0.982839 | 0.982839 |
+| 13 | Que puede hacer un auditor desde la app movil? | 0.974393 | 0.974393 | 0.974393 | 0.974393 | 0.974393 | 0.974393 |
+| 14 | como sincroniza la aplicacion de campo cuando recupera senal | 0.595818 | 0.595818 | 0.595818 | 0.595818 | 0.595818 | 0.595818 |
+| 15 | quien puede dar avance a una revision en curso | 0.115435 | 0.115435 | 0.115435 | 0.115435 | 0.115435 | 0.115435 |
+| 16 | Procesos, reglas o demas relacionados con innovapp? | 0.093822 | 0.093822 | 0.093822 | 0.093822 | 0.142734 \* | 0.162562 \* |
+| 17 | Se menciona algo de un sistema movil, una api, microservicio, innovapp? | 0.013944 \* | 0.013944 \* | 0.013944 \* | 0.012593 | 0.013944 \* | 0.013944 \* |
+| 18 | Que informacion hay sobre integraciones? | 0.028385 | 0.028385 | 0.028385 | 0.028385 | 0.022511 \* | 0.027714 \* |
+| 19 | procedimiento para renovar el pasaporte | 0.012818 \* | 0.019069 \* | 0.022635 | 0.022635 | 0.017014 \* | 0.018528 \* |
+| 20 | receta de paella valenciana | 0.003452 \* | 0.010758 | 0.010758 | 0.010758 | 0.010758 | 0.010758 |
+| 21 | Segmentación por departamento en catálogos, procesos y monitores? | 0.999794 | 0.999794 | 0.999794 | 0.999794 | 0.999794 | 0.999794 |
+| 22 | Que reglas se siguen para poder aplica la firma? | 0.041969 | 0.041969 | 0.041969 | 0.041969 | 0.041969 | 0.041969 |
+
+\* = el chunk que quedó en #1 no es el mismo que en `k=10`; su score no es comparable con el de esa
+fila, y por eso el criterio se evalúa por grupos de chunk idéntico.
+
+##### Coste
+
+Medido sobre los mismos 264 re-ranks, leyendo `ElapsedMs` del log estructurado
+(`logs/rag-engine-20260825.json`, evento `Cross-encoder re-ranked`):
+
+| Pool (`3 × TopK`) | n `off` | mediana `off` | n `on` | mediana `on` | Δ |
+|---|---|---|---|---|---|
+| 9 | 22 | 583 ms | 22 | 602 ms | +20 ms (+3,3 %) |
+| 15 | 22 | 766 ms | 22 | 747 ms | −20 ms (−2,5 %) |
+| 24 | 22 | 972 ms | 22 | 964 ms | −8 ms (−0,8 %) |
+| 30 | 22 | 1.092 ms | 22 | 1.088 ms | −4 ms (−0,4 %) |
+| 45 | 22 | 1.446 ms | 22 | 1.421 ms | −24 ms (−1,7 %) |
+| 60 | 22 | 1.824 ms | 22 | 1.771 ms | −52 ms (−2,9 %) |
+
+El coste **aislado** de la inferencia extra sí se puede medir directamente, porque se cronometra
+aparte (`StableGateMs`): **mediana 15 ms, p90 24 ms, máximo 33 ms** (n=132). Sobre el pool de 30 que
+cita el ítem —1.092 ms de mediana— eso es un **+1,4 %**, y queda por debajo del ruido de corrida a
+corrida del propio re-rank: de ahí que varias filas de la tabla salgan en negativo. La referencia de
+"~1.000 ms para un pool de 30" del ítem 1 se confirma (1.092 ms medidos).
+
+##### Estado de la bandera
+
+Queda en `false` por defecto, y no por prudencia genérica: `LowConfidenceThreshold` y
+`HighConfidenceThreshold` están calibrados sobre el score por lotes, y el score estable no es el mismo
+número (p. ej. consulta 5, `k=10`: 0,9250 por lotes → 0,899764 estable). Encenderla sin recalibrar
+mueve las bandas. Esa recalibración es el ítem 4.3, que debe correrse con la bandera encendida.
+
 ### Ítem 3 — Recalibrar los umbrales con datos, no a ojo (investigación)
 
 Sólo después del ítem 2. Sobre `docs/eval/innovapp-docs.eval-set.json` y el de `bsuite-auditorias`,

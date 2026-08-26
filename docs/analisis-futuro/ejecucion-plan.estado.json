@@ -523,12 +523,13 @@
           "verificacion": "Mismo criterio que 3.10 aplicado a SourceLanguageProseTests: afirmar Enum.GetValues<SourceLanguage>().Length == 8 ademas del conjunto filtrado.",
           "verificacion_comando": "grep -q 'Enum.GetValues<SourceLanguage>().Length' tests/RagEngine.Core.Tests/SourceLanguageProseTests.cs && dotnet test RagEngine.slnx",
           "horas_maquina": 0,
-          "estado": "pendiente",
+          "estado": "hecho",
+          "fecha": "2026-08-26",
           "por_que_este_modelo": "Es la misma linea de test que 3.10 en el fichero de al lado. No hay criterio que decidir.",
           "archivos": "tests/RagEngine.Core.Tests/SourceLanguageProseTests.cs",
           "rollback": "git revert del commit. Solo anade una asercion a un test existente.",
           "origen": "Detectado el 2026-08-26 al verificar el cierre de 3.10. El enunciado de 3.10 daba por hecho que IsProse si tenia guardia; no la tiene, y el defecto es identico. Bloquea el mismo riesgo: un SourceLanguage nuevo cambia en silencio la plantilla de sistema y la etiqueta de la cabecera del chunk.",
-          "bloqueado_por": "3.10 — conviene cerrarlo primero para copiar su forma ya corregida"
+          "resultado": "Agregada aserción Assert.Equal(8, Enum.GetValues<SourceLanguage>().Length) en SourceLanguageProseTests.cs:36 dentro del test TodoLenguajeNuevoEmpiezaSiendoNoProsa(). La aserción fue implementada como parte del cierre de 3.10 (commit 8c12e18), porque ambos tests son adyacentes y el cambio es idéntico. 132/132 tests verdes. Verificación de cierre: grep -q ... && dotnet test RagEngine.slnx ejecutada exitosamente."
         }
       ]
     },

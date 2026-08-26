@@ -29,5 +29,8 @@ public class SourceLanguageDocumentationTests
         // explícitamente: el default seguro es código.
         var documentacion = Enum.GetValues<SourceLanguage>().Where(l => l.IsDocumentation()).ToArray();
         Assert.Equal([SourceLanguage.Markdown, SourceLanguage.PlainText], documentacion);
+
+        // Guardia de crecimiento: cualquier valor nuevo obliga a decidir explícitamente si es documentación.
+        Assert.Equal(8, Enum.GetValues<SourceLanguage>().Length);
     }
 }

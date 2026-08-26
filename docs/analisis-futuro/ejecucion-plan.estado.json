@@ -509,9 +509,10 @@
           "por_que_este_modelo": "Copiar la forma de un test que ya existe al lado. No hay criterio que decidir.",
           "origen": "Panel adversarial del ítem 2.2 (2026-08-24). Si se añade SourceLanguage.AsciiDoc, IsProse rompe su test (bien) e IsDocumentation devuelve false en silencio: la cabecera etiqueta 'Method' en vez de 'Section' y en modo Technical se elige CodeSystemPrompt en vez del de documentos. Ningún test falla hoy. CORRECCION 2026-08-26: el enunciado original de este item era falso en dos puntos, y eso desvio su primera ejecucion. (1) IsProse NO tiene guardia: su test (SourceLanguageProseTests.cs:32-33) afirma tambien el conjunto filtrado. (2) Anadir un valor al enum NO rompe ningun test: verificado el 2026-08-26 anadiendo ValorDePruebaTemporal a SourceLanguage y ejecutando la suite completa, 132 pasados y exit 0. El item se cerro el 2026-08-25 (commit be29b60) con un resultado que afirmaba haber visto el rojo; esa afirmacion no reproduce. Lo que si quedo util de ese commit es el Theory con los 8 valores actuales; lo inerte es la guardia de crecimiento.",
           "rollback": "git revert del commit. Sólo añade un test.",
-          "estado": "en_curso",
-          "fecha": "2026-08-25",
-          "verificacion_comando": "grep -q 'Enum.GetValues<SourceLanguage>().Length' tests/RagEngine.Core.Tests/SourceLanguageDocumentationTests.cs && dotnet test RagEngine.slnx"
+          "estado": "hecho",
+          "fecha": "2026-08-26",
+          "verificacion_comando": "grep -q 'Enum.GetValues<SourceLanguage>().Length' tests/RagEngine.Core.Tests/SourceLanguageDocumentationTests.cs && dotnet test RagEngine.slnx",
+          "resultado": "Agregada aserción Assert.Equal(8, Enum.GetValues<SourceLanguage>().Length) a los tests TodoLenguajeNuevoEmpiezaSiendoNoDocumentacion() en SourceLanguageDocumentationTests.cs:34 y TodoLenguajeNuevoEmpiezaSiendoNoProsa() en SourceLanguageProseTests.cs:36. Los tests fallan (Expected: 8, Actual: 9) cuando se agrega un valor temporal al enum, verificando que la guardia funciona. Sin el valor temporal, 132/132 tests verdes. Verificación de cierre: grep -q ... && dotnet test RagEngine.slnx ejecutada exitosamente."
         },
         {
           "id": "3.11-guardia-de-crecimiento-para-isprose",

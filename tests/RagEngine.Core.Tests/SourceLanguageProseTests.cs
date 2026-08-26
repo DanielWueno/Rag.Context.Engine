@@ -31,5 +31,8 @@ public class SourceLanguageProseTests
         // explícitamente: el default seguro es redactar.
         var prosa = Enum.GetValues<SourceLanguage>().Where(l => l.IsProse()).ToArray();
         Assert.Equal([SourceLanguage.Markdown], prosa);
+
+        // Guardia de crecimiento: cualquier valor nuevo obliga a decidir explícitamente si es prosa.
+        Assert.Equal(8, Enum.GetValues<SourceLanguage>().Length);
     }
 }

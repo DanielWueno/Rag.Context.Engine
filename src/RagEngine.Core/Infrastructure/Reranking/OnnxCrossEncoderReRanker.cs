@@ -89,10 +89,39 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             .Take(topK)
             .ToList();
 
+        long stableGateMs = 0;
+        if (_options.StableGateScore && reranked.Count > 0)
+        {
+            // Ítem 4.2: el número que lee el gate de confianza (chunks[0].SimilarityScore)
+            // se recalcula puntuando al ganador SOLO. ScorePairs con una lista de un
+            // elemento produce un lote de tamaño 1, así que seqLen es la longitud del par
+            // y deja de depender del vecino más largo del lote — y por tanto del TopK, que
+            // es quien fija el tamaño del pool. El resultado es función únicamente de
+            // (query, chunk).
+            //
+            // Deliberadamente NO se reordena: el ranking lo sigue decidiendo la pasada por
+            // lotes de arriba, y el ganador se queda en la posición #1 aunque su score
+            // estable quede por debajo del de la posición #2. Estabilizar el gate no es
+            // rehacer el ranking; hacerlo exigiría puntuar los topK en lotes de 1.
+            var gateSw = System.Diagnostics.Stopwatch.StartNew();
+            var winner = reranked[0];
+            var stableScore = await Task.Run(
+                () => ScorePairs(query, new[] { winner }, cancellationToken)[0],
+                cancellationToken);
+            gateSw.Stop();
+            stableGateMs = gateSw.ElapsedMilliseconds;
+
+            _logger.LogInformation(
+                "Cross-encoder stable gate score for {ChunkId}: {Batched:F4} → {Stable:F4} ({ElapsedMs}ms)",
+                winner.ChunkId, winner.SimilarityScore, stableScore, stableGateMs);
+
+            reranked[0] = winner with { SimilarityScore = stableScore };
+        }
+
         sw.Stop();
         _logger.LogInformation(
-            "Cross-encoder re-ranked {PoolSize} candidates → top {TopK} in {ElapsedMs}ms. Best score: {Best:F3}",
-            candidates.Count, reranked.Count, sw.ElapsedMilliseconds,
+            "Cross-encoder re-ranked {PoolSize} candidates → top {TopK} in {ElapsedMs}ms (of which {StableGateMs}ms stable gate score). Best score: {Best:F3}",
+            candidates.Count, reranked.Count, sw.ElapsedMilliseconds, stableGateMs,
             reranked.Count > 0 ? reranked[0].SimilarityScore : 0f);
 
         return reranked.AsReadOnly();

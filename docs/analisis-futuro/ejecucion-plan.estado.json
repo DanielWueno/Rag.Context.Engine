@@ -500,18 +500,34 @@
         },
         {
           "id": "3.10-guardia-de-crecimiento-para-isdocumentation",
-          "titulo": "IsDocumentation() no tiene guardia de crecimiento del enum; su gemela IsProse() sí, y están a tres líneas una de otra",
+          "titulo": "Ni IsDocumentation() ni su gemela IsProse() tienen guardia de crecimiento del enum: sus tests afirman el conjunto filtrado, que no cambia al añadir un valor que no pertenezca a esa categoria",
           "modelo": "haiku",
           "esfuerzo": "low",
           "multiagente": false,
           "horas_maquina": 0,
-          "verificacion": "Un test al estilo de SourceLanguageProseTests que afirme `Enum.GetValues<SourceLanguage>().Where(IsDocumentation) == [Markdown, PlainText]`. Verificarlo añadiendo un valor de prueba al enum en local y comprobando que el test se pone rojo; revertir el valor de prueba.",
+          "verificacion": "El test debe afirmar la CARDINALIDAD del enum (Enum.GetValues<SourceLanguage>().Length == 8), no solo el conjunto filtrado: asi cualquier valor nuevo rompe el test y obliga a decidir explicitamente si es documentacion. Se conserva la comprobacion por InlineData de cada valor actual.",
           "por_que_este_modelo": "Copiar la forma de un test que ya existe al lado. No hay criterio que decidir.",
-          "origen": "Panel adversarial del ítem 2.2 (2026-08-24). Si se añade SourceLanguage.AsciiDoc, IsProse rompe su test (bien) e IsDocumentation devuelve false en silencio: la cabecera etiqueta 'Method' en vez de 'Section' y en modo Technical se elige CodeSystemPrompt en vez del de documentos. Ningún test falla hoy.",
+          "origen": "Panel adversarial del ítem 2.2 (2026-08-24). Si se añade SourceLanguage.AsciiDoc, IsProse rompe su test (bien) e IsDocumentation devuelve false en silencio: la cabecera etiqueta 'Method' en vez de 'Section' y en modo Technical se elige CodeSystemPrompt en vez del de documentos. Ningún test falla hoy. CORRECCION 2026-08-26: el enunciado original de este item era falso en dos puntos, y eso desvio su primera ejecucion. (1) IsProse NO tiene guardia: su test (SourceLanguageProseTests.cs:32-33) afirma tambien el conjunto filtrado. (2) Anadir un valor al enum NO rompe ningun test: verificado el 2026-08-26 anadiendo ValorDePruebaTemporal a SourceLanguage y ejecutando la suite completa, 132 pasados y exit 0. El item se cerro el 2026-08-25 (commit be29b60) con un resultado que afirmaba haber visto el rojo; esa afirmacion no reproduce. Lo que si quedo util de ese commit es el Theory con los 8 valores actuales; lo inerte es la guardia de crecimiento.",
           "rollback": "git revert del commit. Sólo añade un test.",
-          "estado": "hecho",
+          "estado": "en_curso",
           "fecha": "2026-08-25",
-          "resultado": "Test SourceLanguageDocumentationTests agregado en tests/RagEngine.Core.Tests/, verifica que Enum.GetValues<SourceLanguage>().Where(IsDocumentation) == [Markdown, PlainText]. Verificado: con enum adicional RestructuredText el test falla (rojo) — es sensible a cambios. Revertido y pasa (verde). dotnet build: 132 tests verdes, 0 advertencias."
+          "verificacion_comando": "grep -q 'Enum.GetValues<SourceLanguage>().Length' tests/RagEngine.Core.Tests/SourceLanguageDocumentationTests.cs && dotnet test RagEngine.slnx"
+        },
+        {
+          "id": "3.11-guardia-de-crecimiento-para-isprose",
+          "titulo": "SourceLanguageProseTests afirma el conjunto filtrado por IsProse, no la cardinalidad del enum, asi que un valor nuevo que no sea prosa no rompe nada",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Mismo criterio que 3.10 aplicado a SourceLanguageProseTests: afirmar Enum.GetValues<SourceLanguage>().Length == 8 ademas del conjunto filtrado.",
+          "verificacion_comando": "grep -q 'Enum.GetValues<SourceLanguage>().Length' tests/RagEngine.Core.Tests/SourceLanguageProseTests.cs && dotnet test RagEngine.slnx",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es la misma linea de test que 3.10 en el fichero de al lado. No hay criterio que decidir.",
+          "archivos": "tests/RagEngine.Core.Tests/SourceLanguageProseTests.cs",
+          "rollback": "git revert del commit. Solo anade una asercion a un test existente.",
+          "origen": "Detectado el 2026-08-26 al verificar el cierre de 3.10. El enunciado de 3.10 daba por hecho que IsProse si tenia guardia; no la tiene, y el defecto es identico. Bloquea el mismo riesgo: un SourceLanguage nuevo cambia en silencio la plantilla de sistema y la etiqueta de la cabecera del chunk.",
+          "bloqueado_por": "3.10 — conviene cerrarlo primero para copiar su forma ya corregida"
         }
       ]
     },

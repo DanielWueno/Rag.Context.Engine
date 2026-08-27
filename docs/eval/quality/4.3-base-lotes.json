@@ -1,0 +1,1392 @@
+{
+ "etiqueta": "4.3-base-lotes",
+ "base_url": "http://localhost:5080",
+ "resumen": {
+  "preguntas": 73,
+  "palabras_promedio": 67.7,
+  "palabras_mediana": 51,
+  "respuestas_cortas_pct": 38.4,
+  "rechazo_pleno_pct": 24.7,
+  "banda_baja_pct": 20.5,
+  "directo_pct": 54.8,
+  "directo_con_score_bajo_pct": 41.1,
+  "simple_con_tecnicismos_pct": 0.0,
+  "simple_total": 4,
+  "optimista_promedio": 0.0,
+  "vago_promedio": 0.1,
+  "duracion_promedio_s": 3.5
+ },
+ "detalle": [
+  {
+   "coleccion": "bsuite-auditorias-test",
+   "pregunta": "Cómo se calcula la calificación de una auditoría?",
+   "respuesta": "La calificación de una auditoría se calcula mediante el método [detalle técnico] en la clase auditorias. Este método realiza los siguientes pasos:\n\n1. **Recorre cada grupo en el checklist**: El método itera sobre cada grupo de criterios en el checklist de la auditoría.\n2. **Calcula la contribución de cada grupo**: Para cada grupo, se calcula su contribución a la calificación final de la auditoría. Esta contribución se basa en la calificación del grupo y su ponderación.\n3. **Suma las contribuciones**: Se suman las contribuciones de todos los grupos para obtener el total de la calificación de la auditoría.\n4. **Devuelve la calificación total**: Si el objeto actual es nulo, el método devuelve 0. En caso contrario, devuelve la calificación total calculada.\n\nEste proceso asegura que la calificación de la auditoría se basa en una evaluación detallada de todos los criterios del checklist, considerando su importancia (ponderación) y su resultado (calificación).",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 967,
+    "palabras": 150,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9993,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 1,
+    "vago": 0,
+    "duracion_s": 9.21
+   }
+  },
+  {
+   "coleccion": "bsuite-auditorias-test",
+   "pregunta": "Quienes pueden ver las auditorias?",
+   "respuesta": "Lo siento, pero no tengo acceso a información sobre quiénes pueden ver las auditorías. No tengo conocimiento sobre procesos internos ni detalles específicos sobre quiénes tienen permisos para acceder a ciertas áreas o documentos. Si tienes alguna otra pregunta o necesitas ayuda con algo más, estaré encantado de asistirte.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 323,
+    "palabras": 49,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.74
+   }
+  },
+  {
+   "coleccion": "bsuite-auditorias-test",
+   "pregunta": "Como se filtra el listado de las auditorias?",
+   "respuesta": "El listado de auditorías se filtra en la clase filtro concentrado auditorias. Esta clase recibe una sesión como parámetro y inicializa un resultado vacío para almacenar las auditorías filtradas. No hay detalles adicionales sobre cómo se aplican los filtros específicos en el contexto proporcionado.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 298,
+    "palabras": 44,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9836,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.06
+   }
+  },
+  {
+   "coleccion": "bsuite-auditorias-test",
+   "pregunta": "Si soy del departamento de auditorias internas, puedo ver las auditorias que genere otro departamento?",
+   "respuesta": "No, como del departamento de auditorias internas, no puedes ver las auditorias que genere otro departamento.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 108,
+    "palabras": 16,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.1269,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.29
+   }
+  },
+  {
+   "coleccion": "bsuite-auditorias-test",
+   "pregunta": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+   "respuesta": "Un hallazgo de auditoría es recurrente cuando se ha identificado antes en una auditoría previa y ha ocurrido nuevamente en una auditoría posterior. Esto significa que el problema o la situación que se ha detectado no es una excepción, sino que ha ocurrido de manera repetida en el pasado.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 288,
+    "palabras": 49,
+    "postura": "directo",
+    "fuentes": 3,
+    "score_top": 0.4211,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.37
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿qué se necesita para cerrar un ticket?",
+   "respuesta": "Para cerrar un ticket, se necesita un Tipo de Servicio Interno que tenga \"Requiere Validación\" = Sí. Cuando se cierra el ticket, no se cierra normalmente, sino que transiciona a \"En Validación\" y queda en bitácora. Además, el Estatus de la petición del cliente relacionada se actualiza al mismo estado \"En Validación\" y queda registrado en su propia bitácora.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 359,
+    "palabras": 59,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9466,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 4.32
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿cómo se registra el seguimiento de un ticket?",
+   "respuesta": "El seguimiento de un ticket se registra a través del Seguimiento Ejecutivo. El responsable de la solicitud de servicio o el agente que atiende el ticket puede capturar un registro de Seguimiento Ejecutivo, donde pueden marcar opciones como \"Notificar a Usuario\". Cuando el sistema procesa este registro, se crea una entrada nueva en el Centro de Notificaciones del usuario que reportó el ticket, además del bloque de notificación mostrado en el timeline.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 454,
+    "palabras": 72,
+    "postura": "directo",
+    "fuentes": 5,
+    "score_top": 0.867,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.33
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cómo funciona la encuesta de satisfacción?",
+   "respuesta": "La encuesta de satisfacción se implementa dentro del timeline de Trayectoria, apareciendo automáticamente cuando el Ticket alcanza el estatus \"Atendido\" o la Solicitud de Servicio alcanza \"Entregado\" y existe una encuesta vigente. Esta encuesta incluye tres tipos de preguntas: Escala/Estrellas, Sí/No, y Texto libre. Las preguntas son validadas para asegurar que las respuestas sean obligatorias cuando lo requiera el sistema. Una vez que el usuario responde a la encuesta, la respuesta se envía y se refleja en el sistema.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 524,
+    "palabras": 79,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9138,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.11
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual. No puedo proporcionar información sobre el tiempo.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 100,
+    "palabras": 17,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.69
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Procesos que influyen en la innovapp?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.054,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.33
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Es solo al cierre del ticket?",
+   "respuesta": "No, la validación no se realiza solo al cierre del ticket. Según la información proporcionada, la validación se realiza en dos momentos principales:\n\n1. Al cerrar el ticket:\n   - Si el Tipo de Servicio Interno requiere validación (según la marca RF-03), el ticket transiciona a Estatus \"En Validación\" en lugar de cerrarse.\n   - Se registra la Fecha de Inicio de Validación (RN-16.7).\n   - El usuario que reporta puede validar el servicio dentro del plazo definido.\n\n2. Automáticamente por el sistema:\n   - Si el usuario no responde dentro del plazo, el sistema finaliza automáticamente el ticket, tratando la ausencia de respuesta como una aceptación implícita del servicio (equivalente a un resultado \"Válido\").\n\n3. Por un Job programado:\n   - Cada hora, el Job verifica los tickets en Estatus \"En Validación\".\n   - Si el plazo de validación ha expirado (contando exclusivamente horas laborales), el ticket se finaliza automáticamente.\n\nEn resumen, la validación es un proceso continuo que comienza al cerrar el ticket y se mantiene activo hasta que se resuelve (ya sea por el usuario o por el sistema).",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 1105,
+    "palabras": 176,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9083,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 8.35
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "las notificaciones donde se visualizan?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que las notificaciones se visualizan en el Centro de Notificaciones.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 164,
+    "palabras": 25,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.5905,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.27
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Como se gestionan las notificaciones?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que las notificaciones se manejan a través de una cola de mensajes cuando el canal de destino no está disponible.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 209,
+    "palabras": 35,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.4098,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.35
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Centro de Notificaciones",
+   "respuesta": "El Centro de Notificaciones es una bandeja centralizada donde el usuario que reportó la petición consulta, administra (Leído/No Leído) y elimina las notificaciones generadas conforme a RF-01, disponible tanto en innov app como en Business Suite.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 245,
+    "palabras": 36,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9888,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.53
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Hola",
+   "respuesta": "¡Hola! ¿Cómo estás? ¿En qué puedo ayudarte hoy?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 47,
+    "palabras": 8,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 1.5
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que hora es?",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 49,
+    "palabras": 10,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.57
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Son las 5:34",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual. No puedo proporcionar la información del tiempo.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 98,
+    "palabras": 17,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.08
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "ahora que hora es?",
+   "respuesta": "Lo siento, pero no tengo la capacidad de proporcionar la hora actual. Soy un asistente de IA basado en texto y no tengo acceso a información en tiempo real como la hora actual del sistema.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 188,
+    "palabras": 35,
+    "postura": "rechazo_pleno",
+    "fuentes": 10,
+    "score_top": 0.0725,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.09
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "No",
+   "respuesta": "No hay nada relevante sobre eso en el contenido indexado.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 57,
+    "palabras": 10,
+    "postura": "rechazo_pleno",
+    "fuentes": 10,
+    "score_top": 0.2559,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.83
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "como funciona la opción de cancelación de un ticket por parte del usuario",
+   "respuesta": "La opción de cancelación de un ticket por parte del usuario se gestiona a través de varios criterios de aceptación y pruebas funcionales. Aquí te explico los principales pasos y reglas:\n\n### Criterios de Aceptación (CA)\n\n1. **Aparición del bloque de Validación (CA-1.6.1)**\n   - **Condición**: Cuando un ticket alcanza el estatus \"En Validación\".\n   - **Acción**: El usuario que reportó el ticket debe ver las opciones \"Sí, quedó resuelta\" y \"No se resolvió\".\n\n2. **Confirmación positiva (CA-1.6.2)**\n   - **Condición**: El usuario selecciona \"Sí, quedó resuelta\".\n   - **Acción**: El bloque de opciones desaparece y se agrega un nodo \"Atendido\" en el timeline.\n\n3. **Envío bloqueado sin motivo (CA-1.6.3)**\n   - **Condición**: El usuario selecciona \"No se resolvió\" pero no captura el motivo.\n   - **Acción**: El sistema no permite el envío y mantiene el campo de motivo visible.\n\n4. **Envío con motivo capturado (CA-1.6.4)**\n   - **Condición**: El usuario selecciona \"No se resolvió\" y captura el motivo.\n   - **Acción**: El bloque de opciones desaparece, se agrega un nuevo nodo \"En Proceso\" en el timeline, y dicho nodo muestra el motivo capturado.\n\n5. **Cierre automático por expiración sin interacción del usuario (CA-1.6.5)**\n   - **Condición**: El usuario no responde el bloque de Validación dentro del plazo máximo configurado.\n   - **Acción**: El bloque de opciones desaparece, se agrega un nodo \"Atendido\" en el timeline, y dicho nodo refleja que el cierre fue automático.\n\n### Pruebas Funcionales (TF)\n\nLas pruebas funcionales se centran en verificar que el usuario pueda cancelar un ticket correctamente, incluyendo la selección del motivo y la confirmación del mismo.\n\n1. **Versión**: 1.0\n2. **Fecha**: 2026-07-08\n3. **Estado**: Definición\n4. **Documento base**: [Cancelación de Ticket por el usuario.md](./Cancelación%20de%20Ticket%20por%20el%20usuario.md) (v1.1)\n5. **Autor**: QA\n6. **Rol de referencia**: Analista de Pruebas Funcionales (caja negra, basado en CA/RN)\n\n### Reglas Transversales\n\n- **Bitácora de estatus y notificaciones**: El sistema reutiliza las bitácoras de estatus y notificaciones existentes de cada entidad.\n- **Catálogo de estados**: El sistema utiliza el catálogo de estados para determinar el color, ícono y mensaje de cada nodo en el timeline.\n\n### Resumen\n\nLa opción de cancelación de un ticket por parte del usuario implica que el usuario puede seleccionar entre \"Sí, quedó resuelta\" y \"No se resolvió\". Si selecciona \"No se resolvió\", debe capturar un motivo. El sistema maneja automáticamente el cierre del ticket y registra el movimiento en la bitácora del ticket y del cliente. Si el usuario no responde dentro del plazo, el sistema cierra el ticket automáticamente.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 2714,
+    "palabras": 405,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9902,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 19.79
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Continua",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "puedo cancelar cualquier ticket?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.5579,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.89
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Para que tiempo esta presupuestado todo esto?",
+   "respuesta": "No tengo acceso a información sobre ti o a detalles específicos sobre proyectos o presupuestos. Soy un asistente que responde preguntas basándose únicamente en el contenido que se me proporciona en el corpus indexado. Si necesitas información sobre un presupuesto o un proyecto en particular, te sugiero que consultes con el responsable o revises los documentos relevantes.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 373,
+    "palabras": 57,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.98
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "La bitacora de defectos a que se refiere?",
+   "respuesta": "No tengo acceso a información sobre bitácoras de defectos o cualquier otro tipo de contenido fuera del corpus indexado. Si tienes alguna otra pregunta o necesitas ayuda con algo más, estaré encantado de asistirte.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 213,
+    "palabras": 34,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.37
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Existe contenido para la bitacora de defectos?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.059,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.26
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes explicarme mejor esta parte Bitácora de Envío por Canal?",
+   "respuesta": "La sección \"Bitácora de Envío por Canal\" se refiere a la necesidad de registrar cada intento de envío (in-app, correo o push) generado por una transición de servicio cliente a alguno de los once Estatus de esta sección, indicando si fue exitoso o fallido, sin importar el canal. Esto se debe a que es importante tener un seguimiento de los envíos de notificaciones para asegurar que todas las transiciones de servicio cliente estén siendo notificadas correctamente a los destinatarios correspondientes.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 502,
+    "palabras": 80,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.4239,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 4.99
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Quien eres?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Que proyecto analizas?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cuantos archivos te constituyen?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes contarlos y darme un numero?",
+   "respuesta": "Lo siento, pero no tengo acceso a ninguna colección de datos ni puedo realizar búsquedas en ninguna base de conocimientos. Mi función es responder preguntas basándome únicamente en el contenido que se me proporciona en cada conversación. No tengo la capacidad de contar o proporcionar números a menos que sean parte del contexto de la conversación actual. ¿Podrías proporcionar más detalles o contexto para que pueda ayudarte de la mejor manera posible?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 453,
+    "palabras": 72,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 4.42
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Explicame mejor el numero 47",
+   "respuesta": "Lo siento, pero no tengo acceso a ninguna información sobre el número 47. No tengo conocimiento sobre eventos históricos, números especiales, o cualquier otro tema que no esté incluido en el contenido del corpus indexado. Si tienes alguna otra pregunta o necesitas ayuda con algo más, estaré encantado de asistirte.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 315,
+    "palabras": 50,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.92
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes ayudarme a levanar un ticket?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que la acción \"Cancelar Ticket\" y el bloque de Encuesta de Satisfacción pueden o no estar desplegados en el ambiente; su presencia o ausencia no bloquea la ejecución de este documento, ya que están fuera de su alcance (ver Sección 2).",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 330,
+    "palabras": 56,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1915,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 4.13
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes ayudarme a redactar un ticket?",
+   "respuesta": "¡Claro! Para ayudarte a redactar un ticket, necesito un poco más de información. ¿Podrías proporcionar los detalles específicos del problema o la solicitud que deseas abordar? Por ejemplo:\n\n1. **Título del Ticket**: Un breve resumen del problema o solicitud.\n2. **Descripción del Problema**: Una descripción detallada del problema que estás experimentando o la solicitud que deseas realizar.\n3. **Pasos para Reproducir el Problema** (si es relevante): Si el problema es un error o una falla, describe los pasos que llevan a la situación.\n4. **Información Adicional**: Cualquier otra información relevante que pueda ayudar a resolver el problema, como versiones de software, sistemas operativos, etc.\n\nCon esta información, puedo ayudarte a formular un ticket claro y conciso.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 775,
+    "palabras": 116,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.0733,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 6.51
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Si te doy mi problema, me ayuudas a redactarlo mejor para la gente de TI?",
+   "respuesta": "¡Claro! Estaré encantado de ayudarte a mejorar la redacción de tu problema para que sea más claro y comprensible para la gente de TI. Por favor, comparte el problema que tienes y cuéntame más detalles sobre lo que necesitas.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 224,
+    "palabras": 39,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.84
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "mi mouse no sirve no si si es el laser o la ruedita los botones o que",
+   "respuesta": "Lo siento que estés teniendo problemas con tu mouse. Para poder ayudarte mejor, necesito saber un poco más sobre el problema específico que estás experimentando. ¿Podrías describirme si el problema es con el laser, la ruedita, los botones o algo diferente?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 256,
+    "palabras": 41,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 3.87
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "de donde sacaste que era nuevo el mouse y que solo fue usado por un par de semanas?",
+   "respuesta": "No tengo información sobre un mouse nuevo que solo haya sido usado por un par de semanas. No tengo acceso a internet ni puedo buscar información en tiempo real, por lo que no puedo verificar hechos que no estén en el contenido del corpus indexado. Si tienes alguna otra pregunta o necesitas ayuda con algo más, estaré encantado de asistirte.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 341,
+    "palabras": 60,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 4.0
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Alucinaciones?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.03
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "COn que tecnologia esta realizado este chat?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Con que estas entrenado?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "en que idioma puedes respodner?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "traduce este texto a aleman \"hola mundo, buen día a todos\"",
+   "respuesta": "\"Hola mundo, buen día a todos\" se traduce al alemán como \"Hallo Welt, schönen Tag zu allen\".",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 92,
+    "palabras": 17,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.98
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Cuando fue la guerra de los pasteles?",
+   "respuesta": "Lo siento, pero no tengo acceso a información sobre eventos históricos como la \"Guerra de los Pasteles\". No tengo conocimiento sobre este tema en el corpus indexado. Te sugiero intentar con una pregunta más específica o buscar en fuentes confiables en línea si es necesario.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 274,
+    "palabras": 45,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.75
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes ayduarme con un problema de logica computacional?",
+   "respuesta": "¡Claro! Estoy aquí para ayudarte. ¿Podrías explicarme el problema de lógica computacional que tienes?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 101,
+    "palabras": 14,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 3.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Intento hacer una piramide de asteriscos puedes ayudarme en codigo para powrshell en el cmd de windows",
+   "respuesta": "¡Claro! Puedo ayudarte a crear un script de PowerShell que genere una pirámide de asteriscos en el CMD de Windows. Aquí tienes un ejemplo de cómo hacerlo:\n\n```powershell\n# Definir la altura de la pirámide\n$altura = 5\n\n# Bucle para crear la pirámide\nfor ($i = 1; $i -le $altura; $i++) {\n    # Calcular el número de espacios y asteriscos\n    $espacios = $altura - $i\n    $asteriscos = 2 * $i - 1\n\n    # Crear la línea de la pirámide\n    $linea = \" \" * $espacios + \"*\" * $asteriscos\n\n    # Mostrar la línea en el CMD\n    Write-Output $linea\n}\n```\n\nPara usar este script:\n\n1. Abre el editor de PowerShell (Powershell ISE, VSCode, o cualquier otro editor de texto).\n2. Copia y pega el código anterior en el editor.\n3. Guarda el archivo con una extensión `.ps1`, por ejemplo, `piramide.ps1`.\n4. Abre el CMD de Windows.\n5. Navega hasta el directorio donde guardaste el archivo `.ps1`.\n6. Ejecuta el script con el siguiente comando:\n\n```cmd\npowershell -File .\\piramide.ps1\n```\n\nEste script creará una pirámide de asteriscos con una altura de 5. Puedes cambiar el valor de `$altura` para crear una pirámide de cualquier altura que desees.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 1129,
+    "palabras": 197,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 10,
+    "tecnicos": {
+     "bloque_cercado": 4,
+     "span_backtick": 4,
+     "pascal_compuesto": 2
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 9.92
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Cuántos archivos te constituyen?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Como es que puedes responderme?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "para las ordenes de compra como realizo una factura?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.0519,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.29
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "I cannot find enough information in the indexed content to answer this question.",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.4557,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "cuantos archivos tienes aquí?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "quien eres?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "hola",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "que dia es?",
+   "respuesta": "Lo siento, pero no tengo acceso a la fecha actual. No puedo proporcionar información sobre el día en que estamos.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 113,
+    "palabras": 20,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.66
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "puedes darme un resumen?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que corre completamente en local, sin conexión a servicios de LLM externos. Busco en un corpus indexado en Qdrant usando búsqueda híbrida (embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector disperso estilo BM25), fusiono los resultados con RRF y, cuando aplica, los re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de generar la respuesta con un modelo local vía Ollama (familia Qwen2.5). Solo respondo con base en el contenido ya indexado del corpus activo — no tengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 642,
+    "palabras": 91,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 6.31
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes darme un resumen del documento de notificaciones?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que este documento describe el componente de bandeja de notificaciones (ícono con contador, listado, detalle y gestión de leído/no leído) mostrado en las imágenes de referencia, y su disponibilidad simultánea en innov app (vista móvil) y Business Suite (vista web). No redefine en qué estatus específicos se genera una notificación de cambio de estatus: esa regla continúa gobernada por RF-01 (y, para las variantes de Solicitud de Servicio y Ticket, por las reglas de notificación ya vigentes en cada flujo). Este RF tampoco modifica el contenido ni las condiciones de aparición del Bloque de Notificación dentro del timeline de Trayectoria (mecanismo ya existente en el sistema, documentado aparte); lo que agrega es que ese mismo evento, además de mostrarse en el timeline, genere una entrada visible en el Centro de Notificaciones.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 931,
+    "palabras": 146,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1084,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 7.16
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Cómo se cierra un ticket?",
+   "respuesta": "El cierre de un ticket depende del tipo de servicio interno definido en el cierre del ticket. Si el tipo de servicio interno requiere validación, el ticket no se cierra y transiciona a \"En Validación\". Si el tipo de servicio interno no requiere validación, el ticket se cierra conforme al comportamiento ya existente, sin transicionar a \"En Validación\".",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 353,
+    "palabras": 58,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.9664,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 4.39
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Cómo funciona la encuesta de satisfacción?",
+   "respuesta": "La encuesta de satisfacción es un proceso que se realiza al cerrar un ticket o una solicitud de servicio. Su objetivo es recoger las opiniones y experiencias de los usuarios sobre el servicio recibido. Aquí te explico cómo funciona:\n\n1. **Aparición Automática**: Cuando un ticket o solicitud de servicio alcanza un estado terminal de cierre exitoso, aparece automáticamente un bloque de encuesta en la trayectoria del servicio. Este bloque contiene las preguntas de la encuesta vigente.\n\n2. **Captura de Respuestas**: El usuario puede responder a las preguntas de la encuesta. Las preguntas pueden ser de diferentes tipos, como escala/estrellas, sí/no, o texto libre. El sistema valida que las preguntas obligatorias sean respondidas.\n\n3. **Almacenamiento de Respuestas**: Las respuestas del usuario se capturan y almacenan en el sistema. Esto permite un seguimiento y análisis de las percepciones de los usuarios sobre el servicio.\n\n4. **Visualización de Respuestas**: Los responsables de calidad del servicio pueden visualizar las respuestas de la encuesta de satisfacción relacionadas a cada ticket o solicitud de servicio. Esto les permite dar seguimiento a la percepción del usuario sobre el servicio recibido.\n\n5. **Reglas de Negocio y Criterios de Aceptación**: El sistema tiene reglas de negocio y criterios de aceptación asociados a los requerimientos de la encuesta de satisfacción. Estos aseguran que el proceso sea efectivo y que los datos recopilados sean útiles.\n\nEn resumen, la encuesta de satisfacción es un proceso automatizado que recoge y almacena las opiniones de los usuarios sobre el servicio recibido, lo que permite un seguimiento y análisis de la calidad del servicio.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 1693,
+    "palabras": 259,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.774,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 10.62
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿que proyecto analizas?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Quien eres?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.02
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Puedes ayudarme?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\ncorre completamente en local, sin conexión a servicios de LLM externos.\n\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\n\nSolo respondo con base en el contenido ya indexado del corpus activo — no\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 659,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 0.01
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Qué hora es?",
+   "respuesta": "Lo siento, pero no tengo acceso a la hora actual.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 49,
+    "palabras": 10,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.31
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "la hora actual",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.2999,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.09
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Puedes realziar una busqueda en internet",
+   "respuesta": "Lo siento, pero no tengo la capacidad de realizar búsquedas en internet. Mi conocimiento se basa únicamente en los datos y información que me proporcionaste en el contexto. No puedo acceder a información externa o realizar búsquedas en la web. ¿Podrías proporcionar más detalles o contexto sobre lo que estás buscando?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 318,
+    "palabras": 51,
+    "postura": "rechazo_pleno",
+    "fuentes": 10,
+    "score_top": 0.0551,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 3.6
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Procesos que influyen en la innovapp?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que la sección \"Nota de alcance — Solicitud de Servicio de Gestión de Proyectos (Innovación & Negocios)\" describe los procesos relacionados con la gestión de proyectos en innov app.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 277,
+    "palabras": 44,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1565,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.93
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "mi mouse no sirve no se si es el laser o la ruedita los botones o que",
+   "respuesta": "Lo siento que estés teniendo problemas con tu mouse. Para poder ayudarte de la mejor manera, necesito saber un poco más de información:\n\n1. ¿Qué tipo de mouse tienes? (por ejemplo, inalámbrico, cableado, etc.)\n2. ¿Recientemente has hecho algún cambio en tu computadora o sistema operativo?\n3. ¿El problema ocurre solo con un mouse específico o con todos los que has probado?\n4. ¿Has probado reiniciar tu computadora?\n5. ¿El problema persiste incluso cuando estás en un sistema operativo diferente?\n\nCon esta información, podré darte consejos más específicos sobre cómo solucionar el problema con tu mouse.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 605,
+    "palabras": 96,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 5.55
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Hola, como estas?",
+   "respuesta": "Hola! Estoy bien, gracias. ¿Y tú? ¿En qué puedo ayudarte hoy?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 61,
+    "palabras": 11,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.62
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Yo, bien gracais, tengo un problema con mi computadora no se conecta a la red",
+   "respuesta": "Lo siento que estés teniendo problemas con tu computadora. ¿Podrías proporcionar más detalles sobre el problema? ¿Es un problema con la conexión Wi-Fi o con la conexión a Internet a través de un cable? ¿Recibes algún mensaje de error específico? Cualquier información adicional te ayudará a resolver el problema de manera más eficiente.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 336,
+    "palabras": 53,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 1,
+    "duracion_s": 3.85
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Recuerdas lo que hablamos la semana pasada?",
+   "respuesta": "No tengo la capacidad de recordar conversaciones pasadas o mantener información sobre sesiones anteriores. Cada conversación comienza desde cero, y solo puedo responder basándome en la información proporcionada en la conversación actual. ¿Hay algo específico sobre lo que te gustaría hablar hoy?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 295,
+    "palabras": 42,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.5
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "Conoces a AlteIA?",
+   "respuesta": "No tengo información relevante sobre AlteIA en el corpus indexado. Si tienes alguna pregunta más específica o si tienes más contexto sobre lo que te gustaría saber, estaré encantado de ayudarte.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 194,
+    "palabras": 31,
+    "postura": "rechazo_pleno",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 1,
+    "tecnicos": {
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.71
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "\"Preguntar\" genera una respuesta con el LLM y mantiene el hilo de la conversación; \"Buscar\" solo trae los fragmentos relevantes en una ventana aparte, sin generar respuesta ni afectar el chat.",
+   "respuesta": "Entendido. ¿Cómo puedo ayudarte hoy?",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 36,
+    "palabras": 5,
+    "postura": "directo",
+    "fuentes": 10,
+    "score_top": 0.2386,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.44
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "¿Cómo funciona la validación de campos requeridos?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 5,
+    "score_top": 0.4061,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.15
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "COMO AFECTA LA ENCUESTA",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.309,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 3.12
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "COMO FUNICIONA LA ENCUESTA",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el sistema proporciona un módulo para administrar el catálogo de Encuestas de Satisfacción. Cada Encuesta agrupa una selección de preguntas del catálogo de Preguntas (RF-01), cada una con su propio orden de aparición dentro de esa Encuesta específica (una misma pregunta puede reutilizarse en varias Encuestas con distinto orden en cada una). El catálogo es dinámico: el administrador puede crear nuevas Encuestas, modificar su composición, o cambiar cuál es la Encuesta vigente, sin requerir despliegue de código. En todo momento, solo una Encuesta del catálogo puede estar Vigente; es la única que se muestra a los usuarios en el bloque de encuesta descrito en RF-03.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 769,
+    "palabras": 121,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.1596,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 6.47
+   }
+  },
+  {
+   "coleccion": "innovapp-docs",
+   "pregunta": "El plan de auditoría se genera en automático al crear la auditoría?",
+   "respuesta": "No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que el contexto proporcionado no tiene una relevancia alta para la pregunta.",
+   "metricas": {
+    "modo": "Simple",
+    "caracteres": 172,
+    "palabras": 27,
+    "postura": "banda_baja",
+    "fuentes": 10,
+    "score_top": 0.39,
+    "tecnicos_total": 0,
+    "tecnicos": {},
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.99
+   }
+  }
+ ]
+}

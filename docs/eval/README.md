@@ -6,6 +6,17 @@
   fragmentos que la respuesta correcta debe contener.
 - `baselines/*.baseline.json` — resultado de correr un eval-set, **con la procedencia
   de la corrida**.
+- `gate-bandas.labeled-set.json` — conjunto para calibrar las bandas del gate de
+  confianza: 65 consultas etiquetadas `presente` / `ausente` según si el corpus contiene
+  la respuesta, con negativos adversariales (adyacentes al dominio, cross-corpus y meta,
+  no sólo fuera de dominio). Cada ausencia lleva en `evidencia` el `grep` que la
+  confirma contra el contenido indexado. Es ground-truth de **abstención**, no de
+  recall: aquí no importa qué chunk sale, sino si el motor debe responder.
+- `gate-bandas.scores.json` — score del resultado #1 de cada una de esas consultas, con
+  `CrossEncoder:StableGateScore` encendida y apagada. Lo produce y lo analiza
+  `infra/gate-bandas-barrido.py`.
+- `quality/*.json` — corridas de `infra/quality-baseline.py`: respuestas completas de la
+  API más métricas mecánicas de calidad. No miden recall; miden lo que ve el usuario.
 
 ## El problema que resuelve la procedencia
 

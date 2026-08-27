@@ -353,6 +353,118 @@ distribución de scores de ambos grupos.
 fabricaciones respecto a la línea base actual, medido con `infra/quality-baseline.py`. Incluir
 negativos adversariales, no sólo positivos.
 
+#### Resultado de la recalibración (2026-08-26)
+
+**Conclusión: los umbrales no se mueven.** `LowConfidenceThreshold` sigue en 0,05 y
+`HighConfidenceThreshold` en 0,60. Lo que sí cambia es que `CrossEncoder:StableGateScore` queda
+**encendida**: la calibración se hizo sobre el score estable y confirma que esos dos valores siguen
+siendo los mejores del barrido con él.
+
+##### El conjunto etiquetado
+
+`docs/eval/gate-bandas.labeled-set.json` — 65 consultas, 38 con la respuesta presente en el corpus y
+27 ausentes:
+
+| Origen | presente | ausente |
+|---|---|---|
+| `innovapp-docs.eval-set.json` (26 preguntas ya etiquetadas) | 22 | 4 |
+| `bsuite-auditorias.eval-set.json` (16 preguntas) | 16 | 0 |
+| Negativos añadidos por este ítem | — | 23 |
+
+Los negativos no son sólo "receta de paella". Cuatro categorías, con 3–5 ejemplares cada una:
+
+- **adyacente-ausente** (10): vocabulario del corpus, funcionalidad que no existe. *"¿Me pueden
+  avisar por WhatsApp o SMS cuando cambie mi ticket?"* contra un corpus que documenta a fondo las
+  notificaciones por correo e in-app.
+- **cross-corpus** (6): la respuesta existe, pero en otra colección. Preguntas positivas de
+  `innovapp-docs` disparadas contra `bsuite-auditorias-test` y al revés.
+- **meta** (3): preguntas sobre el corpus, no contestables con un chunk.
+- **fuera-de-dominio** (8): control duro, ancla el extremo bajo de la distribución.
+
+Cada ausencia está verificada con `grep` contra el **contenido realmente indexado en Qdrant**
+—volcado de los 743 chunks de `innovapp-docs` y los 1.677 de `bsuite-auditorias-test`—, no contra el
+repositorio fuente. La evidencia concreta va en el campo `evidencia` de cada fila.
+
+##### El score no separa las dos clases
+
+Medido con `infra/gate-bandas-barrido.py --medir` (65 consultas × 2 modos de bandera, `TopK`=10):
+
+| | AUC | Solape |
+|---|---|---|
+| score por lotes | 0,874 | [0,0157 – 0,8956] contiene 18/38 positivos y 21/27 negativos |
+| score estable | 0,868 | [0,0148 – 0,9195] contiene 21/38 positivos y 22/27 negativos |
+
+No hay hueco. El positivo *"Si escojo 'otro' como razón para cancelar, ¿tengo que explicar por qué?"*
+puntúa 0,6555 y tres negativos caen a 0,656 / 0,6721 / 0,6763 — dentro de dos centésimas. El negativo
+más alto, *"¿Cómo se envía por correo el informe de auditoría al auditado?"* (0,9195), supera a 17 de
+los 38 positivos. Cualquier corte único acierta como máximo el 78–81 % del conjunto.
+
+Esto invalida la lectura optimista del Hallazgo 3: el hueco que se intuía entre ruido (≤ ~0,18) y
+acierto (≥ ~0,58) con n=10 **no existe** con n=65. Era un artefacto del tamaño de muestra.
+
+##### El barrido, con las definiciones del criterio
+
+*Respuesta correcta entregada* = positivo con score ≥ alto, o sea respondido **sin** el matiz de banda
+media; contar el matiz como entrega sería contar el problema como solución. *Fabricación* = ausente
+con score ≥ alto.
+
+| alto (bajo = 0,05) | entregadas | fabricaciones |
+|---|---|---|
+| 0,45 | 27 | 6 |
+| 0,50 | 26 | 6 |
+| 0,55 – 0,65 | 26 | 5 |
+| 0,68 – 0,70 | 25 | 2 |
+| 0,75 | 25 | 1 |
+| 0,90 | 18 | 1 |
+
+Línea base (0,05 / 0,60 sobre score por lotes): 26 entregadas, 5 fabricaciones. **Ninguno de los 132
+pares (bajo, alto) del barrido entrega más que la línea base sin fabricar más.** Bajar el alto compra
+una respuesta correcta al precio de una fabricación; subirlo compra tres o cuatro fabricaciones menos
+al precio de una respuesta correcta. 0,60 está en la frontera, no en un mal sitio.
+
+El umbral bajo tampoco se mueve: 0,05 pierde 1 positivo de 38 y rechaza 11 de 27 negativos; bajarlo a
+0,02 recupera ese positivo pero deja pasar 6 negativos más. Coincide con lo que ya decía el ítem —la
+banda sin grounding funciona y no había que tocarla— pero ahora está medido, no supuesto.
+
+##### Verificación con `infra/quality-baseline.py`
+
+73 preguntas reales (68 de `innovapp-docs` + 5 de `bsuite-auditorias-test`), tres corridas contra la
+API con generación completa:
+
+| Corrida | rechazo pleno | banda baja | directo | fabricaciones\* |
+|---|---|---|---|---|
+| línea base — lotes, 0,05 / 0,60 | 24,7 % | 20,5 % | 54,8 % | 5 |
+| **estable, 0,05 / 0,60** | 24,7 % | **15,1 %** | **60,3 %** | **5** |
+| estable, 0,05 / 0,45 | 26,0 % | 15,1 % | 58,9 % | 5 |
+
+\* respuestas sin reservas cuyo score real quedó por debajo de 0,60. Es el
+`directo_con_score_bajo_pct` del script **descontando las filas sin fuentes**: ese porcentaje mete en
+el mismo saco 25–28 turnos conversacionales que nunca tuvieron chunks (score `None` → 0), que son la
+banda sin grounding haciendo su trabajo, no fabricaciones del gate.
+
+Encender la bandera con los mismos umbrales sube las respuestas sin reservas de 54,8 % a 60,3 % y baja
+los matices inútiles de 20,5 % a 15,1 %, con las fabricaciones iguales (5 → 5). Tres consultas pierden
+grounding al pasar al score estable —*"Existe contenido para la bitacora de defectos?"*, *"Puedes
+ayudarme a redactar un ticket?"* y *"para las ordenes de compra como realizo una factura?"*, todas con
+score base entre 0,052 y 0,073— y las tres son casos cuya respuesta **no** está en el corpus
+(`grep -i 'factur'` = 0 en `innovapp-docs`). Ninguna consulta gana grounding indebidamente.
+
+Bajar el alto a 0,45, que era la hipótesis de origen del ítem —"la banda media es demasiado ancha, ahí
+se pierden las respuestas buenas"—, **no rescata nada**: 58,9 % de respuestas directas frente a 60,3 %,
+dentro del ruido de generación, y en el conjunto etiquetado sube las fabricaciones de 5 a 6.
+
+##### Qué queda para el ítem 4
+
+El caso que abrió esta investigación —*"puedo cancelar cualquier ticket?"*— pasa de este texto:
+
+> No encontré una coincidencia clara en el contenido indexado, pero el fragmento más cercano dice que
+> el contexto proporcionado no tiene una relevancia alta para la pregunta.
+
+a una respuesta fundamentada sobre las reglas de validación y cierre. Pero eso pasó porque el score
+estable lo empujó de 0,5579 a 0,6283 y cruzó a banda alta, no porque el matiz mejorara. El matiz sigue
+copiando el ejemplo negativo del prompt cada vez que se activa. **No es un problema de dónde está el
+corte, es del texto del addendum**, y lo arregla el ítem 4.4.
+
 ### Ítem 4 — Arreglar la fuga del ejemplo negativo (implementación, pequeño)
 
 Dos vías, no excluyentes:

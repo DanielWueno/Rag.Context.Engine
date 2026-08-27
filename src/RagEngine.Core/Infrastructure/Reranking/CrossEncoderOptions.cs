@@ -52,8 +52,10 @@ public sealed record CrossEncoderOptions
     /// se sustituye el número de la posición #1, que puede quedar por debajo del score de
     /// la posición #2. Coste: una inferencia extra por consulta.
     ///
-    /// Default <c>false</c> — es el rollback del ítem 4.2 del plan: se apaga en
-    /// configuración, sin recompilar. Ver
+    /// Encendida en configuración desde el ítem 4.3, que recalibró las bandas sobre el
+    /// score estable y midió que los umbrales vigentes (0,05 / 0,60) siguen siendo los
+    /// mejores del barrido con él. El default del tipo se deja en <c>false</c> para que
+    /// apagarla sea quitar la clave del appsettings, sin recompilar. Ver
     /// docs/analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md.
     /// </summary>
     public bool StableGateScore { get; init; }

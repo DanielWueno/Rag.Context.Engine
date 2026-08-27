@@ -1,0 +1,1432 @@
+[
+ {
+  "pregunta": "¿Quién puede cancelar un ticket que está en estatus Registrado?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-2.2, vocabulario casi literal del documento.",
+  "estable": {
+   "score": 0.9947513,
+   "chunk": "4a3a796ba8e3",
+   "seccion": "Reglas de negocio",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.99616086,
+   "chunk": "4a3a796ba8e3",
+   "seccion": "Reglas de negocio",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué pasa si el motivo de cancelación seleccionado es 'Otro'?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-2.4 / diseño UX, texto casi textual.",
+  "estable": {
+   "score": 0.9973131,
+   "chunk": "f5043e743eac",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9960532,
+   "chunk": "f5043e743eac",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo se muestra el bloque de encuesta de satisfacción en la Trayectoria?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-3.1, US-3.1.",
+  "estable": {
+   "score": 0.9799804,
+   "chunk": "3f67d6c509f2",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9803386,
+   "chunk": "3f67d6c509f2",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué es el Folio Único de Atención?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-1.1, US-1.1, definición central del RF.",
+  "estable": {
+   "score": 0.9991185,
+   "chunk": "27f01d43a0ad",
+   "seccion": "Reglas de negocio",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.99823195,
+   "chunk": "27f01d43a0ad",
+   "seccion": "Reglas de negocio",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué estatus del Ticket generan correo electrónico?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Tabla de disparadores, prueba lectura de contenido tabular Markdown.",
+  "estable": {
+   "score": 0.94158393,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9735482,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se marca una notificación como leída?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-2.7, US-2.2.",
+  "estable": {
+   "score": 0.99882025,
+   "chunk": "75598c40008f",
+   "seccion": "Reglas de negocio",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.99886763,
+   "chunk": "75598c40008f",
+   "seccion": "Reglas de negocio",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué insignia se muestra cuando un estatus del timeline es terminal?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-1.2, US-1.1.",
+  "estable": {
+   "score": 0.9989367,
+   "chunk": "d0fd50302600",
+   "seccion": "Reglas de negocio",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9981797,
+   "chunk": "d0fd50302600",
+   "seccion": "Reglas de negocio",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RN-12.2, US-12.1.",
+  "estable": {
+   "score": 0.9965758,
+   "chunk": "25815b25d496",
+   "seccion": "Objetivo",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9972778,
+   "chunk": "25815b25d496",
+   "seccion": "Objetivo",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"borrar\" en vez de \"cancelar\", \"yo mismo\" en vez de \"usuario que reportó\" — gap léxico real.",
+  "estable": {
+   "score": 0.8997643,
+   "chunk": "74df89cdb689",
+   "seccion": "US-2.1 — Cancelación de la propia petición",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9250129,
+   "chunk": "74df89cdb689",
+   "seccion": "US-2.1 — Cancelación de la propia petición",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "Si escojo 'otro' como razón para cancelar, ¿tengo que explicar por qué?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"explicar por qué\" en vez de \"texto adicional obligatorio\".",
+  "estable": {
+   "score": 0.6555098,
+   "chunk": "632bc38d058a",
+   "seccion": "RF-22 — Cancelación de la petición del cliente desde Monitor CAU",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.73923725,
+   "chunk": "632bc38d058a",
+   "seccion": "RF-22 — Cancelación de la petición del cliente desde Monitor CAU",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"qué tan contento quedé\" evita por completo la palabra \"encuesta de satisfacción\".",
+  "estable": {
+   "score": 0.014766347,
+   "chunk": "bfa02fb1ef7f",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.015725829,
+   "chunk": "bfa02fb1ef7f",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Hay un número que identifique mi caso sin importar si terminó siendo ticket o solicitud de servicio?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Ninguna mención literal de \"Folio Único de Atención\" en la pregunta.",
+  "estable": {
+   "score": 0.992057,
+   "chunk": "2aac730bb9f6",
+   "seccion": "US-1.1",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.99520326,
+   "chunk": "2aac730bb9f6",
+   "seccion": "US-1.1",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Me avisan por correo cuando resuelven mi problema?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"resuelven mi problema\" = estatus Atendido; \"avisan por correo\" = columna correo electrónico.",
+  "estable": {
+   "score": 0.086542614,
+   "chunk": "bf9783ba7eb3",
+   "seccion": "US-43.1 — Generación de la notificación in-app",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.10718209,
+   "chunk": "bf9783ba7eb3",
+   "seccion": "US-43.1 — Generación de la notificación in-app",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo le hago para que ya no me aparezca como pendiente algo que ya vi?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"que ya no me aparezca como pendiente\" evita la palabra \"leído\"/\"notificación\".",
+  "estable": {
+   "score": 0.15097636,
+   "chunk": "fc8eba89309e",
+   "seccion": "Componentes del Timeline de Trayectoria",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.12826036,
+   "chunk": "fc8eba89309e",
+   "seccion": "Componentes del Timeline de Trayectoria",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo sé qué pasos ya se completaron en mi caso?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"pasos ya se completaron\" en vez de \"timeline\"/\"trayectoria\".",
+  "estable": {
+   "score": 0.08642679,
+   "chunk": "ae458223e6b7",
+   "seccion": "6. Casos de prueba — RF-02 Administración del Catálogo de Encuestas",
+   "archivo": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.10637978,
+   "chunk": "ae458223e6b7",
+   "seccion": "6. Casos de prueba — RF-02 Administración del Catálogo de Encuestas",
+   "archivo": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "parafraseada",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "\"el técnico ya va en camino\" en vez de \"Ing. en Traslado\".",
+  "estable": {
+   "score": 0.8741979,
+   "chunk": "1e566022a0ee",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.8500724,
+   "chunk": "1e566022a0ee",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Puedo cancelar mi ticket en cualquier momento?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "ambigua",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Respuesta completa exige sintetizar RN-2.1 (solo en Registrado) + RN-2.8 (después, solo el analista CAU puede); una respuesta de un solo chunk queda incompleta o falsa.",
+  "estable": {
+   "score": 0.39012945,
+   "chunk": "7edb4ca9fb6b",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.36565575,
+   "chunk": "7edb4ca9fb6b",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuál es la diferencia entre el folio del ticket y el Folio Único de Atención?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "ambigua",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Requiere RN-1.1 + RN-1.2 juntas para no confundir ambos folios.",
+  "estable": {
+   "score": 0.9993855,
+   "chunk": "29c8279656ca",
+   "seccion": "Descripción",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.99923027,
+   "chunk": "29c8279656ca",
+   "seccion": "Descripción",
+   "archivo": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Se me notifica igual por correo que por la app cuando mi ticket cambia de estatus?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "ambigua",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "La respuesta correcta es \"no, para Ticket el correo es un subconjunto\" — requiere la tabla + la nota aclaratoria, no solo un canal.",
+  "estable": {
+   "score": 0.9208558,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.92071867,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "ambigua",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Distingue 3 casos (vigente / terminal / intermedio superado) — RN-1.2 + RN-1.11; una respuesta que solo cubra \"en curso\" vs \"finalizada\" omite el caso intermedio sin insignia.",
+  "estable": {
+   "score": 0.7544438,
+   "chunk": "fc8eba89309e",
+   "seccion": "Componentes del Timeline de Trayectoria",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.7160348,
+   "chunk": "fc8eba89309e",
+   "seccion": "Componentes del Timeline de Trayectoria",
+   "archivo": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo solicito mis vacaciones o días económicos?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Confirmado ausente en todo el corpus (grep sin resultados de \"vacacion\"/\"nómina\" en contexto de RRHH). El sistema no debe fabricar una respuesta de RRHH.",
+  "estable": {
+   "score": 0.03146341,
+   "chunk": "efb80d3ed0fc",
+   "seccion": "5.1 — Regresión de Ticket (ciclo completo)",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.027105832,
+   "chunk": "efb80d3ed0fc",
+   "seccion": "5.1 — Regresión de Ticket (ciclo completo)",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se factura un ticket a un cliente externo?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Confirmado ausente (grep \"facturaci\"/\"factura\" sin resultados). Completamente fuera del dominio de gestión de tickets/SS.",
+  "estable": {
+   "score": 0.7147845,
+   "chunk": "8aae9365a47c",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.70635647,
+   "chunk": "8aae9365a47c",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Puedo cancelar una encuesta de satisfacción después de haberla enviado?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "Domain-adyacente pero ausente: RN-3.6 solo dice que tras enviar se reemplaza por agradecimiento y no se vuelve a solicitar captura — no define ninguna acción de editar/retractar una respuesta ya enviada. Verificado (grep \"editar\"/\"modificar\" solo aparece para administración del catálogo, no para respuestas de usuario). Pone a prueba que el sistema no invente una función de \"cancelar respuesta\" por analogía con \"Cancelar Ticket\".",
+  "estable": {
+   "score": 0.65601987,
+   "chunk": "3afb36f2e952",
+   "seccion": "Documento Principal",
+   "archivo": "Plan_De_Trabajo_InnovApp.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.68492603,
+   "chunk": "3afb36f2e952",
+   "seccion": "Documento Principal",
+   "archivo": "Plan_De_Trabajo_InnovApp.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué pasa si el CAU pierde la conexión a internet durante una investigación?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "El corpus son RFs/pruebas funcionales de negocio, no documentación de infraestructura/operación; este tema no está cubierto en ningún archivo.",
+  "estable": {
+   "score": 0.36587843,
+   "chunk": "161c0bec26da",
+   "seccion": "Descripción",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.31420028,
+   "chunk": "161c0bec26da",
+   "seccion": "Descripción",
+   "archivo": "Cancelación de Ticket por el usuario.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Puedo ver la encuesta de un ticket ajeno?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "regresion-conocida",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "TC-03.14. El anchor 'RN-1.18' registrado en una memoria previa no existe en el corpus (verificado con grep, cero resultados) — era una cita fabricada por el LLM en una sesión anterior. Este es el anchor real.",
+  "estable": {
+   "score": 0.2646882,
+   "chunk": "f0e0417bdd51",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.21905391,
+   "chunk": "f0e0417bdd51",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué pasa si un ticket espera confirmación y nadie responde?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "presente",
+  "categoria": "regresion-conocida",
+  "origen": "innovapp-docs.eval-set.json",
+  "evidencia": "RF-17, línea 1684. Confirma el hallazgo de la memoria rerank-vs-generacion: retrieval ya lo rankea #1, el fallo previo fue de generación, no de recall.",
+  "estable": {
+   "score": 0.34588498,
+   "chunk": "f9d50c8a6926",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.42377478,
+   "chunk": "f9d50c8a6926",
+   "seccion": "Descripción",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Propiedad EsRecurrente, ToolTip del campo.",
+  "estable": {
+   "score": 0.4450597,
+   "chunk": "9b00ffd24c49",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgo.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.38424903,
+   "chunk": "9b00ffd24c49",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgo.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo se puede reabrir una acción correctiva ya finalizada?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "CanReopen: solo si Estatus=Finalizado y el usuario tiene el permiso especial ReabrirAccionCorrectiva.",
+  "estable": {
+   "score": 0.91739964,
+   "chunk": "aa923dd9c366",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.89460224,
+   "chunk": "aa923dd9c366",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo pasa un hallazgo de auditoría a estatus de validación?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "ActualizaEstatusHallazgo: pasa a Validacion solo cuando todas las acciones correctivas no canceladas están finalizadas.",
+  "estable": {
+   "score": 0.12186033,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.119089566,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué información se registra al validar o rechazar un hallazgo de auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Campo Observaciones de la validación (soporta estatus Rechazado/Finalizado).",
+  "estable": {
+   "score": 0.43390837,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.41647488,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué se necesita para reprogramar la ejecución de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Reglas de validación: fechas dentro de rango + motivo obligatorio.",
+  "estable": {
+   "score": 0.98440033,
+   "chunk": "a415c49f6dcf",
+   "seccion": null,
+   "archivo": "Controllers/PlanificacionAuditoriaViewController.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.98533475,
+   "chunk": "a415c49f6dcf",
+   "seccion": null,
+   "archivo": "Controllers/PlanificacionAuditoriaViewController.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Desde dónde reprogramo una auditoría ya planificada?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Acción 'Reprogramar Auditoria' del controller de planificación.",
+  "estable": {
+   "score": 0.96764976,
+   "chunk": "a415c49f6dcf",
+   "seccion": null,
+   "archivo": "Controllers/PlanificacionAuditoriaViewController.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.95056117,
+   "chunk": "a415c49f6dcf",
+   "seccion": null,
+   "archivo": "Controllers/PlanificacionAuditoriaViewController.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo se puede finalizar completamente una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "CanFinalizarAuditoria: mismo criterio se repite en Auditorias.cs y en AuditoriaResultadoHallazgoAccionCorrectiva.cs.",
+  "estable": {
+   "score": 0.06738641,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.056661513,
+   "chunk": "fb04a84986ba",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué pasa con una auditoría si no se encontraron hallazgos activos al completarla?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "ValidarTieneHallazgos: sin hallazgos activos, la auditoría pasa directo a Finalizado.",
+  "estable": {
+   "score": 0.8859838,
+   "chunk": "15fdf370546d",
+   "seccion": "ActualizaEstatusHallazgo",
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.90103936,
+   "chunk": "15fdf370546d",
+   "seccion": "ActualizaEstatusHallazgo",
+   "archivo": "BO/Procesos/AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo puedo exportar la plantilla de hallazgos de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "FileExport lanza UserFriendlyException fuera de estatus Ejecución.",
+  "estable": {
+   "score": 0.97991985,
+   "chunk": "73f50068772f",
+   "seccion": "FileExport",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9925925,
+   "chunk": "73f50068772f",
+   "seccion": "FileExport",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se determina si un empleado es el auditado de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Propiedad IsAuditado.",
+  "estable": {
+   "score": 0.77282465,
+   "chunk": "da8b3efe921a",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaSeguimiento.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.80934733,
+   "chunk": "da8b3efe921a",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaSeguimiento.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué motivo se registra cuando se reprograma un plan de auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Campo MotivoReprogramada.",
+  "estable": {
+   "score": 0.86100674,
+   "chunk": "23885a414342",
+   "seccion": null,
+   "archivo": "BO/Procesos/PlanAuditoria.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.89949584,
+   "chunk": "23885a414342",
+   "seccion": null,
+   "archivo": "BO/Procesos/PlanAuditoria.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se calcula la calificación global de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "CalcularCalificacionAuditoria: suma ponderada de la calificación de cada grupo de criterios.",
+  "estable": {
+   "score": 0.9642925,
+   "chunk": "35fa4f9a2e70",
+   "seccion": "CalcularCalificacionAuditoria",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9646124,
+   "chunk": "35fa4f9a2e70",
+   "seccion": "CalcularCalificacionAuditoria",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se calcula la calificación de un grupo de criterios del checklist?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "CalcularCalificacionGrupo, distinto de la calificación global de la auditoría completa.",
+  "estable": {
+   "score": 0.99990475,
+   "chunk": "723a3fedbb59",
+   "seccion": "CalcularCalificacionGrupo",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.9999294,
+   "chunk": "723a3fedbb59",
+   "seccion": "CalcularCalificacionGrupo",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo registro el plan de acción de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Acción 'Registrar Plan de Acción'.",
+  "estable": {
+   "score": 0.9511767,
+   "chunk": "2b24641cc5e0",
+   "seccion": null,
+   "archivo": "BO/Procesos/PlanAuditoria.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.94435,
+   "chunk": "2b24641cc5e0",
+   "seccion": null,
+   "archivo": "BO/Procesos/PlanAuditoria.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo importo auditorías desde un archivo Excel?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Acción 'Importar Auditorías' (ToolTip, definido en el constructor, líneas ~94-97) o su método ImportarAuditorias_Execute (lógica real de importación, chunk real recuperado: líneas 566-591) — ambos son respuestas válidas a 'cómo importo'; el runner ya evalúa TargetContentContains con OR (EvalCommand.cs:177), agregar el segundo anchor no requiere cambios de código. Re-etiquetado 2026-07-31: verificado con `rag search` real contra bsuite-auditorias-test — el sistema SÍ recupera el chunk de Execute en el top-10 pero antes no contaba como hit porque el anchor original (la tooltip, línea 97) vive en un chunk distinto (el constructor) que no entra al top-10. Cuidado: el string 'Existen errores en la importación...' (línea 561) NO sirve como anchor pese a estar en el mismo método — cae fuera del rango real del chunk (566-591), verificado leyendo el chunker; se usó en su lugar una línea que sí cae dentro del rango confirmado por rag search.",
+  "estable": {
+   "score": 0.8335408,
+   "chunk": "5d76a8e3d152",
+   "seccion": "ImprimirResumenResultados",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.8224268,
+   "chunk": "5d76a8e3d152",
+   "seccion": "ImprimirResumenResultados",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué significa recibir el plan de acción PDCA de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "presente",
+  "categoria": "literal",
+  "origen": "bsuite-auditorias.eval-set.json",
+  "evidencia": "Acción 'Recibir Plan de Acción PDCA'.",
+  "estable": {
+   "score": 0.47921222,
+   "chunk": "a9505ada4b59",
+   "seccion": "OnEstatusUpdated",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.50945395,
+   "chunk": "a9505ada4b59",
+   "seccion": "OnEstatusUpdated",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿La aplicación tiene modo oscuro para consultar mis tickets de noche?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'modo oscuro' = 0 en los 743 chunks. Adversarial: el corpus SÍ tiene un RF completo de rediseño UX-UI de Mis Tickets.",
+  "estable": {
+   "score": 0.06359408,
+   "chunk": "e19b4f711c80",
+   "seccion": "RF-14 — Transición del Ticket a \"Espera información\" y su reverso a \"En Proceso\"",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.07174803,
+   "chunk": "e19b4f711c80",
+   "seccion": "RF-14 — Transición del Ticket a \"Espera información\" y su reverso a \"En Proceso\"",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Puedo exportar mis tickets a Excel o CSV?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'exportar' = 0; 'Excel|CSV' = 1 (mención suelta, sin funcionalidad de exportación). Adversarial: hay pantallas de consulta de tickets.",
+  "estable": {
+   "score": 0.067247264,
+   "chunk": "8aae9365a47c",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.041688625,
+   "chunk": "8aae9365a47c",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Me pueden avisar por WhatsApp o SMS cuando cambie mi ticket?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'WhatsApp|SMS' = 0. Adversarial fuerte: el corpus documenta a fondo notificaciones por correo e in-app (RF de Notificaciones por Cambio de Estado).",
+  "estable": {
+   "score": 0.09944747,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.11256516,
+   "chunk": "da0d2c0fe5d1",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "Notificaciones por Cambio de Estado.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿El sistema me manda un recordatorio si no contesto la encuesta de satisfacción?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'recordatori' = 0. Adversarial: la encuesta de satisfacción sí está documentada, incluido qué pasa al enviarla.",
+  "estable": {
+   "score": 0.26771006,
+   "chunk": "c57d3511c23d",
+   "seccion": "8. Casos de prueba — RF-04 Consulta de Respuestas de la Encuesta de Satisfacción",
+   "archivo": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.3240736,
+   "chunk": "c57d3511c23d",
+   "seccion": "8. Casos de prueba — RF-04 Consulta de Respuestas de la Encuesta de Satisfacción",
+   "archivo": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Necesito firma electrónica para autorizar un ticket?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'firma electr|firma digital' = 0. Adversarial: el corpus sí habla de autorizaciones vigentes e históricas.",
+  "estable": {
+   "score": 0.67207247,
+   "chunk": "eeaf0c449af4",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.7455896,
+   "chunk": "eeaf0c449af4",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "La respuesta está en bsuite-auditorias-test, no aquí. En innovapp-docs 'auditoría' aparece 19 veces pero siempre como 'bitácora de auditoría' (log de cambios), nunca como módulo de auditorías con hallazgos.",
+  "estable": {
+   "score": 0.06965627,
+   "chunk": "f5043e743eac",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.07717174,
+   "chunk": "f5043e743eac",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se calcula la calificación global de una auditoría?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'calificaci' = 0 en innovapp-docs. Es una pregunta positiva de bsuite-auditorias-test.",
+  "estable": {
+   "score": 0.03032289,
+   "chunk": "b3f989965bdd",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.0312835,
+   "chunk": "b3f989965bdd",
+   "seccion": "Reglas de negocio",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo sincroniza la aplicación de campo cuando recupera señal?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "Contenido de wiki-solis (US-33.4, lógica offline de la app móvil). En innovapp-docs no hay documentación de app de campo offline.",
+  "estable": {
+   "score": 0.028806476,
+   "chunk": "cab4ebb7e97c",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.027970651,
+   "chunk": "cab4ebb7e97c",
+   "seccion": "Criterios de Aceptación",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué información hay sobre integraciones?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "meta",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "Pregunta meta sobre el corpus: 'integraci' aparece 26 veces en contextos sueltos, pero ningún chunk responde 'qué información hay sobre integraciones'. Reproduce el caso medido el 2026-08-22 sobre wiki-solis.",
+  "estable": {
+   "score": 0.033011656,
+   "chunk": "cc96f3a4cf03",
+   "seccion": "2. Alcance del documento",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.036577508,
+   "chunk": "cc96f3a4cf03",
+   "seccion": "2. Alcance del documento",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué procesos, reglas o demás hay documentados aquí?",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "meta",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "Pregunta meta idéntica en forma a la que disparó el hallazgo original (score 0.181, banda media, respuesta inservible).",
+  "estable": {
+   "score": 0.26442844,
+   "chunk": "cc96f3a4cf03",
+   "seccion": "2. Alcance del documento",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.17451282,
+   "chunk": "cc96f3a4cf03",
+   "seccion": "2. Alcance del documento",
+   "archivo": "RF-Monitor-Estatus-Tickets.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se calcula el presupuesto o el costo de una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'presupuest' = 0 en los 1.677 chunks; 'costo' = 1 (sin relación con auditorías). Adversarial: sí existe cálculo de calificación de auditoría.",
+  "estable": {
+   "score": 0.5388652,
+   "chunk": "75947c6b1898",
+   "seccion": "ActualizarCaptions",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.55933595,
+   "chunk": "75947c6b1898",
+   "seccion": "ActualizarCaptions",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué certificación debe tener un auditor para poder ejecutar una auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'certificac' = 0, 'competenc' = 0, 'capacitac' = 2 (sin contexto de requisitos del auditor). Adversarial: el corpus sí modela quién es auditor y quién auditado.",
+  "estable": {
+   "score": 0.43375835,
+   "chunk": "d554ae6f0d61",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.30221486,
+   "chunk": "d554ae6f0d61",
+   "seccion": null,
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuántos días tiene el auditado antes de que el hallazgo escale automáticamente?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'escalam' = 0. Adversarial: el ciclo de vida del hallazgo (validación, reapertura, acción correctiva) sí está modelado, pero no hay escalamiento por plazo.",
+  "estable": {
+   "score": 0.004199122,
+   "chunk": "ec4024b08ce8",
+   "seccion": null,
+   "archivo": "BO/PeriodoAuditoria.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.006448573,
+   "chunk": "ec4024b08ce8",
+   "seccion": null,
+   "archivo": "BO/PeriodoAuditoria.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cómo se envía por correo el informe de auditoría al auditado?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'informe' = 0. Adversarial: sí existe exportación de plantilla de hallazgos y envío del plan de acción PDCA, así que la forma de la pregunta encaja con el corpus.",
+  "estable": {
+   "score": 0.9194571,
+   "chunk": "aa44de881504",
+   "seccion": "MostrarModalEnvioCorreo",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.89556855,
+   "chunk": "aa44de881504",
+   "seccion": "MostrarModalEnvioCorreo",
+   "archivo": "Controllers/EjecucionAuditoriaViewController.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Se firma electrónicamente el resultado de la auditoría?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "adyacente-ausente",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'firma electr|firma digital' = 0 (los 74 hits de 'firma' son otro contexto del framework). Adversarial por vocabulario compartido.",
+  "estable": {
+   "score": 0.6762895,
+   "chunk": "2e8e487a1376",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaRusultadoOpcion.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.61802065,
+   "chunk": "2e8e487a1376",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaRusultadoOpcion.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Quién puede cancelar un ticket que está en estatus Registrado?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'ticket' = 0 en bsuite-auditorias-test. Es una pregunta positiva de innovapp-docs.",
+  "estable": {
+   "score": 0.05460864,
+   "chunk": "e5722c7e3d8b",
+   "seccion": null,
+   "archivo": "Seguridad/CancelPermissionRequest.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.050159086,
+   "chunk": "e5722c7e3d8b",
+   "seccion": null,
+   "archivo": "Seguridad/CancelPermissionRequest.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué es el Folio Único de Atención?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "Adversarial deliberado: 'folio' aparece 165 veces en bsuite (campo genérico del framework), pero el 'Folio Único de Atención' es un concepto exclusivo de innovapp-docs.",
+  "estable": {
+   "score": 0.003292851,
+   "chunk": "0ba2d5fb585a",
+   "seccion": null,
+   "archivo": "BO/Constants.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.0054373667,
+   "chunk": "0ba2d5fb585a",
+   "seccion": null,
+   "archivo": "BO/Constants.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Cuándo se muestra la encuesta de satisfacción al cerrar un ticket?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "cross-corpus",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'encuesta|satisfacci' = 0. Pregunta positiva de innovapp-docs.",
+  "estable": {
+   "score": 0.0020490473,
+   "chunk": "c70afcd6b128",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultado.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.002858159,
+   "chunk": "c70afcd6b128",
+   "seccion": null,
+   "archivo": "BO/Procesos/AuditoriaResultado.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "¿Qué información hay sobre integraciones?",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "meta",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "Misma pregunta meta que en innovapp-docs, para ver si la banda depende de la colección.",
+  "estable": {
+   "score": 0.021020113,
+   "chunk": "f12183b9b103",
+   "seccion": null,
+   "archivo": "BO/SecuenciaContext.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.013067592,
+   "chunk": "f12183b9b103",
+   "seccion": null,
+   "archivo": "BO/SecuenciaContext.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "receta de paella valenciana",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'paella' = 0. Control duro: cualquier umbral debe rechazarla.",
+  "estable": {
+   "score": 0.010146472,
+   "chunk": "3e5d0636feee",
+   "seccion": "Documento Principal",
+   "archivo": "Plan_De_Trabajo_InnovApp.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.0079695275,
+   "chunk": "3e5d0636feee",
+   "seccion": "Documento Principal",
+   "archivo": "Plan_De_Trabajo_InnovApp.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "procedimiento para renovar el pasaporte",
+  "coleccion": "innovapp-docs",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'pasaporte' = 0. Control duro.",
+  "estable": {
+   "score": 0.04744036,
+   "chunk": "93e6be4c8dda",
+   "seccion": "RF-14 — Transición del Ticket a \"Espera información\" y su reverso a \"En Proceso\"",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.0484682,
+   "chunk": "93e6be4c8dda",
+   "seccion": "RF-14 — Transición del Ticket a \"Espera información\" y su reverso a \"En Proceso\"",
+   "archivo": "QA-Pruebas-Funcionales-Monitor-CAU.md",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "receta de paella valenciana",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'paella' = 0. Control duro: cualquier umbral debe rechazarla.",
+  "estable": {
+   "score": 0.012875524,
+   "chunk": "3e974ba4a535",
+   "seccion": "FileExport",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.012310871,
+   "chunk": "3e974ba4a535",
+   "seccion": "FileExport",
+   "archivo": "BO/Procesos/Auditorias.cs",
+   "n": 10
+  }
+ },
+ {
+  "pregunta": "procedimiento para renovar el pasaporte",
+  "coleccion": "bsuite-auditorias-test",
+  "etiqueta": "ausente",
+  "categoria": "fuera-de-dominio",
+  "origen": "4.3-recalibrar-umbrales-banda",
+  "evidencia": "grep -i 'pasaporte' = 0. Control duro.",
+  "estable": {
+   "score": 0.14971507,
+   "chunk": "07e9a5a73622",
+   "seccion": "OnEstatusUpdated",
+   "archivo": "BO/AuditFolioBaseObject.cs",
+   "n": 10
+  },
+  "lotes": {
+   "score": 0.22184847,
+   "chunk": "07e9a5a73622",
+   "seccion": "OnEstatusUpdated",
+   "archivo": "BO/AuditFolioBaseObject.cs",
+   "n": 10
+  }
+ }
+]

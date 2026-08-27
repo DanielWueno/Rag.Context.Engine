@@ -19,7 +19,7 @@
     "VocabPath": "${RAG_MODELS_DIR}/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
     "MaxSequenceLength": 512,           // XLM-R admite hasta 512; no hay índice que re-ingestar
     "BatchSize": 8,                     // secuencias más largas que el bi-encoder → batch menor
-    "StableGateScore": false            // score del #1 recalculado en lote de 1 (ver abajo)
+    "StableGateScore": true             // score del #1 recalculado en lote de 1 (ver abajo)
   },
   "Qdrant":   { "Host": "localhost", "GrpcPort": 6334, "HttpPort": 6333 },
   "Ingestion":{ "DefaultCollection": "rag-engine", "RepositoryName": "my-repo", "BatchSize": 32 },
@@ -34,7 +34,7 @@
 | `TokenizerType` | Debe corresponder a la familia del modelo: `vocab.txt` → `WordPiece`; `sentencepiece.bpe.model` → `SentencePiece`. Un mismatch produce embeddings basura *sin error visible*. |
 | `EmbeddingDimensions` | Debe coincidir con el modelo (384 en ambos MiniLM) y con las colecciones ya creadas. |
 | `MaxSequenceLength` | Techo de truncamiento. El costo de inferencia escala con la longitud real del lote (padding dinámico), así que subirlo solo afecta a los chunks largos. |
-| `StableGateScore` | Con `true`, el score del resultado #1 se recalcula en un lote de tamaño 1 tras el re-rank. Ver [Score estable del gate](#score-estable-del-gate-crossencoderstablegatescore). |
+| `StableGateScore` | Con `true`, el score del resultado #1 se recalcula en un lote de tamaño 1 tras el re-rank, y deja de depender del `TopK`. Es el número que lee el gate de confianza, así que cambiarlo obliga a revisar `LowConfidenceThreshold` / `HighConfidenceThreshold`. Ver [Score estable del gate](#score-estable-del-gate-crossencoderstablegatescore). |
 
 ## Score estable del gate (`CrossEncoder:StableGateScore`)
 
@@ -58,9 +58,11 @@ de corrida a corrida del propio re-rank, que sobre un pool de 30 tarda ~1.090 ms
 **Qué NO cambia:** el orden de los resultados. Lo sigue decidiendo la pasada por lotes; sólo se
 sustituye el número de la posición #1, que puede quedar por debajo del score de la posición #2.
 
-Default `false` a propósito: los umbrales `LowConfidenceThreshold` / `HighConfidenceThreshold`
-vigentes están calibrados sobre el score por lotes. Encenderla sin recalibrarlos mueve las bandas.
-Medición completa en
+**Encendida desde el ítem 4.3**, que recalibró las bandas sobre el score estable con un conjunto
+etiquetado (`docs/eval/gate-bandas.labeled-set.json`) y midió que `LowConfidenceThreshold` = 0,05 y
+`HighConfidenceThreshold` = 0,60 siguen siendo los mejores valores del barrido con ese score. Para
+apagarla, quitar la clave del `appsettings.json`: el default del tipo es `false` y no hay que
+recompilar. Medición completa en
 [gate-de-confianza-score-inestable-y-fuga-de-prompt.md](analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md).
 
 ## Rutas y portabilidad

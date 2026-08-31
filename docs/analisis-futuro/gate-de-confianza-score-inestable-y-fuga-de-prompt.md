@@ -1,6 +1,7 @@
 # El gate de confianza: score de rerank no invariante al TopK + fuga del ejemplo negativo
 
-> **Estado: investigado el 2026-08-22, nada implementado.** Salió de un caso real sobre
+> **Estado: investigado el 2026-08-22; ítems 4.1 a 4.4 y 4.6 cerrados, el resto pendiente
+> (el ledger manda).** Salió de un caso real sobre
 > `wiki-solis` en el que dos preguntas sobre InoVapp devolvieron respuestas inservibles. La
 > investigación encontró tres cosas encadenadas, y la segunda invalida parcialmente la primera:
 > no tiene sentido afinar el prompt de banda media mientras el número que decide la banda se
@@ -482,6 +483,46 @@ prompt de resumen alimenta `prompt_version`.
 
 **Criterio de salida:** 0 apariciones de la frase fugada en un barrido de ≥ 20 consultas de banda
 media, y ninguna regresión en las bandas alta y sin-grounding.
+
+#### Resultado de la implementación (2026-08-31)
+
+Se aplicó la vía **A**. La rama (b) del addendum ya no cita la frase mala: describe la forma
+prohibida —relevar un enunciado *sobre* el contexto (su relevancia, su score, su encaje) en vez
+de contenido, envuelto en el matiz de la rama (a)— y cierra con un ejemplo del texto que **sí**
+se quiere, para que la rama (b) tenga la misma concreción que la (a). La asimetría era el
+mecanismo: (a) traía una plantilla lista y (b) sólo una prohibición, así que el modelo caía en
+(a) por defecto y completaba con lo único concreto que veía, que era el ejemplo negativo.
+
+Instrumento: `infra/fuga-banda-media-barrido.py`. Selecciona las consultas por la banda que les
+da su score estable en `docs/eval/gate-bandas.scores.json` —22 de las 65 caen en banda media— y
+corre `rag ask -k 10 --rerank --no-stream` con `qwen2.5-coder`. Detecta la frase literal y su
+forma general.
+
+| Corrida | Banda | n | Fuga literal | Forma "enunciado sobre el contexto" |
+|---|---|---|---|---|
+| antes (`docs/eval/quality/4.4-antes-media.json`) | media | 22 | **8** | **8** |
+| después (`docs/eval/quality/4.4-despues-todas.json`) | media | 22 | **0** | **0** |
+| después | alta | 31 | 0 | 0 |
+| después | sin-grounding | 12 | 0 | 0 |
+
+La tasa previa (8/22 = 36 %) es del mismo orden que el 2 de 3 con que se registró el hallazgo.
+En las 8 consultas que fugaban, la respuesta nueva es o contenido real del fragmento con el
+matiz de la rama (a), o el mensaje limpio de ausencia; ninguna quedó sin respuesta por exceso de
+celo: las 12 consultas `presente` de banda media siguen entregando contenido.
+
+Sobre las bandas alta y sin-grounding no puede haber regresión por construcción, y el barrido lo
+confirma: el addendum sólo se adjunta cuando `ConfidenceGate.Assess` detecta la banda media
+(`SystemPromptComposer.ComposeGrounded` lo concatena, y el camino sin anclaje pasa por
+`ComposeNoGrounding`, que no lo referencia). Los otros seis hashes de `PromptHashesTests` no se
+movieron; el de `LowConfidencePrompt` pasa a `943a0b5ab3fc760f`. **No** invalida la caché de
+resúmenes.
+
+Cabo suelto, no regresión: en cuatro negativos `adyacente-ausente` de banda media (modo oscuro,
+exportar a Excel, avisos por WhatsApp, recordatorio de encuesta) el modelo antes fugaba y ahora
+releva un fragmento vecino con el matiz de la rama (a) en vez de tomar la rama (b). Sigue sin
+ser la respuesta, pero ya no es una frase vacía disfrazada de respuesta, y la abstención por
+score la cubre el ítem 4.3, no este. Enrutar (a) vs (b) con más fidelidad es lo que la vía **B**
+—sacar la decisión del LLM— resolvería de raíz.
 
 ### Ítem 5 — Regresión permanente
 

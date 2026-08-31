@@ -142,8 +142,16 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             }
 
             // 5. Map to domain entities
+            // La escala del score la fija la rama de fusión que acaba de correr, y viaja
+            // con cada resultado (ítem 4.9): ninguna de las dos es similitud coseno, y
+            // sus magnitudes tampoco coinciden entre sí porque la ponderada no usa pesos
+            // 1/1/1. Sin este dato el consumidor tenía que deducirlo del código de aquí.
+            var fusionScale = hasSummaryVector
+                ? RetrievalScoreScale.RankFusionWeighted
+                : RetrievalScoreScale.RankFusionNative;
+
             IReadOnlyList<RetrievalResult> results = searchResults
-                .Select(MapToRetrievalResult)
+                .Select(point => MapToRetrievalResult(point, fusionScale))
                 .ToList();
 
             // 6. Optional Cross-Encoder re-ranking over the widened pool.
@@ -157,13 +165,15 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             }
 
             sw.Stop();
-            var bestScore = results.FirstOrDefault()?.SimilarityScore ?? 0f;
+            var best = results.FirstOrDefault();
+            var bestScore = best?.SimilarityScore ?? 0f;
+            var bestScale = best?.ScoreScale ?? fusionScale;
 
             RagEngineMetrics.SearchLatencyMs.Record(sw.ElapsedMilliseconds, 
                 new KeyValuePair<string, object?>("collection", options.CollectionName));
 
             _logger.LogInformation("Search completed in {ElapsedMs}ms. Results: {Count}. Best {ScoreKind} score: {BestScore}",
-                sw.ElapsedMilliseconds, results.Count, options.UseReRanking ? "cross-encoder" : "fusion", bestScore);
+                sw.ElapsedMilliseconds, results.Count, bestScale.ToDisplayName(), bestScore);
             return results;
         }
         catch (Exception ex)
@@ -284,7 +294,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             : new Filter { Must = { conditions } };
     }
 
-    private static RetrievalResult MapToRetrievalResult(ScoredPoint point)
+    private static RetrievalResult MapToRetrievalResult(ScoredPoint point, RetrievalScoreScale scale)
     {
         var p = point.Payload;
 
@@ -292,6 +302,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             ChunkId: point.Id.ToString()!,
             Content: p["content"].StringValue,
             SimilarityScore: point.Score,
+            ScoreScale: scale,
             Metadata: new CodeChunkMetadata(
                 FilePath: p["file_path"].StringValue,
                 RelativeFilePath: p.GetValueOrDefault("relative_path")?.StringValue ?? string.Empty,

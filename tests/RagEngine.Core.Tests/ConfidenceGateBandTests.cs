@@ -49,10 +49,19 @@ public class ConfidenceGateBandTests
     private static ConfidenceGate ConstruirGate() =>
         new(new OpcionesFijas(new RagGenerationOptions()), NullLogger<ConfidenceGate>.Instance);
 
-    private static RetrievalResult Chunk(float score) => new(
+    /// <summary>
+    /// La escala por defecto es la del camino de producción con el gate activo: el score
+    /// estable del ítem 4.2, que es sobre el que 4.3 calibró los umbrales. Desde el ítem
+    /// 4.9 el gate ya no recibe un <c>useReRanking</c> aparte — decide mirando esta
+    /// escala, así que aquí es el parámetro que distingue un caso de otro.
+    /// </summary>
+    private static RetrievalResult Chunk(
+        float score,
+        RetrievalScoreScale escala = RetrievalScoreScale.CrossEncoderStable) => new(
         ChunkId: "chunk-1",
         Content: "contenido de prueba para el gate de confianza",
         SimilarityScore: score,
+        ScoreScale: escala,
         Metadata: new CodeChunkMetadata(
             FilePath: "/repo/docs/archivo.md",
             RelativeFilePath: "docs/archivo.md",
@@ -88,7 +97,6 @@ public class ConfidenceGateBandTests
 
         var resultado = gate.Assess(
             new[] { Chunk(score) },
-            useReRanking: true,
             minimumScore: 0.10f,
             query: "pregunta de prueba");
 
@@ -124,11 +132,11 @@ public class ConfidenceGateBandTests
         var justoEncima = MathF.BitIncrement(umbral);
 
         var resultadoDebajo = gate.Assess(
-            new[] { Chunk(justoDebajo) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+            new[] { Chunk(justoDebajo) }, minimumScore: 0.10f, query: "q");
         var resultadoIgual = gate.Assess(
-            new[] { Chunk(umbral) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+            new[] { Chunk(umbral) }, minimumScore: 0.10f, query: "q");
         var resultadoEncima = gate.Assess(
-            new[] { Chunk(justoEncima) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+            new[] { Chunk(justoEncima) }, minimumScore: 0.10f, query: "q");
 
         Assert.False(resultadoDebajo.HasGrounding);
         Assert.True(resultadoIgual.HasGrounding);
@@ -147,7 +155,6 @@ public class ConfidenceGateBandTests
 
         var resultado = gate.Assess(
             Array.Empty<RetrievalResult>(),
-            useReRanking: true,
             minimumScore: 0.10f,
             query: "pregunta de prueba");
 
@@ -159,19 +166,50 @@ public class ConfidenceGateBandTests
     /// Sin rerank el score es RRF (función del ranking, no similitud) y el gate no lo
     /// evalúa contra los umbrales — ver el comentario de <see cref="ConfidenceGate.Assess"/>.
     /// Un score "bajo" en esta escala no debe tumbar el grounding.
+    ///
+    /// <para>Desde el ítem 4.9 la condición se lee del propio resultado
+    /// (<see cref="RetrievalResult.ScoreScale"/>) y no de un booleano que el llamador
+    /// tenía que pasar bien. Entran las dos escalas de fusión: el camino nativo y el
+    /// ponderado producen magnitudes distintas y ninguna es comparable contra un umbral
+    /// absoluto.</para>
     /// </summary>
-    [Fact]
-    public void SinRerank_NoAplicaElUmbralDeScoreAunqueElNumeroSeaBajo()
+    [Theory]
+    [InlineData(RetrievalScoreScale.RankFusionNative)]
+    [InlineData(RetrievalScoreScale.RankFusionWeighted)]
+    public void ScoreDeFusion_NoAplicaElUmbralAunqueElNumeroSeaBajo(RetrievalScoreScale escala)
     {
         var gate = ConstruirGate();
 
         var resultado = gate.Assess(
-            new[] { Chunk(0.001f) },
-            useReRanking: false,
+            new[] { Chunk(0.001f, escala) },
             minimumScore: 0.10f,
             query: "pregunta de prueba");
 
         Assert.True(resultado.HasGrounding);
+        Assert.Null(resultado.ConfidenceAddendum);
+    }
+
+    /// <summary>
+    /// La cara opuesta del test anterior, y la razón de ser del ítem 4.9: el mismo número
+    /// bajo, en una escala que SÍ es comparable entre consultas, tiene que tumbar el
+    /// grounding. Antes eso dependía de que el llamador acertara con <c>useReRanking</c>
+    /// desde otra capa; ahora lo decide el dato. Cubre las dos escalas del cross-encoder
+    /// porque ambas son sigmoides absolutas — la batcheada es la de la cola de la lista,
+    /// y un consumidor que mire un chunk que no sea el #0 debe obtener el mismo veredicto.
+    /// </summary>
+    [Theory]
+    [InlineData(RetrievalScoreScale.CrossEncoderStable)]
+    [InlineData(RetrievalScoreScale.CrossEncoderBatched)]
+    public void ScoreDeCrossEncoder_SiAplicaElUmbralYTumbaElGrounding(RetrievalScoreScale escala)
+    {
+        var gate = ConstruirGate();
+
+        var resultado = gate.Assess(
+            new[] { Chunk(0.001f, escala) },
+            minimumScore: 0.10f,
+            query: "pregunta de prueba");
+
+        Assert.False(resultado.HasGrounding);
         Assert.Null(resultado.ConfidenceAddendum);
     }
 
@@ -193,7 +231,6 @@ public class ConfidenceGateBandTests
 
         var resultado = gate.Assess(
             new[] { Chunk(0.30f) },
-            useReRanking: true,
             minimumScore: 0.10f,
             query: "pregunta ambigua de banda media");
 

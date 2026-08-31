@@ -4,10 +4,24 @@ namespace RagEngine.Core.Domain;
 /// A retrieved code chunk with its relevance score and structural metadata.
 /// This is the final artifact injected into the LLM prompt context.
 /// </summary>
+/// <param name="SimilarityScore">
+///   Puntuación de relevancia. Su significado NO es único: depende de
+///   <paramref name="ScoreScale"/>, que es obligatorio precisamente para que ningún
+///   productor pueda emitir el número sin decir en qué escala está. Léelo siempre junto
+///   a la escala; en particular, no lo compares contra un umbral absoluto sin comprobar
+///   antes <see cref="RetrievalScoreScaleExtensions.IsComparableAcrossQueries"/>.
+/// </param>
+/// <param name="ScoreScale">
+///   Escala en la que está expresado <paramref name="SimilarityScore"/>. Ver
+///   <see cref="RetrievalScoreScale"/>, que documenta además el invariante de orden del
+///   ítem 4.2: una lista re-rankeada con score de gate estable no está ordenada
+///   monótonamente por score y no debe reordenarse.
+/// </param>
 public sealed record RetrievalResult(
     string ChunkId,
     string Content,
     float SimilarityScore,
+    RetrievalScoreScale ScoreScale,
     CodeChunkMetadata Metadata,
     string ContentHash
 );

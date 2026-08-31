@@ -185,6 +185,11 @@ try
     // en vez de repetirlo aquí; el gate no cubre meta-intención, así que esa parte
     // se queda en la API (fuera de alcance del ítem).
     //
+    // Ítem 4.9: el parámetro `rerank` desapareció de esta firma. Era el proxy con el que
+    // el gate adivinaba en qué escala venía el score; ahora eso lo declara el propio
+    // resultado (RetrievalResult.ScoreScale), así que la API ya no tiene que reenviar una
+    // bandera de la petición para que la banda se calcule bien.
+    //
     // Nota sobre lista vacía (asimetría que señala el ítem 4.7): antes, con
     // `results.Count == 0` la expresión `rerank && results.Count > 0 && ...`
     // daba false siempre — NUNCA suprimía, sin importar rerank.
@@ -201,11 +206,10 @@ try
     static bool ShouldSuppressSources(
         bool isMetaIntent,
         ConfidenceGate confidenceGate,
-        bool rerank,
         IReadOnlyList<RetrievalResult> results,
         float minScore,
         string query) =>
-        isMetaIntent || !confidenceGate.Assess(results, rerank, minScore, query).HasGrounding;
+        isMetaIntent || !confidenceGate.Assess(results, minScore, query).HasGrounding;
 
     // El resumen de negocio ya se generó y cacheó en ingesta (Fase 2, opt-in por colección
     // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
@@ -448,7 +452,7 @@ try
 
         var retrievedSources = await sourcesTask;
         var answerText = answer.ToString();
-        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, rerank, retrievedSources, minScore, request.Query)
+        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, retrievedSources, minScore, request.Query)
                 || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
             ? []
             : await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
@@ -543,7 +547,7 @@ try
         // chunks recuperados no jugaron ningún papel en la respuesta — mostrarlos
         // como "fuentes" confundiría al usuario. Mismo criterio que usa el gate
         // interno del servicio de generación.
-        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, rerank, results, minScore, request.Query)
+        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, results, minScore, request.Query)
             ? []
             : await BuildSourcesAsync(results, summaryCache, responseMode, cancellationToken);
 

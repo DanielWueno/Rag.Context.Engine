@@ -104,6 +104,15 @@ Es la grieta con coste ya pagado: es la razón de los ítems 4.1 a 4.3 y de
 Y el ítem pendiente `4.8` (tests de comportamiento de los colaboradores de generación) no se puede
 escribir bien contra una semántica que no está fijada.
 
+> **Cerrada por el ítem `4.9-contrato-explicito-del-score` (2026-08-31).** `RetrievalResult`
+> lleva ahora un `ScoreScale` obligatorio que declara cuál de las escalas transporta, y
+> `ScoreScale.IsComparableAcrossQueries()` responde la única pregunta que los consumidores
+> hacían a ojo. `ConfidenceGate.Assess` perdió su parámetro `useReRanking`: la escala la lee del
+> dato, no de una bandera que venía de otra capa. El invariante de orden del ítem 4.2 está
+> documentado en el tipo y fijado en `tests/RagEngine.Core.Tests/RetrievalScoreContractTests.cs`,
+> con la lista no monótona reproducida contra el modelo real. Ver la sección «El contrato del
+> score» de [arquitectura.md](../arquitectura.md).
+
 ### 3.3 Los hosts construyen infraestructura por encima del núcleo
 
 No es sólo que falte un puerto de escritura: es que **los dos adaptadores primarios hablan con

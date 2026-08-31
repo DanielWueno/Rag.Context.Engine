@@ -153,7 +153,7 @@ public sealed class RagGenerationService : IRagGenerationService
         // Sin anclaje se conversa sin contexto y, por la garantía estructural de
         // docs/analisis-futuro/guardrail-banda-baja-conversacional.md, los chunks
         // recuperados (si los hay) no se vuelven a tocar por debajo de esta rama.
-        var assessment = _confidenceGate.Assess(chunks!, useReRanking, minimumScore, query);
+        var assessment = _confidenceGate.Assess(chunks!, minimumScore, query);
 
         if (!assessment.HasGrounding)
         {

@@ -84,7 +84,11 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             cancellationToken);
 
         var reranked = orderedCandidates
-            .Zip(scores, (candidate, score) => candidate with { SimilarityScore = score })
+            .Zip(scores, (candidate, score) => candidate with
+            {
+                SimilarityScore = score,
+                ScoreScale = RetrievalScoreScale.CrossEncoderBatched,
+            })
             .OrderByDescending(r => r.SimilarityScore)
             .Take(topK)
             .ToList();
@@ -115,7 +119,15 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
                 "Cross-encoder stable gate score for {ChunkId}: {Batched:F4} → {Stable:F4} ({ElapsedMs}ms)",
                 winner.ChunkId, winner.SimilarityScore, stableScore, stableGateMs);
 
-            reranked[0] = winner with { SimilarityScore = stableScore };
+            // La escala cambia con el número: a partir de aquí la posición #0 lleva un
+            // score que NO sale del mismo cálculo que el del resto de la lista, y el tipo
+            // lo dice (ítem 4.9). Es lo que hace visible, sin leer este archivo, que la
+            // lista dejó de estar ordenada monótonamente por score.
+            reranked[0] = winner with
+            {
+                SimilarityScore = stableScore,
+                ScoreScale = RetrievalScoreScale.CrossEncoderStable,
+            };
         }
 
         sw.Stop();

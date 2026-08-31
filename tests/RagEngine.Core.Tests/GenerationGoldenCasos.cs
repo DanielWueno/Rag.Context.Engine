@@ -40,6 +40,7 @@ internal static class GenerationGoldenCasos
         new(ChunkId: "id-" + contenido.GetHashCode().ToString("x8"),
             Content: contenido,
             SimilarityScore: score,
+            ScoreScale: RetrievalScoreScale.CrossEncoderStable,
             Metadata: meta,
             ContentHash: "hash-" + contenido.Length);
 

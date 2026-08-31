@@ -35,6 +35,7 @@ flowchart LR
 |---|---|
 | `RagEngine.Core` | Toda la lógica de negocio. Sin dependencias de UI. |
 | `RagEngine.Cli` | Capa delgada de presentación: comandos Spectre.Console + configuración del host. |
+| `RagEngine.Api` | Capa delgada de presentación HTTP: endpoints mínimos (`/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`, `/api/test-metrics`) y la página de `wwwroot/`. |
 
 Dentro de `RagEngine.Core`:
 
@@ -141,4 +142,4 @@ Los textos de prompt los cubre aparte `PromptHashesTests`.
 
 ## Registro DI
 
-Un único punto de composición: `ServiceCollectionExtensions.AddRagEngineCore(IConfiguration)`. Los hosts (CLI hoy, API mañana) permanecen delgados. Las estrategias de chunking se auto-descubren por reflexión sobre `IChunkingStrategy`.
+Un único punto de composición: `ServiceCollectionExtensions.AddRagEngineCore(IConfiguration)`. Los dos hosts (CLI y API) permanecen delgados. Las estrategias de chunking se auto-descubren por reflexión sobre `IChunkingStrategy`.

@@ -191,6 +191,35 @@ emparejado. Un defecto de tipo, invisible, que sólo apareció al tocar el archi
 
 **Requisito para 10.3:** el validador es más valioso que el generador, y es la parte fácil.
 
+### 2.4 El orden del documento ES el calendario, y nada protege ese invariante
+
+El arnés elige el siguiente ítem con una regla lineal: el primero en orden de documento cuyo estado
+sea `pendiente` o `en_curso` (`scripts/ver.py:139-152` del plugin `arnes-plan`). No pondera
+prioridad y **no consulta `bloqueado_por`**. Sí salta los que tienen `estado: bloqueado` — por eso
+`3.5-portabilidad-x64` nunca se propone.
+
+De ahí que el ledger no planifique, sino que ordene: `bloqueado_por` es documentación y la posición
+en el archivo es el calendario real. La selección lineal es correcta exactamente mientras se cumpla
+un invariante:
+
+> **todo `bloqueado_por` apunta hacia atrás en el orden del documento.**
+
+*Caso 2026-08-31:* las cuatro aristas creadas en esta reconciliación (`4.9→4.5`, `9.2→9.1`,
+`9.5→9.4`, `10.3→4.8`) lo cumplen, y no hay ninguna que apunte hacia adelante en todo el ledger.
+Pero lo cumplen porque se colocaron así, no porque nada lo exija: `scripts/validar-ledger.py` trata
+`bloqueado_por` sólo como clave opcional conocida (línea 75) y no comprueba ni que el id exista ni
+hacia dónde apunta.
+
+La arista hacia adelante no es un caso raro: es lo que ocurre por defecto cuando un hallazgo nuevo
+se añade al final del ledger y un ítem anterior pasa a depender de él. Entonces el arnés propone un
+ítem bloqueado. Lo avisa (`scripts/plan-siguiente-linea.py:60-61` imprime `BLOQUEADO POR:`), pero no
+lo salta.
+
+**Requisito para 10.3 — validador, no planificador.** La comprobación de dirección es una condición
+de escritura, no de lectura: rechazarla al reconciliar cuesta mover un ítem de sitio; resolverla al
+leer exige inventar semántica de prioridad y cambia qué significa "el siguiente", que es lo único
+que el protocolo mantiene deliberadamente aburrido para no relitigarlo cada sesión.
+
 ## 3. Lo que no se debe automatizar
 
 Registrado para que el alcance de 10.3 no crezca hasta volverse irrealizable:

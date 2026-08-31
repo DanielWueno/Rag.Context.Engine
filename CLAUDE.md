@@ -34,7 +34,7 @@ Antes de cambios importantes:
 
 ```bash
 dotnet build           # Debe compilar sin errores ni advertencias
-dotnet test            # 132 tests verdes
+dotnet test            # 140 tests verdes
 dotnet run --project src/RagEngine.Cli doctor             # Diagnóstico completo
 dotnet run --project src/RagEngine.Cli status             # 9 colecciones operativas
 ```

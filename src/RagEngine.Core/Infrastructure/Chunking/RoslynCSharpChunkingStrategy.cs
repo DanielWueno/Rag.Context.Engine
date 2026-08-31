@@ -201,6 +201,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         var declarationText = string.Join('\n', declarationLines).Trim();
 
         var header = BuildContextHeader(ctx, typeDecl);
+        var (typeDefined, typeConsumed) = SymbolExtractor.FromCSharpNode(typeDecl);
 
         // The declaration is ALWAYS its own chunk, never merged with the first field
         // group — merging assumed the first field always sits right after the class
@@ -224,7 +225,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             repositoryName: ctx.RepositoryName,
             language: SourceLanguage.CSharp,
             namespaceName: ctx.RootNamespace,
-            className: typeDecl.Identifier.Text);
+            className: typeDecl.Identifier.Text,
+            definedSymbols: typeDefined,
+            consumedSymbols: typeConsumed);
 
         // Group fields into batches that stay under MaxTokensPerChunk, splitting only
         // at field boundaries — same fix as BuildGroupedPropertiesChunks, for classes
@@ -265,6 +268,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             var content = string.Join('\n', group.Select(f => f.ToFullString().TrimEnd())).Trim();
             int fragmentStartLine = group[0].GetLocation().GetLineSpan().StartLinePosition.Line + 1;
             int fragmentEndLine = group[^1].GetLocation().GetLineSpan().EndLinePosition.Line + 1;
+            var (fieldsDefined, fieldsConsumed) = SymbolExtractor.FromCSharpMemberGroup(group);
 
             var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
             yield return ChunkBuilder.Create(
@@ -277,7 +281,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 repositoryName: ctx.RepositoryName,
                 language: SourceLanguage.CSharp,
                 namespaceName: ctx.RootNamespace,
-                className: typeDecl.Identifier.Text);
+                className: typeDecl.Identifier.Text,
+                definedSymbols: fieldsDefined,
+                consumedSymbols: fieldsConsumed);
         }
     }
 
@@ -297,6 +303,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         var header = BuildContextHeader(ctx, typeDecl, method);
         var enriched = $"{header}\n\n{methodText}";
         int tokenEstimate = enriched.Length / ApproxCharsPerToken;
+        var (methodDefined, methodConsumed) = SymbolExtractor.FromCSharpNode(method);
 
         if (tokenEstimate <= options.MaxTokensPerChunk)
         {
@@ -312,11 +319,15 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 language: SourceLanguage.CSharp,
                 namespaceName: ctx.RootNamespace,
                 className: typeDecl.Identifier.Text,
-                methodName: method.Identifier.Text);
+                methodName: method.Identifier.Text,
+                definedSymbols: methodDefined,
+                consumedSymbols: methodConsumed);
             yield break;
         }
 
-        // Method too large — split with sliding window
+        // Method too large — split with sliding window. Los fragmentos reusan los
+        // símbolos del método completo: no hace falta re-extraer por fragmento, el
+        // método ya fue analizado como una unidad.
         var methodLines = SourceLines.Split(methodText);
         var (windowLines, _, step) = ChunkBuilder.WindowGeometry(options);
         int fragIndex = 0;
@@ -338,7 +349,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 language: SourceLanguage.CSharp,
                 namespaceName: ctx.RootNamespace,
                 className: typeDecl.Identifier.Text,
-                methodName: method.Identifier.Text);
+                methodName: method.Identifier.Text,
+                definedSymbols: methodDefined,
+                consumedSymbols: methodConsumed);
         }
     }
 
@@ -357,6 +370,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
 
         var header = BuildContextHeader(ctx, typeDecl, member);
         var enriched = $"{header}\n\n{text}";
+        var (memberDefined, memberConsumed) = SymbolExtractor.FromCSharpNode(member);
 
         yield return ChunkBuilder.Create(
             artifact,
@@ -368,7 +382,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             repositoryName: ctx.RepositoryName,
             language: SourceLanguage.CSharp,
             namespaceName: ctx.RootNamespace,
-            className: typeDecl.Identifier.Text);
+            className: typeDecl.Identifier.Text,
+            definedSymbols: memberDefined,
+            consumedSymbols: memberConsumed);
     }
 
     private IEnumerable<CodeChunk> BuildGroupedPropertiesChunks(
@@ -425,6 +441,7 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
             var firstSpan = group[0].GetLocation().GetLineSpan();
             var lastSpan = group[^1].GetLocation().GetLineSpan();
             int startLine = firstSpan.StartLinePosition.Line + 1;
+            var (propsDefined, propsConsumed) = SymbolExtractor.FromCSharpMemberGroup(group);
 
             var fragmentSuffix = groups.Count > 1 ? $" [Fragment {g + 1}/{groups.Count}]" : string.Empty;
             var enriched = $"{header}\n// Properties{fragmentSuffix}\n\n{content}";
@@ -439,7 +456,9 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
                 repositoryName: ctx.RepositoryName,
                 language: SourceLanguage.CSharp,
                 namespaceName: ctx.RootNamespace,
-                className: typeDecl.Identifier.Text);
+                className: typeDecl.Identifier.Text,
+                definedSymbols: propsDefined,
+                consumedSymbols: propsConsumed);
         }
     }
 

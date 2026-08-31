@@ -77,7 +77,9 @@ internal static class ChunkBuilder
         SourceLanguage? language = null,
         string? namespaceName = null,
         string? className = null,
-        string? methodName = null)
+        string? methodName = null,
+        IReadOnlyList<string>? definedSymbols = null,
+        IReadOnlyList<string>? consumedSymbols = null)
     {
         var hash = ContentHasher.Compute(content);
 
@@ -88,6 +90,8 @@ internal static class ChunkBuilder
             EnrichedContent = enrichedContent,
             Type = type,
             ContentHash = hash,
+            DefinedSymbols = definedSymbols ?? Array.Empty<string>(),
+            ConsumedSymbols = consumedSymbols ?? Array.Empty<string>(),
             Metadata = new CodeChunkMetadata(
                 FilePath: artifact.AbsolutePath,
                 RelativeFilePath: artifact.RelativePath,

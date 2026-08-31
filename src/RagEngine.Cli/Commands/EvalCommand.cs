@@ -23,7 +23,7 @@ namespace RagEngine.Cli.Commands;
 /// Usage examples:
 ///   rag eval
 ///   rag eval --collection innovapp-docs --rerank
-///   rag eval --eval-set docs/eval/innovapp-docs.eval-set.json --output json > baseline.json
+///   rag eval --eval-set docs/eval/innovapp-docs.eval-set.json --json > baseline.json
 /// </summary>
 public sealed class EvalCommand : Command<EvalCommand.Settings>
 {

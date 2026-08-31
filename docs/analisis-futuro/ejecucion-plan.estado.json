@@ -1079,10 +1079,12 @@
           "multiagente": false,
           "verificacion": "Ninguna ruta citada en CLAUDE.md apunta a un archivo inexistente: cada comando del documento se ejecuta y responde. Las cifras de la seccion Verificacion coinciden con la salida real de `dotnet test` y `rag status` en el momento del cambio, o se sustituyen por una redaccion que no dependa de un numero que envejece.",
           "horas_maquina": 0,
-          "estado": "pendiente",
+          "estado": "hecho",
           "por_que_este_modelo": "Corregir dos lineas de documentacion contra el estado real del arbol.",
           "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), hallazgo 5.1.",
-          "rollback": "git revert. Solo documentacion."
+          "rollback": "git revert. Solo documentacion.",
+          "fecha": "2026-08-31",
+          "resultado": "CLAUDE.md actualizado: línea 20 reemplazada con infra/ (arnés movido a plugin arnes-plan en e55279e); línea 29 dirigida a /arnes-plan:plan-estado; líneas 37-39 actualizadas con números reales verificados (132 tests, 9 colecciones operativas); comandos de CLI corregidos a forma dotnet run --project. Verificados: todos los comandos del documento se ejecutan correctamente, ninguna ruta inexistente, cifras coinciden con salida actual."
         },
         {
           "id": "10.2-condicion-de-reingreso-de-3.5",

@@ -520,6 +520,15 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         string? methodName = sig.Type is BlockType.Function or BlockType.ArrowFunction or BlockType.Method
             ? sig.Name : null;
 
+        // Los bloques Loose (imports/declaraciones sueltas) no llevan símbolos: no
+        // son el caso que cubre el criterio de aceptación de este ítem.
+        IReadOnlyList<string> defined = sig.Type != BlockType.Loose
+            ? new[] { sig.Name }
+            : Array.Empty<string>();
+        IReadOnlyList<string> consumed = sig.Type != BlockType.Loose
+            ? SymbolExtractor.FromTypeScriptLines(rawContent.Split('\n'))
+            : Array.Empty<string>();
+
         // Namespace queda en null: TS no tiene namespaces como C#; se podria extraer
         // el modulo en el futuro.
         return ChunkBuilder.Create(
@@ -531,7 +540,9 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
             endLine: endLine,
             repositoryName: options.RepositoryName,
             className: className,
-            methodName: methodName);
+            methodName: methodName,
+            definedSymbols: defined,
+            consumedSymbols: consumed);
     }
 
     /// <summary>

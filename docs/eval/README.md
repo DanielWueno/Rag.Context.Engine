@@ -6,6 +6,9 @@
   fragmentos que la respuesta correcta debe contener.
 - `baselines/*.baseline.json` — resultado de correr un eval-set, **con la procedencia
   de la corrida**.
+- `bsuite-repo.umbral-de-decision.md` — el umbral con el que se acepta o se rechaza el
+  trabajo de las olas 5 y 6, fijado antes de tocar el retriever, junto con los dos
+  hallazgos del chunker que salieron al etiquetar.
 - `gate-bandas.labeled-set.json` — conjunto para calibrar las bandas del gate de
   confianza: 65 consultas etiquetadas `presente` / `ausente` según si el corpus contiene
   la respuesta, con negativos adversariales (adyacentes al dominio, cross-corpus y meta,
@@ -44,6 +47,21 @@ dos números son comparables:
 | `weight_codigo`, `weight_sparse`, `weight_resumen`, `rrf_k` | Los pesos de la fusión RRF a 3 bandas mueven el recall varios puntos. |
 | `chunking_contract_version` | Si los chunks del índice se generaron con otro criterio de corte, nada es comparable. |
 | `resumen_prompt_version` | El tercer vector de la fusión se genera con ese prompt; cambiarlo cambia lo indexado. |
+
+## Verificar que un eval-set siga siendo medible
+
+```bash
+python3 infra/verificar-anclas-eval.py \
+  --eval-set docs/eval/bsuite-repo.eval-set.json \
+  --collection bsuite-repo \
+  --repo ~/Documents/Projects/BusinessSuite.Xaf
+```
+
+Comprueba, ancla por ancla, que el literal está en el archivo fuente, que el archivo
+está indexado y que algún chunk indexado lo contiene con la misma comparación que hace
+`rag eval`. Un ancla que sólo existe en el archivo pero no sobrevive al chunker hace que
+la pregunta falle siempre sin que nada lo denuncie. Córrelo después de cada re-ingesta
+que mueva `chunking_contract_version`.
 
 ## Regenerar un baseline
 
@@ -86,7 +104,7 @@ Consecuencia práctica: compara recall, no `top_score`. El campo se conserva por
 útil para diagnosticar, pero un cambio suyo en una pregunta sin ground-truth no
 significa nada.
 
-## Estado al 2026-08-21
+## Estado al 2026-08-31
 
 | Baseline | Preguntas | recall@1 | recall@5 | recall@10 |
 |---|---|---|---|---|
@@ -94,7 +112,22 @@ significa nada.
 | `innovapp-docs.norerank` | 22 | 9% | 18% | 36% |
 | `innovapp-docs.rerank` | 22 | 18% | 55% | 55% |
 | `tickets-microservice.norerank` | 19 | 5% | 16% | 16% |
+| `bsuite-repo.norerank` | 47 | 19% | 36% | 40% |
 
 Los de `innovapp-docs` y `bsuite-auditorias` coinciden con las corridas históricas
 registradas en `docs/analisis-futuro/`, lo que da confianza en el runner.
-`tickets-microservice` es su primer baseline.
+`tickets-microservice` y `bsuite-repo` son sus primeros baselines.
+
+`bsuite-repo` lleva además 8 negativos adversariales sin ancla, que no entran en el
+recall. El desglose por categoría y los umbrales de decisión están en
+[bsuite-repo.umbral-de-decision.md](bsuite-repo.umbral-de-decision.md).
+
+### Sobre el `git_dirty: true` de `bsuite-repo.norerank`
+
+Se generó en la misma sesión en que nació su eval-set, así que en el momento de la
+corrida el árbol tenía sin commitear exactamente los archivos que entran en el commit
+que la contiene. No hay forma de que fuera de otra manera: un baseline no puede
+preceder a su propio ground-truth. Lo que fija la comparabilidad es `eval_set_hash`, y
+ese sí está pinneado. Cualquier regeneración posterior con el árbol limpio da los mismos
+números —se verificó corriendo el eval dos veces, con resultado idéntico en las 55
+preguntas— y saldrá con `git_dirty: false`.

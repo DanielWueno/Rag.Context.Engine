@@ -17,6 +17,12 @@
   `infra/gate-bandas-barrido.py`.
 - `quality/*.json` — corridas de `infra/quality-baseline.py`: respuestas completas de la
   API más métricas mecánicas de calidad. No miden recall; miden lo que ve el usuario.
+- `quality/4.4-antes-media.json` y `quality/4.4-despues-todas.json` — respuestas del CLI
+  antes y después de reescribir la rama (b) de `LowConfidencePrompt.Addendum`, con las
+  consultas seleccionadas por la banda que les da su score en `gate-bandas.scores.json`.
+  Las produce y las puntúa `infra/fuga-banda-media-barrido.py`, que sale con código 1 si
+  detecta la frase fugada o su forma general (relevar un enunciado sobre el contexto en
+  vez de contenido).
 
 ## El problema que resuelve la procedencia
 

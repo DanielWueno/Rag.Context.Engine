@@ -43,7 +43,7 @@ public class PromptHashesTests
         { nameof(DocsSystemPrompt),        "Template",          "a3ba96b72efbd120" },
         { nameof(SimpleSystemPrompt),      "Template",          "0d29eb17a902a5d2" },
         { nameof(NoGroundingSystemPrompt), "Template",          "cd3d1a5538b5ef00" },
-        { nameof(LowConfidencePrompt),     "Addendum",          "a8e099b20a849b76" },
+        { nameof(LowConfidencePrompt),     "Addendum",          "943a0b5ab3fc760f" }, // 4.4: rama (b) reescrita — describe la forma prohibida y da un ejemplo positivo
         { nameof(SelfDescription),         "Block",             "4b8f2c0dcffbb014" },
         { nameof(AnswerNotices),           "NoContextFallback", "7aa0e1c9191b849f" },
     };

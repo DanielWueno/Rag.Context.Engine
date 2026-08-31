@@ -17,7 +17,7 @@ Sigue [README.md](README.md) para el Quick Start:
 - **src/** — Código de producción (.Core, .Api, .Cli)
 - **tests/** — Suite de tests unitarios
 - **poc/** — Proof-of-concepts experimentales
-- **infra/arnes/** — Arnés de ejecución de planes (protocolo de trabajo)
+- **infra/** — Configuración de infraestructura (Docker, modelos, descargas)
 
 ## Plan de Ingeniería
 
@@ -26,7 +26,7 @@ El proyecto sigue un plan estructurado en olas (Ola 1: red de seguridad, Ola 2: 
 El estado del plan vive en **docs/analisis-futuro/ejecucion-plan.estado.json** (ledger).
 
 Ejecutar un ítem: `/plan-siguiente [id-ítem]`  
-Revisar estado: `python3 infra/arnes/ledger_path.py` → lee el JSON actual.
+Revisar estado: `/arnes-plan:plan-estado` → consulta el ledger actual.
 
 ## Verificación
 
@@ -34,9 +34,9 @@ Antes de cambios importantes:
 
 ```bash
 dotnet build           # Debe compilar sin errores ni advertencias
-dotnet test            # 39 tests verdes
-rag doctor             # Diagnóstico completo
-rag status             # 9 colecciones operativas
+dotnet test            # 132 tests verdes
+dotnet run --project src/RagEngine.Cli doctor             # Diagnóstico completo
+dotnet run --project src/RagEngine.Cli status             # 9 colecciones operativas
 ```
 
 ## Commits y PRs

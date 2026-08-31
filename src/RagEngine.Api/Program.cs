@@ -172,18 +172,40 @@ try
     // can disagree: a meta-question skips retrieval entirely inside the service,
     // and a low-confidence top score makes it cut before generating — in both
     // cases the retrieved chunks played no role in the answer shown to the user,
-    // so attaching them as "sources" would be misleading. Mirrors the same
-    // decision RagGenerationService.AskStreamingAsync makes internally, using the
-    // same IMetaIntentDetector and the same RagGenerationOptions thresholds.
-    // isMetaIntent is passed in already computed — it requires an embedder call,
-    // so callers compute it once per request rather than re-running it here.
+    // so attaching them as "sources" would be misleading.
+    //
+    // Ítem 4.7: esto solía RECALCULAR la banda a mano
+    // (`results[0].SimilarityScore < ragOptions.LowConfidenceThreshold`), una copia
+    // que se quedaba atrás en silencio cada vez que 4.2/4.3 recalibraban esos
+    // umbrales o encendían CrossEncoder:StableGateScore. Ahora delega en el mismo
+    // ConfidenceGate que usa RagGenerationService.AskStreamingAsync internamente
+    // (ver el comentario de esa clase) — un solo sitio decide la banda, la API
+    // sólo lee el veredicto. isMetaIntent se pasa ya calculado: requiere una
+    // llamada al embedder, así que los llamadores lo calculan una vez por request
+    // en vez de repetirlo aquí; el gate no cubre meta-intención, así que esa parte
+    // se queda en la API (fuera de alcance del ítem).
+    //
+    // Nota sobre lista vacía (asimetría que señala el ítem 4.7): antes, con
+    // `results.Count == 0` la expresión `rerank && results.Count > 0 && ...`
+    // daba false siempre — NUNCA suprimía, sin importar rerank.
+    // ConfidenceGate.Assess trata 0 chunks como sin-grounding incondicionalmente
+    // (ver su comentario: "zero chunks retrieved at all" es uno de los dos casos
+    // que unifica), así que delegar en el gate SÍ cambia el booleano de
+    // ShouldSuppressSources para lista vacía (pasa a ser "suprimir"). Se decide
+    // seguir al gate (single source of truth) en vez de preservar la asimetría,
+    // porque no hay JSON observable que cambie: con `results` vacío,
+    // BuildSourcesAsync(results, ...) ya devuelve una lista vacía sin importar el
+    // valor de este booleano — Zip no tiene elementos que producir. Es decir, el
+    // único caso con diferencia observable real es results.Count > 0, y ahí la
+    // fórmula del gate es idéntica a la que había aquí.
     static bool ShouldSuppressSources(
         bool isMetaIntent,
+        ConfidenceGate confidenceGate,
         bool rerank,
         IReadOnlyList<RetrievalResult> results,
-        RagGenerationOptions ragOptions) =>
-        isMetaIntent ||
-        (rerank && results.Count > 0 && results[0].SimilarityScore < ragOptions.LowConfidenceThreshold);
+        float minScore,
+        string query) =>
+        isMetaIntent || !confidenceGate.Assess(results, rerank, minScore, query).HasGrounding;
 
     // El resumen de negocio ya se generó y cacheó en ingesta (Fase 2, opt-in por colección
     // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
@@ -371,7 +393,7 @@ try
         RagQueryRequest request,
         ISemanticRetriever retriever,
         IRagGenerationService generation,
-        IOptions<RagGenerationOptions> ragOptions,
+        ConfidenceGate confidenceGate,
         IMetaIntentDetector metaIntentDetector,
         SummaryCache summaryCache,
         ILogger<Program> queryLogger,
@@ -426,7 +448,7 @@ try
 
         var retrievedSources = await sourcesTask;
         var answerText = answer.ToString();
-        var sources = ShouldSuppressSources(isMetaIntent, rerank, retrievedSources, ragOptions.Value)
+        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, rerank, retrievedSources, minScore, request.Query)
                 || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
             ? []
             : await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
@@ -463,7 +485,7 @@ try
         HttpContext http,
         ISemanticRetriever retriever,
         IRagGenerationService generation,
-        IOptions<RagGenerationOptions> ragOptions,
+        ConfidenceGate confidenceGate,
         IMetaIntentDetector metaIntentDetector,
         SummaryCache summaryCache,
         ILogger<Program> queryLogger,
@@ -521,7 +543,7 @@ try
         // chunks recuperados no jugaron ningún papel en la respuesta — mostrarlos
         // como "fuentes" confundiría al usuario. Mismo criterio que usa el gate
         // interno del servicio de generación.
-        var sources = ShouldSuppressSources(isMetaIntent, rerank, results, ragOptions.Value)
+        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, rerank, results, minScore, request.Query)
             ? []
             : await BuildSourcesAsync(results, summaryCache, responseMode, cancellationToken);
 

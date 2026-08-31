@@ -96,6 +96,50 @@ public class ConfidenceGateBandTests
         Assert.Equal(esperaAddendum, resultado.ConfidenceAddendum is not null);
     }
 
+    /// <summary>
+    /// Ítem 4.7 del plan: <c>RagEngine.Api/Program.cs</c> reimplementaba esta regla a
+    /// mano (<c>results[0].SimilarityScore &lt; ragOptions.LowConfidenceThreshold</c>)
+    /// en vez de consumir <see cref="ConfidenceGate"/>, con el riesgo de que 4.2/4.3
+    /// recalibraran los umbrales aquí y la copia de la API se quedara atrás en
+    /// silencio. El fix hace que <c>ShouldSuppressSources</c> delegue por completo en
+    /// <c>confidenceGate.Assess(...).HasGrounding</c> — no queda una segunda
+    /// implementación de la comparación de score con la que "coincidir": el único
+    /// camino que decide la banda es este. Este test fija ese comportamiento en el
+    /// borde exacto del umbral (el punto donde una reimplementación divergiría antes
+    /// que en ningún otro): justo por debajo (con <see cref="MathF.BitDecrement"/>,
+    /// el float representable inmediatamente anterior), exactamente igual, y justo
+    /// por encima (<see cref="MathF.BitIncrement"/>). La comparación del gate es
+    /// estrictamente "menor que", así que el valor exacto del umbral YA cae dentro de
+    /// la banda media (con grounding y con hedge), no en sin-grounding — si alguien
+    /// cambiara ese operador a "&lt;=" sin querer, este test lo detecta.
+    /// </summary>
+    [Fact]
+    public void FronteraExactaDelUmbralBajo_MarcaLaBandaEsperada()
+    {
+        var opciones = new RagGenerationOptions();
+        var gate = new ConfidenceGate(new OpcionesFijas(opciones), NullLogger<ConfidenceGate>.Instance);
+        var umbral = opciones.LowConfidenceThreshold;
+
+        var justoDebajo = MathF.BitDecrement(umbral);
+        var justoEncima = MathF.BitIncrement(umbral);
+
+        var resultadoDebajo = gate.Assess(
+            new[] { Chunk(justoDebajo) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+        var resultadoIgual = gate.Assess(
+            new[] { Chunk(umbral) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+        var resultadoEncima = gate.Assess(
+            new[] { Chunk(justoEncima) }, useReRanking: true, minimumScore: 0.10f, query: "q");
+
+        Assert.False(resultadoDebajo.HasGrounding);
+        Assert.True(resultadoIgual.HasGrounding);
+        Assert.True(resultadoEncima.HasGrounding);
+
+        // Ambos caen en banda media (por debajo de HighConfidenceThreshold): con
+        // grounding pero con el addendum de baja confianza.
+        Assert.NotNull(resultadoIgual.ConfidenceAddendum);
+        Assert.NotNull(resultadoEncima.ConfidenceAddendum);
+    }
+
     [Fact]
     public void CeroChunks_SiempreCaeEnSinGrounding()
     {

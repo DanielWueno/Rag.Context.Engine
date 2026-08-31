@@ -651,6 +651,20 @@
           "dependencia": "Debe ir ANTES de 4.2 y 4.3: recalibrar un umbral sin un test que fije el borde es cambiar a ciegas.",
           "rollback": "git revert del commit. Sólo añade tests.",
           "estado": "pendiente"
+        },
+        {
+          "id": "4.9-contrato-explicito-del-score",
+          "titulo": "RetrievalResult.SimilarityScore transporta cuatro escalas distintas (coseno crudo, RRF nativo, RRF ponderado, sigmoide del cross-encoder) sin declarar cual; ademas el item 4.2 rompio la monotonia del orden y eso no lo dice el tipo",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "El tipo declara la escala que transporta y un consumidor puede distinguirlas sin leer el codigo del retriever. Test que fije el invariante de 4.2: tras ReRankAsync con re-puntuacion de la posicion #0, la lista NO esta ordenada monotonamente por score y ningun consumidor la reordena. Recall@10 sobre bsuite-repo sin cambio respecto al baseline vigente.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Es un cambio de contrato con cuatro consumidores (gate, hosts, DTO JSON, baselines de eval) y una trampa de regresion: 'normalizar' reordenando revierte 4.2. Requiere juicio, no mecanica.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.2. Va en Ola 4 y no en la ola nueva porque el criterio de salida de Ola 4 es literalmente que el score que decide la banda no cambie segun el TopK.",
+          "bloqueado_por": "4.5-regresion-bandas-y-estabilidad",
+          "rollback": "git revert. No toca ingesta ni esquema de Qdrant. Riesgo real: si el contrato parte el campo, SourceDto.Score (Api/Contracts.cs:75,95,112) cambia y rompe wwwroot, y los GoldenMaster/*.json y los baselines de rag eval quedan incomparables. Mitigacion: preservar el nombre y la forma del campo publico en esta iteracion; el contrato se expresa en el tipo de dominio, no en el DTO."
         }
       ]
     },
@@ -948,11 +962,159 @@
           "dependencia": "Va después de 3.1, que es donde se decide la detección de esquema y la migración.",
           "consecuencia_si_no": "Ingestar el mismo repo desde el contenedor y desde el host produce un set duplicado COMPLETO que el barrido incremental no puede ver, porque para él son archivos distintos.",
           "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md. Hueco que ni el documento externo ni la primera versión del plan vieron."
+        },
+        {
+          "id": "8.g-configuracion-divergente-entre-hosts",
+          "titulo": "Api/appsettings.json no tiene seccion RetrievalFusion y Cli si; los umbrales del gate estan duplicados literalmente en ambos; y la seccion Ingestion del Cli declara tres claves (DefaultCollection, RepositoryName, BatchSize) que IngestionOptions no enlaza",
+          "modelo": "sonnet",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Cambiar un peso de RetrievalFusion o un umbral del gate en un solo sitio y verificar que ambos hosts lo toman. Las tres claves muertas de Ingestion o se enlazan o se borran; `rag ingest` y /api/ask se comportan igual que antes del cambio.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Mecanico y verificable cambiando un valor y observando los dos hosts. El juicio esta en decidir si las claves muertas se implementan o se borran, y eso es una linea de conversacion, no de analisis.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.7. HOY NO HAY BUG: los defaults de RetrievalFusionOptions.cs:16-19 son exactamente los pesos calibrados del Cli, asi que ambos hosts fusionan igual. Es una trampa, no un defecto: la proxima recalibracion editando el appsettings del Cli deja a la Api con los defaults, en silencio. Mismo modo de fallo que 4.7, en otro sitio.",
+          "rollback": "git revert de los appsettings. No toca codigo de retrieval ni datos indexados."
+        }
+      ]
+    },
+    {
+      "ola": 9,
+      "nombre": "Direccion de dependencias",
+      "criterio_de_salida": "Ningun host construye un cliente de Qdrant, y quien lo intente rompe el build en vez de romper una convencion. Analisis completo en docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md",
+      "_orden": "La barrera (9.5) va DESPUES de tapar (9.1-9.4), no antes: un test de arquitectura escrito primero solo produce una lista de excepciones que nadie vacia.",
+      "items": [
+        {
+          "id": "9.1-puertos-del-vector-store",
+          "titulo": "QdrantVectorStore es clase concreta sin interfaz, inyectada en la capa de aplicacion, y sus tipos anidados (ExistingResumenState, PendingResumenPoint) aparecen en firmas de DefaultIngestionPipeline; el cursor de paginacion es un PointId de gRPC",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Pipeline/DefaultIngestionPipeline.cs no contiene ningun `using Qdrant.*` ni menciona QdrantVectorStore en firmas. Dos puertos separados (escritura de ingesta / diagnostico y administracion), no uno de doce metodos. La reanudacion de Fase 2 sigue funcionando: interrumpir una ingesta con resumen_pending y reanudarla NO reprocesa lo ya hecho.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El cursor de dominio que sustituye a PointId es diseno, no traduccion, y equivocarlo rompe la reanudacion de ~19 h de resumenes. Ademas hay que resistir la tentacion del puerto unico que solo Qdrant puede implementar.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.4.",
+          "rollback": "git revert. RIESGO ALTO, no de build sino de datos: (1) un cursor de dominio mal hecho rompe la reanudacion de Fase 2 (DefaultIngestionPipeline.cs:444) y obliga a reprocesar ~19 h de resumenes; (2) UpsertBatchAsync reemplaza el punto entero en Qdrant, asi que una firma reescrita que omita SummaryVector BORRA resumenes ya generados sin fallar (QdrantVectorStore.cs:241-248,340-341). Antes de tocar: probar reanudacion sobre un micro-repo, y verificar con scroll que SummaryVector sobrevive a un upsert posterior."
+        },
+        {
+          "id": "9.2-hosts-sin-qdrantclient",
+          "titulo": "Api/Program.cs:223,300 inyectan Qdrant.Client.QdrantClient en los delegates de los endpoints, y StatusCommand/DoctorCommand lo resuelven del contenedor: los adaptadores primarios hablan con la infraestructura por encima del nucleo",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Anadir PrivateAssets=\"all\" a la PackageReference de Qdrant.Client en RagEngine.Core.csproj y que `dotnet build` compile la solucion entera sin errores ni advertencias. /api/health, /api/collections, `rag status` y `rag doctor` devuelven lo mismo que antes.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Reencaminar cuatro puntos de uso por puertos que 9.1 ya define. La verificacion la da el compilador, no el juicio.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.3. Introducir un puerto en Core no arregla nada mientras los hosts sigan resolviendo QdrantClient del contenedor (registrado en ServiceCollectionExtensions.cs:95-99).",
+          "bloqueado_por": "9.1-puertos-del-vector-store",
+          "rollback": "git revert, incluida la linea de PrivateAssets. Ojo: PrivateAssets deja la solucion sin compilar hasta que este item cierre, asi que no puede quedarse a medias entre commits — o entra con el reencaminado, o no entra."
+        },
+        {
+          "id": "9.3-resultado-estructurado-de-generacion",
+          "titulo": "IRagGenerationService devuelve IAsyncEnumerable<string> y nada mas, asi que la Api hace DOS llamadas a ISemanticRetriever por request (Program.cs:397-410 y :506-517) y compara contra la constante de la clase concreta RagGenerationService.NoContextFallbackMessage",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Un solo SearchAsync por request de /api/ask, comprobable contando las invocaciones de la metrica de retrieval en un request. El host no referencia RagGenerationService (clase concreta) en ningun sitio. La respuesta y las fuentes de /api/ask son identicas a las de antes sobre el arnes de calidad.",
+          "horas_maquina": 0.3,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Cambia el contrato publico del puerto de generacion con dos consumidores y el streaming de por medio; hay que decidir que forma toma el retorno sin perder el streaming token a token.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.5. Es la causa raiz de 4.7 y de la dependencia por constante concreta: al no devolver fuentes ni veredicto del gate, el puerto obliga al host a repetir el retrieval Y a recalcular la banda.",
+          "rollback": "git revert. No toca ingesta ni esquema. INTERACCION CON 4.7: si 4.7 se cierra antes, hacerlo consumiendo el veredicto de ConfidenceGate y no inventando un tercer camino, o este item tendra que deshacerlo."
+        },
+        {
+          "id": "9.4-puerto-de-cache-de-resumenes",
+          "titulo": "SummaryCache es clase concreta de SQLite de la que dependen directamente GenerationContextAssembler, DefaultIngestionPipeline y cuatro puntos de Api/Program.cs; ChatAnswerStreamer y OllamaBusinessSummaryGenerator estan archivados en Services/ siendo adaptadores",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Existe ISummaryCache en Abstractions/ y ningun consumidor de la capa de aplicacion ni de los hosts nombra la clase concreta. `dotnet test` verde. La cache existente sigue siendo valida: `rag ingest` sobre un corpus ya ingestado NO regenera resumenes.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Extraer un puerto de una clase con superficie conocida y mover archivos. El riesgo no esta en el codigo sino en tocar sin querer la ruta de la cache.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.6. Mover los tres archivos de carpeta SIN extraer el puerto es cosmetico: cambia el arbol de directorios y cero flechas de dependencia.",
+          "rollback": "git revert. RIESGO: tocar ResumenCachePath (Domain/IngestionTypes.cs:20-22) o prompt_version (OllamaBusinessSummaryGenerator.ComputePromptVersion:149) al pasar invalida la cache entera y obliga a regenerar ~19 h. Hay antecedente de corrupcion de esa cache por WAL compartido host/contenedor. Verificar el hash de prompt_version antes y despues."
+        },
+        {
+          "id": "9.5-tests-de-arquitectura",
+          "titulo": "No hay nada que valide la direccion de dependencias: RagEngine.Core es un ensamblado unico con Qdrant/ONNX/SK/SQLite dentro, y CompositionRootTests valida el grafo de DI, no quien depende de quien",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "verificacion": "Un test falla si Domain/, Abstractions/, Services/ o Pipeline/ referencian Qdrant.Client, Microsoft.ML.OnnxRuntime, Microsoft.Data.Sqlite o Microsoft.SemanticKernel, Y falla si RagEngine.Api o RagEngine.Cli referencian cualquiera de ellos. Nace en verde: si necesita excepciones, es que 9.1-9.4 no cerraron.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Escribir reglas sobre namespaces y montar un proyecto de tests nuevo. Mecanico una vez decidido el alcance.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.8. EXIGE PROYECTO NUEVO: RagEngine.Core.Tests.csproj:11 referencia SOLO Core, asi que un test ahi es estructuralmente incapaz de ver las violaciones de Api y Cli, que son las peores. El proyecto nuevo tampoco vera los tipos internal que RagEngine.Core.csproj:36-38 expone solo a RagEngine.Core.Tests.",
+          "bloqueado_por": "9.4-puerto-de-cache-de-resumenes",
+          "rollback": "git revert del proyecto de tests. No toca produccion. LIMITE CONOCIDO: una regla por `using` no detecta la dependencia oculta de RagEngineMetrics (static class) ni la dependencia por constante publica de clase concreta; no declarar que la direccion queda 'congelada' mas alla de lo que la regla mira."
+        },
+        {
+          "id": "9.6-vocabulario-de-puertos",
+          "titulo": "Los contratos describen a su adaptador: RetrievalOptions.CollectionName dice 'The Qdrant collection', ISemanticRetriever menciona Qdrant y HNSW, IRagGenerationService:26 dice 'cosine' sobre un score que no lo es en dos de los cuatro caminos, y RagGenerationService.cs:253 le dice al USUARIO FINAL 'Please ensure Qdrant is running'",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Ningun tipo de Abstractions/ ni de Domain/ nombra Qdrant o HNSW en su documentacion. `dotnet test` verde, incluidos los golden masters.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Edicion de texto con un unico punto de cuidado (el mensaje al usuario), que la verificacion cubre.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), grieta 3.4 ampliada por la revision adversarial.",
+          "rollback": "git revert. RIESGO BAJO PERO REAL: RagGenerationService.cs:253 puede estar asertado en tests/GoldenMaster/ o en el arnes de calidad, y RagEngineMetrics.cs:17 es la description de una metrica publicada, que puede mover dashboards. Comprobar ambos antes de editar."
+        }
+      ]
+    },
+    {
+      "ola": 10,
+      "nombre": "Higiene del arnes y del ledger",
+      "criterio_de_salida": "La documentacion de proceso describe el proceso que existe, y ningun item parado depende de que alguien recuerde por que.",
+      "items": [
+        {
+          "id": "10.1-claude-md-apunta-al-plugin",
+          "titulo": "CLAUDE.md:20 y :29 documentan infra/arnes/ como el arnes de ejecucion e instruyen `python3 infra/arnes/ledger_path.py`, pero ese directorio se elimino en e55279e al pasar al plugin arnes-plan; ademas la seccion Verificacion cita cifras obsoletas (39 tests, 9 colecciones)",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "Ninguna ruta citada en CLAUDE.md apunta a un archivo inexistente: cada comando del documento se ejecuta y responde. Las cifras de la seccion Verificacion coinciden con la salida real de `dotnet test` y `rag status` en el momento del cambio, o se sustituyen por una redaccion que no dependa de un numero que envejece.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Corregir dos lineas de documentacion contra el estado real del arbol.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), hallazgo 5.1.",
+          "rollback": "git revert. Solo documentacion."
+        },
+        {
+          "id": "10.2-condicion-de-reingreso-de-3.5",
+          "titulo": "3.5-portabilidad-x64 esta bloqueado con un razon_bloqueo exhaustivo, pero la condicion que lo desbloquea no es un campo legible: hay que leer el texto entero para saber que solo falta una maquina x64 real",
+          "modelo": "haiku",
+          "esfuerzo": "low",
+          "multiagente": false,
+          "verificacion": "El item 3.5 tiene un campo condicion_de_reingreso con el disparador explicito, con el mismo formato que el de 5.a.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "Anadir un campo al ledger copiando un precedente que ya existe.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), hallazgo 5.2. El item NO esta abandonado: implementado y verificado en arm64 (122/122 tests, rag doctor OK); solo falta hardware x64 para probar la otra rama.",
+          "rollback": "git revert. Solo el ledger."
+        },
+        {
+          "id": "10.3-plan-a-ledger-con-computo-local",
+          "titulo": "El mapeo de un documento de analisis a items del ledger se hace a mano; automatizarlo en la maquina en vez de gastar inferencia en cada reconciliacion",
+          "modelo": "sonnet",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "verificacion": "Reproducir con la herramienta el delta de una de las dos reconciliaciones ya hechas a mano y que el JSON resultante coincida con el commiteado.",
+          "horas_maquina": 0,
+          "estado": "pendiente",
+          "por_que_este_modelo": "El trabajo no es escribir el script sino fijar las reglas del mapeo (en que ola cae un item, como se elige modelo/esfuerzo, que hace verificable una verificacion). Eso es diseno.",
+          "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), seccion 7. PRECONDICION DELIBERADA: automatizar con una sola muestra es disenar a ciegas. Hay dos reconciliaciones manuales documentadas — la del 2026-08-24 (olas 5 a 8) y la del 2026-08-31 (olas 9 y 10) — y esas dos son la especificacion de entrada.",
+          "bloqueado_por": "4.8-tests-de-comportamiento-de-los-colaboradores-de-generacion",
+          "rollback": "git revert. Herramienta nueva, no toca produccion ni el ledger vigente."
         }
       ]
     }
   ],
   "_nota_operacion_reingesta": "Toda verificación que implique una re-ingesta se corre con rag-api DETENIDO y con la caché de resúmenes escrita desde un solo lado del bind mount. No es celo: el 2026-08-20 el host nativo y el contenedor escribiendo el mismo SQLite en WAL corrompieron summary-cache.sqlite3, y se recuperó con .recover al 99,4%. Ver docs/analisis-futuro/concurrencia-y-cache-compartida-en-produccion.md. El ítem 4.6 ya lo lleva en su criterio; las olas 5 a 8 lo heredan.",
   "_nota_coste_de_reingesta": "Corrección del 2026-08-24, importante porque estaba mal en la cabeza de todos: la caché de resúmenes se indexa por (content_hash, prompt_version) sobre el contenido CRUDO del chunk (ChunkBuilder.cs:82 → DefaultIngestionPipeline.cs:533), NO sobre EnrichedContent. Consecuencia: cambiar el encabezado embebido o añadir claves al payload NO invalida la caché y cuesta ~10-20 min de embedding+upsert, no 19 h (docs/reingesta-manual.md:25). Sólo cuestan horas de Ollama los cambios que mueven fronteras de chunk (y sólo para los hashes que cambiaron) y los que mueven prompt_version (regeneración total). Regla: antes de lanzar una re-ingesta, CONTAR los content_hash ausentes de la caché. Ese número es el presupuesto; una estimación no lo es.",
-  "_reconciliacion": "2026-08-24: reconciliado contra docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md, que evaluó una propuesta externa de refinamiento arquitectónico y pasó por una segunda revisión adversarial. Se añadieron las olas 5 a 8 y el ítem 1.15; se anotaron las precondiciones de 3.1, 4.1, 4.2, 4.3 y 4.6; se corrigió el título de 2.2 (decía 1042 líneas, son 680 desde que 2.3 externalizó los prompts) y su criterio de verificación, que invitaba a citar 89 preguntas de arnés de calidad como si midieran recall. NADA del ledger vigente se descartó. El único ítem en estado descartado es 5.a (chunker de XAML), que nace descartado con su condición de reingreso escrita. Corregido además un detalle de esquema anterior: la Ola 4 tenía su número como string (\"4\") y las otras como entero, así que un argumento `ola:4` de /plan-siguiente no la habría emparejado. Ahora las 8 son enteros."
+  "_reconciliacion": "2026-08-24: reconciliado contra docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md, que evaluó una propuesta externa de refinamiento arquitectónico y pasó por una segunda revisión adversarial. Se añadieron las olas 5 a 8 y el ítem 1.15; se anotaron las precondiciones de 3.1, 4.1, 4.2, 4.3 y 4.6; se corrigió el título de 2.2 (decía 1042 líneas, son 680 desde que 2.3 externalizó los prompts) y su criterio de verificación, que invitaba a citar 89 preguntas de arnés de calidad como si midieran recall. NADA del ledger vigente se descartó. El único ítem en estado descartado es 5.a (chunker de XAML), que nace descartado con su condición de reingreso escrita. Corregido además un detalle de esquema anterior: la Ola 4 tenía su número como string (\"4\") y las otras como entero, así que un argumento `ola:4` de /plan-siguiente no la habría emparejado. Ahora las 8 son enteros. | 2026-08-31: reconciliado contra docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md, que evaluo la adopcion de arquitectura hexagonal (Ports & Adapters) y paso por una revision adversarial con contexto limpio. Veredicto: no hay refactorizacion grande que hacer; los caminos de consulta ya estan bien abstraidos y los de escritura, cache y administracion no lo estan. Se anadieron las olas 9 y 10 y los items 4.9 y 8.g (once en total). NADA del ledger vigente se descarto ni se reabrio. Dos correcciones que la revision adversarial impuso sobre el analisis inicial y que quedan fijadas en el orden de los items: (1) el test de arquitectura va DESPUES de tapar las fugas, no antes, porque escrito primero solo produce una lista de excepciones que nadie vacia — de ahi que 9.5 dependa de 9.4; (2) un test en RagEngine.Core.Tests es incapaz de ver las violaciones de Api y Cli, que son las peores, asi que 9.5 exige un proyecto de tests nuevo. Se registra ademas que 4.7 quedo desbloqueado al cerrarse 4.3 en 18d00b6, y que su causa raiz es el item nuevo 9.3."
 }

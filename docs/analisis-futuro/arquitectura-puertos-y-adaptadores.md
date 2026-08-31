@@ -58,19 +58,28 @@ llaman ambos a `AddRagEngineCore` / `AddRagEngineGeneration`), pero la **configu
 
 Ordenadas por consecuencia, no por elegancia.
 
-### 3.1 La API reimplementa la regla de banda, y los umbrales acaban de moverse
+### 3.1 La API reimplementa la regla de banda
 
 `Api/Program.cs:181-187` (`ShouldSuppressSources`) recalcula la regla de banda baja que vive en
-`ConfidenceGate.Assess`, con una asimetría propia (`results.Count > 0`), y la consume en `:429` y
-`:526`.
+`ConfidenceGate.Assess`, y la consume en `:429` y `:526`. Las dos expresiones, lado a lado:
 
-Es la única grieta de esta lista con **consecuencia funcional viva**: los ítems 4.2 y 4.3 acaban de
-recalibrar exactamente esos umbrales (commit `18d00b6`), así que la copia de la API se está
-quedando atrás ahora.
+```
+ConfidenceGate.Assess:   chunks.Count == 0 || (useReRanking && topScore < LowConfidenceThreshold)
+ShouldSuppressSources:   isMetaIntent     || (rerank && results.Count > 0 && top < LowConfidenceThreshold)
+```
 
-Ya está en el ledger como `4.7-regla-de-banda-duplicada-en-la-api`, y su campo `bloqueado_por`
-apunta a `4.3-recalibrar-umbrales-banda`, **que ya está en estado `hecho`**. El ítem está
-desbloqueado y no requiere nada de este documento para ejecutarse.
+**Los umbrales NO divergen:** la API recibe `RagGenerationOptions` y lee de ahí
+`LowConfidenceThreshold`, el mismo objeto de configuración que usa el gate. Una recalibración las
+mueve a las dos a la vez. Lo duplicado es **la regla**, no el número.
+
+El coste es de mantenimiento, y es del tipo que se cobra tarde: cada cambio en la forma del gate hay
+que replicarlo a mano en la API, y nada avisa si no se hace. El caso concreto que viene es la
+condición `useReRanking` — el ítem 4.2 registra en su campo `bloquea` que romper la dependencia
+gate→rerank es trabajo previsto; cuando eso ocurra en `ConfidenceGate`, la copia de la API seguirá
+teniendo su `rerank &&`.
+
+Ya está en el ledger como `4.7-regla-de-banda-duplicada-en-la-api`, y su `bloqueado_por` apunta a
+`4.3-recalibrar-umbrales-banda`, **que ya está en `hecho`**: el ítem está desbloqueado.
 
 ### 3.2 El contrato de score miente, y ya son cuatro significados
 
@@ -336,7 +345,9 @@ Los que pueden destruir trabajo, no los que rompen el build.
 
 1. **¿`4.7` se ejecuta ya, o se espera a `9.3`?** 4.7 está desbloqueado y cuesta 0,2 h, pero 9.3 es su
    causa raíz. Hacer 4.7 primero es correcto si su implementación consume el veredicto del gate en vez
-   de inventar otro camino; hacerlo mal deja dos arreglos donde cabía uno.
+   de inventar otro camino; hacerlo mal deja dos arreglos donde cabía uno. No es urgente: los
+   umbrales son compartidos (ver 3.1), así que no hay nada rompiéndose hoy que justifique adelantarlo
+   sobre el orden del ledger.
 2. **¿`9.2` se verifica con `PrivateAssets` o sólo con el test de `9.5`?** `PrivateAssets` es más duro
    y más barato, pero convierte la grieta en un build roto hasta que 9.1 y 9.2 cierren — no se puede
    dejar a medias entre commits.

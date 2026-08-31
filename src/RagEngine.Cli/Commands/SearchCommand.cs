@@ -136,16 +136,28 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         foreach (var (result, i) in results.Select((r, idx) => (r, idx + 1)))
         {
             var m = result.Metadata;
-            var scoreColor = result.SimilarityScore >= 0.85f ? "green"
+
+            // Ítem 4.9: las bandas de color 0.85/0.70 sólo significan algo si el score es
+            // comparable entre consultas. Sin --rerank el número es RRF —función del
+            // puesto, típicamente ~0.03— y pintarlo de rojo con un "% similitud" al lado
+            // le decía al lector que el resultado era malo cuando lo que pasaba es que la
+            // escala era otra. Cuando no hay escala absoluta se muestra el número crudo
+            // con el nombre de su escala y sin semáforo.
+            var escalaEsAbsoluta = result.ScoreScale.IsComparableAcrossQueries();
+            var scoreColor = !escalaEsAbsoluta                ? "grey"
+                           : result.SimilarityScore >= 0.85f ? "green"
                            : result.SimilarityScore >= 0.70f ? "yellow"
                            : "red";
+            var scoreTexto = escalaEsAbsoluta
+                ? $"{(result.SimilarityScore * 100):F1}% similitud"
+                : $"{result.SimilarityScore:F4} {result.ScoreScale.ToDisplayName()}";
 
             // Build header rows
             var rows = new List<IRenderable>
             {
                 new Markup($"[dim]{Markup.Escape(m.RelativeFilePath)}[/] " +
                            $"[dim]L{m.StartLine}–{m.EndLine}[/]   " +
-                           $"[{scoreColor} bold]{(result.SimilarityScore * 100):F1}% similitud[/]")
+                           $"[{scoreColor} bold]{Markup.Escape(scoreTexto)}[/]")
             };
 
             if (!string.IsNullOrEmpty(m.Namespace) || !string.IsNullOrEmpty(m.ClassName))

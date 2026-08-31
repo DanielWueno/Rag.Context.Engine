@@ -68,6 +68,7 @@ public class CrossEncoderStableGateScoreTests
         ChunkId: id,
         Content: contenido,
         SimilarityScore: 0f, // el RRF/prefetch previo es irrelevante: ReRankAsync lo reemplaza
+        ScoreScale: RetrievalScoreScale.RankFusionNative,
         Metadata: new CodeChunkMetadata(
             FilePath: $"/repo/docs/{id}.md",
             RelativeFilePath: $"docs/{id}.md",

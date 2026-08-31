@@ -49,6 +49,7 @@ public class GenerationContextAssemblerResumenSwapTests : IDisposable
         ChunkId: $"chunk-{contentHash}",
         Content: content,
         SimilarityScore: 0.9f,
+        ScoreScale: RetrievalScoreScale.CrossEncoderStable,
         Metadata: new CodeChunkMetadata(
             FilePath: "/repo/docs/archivo.md",
             RelativeFilePath: "docs/archivo.md",

@@ -232,6 +232,10 @@ public sealed class RecallEvaluator
                 idx.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 chunk.Content,
                 0f,
+                // El pool sale de RankByRrf con pesos por rama — misma escala que la
+                // fusión ponderada de producción. El número es 0 porque el PoC sólo
+                // usa el pool como entrada del Cross-Encoder, que lo reemplaza entero.
+                RetrievalScoreScale.RankFusionWeighted,
                 chunk.Metadata,
                 chunk.ContentHash));
         }

@@ -82,6 +82,31 @@ afecta al flujo por defecto. El score resultante (sigmoide del logit) reemplaza 
 `RetrievalResult.SimilarityScore` — son escalas distintas, no comparables. Detalle:
 [busqueda-hibrida.md](busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker).
 
+### El contrato del score
+
+`RetrievalResult.SimilarityScore` es un `float` cuyo significado depende del camino que lo
+produjo, así que va siempre acompañado de `RetrievalResult.ScoreScale`, que lo declara:
+
+| `ScoreScale` | Qué es | ¿Comparable entre consultas? |
+|---|---|---|
+| `CosineSimilarity` | Similitud coseno cruda; la escala de `MinimumSimilarityScore` | Sí |
+| `RankFusionNative` | RRF de Qdrant sobre denso + disperso, pesos iguales | **No** — es función del rango |
+| `RankFusionWeighted` | RRF ponderada manual sobre código + disperso + resumen | **No** — y además otra magnitud |
+| `CrossEncoderBatched` | Sigmoide del cross-encoder en la pasada por lotes; **decide el orden** | Sí |
+| `CrossEncoderStable` | La misma sigmoide en lote de 1; invariante al TopK (ítem 4.2) | Sí |
+
+Un consumidor que vaya a comparar el score contra un umbral absoluto debe consultar antes
+`ScoreScale.IsComparableAcrossQueries()`. Es lo que hace `ConfidenceGate` para decidir la
+banda: un score RRF nunca se evalúa contra los umbrales calibrados sobre sigmoides.
+
+**Invariante de orden.** Con `CrossEncoder:StableGateScore` encendido, `ReRankAsync` re-puntúa
+la posición #0 en lote de 1 y **no reordena**: la lista devuelta lleva `CrossEncoderStable` en
+el #0 y `CrossEncoderBatched` en el resto, y por tanto **no está ordenada monótonamente por
+score** — el #0 puede puntuar por debajo del #1. El ranking lo decide la pasada por lotes y es
+el bueno. Reordenar por `SimilarityScore` "para normalizar" revierte el ítem 4.2 y devuelve al
+gate un número que vuelve a moverse con el TopK. Fijado en
+`tests/RagEngine.Core.Tests/RetrievalScoreContractTests.cs`.
+
 ### DefaultIngestionPipeline
 
 Productor (scan → chunk) y **N consumidores** (vectorizar → upsert) desacoplados por un `Channel` acotado (backpressure a 512 chunks). Detalle y números: [pipeline-de-ingesta.md](pipeline-de-ingesta.md).

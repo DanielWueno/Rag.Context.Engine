@@ -46,14 +46,25 @@ internal sealed class ConfidenceGate
     /// <summary>
     /// Unified low-grounding gate. Two situations both mean "no trustworthy domain
     /// grounding for this query" and must take the exact same path: zero chunks
-    /// retrieved at all, or (only meaningful when <paramref name="useReRanking"/> is
-    /// true, since SimilarityScore is then the cross-encoder sigmoid comparable across
-    /// queries — without rerank it's the RRF fusion score, a function of rank, not
-    /// similarity, and is not evaluated against this threshold) a top score below
+    /// retrieved at all, or a top score below
     /// <see cref="RagGenerationOptions.LowConfidenceThreshold"/>. See
     /// docs/analisis-futuro/guardrail-banda-baja-conversacional.md — this used to be two
     /// separate checks that both hard-cut to the same fixed message; now both route to
     /// the no-grounding conversation instead.
+    ///
+    /// <para>El umbral sólo se evalúa cuando el score está en una escala comparable entre
+    /// consultas, y eso lo dice ahora el propio resultado
+    /// (<see cref="RetrievalResult.ScoreScale"/>, ítem 4.9). Antes se aproximaba con un
+    /// parámetro <c>useReRanking</c> que el llamador tenía que acertar: era el retriever
+    /// quien decidía la escala y el gate quien la adivinaba desde otra capa. Con la
+    /// escala en el dato, un score RRF —función del rango, no de la similitud— no puede
+    /// caer por accidente contra un umbral calibrado sobre sigmoides del
+    /// cross-encoder.</para>
+    ///
+    /// <para>Lee <c>chunks[0]</c> a propósito y sin reordenar: la lista que entrega el
+    /// reranker no está ordenada monótonamente por score (ver
+    /// <see cref="RetrievalScoreScale"/>), y su posición #0 es justamente la que lleva el
+    /// score estable del ítem 4.2 sobre el que están calibradas las bandas.</para>
     /// </summary>
     /// <param name="minimumScore">
     ///   Sólo para el mensaje de log del caso "cero chunks": es el umbral que aplicó el
@@ -61,12 +72,12 @@ internal sealed class ConfidenceGate
     /// </param>
     public GroundingAssessment Assess(
         IReadOnlyList<RetrievalResult> chunks,
-        bool useReRanking,
         float minimumScore,
         string query)
     {
         var topScore = chunks.Count > 0 ? chunks[0].SimilarityScore : 0f;
-        var noGrounding = chunks.Count == 0 || (useReRanking && topScore < Options.LowConfidenceThreshold);
+        var scoreIsAbsolute = chunks.Count > 0 && chunks[0].ScoreScale.IsComparableAcrossQueries();
+        var noGrounding = chunks.Count == 0 || (scoreIsAbsolute && topScore < Options.LowConfidenceThreshold);
 
         if (noGrounding)
         {
@@ -86,7 +97,7 @@ internal sealed class ConfidenceGate
 
         // ── Mid-band hedge ────────────────────────────────────────
         string? confidenceAddendum = null;
-        if (useReRanking && topScore < Options.HighConfidenceThreshold)
+        if (scoreIsAbsolute && topScore < Options.HighConfidenceThreshold)
         {
             _logger.LogInformation(
                 "[RAG] Mid confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Answering with a low-confidence hedge.",

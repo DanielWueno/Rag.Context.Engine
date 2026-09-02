@@ -194,9 +194,15 @@ public sealed class RoslynCSharpChunkingStrategy : IChunkingStrategy
         foreach (var attrList in typeDecl.AttributeLists)
             declarationLines.Add(attrList.ToString().Trim());
 
+        // typeDecl.BaseList.ToString() pierde el espacio antes de ':' porque ToString()
+        // descarta la trivia inicial del primer token (el ColonToken) — "class X : Base"
+        // se reconstruía como "class X: Base". No se persigue preservar el whitespace
+        // exacto del archivo (frágil: 0, 1 o varios espacios, salto de línea antes de
+        // ':'); se normaliza siempre a un solo espacio, a propósito y declarado aquí.
+        var baseListText = typeDecl.BaseList is null ? string.Empty : $" {typeDecl.BaseList}";
         var declaration =
             $"{typeDecl.Modifiers} {typeDecl.Keyword} {typeDecl.Identifier}" +
-            $"{typeDecl.TypeParameterList}{typeDecl.BaseList}";
+            $"{typeDecl.TypeParameterList}{baseListText}";
         declarationLines.Add(declaration.Trim());
         var declarationText = string.Join('\n', declarationLines).Trim();
 

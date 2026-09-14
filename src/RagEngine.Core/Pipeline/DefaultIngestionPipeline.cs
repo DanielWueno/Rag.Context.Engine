@@ -9,6 +9,7 @@ using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Diagnostics;
+using RagEngine.Core.Extensions;
 using RagEngine.Core.Services.Summary;
 
 namespace RagEngine.Core.Pipeline;
@@ -69,6 +70,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly IBusinessSummaryGenerator _summaryGenerator;
     private readonly SummaryCache _summaryCache;
     private readonly IOptions<IngestionOptions> _ingestionOptions;
+    private readonly string _groupPromptVersion;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
 
     public DefaultIngestionPipeline(
@@ -80,6 +82,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         IBusinessSummaryGenerator summaryGenerator,
         SummaryCache summaryCache,
         IOptions<IngestionOptions> ingestionOptions,
+        IOptions<OllamaOptions> ollamaOptions,
         ILogger<DefaultIngestionPipeline> logger)
     {
         _scanner = scanner;
@@ -90,6 +93,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         _summaryGenerator = summaryGenerator;
         _summaryCache = summaryCache;
         _ingestionOptions = ingestionOptions;
+        // Ítem 5.b: namespace de caché propio del modo por archivo/tipo, calculado una
+        // sola vez aquí (no en DI) porque sólo se usa cuando SummaryGranularity=PerFile.
+        _groupPromptVersion = OllamaBusinessSummaryGenerator.ComputeGroupPromptVersion(ollamaOptions.Value.ModelId);
         _logger = logger;
     }
 
@@ -210,7 +216,13 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             TokensP95: tokensP95,
             TokensMaxUsable: stats.TokensMaxUsable,
             ChunksTruncatedTotal: stats.ChunksTruncatedTotal,
-            TokensDiscardedTotal: stats.TokensDiscardedTotal);
+            TokensDiscardedTotal: stats.TokensDiscardedTotal,
+            ResumenGranularity: _ingestionOptions.Value.SummaryGranularity.ToString(),
+            ResumenGroups: resumenStats?.Groups ?? 0,
+            ResumenLlmCalls: resumenStats?.LlmCalls ?? 0,
+            ResumenCacheHits: resumenStats?.CacheHits ?? 0,
+            ResumenCacheMisses: resumenStats?.CacheMisses ?? 0,
+            ResumenElapsedMs: resumenStats?.ElapsedMs ?? 0);
 
         _logger.LogInformation(
             "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Obsoletos borrados: {Deleted}, Duration: {Elapsed}",
@@ -453,6 +465,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         CancellationToken cancellationToken)
     {
         var stats = new ResumenPhaseStats();
+        var phaseSw = Stopwatch.StartNew();
         var totalPending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, cancellationToken);
 
         if (totalPending == 0)
@@ -463,6 +476,14 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         _logger.LogInformation(
             "Fase 2 (resumen de negocio): {Total} puntos pendientes en '{Collection}'.", totalPending, collectionName);
+
+        // Ítem 5.b (experimental, opt-in): agrupa por (archivo, tipo) en vez de llamar al
+        // LLM por chunk. Requiere cargar TODOS los puntos pendientes en memoria para
+        // agruparlos (no hay agrupación posible en streaming puro sobre el scroll) — límite
+        // aceptable para los corpus de evaluación de este experimento, documentado en la
+        // ficha; no pensado (todavía) para una reingesta de producción de gran escala.
+        if (_ingestionOptions.Value.SummaryGranularity == SummaryGranularity.PerFile)
+            return await RunResumenPhasePerFileAsync(collectionName, phase1Stats, totalPending, progress, cancellationToken);
 
         // Circuit breaker (decisión 3b): fallos de CONEXIÓN consecutivos (no de
         // contenido/sentinel) cancelan este token compartido para abortar la fase
@@ -562,6 +583,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         await Task.WhenAll(consumerTasks.Append(producerTask));
 
         stats.Pending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerChunk) terminada en {WallMs} ms: {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
+            phaseSw.ElapsedMilliseconds, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);
         return stats;
     }
 
@@ -571,6 +595,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ResumenPhaseStats stats,
         CancellationToken ct)
     {
+        var sw = Stopwatch.StartNew();
         var (found, cachedSummary) = await _summaryCache.TryGetAsync(point.Chunk.ContentHash, ct);
 
         string? summaryText;
@@ -580,6 +605,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             summaryText = cachedSummary;
             sinNegocio = cachedSummary is null;
+            Interlocked.Increment(ref stats.CacheHits);
         }
         else
         {
@@ -592,13 +618,18 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             sinNegocio = result.SinContenidoDeNegocio;
             summaryText = sinNegocio ? null : result.Text;
             await _summaryCache.SetAsync(point.Chunk.ContentHash, summaryText, ct);
+            Interlocked.Increment(ref stats.CacheMisses);
+            Interlocked.Increment(ref stats.LlmCalls);
         }
+
+        Interlocked.Increment(ref stats.Groups);
 
         if (sinNegocio)
         {
             // Sin significado de negocio: no recibe vector, pero deja de estar "pendiente".
             await _vectorStore.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
             Interlocked.Increment(ref stats.SinNegocio);
+            Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
             return;
         }
 
@@ -606,13 +637,140 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         await _vectorStore.UpdateSummaryVectorAsync(collectionName, point.PointId, vector, ct);
         await _vectorStore.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
         Interlocked.Increment(ref stats.Completed);
+        Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
     }
+
+    /// <summary>
+    /// Ítem 5.b (experimental, opt-in): variante de la Fase 2 que agrupa los puntos
+    /// pendientes por (RelativeFilePath, ClassName) y hace UNA llamada al LLM por grupo,
+    /// reutilizando el resultado para todos los chunks del grupo. Instrumenta llamadas
+    /// LLM, hits/misses de caché y tiempo total — el comparador A/B de la ficha exige
+    /// esta evidencia, no sólo el recall.
+    /// </summary>
+    private async Task<ResumenPhaseStats> RunResumenPhasePerFileAsync(
+        string collectionName,
+        PipelineStats phase1Stats,
+        int totalPending,
+        IProgress<IngestionProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var stats = new ResumenPhaseStats();
+        var sw = Stopwatch.StartNew();
+
+        // Carga completa: la agrupación por archivo/tipo no es expresable como streaming
+        // puro sobre el scroll (un grupo puede completarse en cualquier punto del corpus).
+        var allPoints = new List<QdrantVectorStore.PendingResumenPoint>(totalPending);
+        PointId? offset = null;
+        do
+        {
+            var (points, next) = await _vectorStore.ScrollPendingResumenAsync(collectionName, offset, limit: 200, cancellationToken);
+            allPoints.AddRange(points);
+            offset = next;
+        } while (offset is not null);
+
+        var groups = allPoints
+            .GroupBy(p => (p.Chunk.Metadata.RelativeFilePath, Type: p.Chunk.Metadata.ClassName ?? string.Empty))
+            .ToList();
+
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerFile): {Groups} grupos archivo/tipo para {Total} chunks pendientes en '{Collection}'.",
+            groups.Count, allPoints.Count, collectionName);
+
+        var completedCount = 0;
+        foreach (var group in groups)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var chunks = group.Select(p => p.Chunk).ToList();
+
+            // Hash de grupo: sobre los content_hash ordenados de sus chunks — determinista
+            // e independiente del orden de scroll, y jamás colisiona con un hash de chunk
+            // individual porque vive bajo su propio prompt_version (_groupPromptVersion).
+            var groupHash = ComputeGroupContentHash(chunks);
+
+            var (found, cachedSummary) = await _summaryCache.TryGetAsync(groupHash, cancellationToken, _groupPromptVersion);
+            string? summaryText;
+            bool sinNegocio;
+
+            if (found)
+            {
+                summaryText = cachedSummary;
+                sinNegocio = cachedSummary is null;
+                Interlocked.Increment(ref stats.CacheHits);
+            }
+            else
+            {
+                var result = await _summaryGenerator.GenerateForGroupAsync(chunks, cancellationToken);
+                if (result is null)
+                    throw new InvalidOperationException(
+                        $"Fallo aislado al generar el resumen de grupo para {group.Key.RelativeFilePath} (no es un fallo de conexión).");
+
+                sinNegocio = result.SinContenidoDeNegocio;
+                summaryText = sinNegocio ? null : result.Text;
+                await _summaryCache.SetAsync(groupHash, summaryText, cancellationToken, _groupPromptVersion);
+                Interlocked.Increment(ref stats.CacheMisses);
+                Interlocked.Increment(ref stats.LlmCalls);
+            }
+
+            Interlocked.Increment(ref stats.Groups);
+
+            var pointIds = group.Select(p => p.PointId).ToList();
+            if (sinNegocio)
+            {
+                await _vectorStore.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                stats.SinNegocio += pointIds.Count;
+            }
+            else
+            {
+                var vector = await _brain.GenerateEmbeddingAsync(summaryText!, cancellationToken);
+                foreach (var pointId in pointIds)
+                    await _vectorStore.UpdateSummaryVectorAsync(collectionName, pointId, vector, cancellationToken);
+                await _vectorStore.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                stats.Completed += pointIds.Count;
+            }
+
+            completedCount += pointIds.Count;
+            progress?.Report(new IngestionProgress(
+                FilesProcessed: phase1Stats.FilesScanned,
+                TotalFilesDiscovered: 0,
+                ChunksProduced: phase1Stats.ChunksGenerated,
+                ChunksIndexed: phase1Stats.ChunksIndexed,
+                CurrentFile: group.Key.RelativeFilePath,
+                Stage: IngestionStage.GeneratingResumenes,
+                ResumenesCompleted: completedCount,
+                ResumenesTotal: totalPending));
+        }
+
+        stats.ElapsedMs = sw.ElapsedMilliseconds;
+        stats.Pending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerFile) terminada en {WallMs} ms: {Groups} grupos, {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
+            sw.ElapsedMilliseconds, stats.Groups, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);
+        return stats;
+    }
+
+    /// <summary>SHA-256 sobre los content_hash del grupo, ordenados para ser independiente del orden de scroll.</summary>
+    internal static string ComputeGroupContentHash(IReadOnlyList<CodeChunk> chunks)
+    {
+        var joined = string.Join('|', chunks.Select(c => c.ContentHash).OrderBy(h => h, StringComparer.Ordinal));
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(joined));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
 
     private sealed class ResumenPhaseStats
     {
         public int Completed;
         public int SinNegocio;
         public int Pending;
+
+        // ── 5.b: instrumentación A/B por granularidad (llamadas LLM, hits/misses,
+        // tiempo) — obligatoria por la ficha para no aceptar la reducción de ÷10 como
+        // hipótesis sin medir. Groups==Chunks en modo PerChunk (una llamada por chunk).
+        public int Groups;
+        public int LlmCalls;
+        public int CacheHits;
+        public int CacheMisses;
+        public long ElapsedMs;
     }
 
     // Mutable stats class shared between producer and consumer via Interlocked

@@ -14,6 +14,16 @@ public interface IBusinessSummaryGenerator
     /// queda sin vector de resumen esta corrida, recuperable en una reanudación).
     /// </summary>
     Task<BusinessSummaryResult?> GenerateAsync(CodeChunk chunk, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ítem 5.b (experimental, opt-in): un único resumen de negocio para TODOS los chunks
+    /// de un mismo archivo/tipo, reutilizado por cada uno de ellos en vez de llamar al LLM
+    /// por chunk. <paramref name="chunks"/> debe compartir archivo (y tipo, si aplica) — el
+    /// llamador es responsable de agrupar antes de invocar. Mismo contrato de aislamiento
+    /// de fallos que <see cref="GenerateAsync"/>.
+    /// </summary>
+    Task<BusinessSummaryResult?> GenerateForGroupAsync(
+        IReadOnlyList<CodeChunk> chunks, CancellationToken cancellationToken = default);
 }
 
 /// <param name="Text">Texto del resumen, o el sentinel crudo si <see cref="SinContenidoDeNegocio"/> es true.</param>

@@ -85,14 +85,19 @@ public sealed class SummaryCache
     /// Hit → (true, resumen) o (true, null) si el hit fue el centinela SIN_CONTENIDO_DE_NEGOCIO.
     /// Miss → (false, null): nunca generado, o el intento anterior falló (los fallos no se cachean).
     /// </summary>
-    public async Task<(bool Found, string? Summary)> TryGetAsync(string contentHash, CancellationToken ct = default)
+    /// <param name="promptVersionOverride">
+    /// Ítem 5.b: namespace de caché distinto para el modo por archivo/tipo. Si es null,
+    /// usa el prompt_version fijado en <see cref="Open"/> (modo por chunk, default).
+    /// </param>
+    public async Task<(bool Found, string? Summary)> TryGetAsync(
+        string contentHash, CancellationToken ct = default, string? promptVersionOverride = null)
     {
         await using var connection = await OpenConnectionAsync(ct);
 
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT resumen, sin_negocio FROM resumen_cache WHERE content_hash = $hash AND prompt_version = $pv;";
         cmd.Parameters.AddWithValue("$hash", contentHash);
-        cmd.Parameters.AddWithValue("$pv", _promptVersion);
+        cmd.Parameters.AddWithValue("$pv", promptVersionOverride ?? _promptVersion);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct))
@@ -103,7 +108,8 @@ public sealed class SummaryCache
     }
 
     /// <summary>Guarda un resumen (o null para el centinela). No llamar en fallos: un fallo debe poder reintentarse.</summary>
-    public async Task SetAsync(string contentHash, string? summaryOrSentinel, CancellationToken ct = default)
+    public async Task SetAsync(
+        string contentHash, string? summaryOrSentinel, CancellationToken ct = default, string? promptVersionOverride = null)
     {
         await using var connection = await OpenConnectionAsync(ct);
 
@@ -115,7 +121,7 @@ public sealed class SummaryCache
                 resumen = excluded.resumen, sin_negocio = excluded.sin_negocio, generated_at = excluded.generated_at;
             """;
         cmd.Parameters.AddWithValue("$hash", contentHash);
-        cmd.Parameters.AddWithValue("$pv", _promptVersion);
+        cmd.Parameters.AddWithValue("$pv", promptVersionOverride ?? _promptVersion);
         cmd.Parameters.AddWithValue("$resumen", summaryOrSentinel ?? "");
         cmd.Parameters.AddWithValue("$sinNegocio", summaryOrSentinel is null ? 1 : 0);
         cmd.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));

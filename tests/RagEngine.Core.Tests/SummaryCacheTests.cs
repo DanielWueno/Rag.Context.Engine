@@ -141,4 +141,49 @@ public class SummaryCacheTests : IDisposable
         Assert.True(encontrado);
         Assert.Equal("sobrevive al cierre", resumen);
     }
+
+    /// <summary>
+    /// Ítem 5.b: el modo por archivo/tipo comparte la misma base SQLite que el modo por
+    /// chunk (una sola caché para todas las colecciones), pero DEBE vivir bajo su propio
+    /// prompt_version — de lo contrario un hash de grupo que coincidiera por accidente con
+    /// un content_hash de chunk individual devolvería el resumen equivocado.
+    /// </summary>
+    [Fact]
+    public async Task PromptVersionOverride_EscribeYLeeEnSuPropioNamespace()
+    {
+        var cache = SummaryCache.Open(_rutaTemporal, "v1"); // namespace por defecto = modo por chunk
+
+        await cache.SetAsync("hash-grupo-1", "resumen del archivo completo", promptVersionOverride: "v1-archivo");
+
+        // El namespace por defecto (chunk) no ve la entrada del namespace de grupo.
+        var (encontradoEnDefault, _) = await cache.TryGetAsync("hash-grupo-1");
+        Assert.False(encontradoEnDefault);
+
+        // Pero sí se recupera pidiendo explícitamente el mismo override.
+        var (encontrado, resumen) = await cache.TryGetAsync("hash-grupo-1", promptVersionOverride: "v1-archivo");
+        Assert.True(encontrado);
+        Assert.Equal("resumen del archivo completo", resumen);
+    }
+
+    /// <summary>
+    /// Ítem 5.b: cambiar el prompt agregado (por archivo/tipo) invalida sólo su propio
+    /// namespace — no debe tocar (ni ser tocado por) el prompt_version del modo por chunk.
+    /// </summary>
+    [Fact]
+    public async Task PromptVersionOverride_CambiarloInvalidaSoloEsePropioNamespace()
+    {
+        var cache = SummaryCache.Open(_rutaTemporal, "v1");
+        await cache.SetAsync("hash-abc", "resumen por chunk");
+        await cache.SetAsync("hash-abc", "resumen por archivo (misma clave, otro namespace)", promptVersionOverride: "v1-archivo");
+
+        var (hitChunk, resumenChunk) = await cache.TryGetAsync("hash-abc");
+        var (hitArchivo, resumenArchivo) = await cache.TryGetAsync("hash-abc", promptVersionOverride: "v1-archivo");
+        var (hitOtraVersion, _) = await cache.TryGetAsync("hash-abc", promptVersionOverride: "v2-archivo");
+
+        Assert.True(hitChunk);
+        Assert.Equal("resumen por chunk", resumenChunk);
+        Assert.True(hitArchivo);
+        Assert.Equal("resumen por archivo (misma clave, otro namespace)", resumenArchivo);
+        Assert.False(hitOtraVersion);
+    }
 }

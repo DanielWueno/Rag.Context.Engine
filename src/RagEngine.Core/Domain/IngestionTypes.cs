@@ -23,10 +23,30 @@ public sealed class IngestionOptions
     /// </summary>
     public int MaxConcurrentResumenCalls { get; init; } = 2;
 
+    /// <summary>
+    /// Ítem 5.b (experimental, opt-in): unidad de agrupación para la Fase 2 de resumen.
+    /// <see cref="SummaryGranularity.PerChunk"/> (default) llama al LLM una vez por chunk.
+    /// <see cref="SummaryGranularity.PerFile"/> agrupa los chunks pendientes por
+    /// (RelativeFilePath, ClassName) y hace UNA llamada por grupo, reutilizando el mismo
+    /// texto para todos sus chunks — ataca el costo de ingestar corpus nuevo, no reemplaza
+    /// el modo por chunk hasta que su propio A/B lo gane (docs/analisis-futuro/ejecucion-plan.estado.json, 5.b).
+    /// </summary>
+    public SummaryGranularity SummaryGranularity { get; init; } = SummaryGranularity.PerChunk;
+
     /// <summary>Ruta de la caché SQLite de resúmenes, compartida entre todas las colecciones.</summary>
     public string ResumenCachePath { get; init; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "rag-engine", "summary-cache.sqlite3");
+}
+
+/// <summary>Unidad de agrupación para la Fase 2 de resumen de negocio (ítem 5.b).</summary>
+public enum SummaryGranularity
+{
+    /// <summary>Una llamada al LLM por chunk (comportamiento histórico, default).</summary>
+    PerChunk,
+
+    /// <summary>Una llamada al LLM por (archivo, tipo), reutilizada por todos sus chunks.</summary>
+    PerFile
 }
 
 /// <summary>
@@ -88,7 +108,22 @@ public sealed record IngestionSummary(
     /// <summary>Delta de rag_chunks_truncated_total en esta corrida (chunks con T > L).</summary>
     long ChunksTruncatedTotal = 0,
     /// <summary>Suma de tokens descartados (max(0,T-L)) en esta corrida.</summary>
-    long TokensDiscardedTotal = 0
+    long TokensDiscardedTotal = 0,
+    /// <summary>
+    /// Ítem 5.b: granularidad efectiva de la Fase 2 en esta corrida ("PerChunk"/"PerFile").
+    /// Junto con los cuatro campos siguientes, es la evidencia que exige el A/B —no basta con recall.
+    /// </summary>
+    string ResumenGranularity = nameof(Domain.SummaryGranularity.PerChunk),
+    /// <summary>Número de unidades de resumen (chunks en PerChunk, grupos archivo/tipo en PerFile).</summary>
+    int ResumenGroups = 0,
+    /// <summary>Llamadas reales al LLM (excluye hits de caché).</summary>
+    int ResumenLlmCalls = 0,
+    /// <summary>Hits de la caché SQLite de resúmenes (content_hash/prompt_version).</summary>
+    int ResumenCacheHits = 0,
+    /// <summary>Misses de la caché SQLite de resúmenes (obligan a llamar al LLM).</summary>
+    int ResumenCacheMisses = 0,
+    /// <summary>Tiempo total (ms) consumido por la Fase 2 en esta corrida.</summary>
+    long ResumenElapsedMs = 0
 );
 
 /// <summary>

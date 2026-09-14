@@ -40,6 +40,14 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
     /// </summary>
     public const string PromptVersion = "v1";
 
+    /// <summary>
+    /// Ítem 5.b (experimental): versión de prompt propia del modo por archivo/tipo — el
+    /// system prompt agregado (<see cref="GroupSystemPrompt"/>) es distinto del de
+    /// <see cref="PromptVersion"/>, así que comparte namespace de caché SQLite pero nunca
+    /// colisiona una clave (content_hash, prompt_version) entre ambos modos.
+    /// </summary>
+    public const string GroupPromptVersion = "v1-archivo";
+
     public const string ResiliencePipelineName = "ollama-summary";
 
     private const string SystemPrompt = """
@@ -57,6 +65,33 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
         fragmento: si no está en el código, no existe.
 
         Si el fragmento es puramente técnico sin significado de negocio visible (imports,
+        configuración, boilerplate, getters/setters triviales), responde exactamente:
+        SIN_CONTENIDO_DE_NEGOCIO
+        """;
+
+    /// <summary>
+    /// Ítem 5.b (experimental): prompt para resumir TODOS los fragmentos de un mismo
+    /// archivo/tipo en una sola llamada. El resultado se reutiliza como resumen de
+    /// cada chunk del grupo — por eso pide una descripción del archivo/tipo completo,
+    /// no de un fragmento aislado.
+    /// </summary>
+    private const string GroupSystemPrompt = """
+        Eres un analista de negocio que traduce archivos de código — en cualquier lenguaje de
+        programación — a descripciones de comportamiento para usuarios sin conocimiento técnico.
+
+        Recibirás VARIOS fragmentos que pertenecen al MISMO archivo o tipo (clase/interfaz),
+        concatenados con separadores "--- fragmento N ---". Trátalos como un solo conjunto:
+        no expliques sintaxis, nombres de frameworks ni construcciones del lenguaje. Identifica
+        QUÉ hace este archivo/tipo en conjunto, QUÉ dato o acción involucra, y QUÉ regla o
+        condición aplica — en el lenguaje que usaría alguien que jamás vio código.
+
+        Responde en español, en 1 a 3 oraciones (máximo 60 palabras) que describan el conjunto,
+        no cada fragmento por separado. Empieza nombrando la entidad, pantalla o archivo, seguido
+        de dos puntos — sin frases como "este componente" o "esta clase representa". No inventes
+        campos, reglas o comportamientos que no estén explícitos en los fragmentos: si no está en
+        el código, no existe.
+
+        Si el conjunto es puramente técnico sin significado de negocio visible (imports,
         configuración, boilerplate, getters/setters triviales), responde exactamente:
         SIN_CONTENIDO_DE_NEGOCIO
         """;
@@ -140,6 +175,55 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
         }
     }
 
+    public async Task<BusinessSummaryResult?> GenerateForGroupAsync(
+        IReadOnlyList<CodeChunk> chunks, CancellationToken cancellationToken = default)
+    {
+        if (chunks.Count == 0)
+            throw new ArgumentException("El grupo no puede estar vacío.", nameof(chunks));
+
+        var first = chunks[0].Metadata;
+        var body = string.Join(
+            "\n\n",
+            chunks.Select((c, i) => $"--- fragmento {i + 1} ---\n{c.Content}"));
+        var userPrompt =
+            $"[Contexto: Lenguaje: {first.Language}, Ruta: {first.RelativeFilePath}, Tipo: {first.ClassName ?? "(sin tipo)"}]\n\n{body}";
+
+        var history = new ChatHistory();
+        history.AddSystemMessage(GroupSystemPrompt);
+        history.AddUserMessage(userPrompt);
+
+        try
+        {
+            var response = await _resiliencePipeline.ExecuteAsync(
+                async ct => await _chat.GetChatMessageContentAsync(history, _settings, _kernel, ct),
+                cancellationToken);
+
+            var text = (response.Content ?? "").Trim();
+            if (text.Length == 0)
+                return null;
+
+            var sinNegocio = text.StartsWith(Sentinel, StringComparison.Ordinal);
+            return new BusinessSummaryResult(text, sinNegocio);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (IsConnectionFailure(ex))
+        {
+            _logger.LogWarning(ex, "Fallo de conexión con Ollama al resumir el grupo {File} (tipo {Type})",
+                first.RelativeFilePath, first.ClassName);
+            throw new BusinessSummaryConnectionException(
+                $"No se pudo conectar con Ollama para resumir el grupo {first.RelativeFilePath}.", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Fallo al generar resumen de grupo para {File} (tipo {Type})",
+                first.RelativeFilePath, first.ClassName);
+            return null;
+        }
+    }
+
     private static bool IsConnectionFailure(Exception ex) =>
         ex is HttpRequestException or SocketException or TimeoutException or TaskCanceledException;
 
@@ -150,6 +234,18 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
     public static string ComputePromptVersion(string modelId)
     {
         var input = $"{PromptVersion}|{modelId}|{SystemPrompt}";
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash)[..8].ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Ítem 5.b: clave de invalidación propia del modo por archivo/tipo — distinta de
+    /// <see cref="ComputePromptVersion"/> porque usa <see cref="GroupSystemPrompt"/>, así
+    /// que un cambio en cualquiera de los dos prompts sólo invalida su propio namespace.
+    /// </summary>
+    public static string ComputeGroupPromptVersion(string modelId)
+    {
+        var input = $"{GroupPromptVersion}|{modelId}|{GroupSystemPrompt}";
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(hash)[..8].ToLowerInvariant();
     }

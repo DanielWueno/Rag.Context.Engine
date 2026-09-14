@@ -1,0 +1,57 @@
+[1] ok  RecoleccionActivo.cs                   1 chunk(s)  Method FinalizarDetallesRecoleccion L569-594
+[2] ok  EntregaContable.cs                     1 chunk(s)  Method BeforeEstatusChange L203-223
+[3] ok  Transaccion.cs                         1 chunk(s)  Method Recalculate L438-484
+[4] ok  Prestamo.cs                            3 chunk(s)  Method OnSaving L530-555
+[5] ok  Pago.cs                                1 chunk(s)  Method OnSaving L564-605
+[6] ok  SolicitudCompraDetalle.cs              2 chunk(s)  Property SolicitudCompraDetalle L501-503
+[7] ok  RequisicionMaterial.cs                 1 chunk(s)  Method RevertDetails L719-754
+[8] ok  AlmacenComputoEntrada.cs               1 chunk(s)  Method OnSaving L556-572
+[9] ok  TicketComputo.cs                       1 chunk(s)  Method ValidaCerrarTicket L2545-2570
+[10] ok  SolicitudReembolsoDetalle.cs           1 chunk(s)  Method OnSaving L128-143
+[11] ok  InventarioCiclico.cs                   2 chunk(s)  Method CargarExcel L426-451
+[12] ok  SalidaDetalle.cs                       1 chunk(s)  Method OnSaving L321-349
+[13] ok  ClasificacionActivoComputoHelper.cs    1 chunk(s)  Method BuscarLineaClasificacion L21-35
+[14] ok  ProgramacionPagoHelper.cs              1 chunk(s)  Method CalcularDiaAjustadoAniversario L47-54
+[15] ok  Contrato.cs                            1 chunk(s)  Property Contrato L323-369
+[16] ok  Existencia.cs                          1 chunk(s)  Class Existencia L39-58
+[17] ok  PrestamoViewController.cs              2 chunk(s)  Method GenerarSolicitudReembolso L217-242
+[18] ok  FiltroExistenciasComputo.cs            1 chunk(s)  Property FiltroExistenciasComputo L64-76
+[19] ok  TicketComputo.cs                       1 chunk(s)  Method ValidaCerrarTicket L2567-2583
+[20] ok  LineaTelefonia.cs                      1 chunk(s)  Class LineaTelefonia L29-50
+[21] ok  ActivosComputo.cs                      1 chunk(s)  Class ActivosComputo L44-106
+[22] ok  SolicitudServicio.cs                   1 chunk(s)  Class SolicitudServicio L49-86
+[23] ok  SolicitudViaticoBlazor.cs              1 chunk(s)  Class SolicitudViaticoBlazor L29-49
+[24] ok  Subrama.cs                             1 chunk(s)  Class Subrama L29-43
+[25] ok  constitution.md                        1 chunk(s)  DocumentSection I. XAF Module Architecture L47-68
+[26] ok  constitution.md                        1 chunk(s)  DocumentSection I. XAF Module Architecture L47-68
+[27] ok  ProcesoBaseObject.cs                   1 chunk(s)  Method OnSaving L237-250
+[28] ok  ActivosComputoRefaccion.cs             2 chunk(s)  Method BajaRefaccionMantenimientoEntrega L197-201
+[29] ok  EmailHelper.cs                         1 chunk(s)  Method SendTicketAsignationNotification L79-106
+[30] ok  Prestamo.cs                            1 chunk(s)  Method OnSaving L530-555
+[31] ok  ProgramacionPagoHelper.cs              1 chunk(s)  Method CalcularDiaAjustadoAniversario L47-54
+[32] ok  TicketComputo.cs                       1 chunk(s)  Method ValidaCerrarTicket L2545-2570
+[33] ok  RequisicionMaterial.cs                 1 chunk(s)  Method RevertDetails L719-754
+[34] ok  ClasificacionActivoComputoHelper.cs    1 chunk(s)  Method BuscarLineaClasificacion L21-35
+[35] ok  IEntidadReport.cs                      4 chunk(s)  Method Report L15-15
+[36] ok  IProvider.cs                           1 chunk(s)  Method Create L32-32
+[37] ok  AlmacenComputoEmpleado.cs              1 chunk(s)  Class AlmacenComputoEmpleado L24-40
+[38] ok  EntregaContable.cs                     1 chunk(s)  Method BeforeEstatusChange L203-223
+[39] ok  ProgramacionPagoHelper.cs              1 chunk(s)  Method ValidarFechaAniversarioAjustada L69-94
+[40] ok  ActivosComputo.cs                      1 chunk(s)  Property ActivosComputo L659-690
+[41] ok  ReymaBaseObject.cs                     1 chunk(s)  Method GetProperty L321-326
+[42] ok  FiltroExistenciasComputo.cs            1 chunk(s)  Method ObtenerConsulta L82-107
+[43] ok  DevolucionInterna.cs                   2 chunk(s)  Method BeforeEstatusChange L596-616
+[44] ok  DevolucionInterna.cs                   5 chunk(s)  Method DoAddSalidaAlmacen L364-389
+[45] ok  FiltroSolicitudesCompraPendientes.cs   2 chunk(s)  Constructor FiltroSolicitudesCompraPendientes L19-31
+[46] ok  InventarioCiclico.cs                   3 chunk(s)  Method CargarExcel L448-473
+[47] ok  Contrato.cs                            2 chunk(s)  Property Contrato L422-445
+[48] ok negativo           ¿Cómo se calcula el aguinaldo y la prima vacacional del personal?
+[49] ok negativo           ¿Cada cuántos días caduca la contraseña de un usuario y cuántos intent
+[50] ok negativo           ¿Cómo se despliega el sistema en un clúster de Kubernetes?
+[51] ok negativo           ¿Qué esquema de GraphQL expone la aplicación?
+[52] ok negativo           ¿Cuáles son los criterios de aceptación de la historia de usuario US-1
+[53] ok negativo           ¿Cómo se sincronizan los catálogos de productos con MongoDB?
+[54] ok negativo           ¿Qué modelo de embeddings y qué base vectorial usa la búsqueda?
+[55] ok negativo           ¿Cómo se indexan los documentos en Elasticsearch para la búsqueda de p
+
+Todo verificado — 55 preguntas

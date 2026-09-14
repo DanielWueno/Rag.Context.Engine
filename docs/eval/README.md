@@ -24,6 +24,16 @@
   de declaraciones cortas en dos bandas. El archivo `5.h-filtro-protocolo.json`
   registra cobertura, procedencia y límites; no reemplaza los baselines de tres
   bandas ni autoriza activar el experimento por defecto.
+- `quality/11.2/` — experimento de ventanas del encoder 256/128/512, dos ingestas
+  independientes por brazo, denso-solo y fusión nativa de dos bandas por separado.
+  `protocolo.json` y su SHA256 se congelan antes de medir; `report.json` conserva
+  pérdidas individuales, símbolos, estratos de truncamiento y latencias.
+  `*.baseline.json` son salidas del `EvalCommand` real; `*.trace.jsonl` distinguen
+  la escala del score y guardan los resultados recuperados. El host aislado en
+  `infra/experimento-11-2/` reutiliza los comandos y la instrumentación de 11.1,
+  sin modificar producción. **B limita la ventana a 128, no cambia los cortes**;
+  este ensayo no demuestra una estrategia nueva de segmentación sin truncamiento.
+  No incluye resúmenes ni sustituye el baseline histórico de tres bandas.
 - `quality/4.4-antes-media.json` y `quality/4.4-despues-todas.json` — respuestas del CLI
   antes y después de reescribir la rama (b) de `LowConfidencePrompt.Addendum`, con las
   consultas seleccionadas por la banda que les da su score en `gate-bandas.scores.json`.
@@ -89,6 +99,27 @@ dotnet run --project src/RagEngine.Cli -- eval \
 
 Hazlo con el árbol limpio, o el baseline saldrá con `git_dirty: true` y no será
 reproducible.
+
+### Verificar la evidencia del experimento 11.2
+
+```bash
+python3 infra/experimento-11-2/verify.py
+```
+
+Comprueba las seis ingestas (o la exclusión técnica documentada de C), cobertura
+de las 55 preguntas y sus anclas, procedencia, estadísticas reales de tokens y
+rollback de las diez colecciones servidas mediante hashes de todos sus puntos,
+payloads y vectores. Falla si falta evidencia. Un resultado nulo de calidad **no**
+es un error del verificador: publica la decisión sin activar 11.3.
+El umbral congelado exige que ambas réplicas de un candidato pasen frente a sus
+controles; informa pérdidas brutas individuales, sin ocultarlas con ganancias.
+
+`run.py prepare` congeló fuentes oficiales del modelo, corpus y protocolo;
+`run.py run` ejecutó los comandos secuenciales registrados en `*.command.json`
+y su limpieza en `finally`. No sobrescriben una corrida existente. Los overrides
+son variables de entorno de cada subproceso; las cachés SQLite son aisladas y se
+retiran tras la prueba. No ejecutar otra ingesta sobre esas rutas de evidencia
+ni sobre colecciones servidas para «refrescar» este resultado histórico.
 
 ## Comparar contra un baseline
 

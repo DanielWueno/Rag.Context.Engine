@@ -1,0 +1,24 @@
+{
+  "deleted": [
+    "11-2-exp-a-1",
+    "11-2-exp-b-1",
+    "11-2-exp-c-1",
+    "11-2-exp-a-2",
+    "11-2-exp-b-2",
+    "11-2-exp-c-2"
+  ],
+  "remaining": [
+    "auditorias-micro-repo",
+    "bsuite-auditorias-test",
+    "bsuite-repo",
+    "civentor",
+    "engine-repo",
+    "innovapp-app",
+    "innovapp-docs",
+    "micro-repo",
+    "rag-engine",
+    "wiki-solis"
+  ],
+  "served_fingerprints_identical": true,
+  "no_experimental_collections_remaining": true
+}

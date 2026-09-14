@@ -1,0 +1,16 @@
+{
+  "build": {
+    "command": "dotnet build infra/experimento-11-2/Experiment.csproj -c Release --nologo -v quiet",
+    "exit_code": 0,
+    "warnings": 0,
+    "errors": 0
+  },
+  "tests": {
+    "command": "dotnet test tests/RagEngine.Core.Tests --no-restore --filter 'FullyQualifiedName~OnnxVectorizationBrainTokenizationTests|FullyQualifiedName~TokenPercentileCalculatorTests' --nologo -v quiet",
+    "exit_code": 0,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "origin": "Commands run manually with CLI tools before Phase 2, results transcribed from their captured tool output; not a hook."
+}

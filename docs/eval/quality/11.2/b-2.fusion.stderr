@@ -1,0 +1,55 @@
+(1/55) ¿En qué estatus deben estar los activos relacionados para poder finalizar una recolección?
+(2/55) ¿Por qué no se puede cancelar una entrega contable que ya tiene facturas pagadas?
+(3/55) ¿Qué pasa si el saldo de una cuenta por pagar queda por debajo de cero?
+(4/55) ¿Qué se valida sobre la caja chica al registrar un préstamo?
+(5/55) ¿Qué restricción hay entre la moneda de las transacciones y la de la cuenta bancaria con la que se paga?
+(6/55) ¿Qué requisito tienen los productos especiales o genéricos dentro de una solicitud de compra?
+(7/55) ¿Cuándo una requisición de material no es candidata a reversa?
+(8/55) ¿Qué se valida sobre el almacén antes de afectar el inventario en una entrada de cómputo?
+(9/55) ¿Puede un usuario cerrar un ticket de cómputo asignado a otro departamento?
+(10/55) ¿Se puede usar la misma comprobación de préstamo en dos solicitudes de reembolso distintas?
+(11/55) ¿Qué nombre debe tener la hoja de la plantilla de Excel al importar un inventario cíclico?
+(12/55) ¿Qué ocurre al registrar una salida de almacén con un producto marcado como nuevo?
+(13/55) ¿Cómo se decide si un equipo de cómputo pertenece a primera, segunda o tercera línea según su antigüedad?
+(14/55) ¿Qué pasa cuando el día de aniversario de un contrato no existe en el mes, por ejemplo el 31 en febrero?
+(15/55) ¿Qué significa que un contrato de licencias se renueve por sí solo al vencer?
+(16/55) ¿Qué relación debe haber entre las cantidades mínima y máxima de un producto en el almacén?
+(17/55) ¿Se pueden juntar préstamos de distintas cajas chicas en una misma solicitud de reembolso?
+(18/55) ¿Por qué un usuario ve solamente algunas subfamilias en la consulta de existencias de cómputo?
+(19/55) ¿Qué impide cerrar un ticket cuyo diagnóstico sigue pendiente de autorización digital?
+(20/55) ¿Puede repetirse el mismo número telefónico entre dos líneas de telefonía?
+(21/55) ¿Puede haber dos activos de cómputo con el mismo código de barras?
+(22/55) ¿Qué validación existe entre la fecha de inicio y la de finalización de un proyecto?
+(23/55) ¿Qué monto mínimo debe tener un vale de gasto de viáticos para poder continuar?
+(24/55) ¿Se puede repetir la clave corta de una subrama dentro de la misma categoría?
+(25/55) ¿De qué clase base deben heredar los objetos de negocio del sistema?
+(26/55) ¿En qué idioma se deben nombrar las clases y propiedades nuevas del proyecto?
+(27/55) ¿En qué momento se le asigna el folio consecutivo a un documento de compras?
+(28/55) ¿Qué se hace con las refacciones cuando se dan de baja desde un mantenimiento correctivo?
+(29/55) ¿Cómo se avisa por correo al personal cuando se le asigna internamente un ticket?
+(30/55) ¿Qué pasa si el monto de un préstamo se sale del rango permitido por la excepción del concepto?
+(31/55) ¿Qué hace el método CalcularDiaAjustadoAniversario y qué recibe?
+(32/55) ¿Qué valida el método ValidaCerrarTicket?
+(33/55) ¿Qué hace RevertDetails en la requisición de material?
+(34/55) ¿Qué devuelve BuscarLineaClasificacion?
+(35/55) ¿Qué obliga a implementar la interfaz IEntidadReport?
+(36/55) ¿Qué sobrecargas de Create ofrece el proveedor de GUID COMB?
+(37/55) ¿De qué hereda y qué interfaces implementa la clase AlmacenComputoEmpleado?
+(38/55) ¿Qué hace BeforeEstatusChange en EntregaContable cuando el estatus pasa a Cancelado?
+(39/55) ¿Qué hace ValidarFechaAniversarioAjustada y qué devuelve?
+(40/55) ¿Qué propiedad de ActivosComputo desactiva la sincronización automática de los datos del personal asignado?
+(41/55) ¿Cómo implementa ReymaBaseObject el método GetProperty?
+(42/55) ¿Por qué la consulta de existencias de cómputo usa un LEFT JOIN pre-agregado?
+(43/55) ¿Qué impide cancelar una devolución cuando la cantidad devuelta no coincide con la cantidad en devolución?
+(44/55) ¿Qué pasa si intento registrar un movimiento de inventario con cantidad cero?
+(45/55) ¿Qué ocurre si el usuario no tiene una central de compra asignada al abrir los pendientes de compra?
+(46/55) ¿Qué ocurre al importar una plantilla de Excel con un formato que no corresponde?
+(47/55) ¿Quién autoriza las solicitudes de pago de un contrato de licencias?
+(48/55) ¿Cómo se calcula el aguinaldo y la prima vacacional del personal?
+(49/55) ¿Cada cuántos días caduca la contraseña de un usuario y cuántos intentos fallidos bloquean la cuenta?
+(50/55) ¿Cómo se despliega el sistema en un clúster de Kubernetes?
+(51/55) ¿Qué esquema de GraphQL expone la aplicación?
+(52/55) ¿Cuáles son los criterios de aceptación de la historia de usuario US-17?
+(53/55) ¿Cómo se sincronizan los catálogos de productos con MongoDB?
+(54/55) ¿Qué modelo de embeddings y qué base vectorial usa la búsqueda?
+(55/55) ¿Cómo se indexan los documentos en Elasticsearch para la búsqueda de productos?

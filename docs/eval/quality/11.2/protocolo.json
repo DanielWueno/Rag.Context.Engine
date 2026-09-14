@@ -1,0 +1,115 @@
+{
+  "item": "11.2-experimento-3-brazos",
+  "frozen_at_utc": "2026-09-14T18:27:44Z",
+  "execution": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "machine_hours_authorized": 1.5,
+    "multiagente": false,
+    "environment": "Copilot CLI"
+  },
+  "engine_commit": "f0f842f90735491499ff6d47e547e1246f5afd86",
+  "initial_git_status": " M docs/analisis-futuro/ejecucion-plan.estado.json\n?? docs/eval/quality/11.2/\n?? infra/bench/\n?? infra/experimento-11-2/\n",
+  "existing_unrelated_changes": "infra/bench/ is pre-existing, preserved and excluded; ledger en_curso/_ejecucion set by parent.",
+  "engine_manifest_sha256": "94046a208fc8e21a05e35d51d64ecdfd7e6dfecfd700b9f3e44f94dbb94e4399",
+  "corpus_commit": "4bcb5264a053a38348b9356df283b8f9bd98146d",
+  "corpus_status": "?? .DS_Store\n?? .specify/.DS_Store\n?? src/.DS_Store\n",
+  "corpus_manifest_sha256": "7db816966705ffc0b7dfa74a53dff4b98183f4c520791b50761ad8b2b18a1b2b",
+  "corpus_manifest_scope": "All tracked regular files; scanner input is additionally pinned by indexed ID/content/enriched hashes. Untracked .DS_Store is not source input.",
+  "eval_set": "docs/eval/bsuite-repo.eval-set.json",
+  "eval_set_sha256": "5c0b6532ac7826f4afd7cbdeefd590a94e44b0cf284614b298b017ce9bc3c08a",
+  "n": 55,
+  "answerable": 47,
+  "negatives": 8,
+  "model": {
+    "upstream_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "sources": {
+      "sentence_bert_config.json": {
+        "url": "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/raw/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/sentence_bert_config.json",
+        "sha256": "70f4448f31320443fe3557cacea5abf2dcc4915dda8c80646bec9f3bb0aa5a1f",
+        "artifact": "docs/eval/quality/11.2/sentence_bert_config.json"
+      },
+      "README.md": {
+        "url": "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/raw/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/README.md",
+        "sha256": "1e98ea05b0de579fcaad3d625b62ea55647142ed674d5f5ebf1440e4bbbb6f23",
+        "artifact": "docs/eval/quality/11.2/model-card.md"
+      }
+    },
+    "local_sha256": {
+      "config.json": "6300193cb75e01cf80c96decef7187dfb33094d97cc1490b7ead6ff134476e4e",
+      "model_qint8_arm64.onnx": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672",
+      "sentencepiece.bpe.model": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+      "tokenizer_config.json": "5036ea374ffedd706e3bef33e2e0d6953cb868ef8a490e76e32ba0faa37a6b9b",
+      "tokenizer.json": "2c3387be76557bd40970cec13153b3bbf80407865484b209e655e5e4729076b8"
+    },
+    "effective_model": "model_qint8_arm64.onnx",
+    "recommended_sbert_max_seq_length": 128,
+    "transformer_max_position_embeddings": 512,
+    "distinction": "128 is the verified SentenceTransformer recommended sequence setting, not proof of all training sequences; 512 is positional capacity, NOT evidence of training at 512.",
+    "special_tokens": 2
+  },
+  "arms": {
+    "a": {
+      "max_sequence_length": 256,
+      "usable_tokens": 254,
+      "label": "current deployed control"
+    },
+    "b": {
+      "max_sequence_length": 128,
+      "usable_tokens": 126,
+      "label": "verified recommended effective token budget"
+    },
+    "c": {
+      "max_sequence_length": 512,
+      "usable_tokens": 510,
+      "label": "out of recommended training distribution; require finite full-window ONNX probe"
+    }
+  },
+  "budget_formula": "T=11.1.TotalTokens(enriched_content), including the complete header/prefix but excluding specials. S=2. M_A=256; M_B=min(256,128)=128; M_C=512. L=M-S; discarded=max(0,T-L); full ONNX input=min(T,L)+S<=M. Count all admitted chunks, no queries/summaries/retries. This experiment varies encoder windows, NOT chunk segmentation: B does not claim zero truncation or implement 11.3.",
+  "constant_options": {
+    "index_short_type_declarations": false,
+    "chunking_contract_version": 3,
+    "chunking_max_estimated_tokens": 512,
+    "overlap_estimated_tokens": 64,
+    "repository_name": "bsuite-repo",
+    "batch_size": 32,
+    "rerank": false,
+    "min_score": 0.1,
+    "top_k": 10,
+    "bands": [
+      "dense",
+      "sparse-code"
+    ],
+    "resumen": false,
+    "weight_codigo_declared": 1.0,
+    "weight_sparse_declared": 1.3,
+    "weight_resumen_declared": 2.5,
+    "rrf_k_declared": 60
+  },
+  "fusion_semantics": "Actual two-vector Qdrant schema => production native unweighted RRF; declared three-band weights and RrfK are NOT used by this branch. Sparse remains full-content. Dense-only is a direct dense QueryAsync using the same embedder, threshold and production payload mapper; weights=0 would NOT disable branches.",
+  "summary_scope": "Ollama is available, but summaries are optional and deliberately excluded before measuring all arms. No LLM generation and no reads/writes of shared cache; each ingestion gets a new isolated SQLite path. Raw unique hash count equals cold isolated-cache misses, reported after ingestion. Does not substitute for historical three-band baseline or close 5.h.",
+  "evaluation": {
+    "primary_hit": "rag eval hit_any_at_k['10']: any literal anchor, Ordinal, in the expected source basename (case-insensitive) among first 10 results.",
+    "secondary_hit": "hit_full_at_k['10'] reported, not used to move the primary threshold.",
+    "gain": "A miss -> candidate hit on the SAME answerable question and paired replica",
+    "loss": "A hit -> candidate miss; gross individual losses (not hidden by gains)",
+    "symbol": "The 12 pre-existing Category=simbolo questions; report dense and fusion separately.",
+    "truncation": "Predeclared strata per question: all/some/none anchor-bearing indexed chunks have T>L for each arm. Match every anchor candidate before evaluation using unchanged payload content; record chunk ID, raw hash, enriched hash and 11.1 stats. Strata are diagnostic, not a changed denominator or proof an anchor itself was cut.",
+    "latency": "Per-question SearchAsync wall milliseconds, includes query embedding and Qdrant; all 55 in fixed original order; p50/p95 nearest-rank and mean, first query retained. Process elapsed separately. No latency acceptance threshold invented.",
+    "negatives": "8 unchanged questions have no recall oracle: retain scores/ranks/latencies, do NOT count them as successes or invent a score threshold across cosine/RRF.",
+    "replicas": "Two fresh independent ingestions per arm, sequential a1,b1,c1,a2,b2,c2. Compare each candidate replica with matching A replica; do not select best run. Candidate qualifies only when BOTH replicate comparisons meet the literal gate.",
+    "gate": "dense net gains >=2 AND fusion gross losses <=1 AND fusion Category=simbolo gross losses <=1, same 47+8 n. Also report dense symbol losses; no activation of 11.3.",
+    "failure_policy": "Fail if anchors, counts, required provenance, input hashes, trace coverage or command exits fail; no success from omitted infrastructure. Exclude C only for reproducible technical probe incompatibility, not poor recall. Null quality outcome is valid.",
+    "instrument": "Experimental .NET host reuses unchanged IngestCommand and EvalCommand, IVectorizationBrain stats from 11.1, production fusion and private payload mapper. Decorators only write token/latency artifacts and select direct dense query. Production source/options files remain unchanged."
+  },
+  "collections": [
+    "11-2-exp-a-1",
+    "11-2-exp-b-1",
+    "11-2-exp-c-1",
+    "11-2-exp-a-2",
+    "11-2-exp-b-2",
+    "11-2-exp-c-2"
+  ],
+  "rollback": "Delete ONLY collections listed here AND recorded as created in created.json; compare full sorted point/payload/vector SHA256 and schema hashes against served-before.json for all 10 served collections. Delete isolated working caches/logs after preserving evidence; subprocess env overrides do not persist.",
+  "acceptance_command": "python3 infra/experimento-11-2/verify.py"
+}

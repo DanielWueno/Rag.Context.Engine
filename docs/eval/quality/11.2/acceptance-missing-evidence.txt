@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/infra/experimento-11-2/verify.py", line 210, in <module>
+    validate()
+  File "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/infra/experimento-11-2/verify.py", line 45, in validate
+    assert load("execution-complete.json")["completed"]
+  File "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/infra/experimento-11-2/verify.py", line 15, in load
+    return json.loads((OUT / name).read_text())
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1256, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1242, in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1110, in _opener
+    return self._accessor.open(self, flags, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/quality/11.2/execution-complete.json'

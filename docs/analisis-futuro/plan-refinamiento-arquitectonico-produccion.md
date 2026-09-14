@@ -6,6 +6,14 @@
 **Alcance:** este documento y el ledger `ejecucion-plan.estado.json` (delta aplicado
 el 2026-08-24, ver §9). No se tocó código de producto.
 
+> **Reconciliación complementaria, 2026-09-12:** el ledger conserva los estados
+> históricos, incluido `5.a` descartado, y registra capacidades futuras condicionadas:
+> corpus/vistas XAML → `15.6`, SQL → `15.7`, SemanticModel/grafo tras medir colisiones
+> → `15.2`. El fundamento empresarial de identidad sí queda planificado en `12.2`,
+> sin exigirlo para retrieval local. Las exclusiones de §8 son decisiones históricas,
+> no declaraciones de irrelevancia futura. La trazabilidad y los criterios vigentes
+> están en `ejecucion-plan.estado.json`.
+
 > **Revisión adversarial del 2026-08-24 (segunda pasada).** Se verificaron las ~30 citas
 > `archivo:línea` de este documento abriendo cada archivo. Cinco afirmaciones cayeron y están
 > corregidas en el texto, no en un apéndice: (1) la caché de resúmenes **no** se indexa por

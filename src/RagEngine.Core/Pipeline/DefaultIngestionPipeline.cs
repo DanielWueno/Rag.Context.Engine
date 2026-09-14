@@ -35,14 +35,28 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private static readonly int ConsumerCount = Math.Clamp(Environment.ProcessorCount / 4, 2, 4);
 
     /// <summary>
-    /// Longitud mínima (en caracteres) del contenido de un chunk para ser indexado.
-    /// Los micro-chunks (constructores boilerplate de una línea, interfaces
-    /// marcador vacías, cáscaras "public static class X") no contienen información
-    /// respondible, pero su EnrichedContent —casi puro encabezado con el nombre de
-    /// la clase— produce embeddings artificialmente cercanos a cualquier consulta
-    /// que mencione esa entidad, ensuciando el ranking de ambas ramas híbridas.
+    /// Longitud mínima del contenido crudo, salvo declaraciones de tipos cuando
+    /// se habilita el experimento: su nombre es una respuesta válida aunque sea corto.
+    /// Los demás micro-chunks siguen fuera para que un encabezado largo no
+    /// convierta boilerplate en un candidato artificialmente cercano.
     /// </summary>
     private const int MinIndexableContentChars = 60;
+
+    internal static bool IsIndexable(CodeChunk chunk, bool indexShortTypeDeclarations)
+    {
+        var contentLength = chunk.Content.AsSpan().Trim().Length;
+        if (contentLength >= MinIndexableContentChars)
+            return true;
+
+        // Class también etiqueta grupos de campos; sólo se exime el chunk que
+        // declara el propio tipo, no cualquiera que pertenezca a él.
+        var typeName = chunk.Metadata.ClassName;
+        return indexShortTypeDeclarations
+            && contentLength > 0
+            && chunk.Type is ChunkType.Class or ChunkType.Interface
+            && !string.IsNullOrWhiteSpace(typeName)
+            && chunk.DefinedSymbols.Contains(typeName, StringComparer.Ordinal);
+    }
 
     /// <summary>Umbral de fallos de conexión CONSECUTIVOS con Ollama antes de abortar la Fase 2 (decisión 3b).</summary>
     private const int ResumenConnectionFailureThreshold = 10;
@@ -89,8 +103,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var stats = new PipelineStats();
 
         _logger.LogInformation(
-            "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force} | ConResumen: {Resumen}",
-            request.RepositoryPath, request.CollectionName, request.ForceReindex, request.EnableResumenLlm);
+            "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force} | ConResumen: {Resumen} | IndexShortTypeDeclarations: {ShortTypes}",
+            request.RepositoryPath, request.CollectionName, request.ForceReindex, request.EnableResumenLlm,
+            _ingestionOptions.Value.IndexShortTypeDeclarations);
 
         // ── Decisión 1: si se pide --con-resumen sin --force sobre una colección que ya
         // existe SIN el tercer vector, hace falta --force para recrearla con 3 vectores
@@ -241,8 +256,13 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     await foreach (var chunk in strategy.ChunkAsync(
                         artifact, content, request.Options, ct))
                     {
-                        if (chunk.Content.AsSpan().Trim().Length < MinIndexableContentChars)
+                        if (!IsIndexable(chunk, _ingestionOptions.Value.IndexShortTypeDeclarations))
+                        {
+                            _logger.LogDebug(
+                                "Skipping chunk {ChunkId} ({ChunkType}) in {File}: below the admission threshold",
+                                chunk.Id, chunk.Type, artifact.RelativePath);
                             continue;
+                        }
 
                         generatedIds.Add(chunk.Id);
                         await writer.WriteAsync(chunk, ct);

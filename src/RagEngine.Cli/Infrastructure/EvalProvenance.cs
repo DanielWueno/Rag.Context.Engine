@@ -36,6 +36,7 @@ public sealed record EvalProvenance
     public required double WeightResumen { get; init; }
     public required int RrfK { get; init; }
     public required int ChunkingContractVersion { get; init; }
+    public bool? IndexShortTypeDeclarations { get; init; }
 
     /// <summary>
     /// Versión del prompt de resumen de negocio. Entra aquí porque el tercer vector
@@ -71,6 +72,7 @@ public sealed record EvalProvenance
             ["weight_resumen"] = WeightResumen.ToString("0.###"),
             ["rrf_k"] = RrfK.ToString(),
             ["chunking_contract_version"] = ChunkingContractVersion.ToString(),
+            ["index_short_type_declarations"] = IndexShortTypeDeclarations?.ToString() ?? "(no declarado)",
             ["resumen_prompt_version"] = ResumenPromptVersion,
         };
 

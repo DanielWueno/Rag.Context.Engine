@@ -36,6 +36,23 @@
 | `MaxSequenceLength` | Techo de truncamiento. El costo de inferencia escala con la longitud real del lote (padding dinámico), así que subirlo solo afecta a los chunks largos. |
 | `StableGateScore` | Con `true`, el score del resultado #1 se recalcula en un lote de tamaño 1 tras el re-rank, y deja de depender del `TopK`. Es el número que lee el gate de confianza, así que cambiarlo obliga a revisar `LowConfidenceThreshold` / `HighConfidenceThreshold`. Ver [Score estable del gate](#score-estable-del-gate-crossencoderstablegatescore). |
 
+## Declaraciones cortas (`Ingestion:IndexShortTypeDeclarations`)
+
+Experimento local de 5.h, **desactivado por defecto**. Con `true`, una declaración
+de tipo de menos de 60 caracteres se indexa si su `ClassName` aparece en sus
+`DefinedSymbols`. Los grupos de campos, métodos, propiedades y constructores
+cortos siguen filtrados; los chunks vacíos nunca se admiten.
+
+El A/B local de dos bandas mejoró la cobertura de tipos, pero perdió recall@10
+(22/47 → 20/47). No habilitarlo en las colecciones de uso normal hasta resolver
+esa regresión y medir con tres bandas. No demuestra una regresión de tres bandas.
+
+Para una ingesta experimental en una colección aislada, configura
+`Ingestion__IndexShortTypeDeclarations=true` y usa el mismo valor al correr
+`rag eval`, que lo guarda en `provenance`. Cambiar el valor no modifica índices
+existentes: tanto aplicar como revertir el filtro requiere re-ingestar. Mantén
+la caché SQLite experimental separada de la compartida.
+
 ## Score estable del gate (`CrossEncoder:StableGateScore`)
 
 El re-rank agrupa los candidatos en lotes y hace padding dinámico al máximo real de cada lote. Sobre

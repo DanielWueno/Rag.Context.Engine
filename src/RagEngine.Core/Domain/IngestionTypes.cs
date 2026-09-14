@@ -3,11 +3,18 @@ namespace RagEngine.Core.Domain;
 /// <summary>
 /// Configuration for the ingestion CLI/host, bound from the "Ingestion" section
 /// of appsettings.json. Separate from <see cref="ChunkingOptions"/> (per-request
-/// chunking behavior) — this is host-level config for the resumen-de-negocio Fase 2.
+/// chunking behavior) — this is host-level config for admission and resumen generation.
 /// </summary>
 public sealed class IngestionOptions
 {
     public const string SectionName = "Ingestion";
+
+    /// <summary>
+    /// Conserva declaraciones de tipos de menos de 60 caracteres. Experimental:
+    /// mejora cobertura, pero el A/B de 5.h perdió recall en dos bandas.
+    /// Desactivado hasta medir su uso con símbolos y la fusión de tres bandas.
+    /// </summary>
+    public bool IndexShortTypeDeclarations { get; init; } = false;
 
     /// <summary>
     /// Llamadas concurrentes al LLM durante la Fase 2 (generación de resúmenes).

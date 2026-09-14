@@ -1,0 +1,32 @@
+[
+  {
+    "original_name": "a-1.ingest.stdout",
+    "original_sha256": "54704210864acf1906ed3d0d79efa23ecb15e446c1735fc6112259b2a44ac7ce",
+    "compressed": "a-1.ingest.stdout.gz"
+  },
+  {
+    "original_name": "a-2.ingest.stdout",
+    "original_sha256": "494841680894e46148b1d59ddee7afb713682d0283a5642f7b5a465b3ea82684",
+    "compressed": "a-2.ingest.stdout.gz"
+  },
+  {
+    "original_name": "b-1.ingest.stdout",
+    "original_sha256": "b6c342e7c87b42ed56031d1198082c760210136458e08f37cfa8933551a9352b",
+    "compressed": "b-1.ingest.stdout.gz"
+  },
+  {
+    "original_name": "b-2.ingest.stdout",
+    "original_sha256": "182fef28c7950a1483fe3254c7b42cd31b9412bf6bfe53e336b1fe8b5d0668d5",
+    "compressed": "b-2.ingest.stdout.gz"
+  },
+  {
+    "original_name": "c-1.ingest.stdout",
+    "original_sha256": "83a6cdda77979a506b0bee2bf5e848967f338b05e1c090965e4fc6aabf3fc684",
+    "compressed": "c-1.ingest.stdout.gz"
+  },
+  {
+    "original_name": "c-2.ingest.stdout",
+    "original_sha256": "ef5ca06c8b51e54105f107c846fdd77acd2798016f0f44f925d7b37af336aea0",
+    "compressed": "c-2.ingest.stdout.gz"
+  }
+]

@@ -1,0 +1,1364 @@
+[
+  {
+    "question": "¿En qué estatus deben estar los activos relacionados para poder finalizar una recolección?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "e1bd6f7d-f4c2-5d7a-b856-21cbf8228fba",
+        "content_hash": "3730d4be0cf465fed4a674291311b1d9eb00bcb5c02bd59e03da769925965f07",
+        "enriched_sha256": "80f6b127348c7eed4edbf9a0bbf0ffc98c8791a7ae8e311c90d06f2c5202b0f0",
+        "stats": {
+          "TotalTokens": 406,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "RecoleccionActivo",
+        "method_name": "FinalizarDetallesRecoleccion",
+        "anchors": [
+          "Para finalizar la recolección, todos los activos relacionados deberán estar en estatus EnRecolección."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Por qué no se puede cancelar una entrega contable que ya tiene facturas pagadas?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "d6f8d7a4-5b6c-5a59-9bf4-f5e7dc5f0254",
+        "content_hash": "0df30735c63a722dd6609f860de32fec91d3a8245f5701d6f5a3c99b8cfd3aff",
+        "enriched_sha256": "b5909463f47ce01d2d48ff67f7938cbebfe55399ecc43e244992de8f49fbb7c2",
+        "stats": {
+          "TotalTokens": 400,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "EntregaContable",
+        "method_name": "BeforeEstatusChange",
+        "anchors": [
+          "Error, no se puede cancelar la entrega, una o más facturas ya fueron pagadas."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué pasa si el saldo de una cuenta por pagar queda por debajo de cero?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "76c70b58-d308-53d5-b330-11fb20758103",
+        "content_hash": "3dde282b0671f38d4eb6ebd68943b107e84221cc208647ace26b4b30311cdc2b",
+        "enriched_sha256": "c97f1fd6134e64c6a730d985dd2ada3a0475be3757ba47ec974a44c546bf1ff4",
+        "stats": {
+          "TotalTokens": 462,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "Transaccion",
+        "method_name": "Recalculate",
+        "anchors": [
+          "El saldo de la cuenta por pagar no puede ser menor a cero"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué se valida sobre la caja chica al registrar un préstamo?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "067f7400-b8c5-5ec9-80fb-742da8f0a6a1",
+        "content_hash": "75d2ff13f90b0430672082af4b092706b78d5e47cda8bd8b994f394b4bfedc8e",
+        "enriched_sha256": "7460f9eecf47806e132750c0e2129286edffaeeb156c5f749cb2f2c8687f0f3d",
+        "stats": {
+          "TotalTokens": 616,
+          "MaxUsableTokens": 510,
+          "Discarded": 106,
+          "Truncated": true
+        },
+        "class_name": "Prestamo",
+        "method_name": "OnSaving",
+        "anchors": [
+          "La caja chica seleccionada no está asociada a una central de caja chica."
+        ]
+      },
+      {
+        "id": "507ad568-4ba2-51da-9b6e-e0b0ebcd0bab",
+        "content_hash": "87f1ba955f3caf430d559cf0b92a07af8e82c8349be597c60201bd11bf58cfc2",
+        "enriched_sha256": "2cbdf9b7fa2554e6a550c960bc7bb74ece4a18ab40391e246f07e63b3a0863a1",
+        "stats": {
+          "TotalTokens": 346,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "Prestamo",
+        "method_name": null,
+        "anchors": [
+          "La caja chica seleccionada no está asociada a una central de caja chica."
+        ]
+      },
+      {
+        "id": "984cfa52-feb0-55a7-bb6c-162b855d24bf",
+        "content_hash": "fa956f4626375394ad431989ce9b98485926a2dabe30b5e86ab712597b3de8a2",
+        "enriched_sha256": "8e1fff0efdc646da2a9d84757fda03d7302413361e04d72e5bcfc12334701035",
+        "stats": {
+          "TotalTokens": 461,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "Prestamo",
+        "method_name": "OnSaving",
+        "anchors": [
+          "La caja chica seleccionada no está asociada a una central de caja chica."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué restricción hay entre la moneda de las transacciones y la de la cuenta bancaria con la que se paga?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "92a1fd25-7bf9-5baf-8a91-f1fca798c91e",
+        "content_hash": "83c8ec78863acd099925f0cc2dff57962127a3690a0482941a9eacd100b4debb",
+        "enriched_sha256": "540c4ba03919cf468cf5d55b53e486385cf59bada46e9dfa07a988eed6fd78f3",
+        "stats": {
+          "TotalTokens": 501,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "Pago",
+        "method_name": "OnSaving",
+        "anchors": [
+          "Existen transacciones asociadas al pago que no son de la misma moneda que de la cuenta bancaria con la que desea pagar."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué requisito tienen los productos especiales o genéricos dentro de una solicitud de compra?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "c646dd61-2d39-555f-a77f-d22e51adc435",
+        "content_hash": "4b5d61034ba569c4083bfbe69e8eab094a385206f540691d0a1ed95e26f830d5",
+        "enriched_sha256": "ae44bed5f6377406b3205bc56ae846b8f36973f7695080fabd8984291cbcc152",
+        "stats": {
+          "TotalTokens": 256,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "SolicitudCompraDetalle",
+        "method_name": null,
+        "anchors": [
+          "Error, Productos especiales (Genericos) deben tener una requisición de material."
+        ]
+      },
+      {
+        "id": "cf1025c2-5080-5a1b-b0e2-4061ecc400e1",
+        "content_hash": "92d0062edcade9931d28967f27ea0e4ae2c30b9b2d366f6f9c339e03c313ab6c",
+        "enriched_sha256": "83240394d270c7212451a300c2c99e45458c93dbd76e4d65146f6ecc27e34533",
+        "stats": {
+          "TotalTokens": 219,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "SolicitudCompraDetalle",
+        "method_name": "OnSaving",
+        "anchors": [
+          "Error, Productos especiales (Genericos) deben tener una requisición de material."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Cuándo una requisición de material no es candidata a reversa?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "530cf48d-3542-5c0f-b9ac-d9038b85ba1d",
+        "content_hash": "7db58036bac8f6e3da7de57b17590d35cf736d2a32e5d401de9a94d0f74aa516",
+        "enriched_sha256": "403a21143906f2e8a21e126f4c1e19c1ec0788760237507ca0cd0f150186e8e1",
+        "stats": {
+          "TotalTokens": 558,
+          "MaxUsableTokens": 510,
+          "Discarded": 48,
+          "Truncated": true
+        },
+        "class_name": "RequisicionMaterial",
+        "method_name": "RevertDetails",
+        "anchors": [
+          "Esta requisición no es candidato a reversa, no cuenta con el respaldo de datos requerido."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué se valida sobre el almacén antes de afectar el inventario en una entrada de cómputo?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "4caf149e-d563-596d-a68b-c20013a14f4f",
+        "content_hash": "3093871bea556ef413248e53032e97d753d2a885f04dd430d83082a13d12d3a9",
+        "enriched_sha256": "880be35c0cb2942f7234a392b21d9418617d89524e62d4d54c7cf50e98e2978a",
+        "stats": {
+          "TotalTokens": 298,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "AlmacenComputoEntrada",
+        "method_name": "OnSaving",
+        "anchors": [
+          "Error, El almacén no gestiona inventario."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Puede un usuario cerrar un ticket de cómputo asignado a otro departamento?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "05901169-c0c2-5dfe-8168-914962151f8e",
+        "content_hash": "d3ccf70530c30e476011662780e086eb676f0202466f6399d77ad271c1168a33",
+        "enriched_sha256": "792842e71568e7050861dc649893d763f89fce4d7cb92c1a0a1f50949c66de1c",
+        "stats": {
+          "TotalTokens": 477,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "TicketComputo",
+        "method_name": "ValidaCerrarTicket",
+        "anchors": [
+          "El ticket corresponde a otro departamento."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Se puede usar la misma comprobación de préstamo en dos solicitudes de reembolso distintas?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "05798333-9bab-5fa4-b9f3-fe71b83a7da3",
+        "content_hash": "a525ea1b8aa060d6e8113cf6ec67667003e41de45aa95c8e7dbfd2fd4c390663",
+        "enriched_sha256": "0d022720af468aff566f1664d778543da25be2125e050f9c66c680b998903ace",
+        "stats": {
+          "TotalTokens": 271,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "SolicitudReembolsoDetalle",
+        "method_name": "OnSaving",
+        "anchors": [
+          "La comprobación de préstamo ya está asociado a una solicitud de reembolso."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué nombre debe tener la hoja de la plantilla de Excel al importar un inventario cíclico?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "5907d3af-c8ac-52f3-a99b-890423a59701",
+        "content_hash": "3557c7a7962bf2536c38baee8447a767464da0a2dbe37255d00bacfdae9a7ee4",
+        "enriched_sha256": "f4b636a0422676581547bfba9910fcf568d4d68c02862c8d4b11e10911c60486",
+        "stats": {
+          "TotalTokens": 329,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "InventarioCiclico",
+        "method_name": "CargarExcel",
+        "anchors": [
+          "PLANTILLA INVENTARIO CIEGO"
+        ]
+      },
+      {
+        "id": "70e30c4f-0ce8-5e0e-95f2-622d01d0daf0",
+        "content_hash": "37f3b097819a40e1b1178b87f4cfd2ad4da7271f855e8eed07fbc53f98a384e0",
+        "enriched_sha256": "58f2e813bd6d26d730e2b4de272de61a65ec9da2778b69b1cdce1723b9dc5853",
+        "stats": {
+          "TotalTokens": 641,
+          "MaxUsableTokens": 510,
+          "Discarded": 131,
+          "Truncated": true
+        },
+        "class_name": "InventarioCiclico",
+        "method_name": "FileExport",
+        "anchors": [
+          "PLANTILLA INVENTARIO CIEGO"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué ocurre al registrar una salida de almacén con un producto marcado como nuevo?",
+    "category": "literal",
+    "chunks": [
+      {
+        "id": "4c003881-faa7-5241-b2be-b0fbf7413354",
+        "content_hash": "7778400c3d907c1d518ec5cca669d204c8683a11e69ab561b1d131354215b1c1",
+        "enriched_sha256": "4413ca4c14bf0d5a012b7586a23c5217e58acec7542567be55f9d36e289cee73",
+        "stats": {
+          "TotalTokens": 384,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "SalidaDetalle",
+        "method_name": "OnSaving",
+        "anchors": [
+          "Hay productos bloqueados para la salida, favor de verificar."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Cómo se decide si un equipo de cómputo pertenece a primera, segunda o tercera línea según su antigüedad?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "a5e7f382-2191-5a19-b0d7-e4ce718e1212",
+        "content_hash": "db3f05359f8e1dd969c2bb94f66d545feee778aa1dd223557261f91b9fd1cf8c",
+        "enriched_sha256": "6795cbb441f734cd87a922e3646501958262af706e29c7a7935a1c428c550c9f",
+        "stats": {
+          "TotalTokens": 345,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ClasificacionActivoComputoHelper",
+        "method_name": "BuscarLineaClasificacion",
+        "anchors": [
+          "if (fecha.Date < fechaActual.AddYears(-6).Date)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué pasa cuando el día de aniversario de un contrato no existe en el mes, por ejemplo el 31 en febrero?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "9973717b-9f9f-5d9c-9225-043a5fc785fb",
+        "content_hash": "2c0716d3fe0998f8e93e61ae2ed38299afabeb77dd9b3dbcb4055d28e3245fb5",
+        "enriched_sha256": "61f732d3119621e9e3821ba4d10cf674d10b3bb12accd3120f25f9bf6be252f6",
+        "stats": {
+          "TotalTokens": 369,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ProgramacionPagoHelper",
+        "method_name": "CalcularDiaAjustadoAniversario",
+        "anchors": [
+          "return Math.Min(diaBaseContrato, ultimoDiaDelMes);"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué significa que un contrato de licencias se renueve por sí solo al vencer?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "9bc9ffe8-7d2a-5c70-b450-63e9f90176e4",
+        "content_hash": "e662d88d26e9116da4e09d3deca12b7c106296598220debbae506f6e62c8dcba",
+        "enriched_sha256": "fcf0f6309c8ec6cbb2525f82eec88ef93701ae9036c13df6e15d1fa37b1ca069",
+        "stats": {
+          "TotalTokens": 620,
+          "MaxUsableTokens": 510,
+          "Discarded": 110,
+          "Truncated": true
+        },
+        "class_name": "Contrato",
+        "method_name": null,
+        "anchors": [
+          "Especifica si el contrato será recurrente, es decir, que se creará en automático uno nuevo después de la fecha vencimiento"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué relación debe haber entre las cantidades mínima y máxima de un producto en el almacén?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "5b772716-b7f1-58d2-8e5a-7cdc8f235635",
+        "content_hash": "f996f88c786c467869865b85502704fc41c6fad2fbcc62473cd0007420cea896",
+        "enriched_sha256": "7630cc544590035acf2164d14a02a4a7b85707155f1752a77734e2a76b00adf6",
+        "stats": {
+          "TotalTokens": 1009,
+          "MaxUsableTokens": 510,
+          "Discarded": 499,
+          "Truncated": true
+        },
+        "class_name": "Existencia",
+        "method_name": null,
+        "anchors": [
+          "El Stock Mínimo debe ser menor al Stock Máximo"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Se pueden juntar préstamos de distintas cajas chicas en una misma solicitud de reembolso?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "4b359925-d1ee-5daf-a204-75c1c7d55126",
+        "content_hash": "50b21b02a40ccb95bcb35c21ee17364e7383f7948c033c3acfb815acbb0aa496",
+        "enriched_sha256": "55443175c4a4aa4a9788ab2f7e476176ec3aa06eb6f1184e34e3948aa7a9d6e0",
+        "stats": {
+          "TotalTokens": 532,
+          "MaxUsableTokens": 510,
+          "Discarded": 22,
+          "Truncated": true
+        },
+        "class_name": "PrestamoViewController",
+        "method_name": "GenerarSolicitudReembolso",
+        "anchors": [
+          "Seleccione únicamente préstamos de la misma caja chica para generar las solicitudes de reembolso"
+        ]
+      },
+      {
+        "id": "8e03eb4d-4b8b-5f63-8761-7af566041038",
+        "content_hash": "d1365562250e98ccef51ca8aca71896969bc8e304d84311589a3eb4572ab0703",
+        "enriched_sha256": "2766ff72797a28de3d2e8b4bb6abcad07b5306b5d8484449745bf54228395454",
+        "stats": {
+          "TotalTokens": 567,
+          "MaxUsableTokens": 510,
+          "Discarded": 57,
+          "Truncated": true
+        },
+        "class_name": "PrestamoViewController",
+        "method_name": "GenerarSolicitudReembolsoFiscal",
+        "anchors": [
+          "Seleccione únicamente préstamos de la misma caja chica para generar las solicitudes de reembolso"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Por qué un usuario ve solamente algunas subfamilias en la consulta de existencias de cómputo?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "f1ddbe29-5f22-5e67-9cf9-d56e5df0573e",
+        "content_hash": "54df1658b9633d2ad695a1290ad08d17ebdbce07592998712e192e207bbc2955",
+        "enriched_sha256": "aa29e81cdfe082d7f703d0658de07d544c1805b4b57ee21c39aabee3b22a137c",
+        "stats": {
+          "TotalTokens": 244,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "FiltroExistenciasComputo",
+        "method_name": null,
+        "anchors": [
+          "Retorna la cláusula WHERE adicional según el departamento del usuario."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué impide cerrar un ticket cuyo diagnóstico sigue pendiente de autorización digital?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "3eb3bca3-4fd7-53cd-9562-2c2f854cfead",
+        "content_hash": "ecac66caaca2888da8c1cc7b4487ff3c4c8a3e13cb55455291623dea04444317",
+        "enriched_sha256": "9e2d31a52e677339dc76dc2313bc85ca405e62bf59a139c28e228b7c37a6c8d1",
+        "stats": {
+          "TotalTokens": 477,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "TicketComputo",
+        "method_name": "ValidaCerrarTicket",
+        "anchors": [
+          "ya que requiere del proceso de autorización digital del diagnóstico."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Puede repetirse el mismo número telefónico entre dos líneas de telefonía?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "3bb6818b-7b59-5625-8e24-df4904a4cee1",
+        "content_hash": "b839d462bc004d87ced3c4a5730e8f3d21dbe4c33d955262baaa9b6edf70988b",
+        "enriched_sha256": "08e201b579e638feb7daa9c4c6b0b5d2c7ff720199841a7dea598598d4bc3ba3",
+        "stats": {
+          "TotalTokens": 1112,
+          "MaxUsableTokens": 510,
+          "Discarded": 602,
+          "Truncated": true
+        },
+        "class_name": "LineaTelefonia",
+        "method_name": null,
+        "anchors": [
+          "El No. Teléfono debe de ser único, el mismo valor ya existe."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Puede haber dos activos de cómputo con el mismo código de barras?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "b437964b-4ae3-5771-ace0-1e413ce2e942",
+        "content_hash": "a0f1080f38bd5a37ad162f2198544cf50ebb8dac4ddc53914d2afe02f11ab124",
+        "enriched_sha256": "27e08d02f94f0c2e0f9031cd201d646ceb85b8dcd9e69ad538d25dd9e46ad248",
+        "stats": {
+          "TotalTokens": 3488,
+          "MaxUsableTokens": 510,
+          "Discarded": 2978,
+          "Truncated": true
+        },
+        "class_name": "ActivosComputo",
+        "method_name": null,
+        "anchors": [
+          "El Codigo Barras debe de ser único, el mismo valor ya existe."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué validación existe entre la fecha de inicio y la de finalización de un proyecto?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "d7d0bed6-8ed3-5d68-8f8a-26127ed90097",
+        "content_hash": "1b7bbb8d84707afd3b81fe489fc78f41305d25594e7175dff7305925b7060d17",
+        "enriched_sha256": "a8edf5b5d9f9ccdb2e3d136838c79c620b75e11d7e0afa8a962fb180ed27bbd8",
+        "stats": {
+          "TotalTokens": 2869,
+          "MaxUsableTokens": 510,
+          "Discarded": 2359,
+          "Truncated": true
+        },
+        "class_name": "SolicitudServicio",
+        "method_name": null,
+        "anchors": [
+          "La Fecha de finalización no es valida."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué monto mínimo debe tener un vale de gasto de viáticos para poder continuar?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "4901f142-eca3-5ffa-9ab9-3de13d974332",
+        "content_hash": "8cdc7af6b358ee4cfd60ab466bbee3c92845c7dce972e47899788579447b976a",
+        "enriched_sha256": "072294285f87b211c825e8ed271700d24489112660bd7657d23e2b4ce5d417ed",
+        "stats": {
+          "TotalTokens": 1155,
+          "MaxUsableTokens": 510,
+          "Discarded": 645,
+          "Truncated": true
+        },
+        "class_name": "SolicitudViaticoBlazor",
+        "method_name": null,
+        "anchors": [
+          "El Monto Entregado debe ser mayor a $0.00 para continuar."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Se puede repetir la clave corta de una subrama dentro de la misma categoría?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "56459a6b-8f43-512e-bd6e-9b8885e388d0",
+        "content_hash": "76d5f11bc9cef10266c81121f5f87effe030c609b7faf3c09fbc730642de71d7",
+        "enriched_sha256": "c595fd895b763fa1500145c71727130eded8a600a2439f4af21558a4d21791e3",
+        "stats": {
+          "TotalTokens": 644,
+          "MaxUsableTokens": 510,
+          "Discarded": 134,
+          "Truncated": true
+        },
+        "class_name": "Subrama",
+        "method_name": null,
+        "anchors": [
+          "Error, Clave Corta ya existe para la misma Categoría."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿De qué clase base deben heredar los objetos de negocio del sistema?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "7db63390-dbc5-523e-b227-b2104ccee5f1",
+        "content_hash": "de8892b2ca41518aabf8506fc382400de0c88d6c4040ad64b41b42389c9af834",
+        "enriched_sha256": "de8892b2ca41518aabf8506fc382400de0c88d6c4040ad64b41b42389c9af834",
+        "stats": {
+          "TotalTokens": 428,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": null,
+        "method_name": "I. XAF Module Architecture",
+        "anchors": [
+          "Los objetos de negocio deben heredar de `AuditEstatusBaseObject` excepto cuando se necesite consecutivo"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿En qué idioma se deben nombrar las clases y propiedades nuevas del proyecto?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "7db63390-dbc5-523e-b227-b2104ccee5f1",
+        "content_hash": "de8892b2ca41518aabf8506fc382400de0c88d6c4040ad64b41b42389c9af834",
+        "enriched_sha256": "de8892b2ca41518aabf8506fc382400de0c88d6c4040ad64b41b42389c9af834",
+        "stats": {
+          "TotalTokens": 428,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": null,
+        "method_name": "I. XAF Module Architecture",
+        "anchors": [
+          "Todas las nuevas clases, propiedades y campos DEBEN estar en español"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿En qué momento se le asigna el folio consecutivo a un documento de compras?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "02526f30-0311-5a63-990e-6829920c1e11",
+        "content_hash": "921c3add6512485834846d2acf29438446c2d5fbe7104a8c51637582203968d4",
+        "enriched_sha256": "2952783bf3e39c73111c0cd0189b792a06f035f6a2308919e74db0b55a04d02f",
+        "stats": {
+          "TotalTokens": 204,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ProcesoCompraBaseObject",
+        "method_name": "OnSaving",
+        "anchors": [
+          "Folio = ObtenerSecuencia(Prefijo, Namespace);"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué se hace con las refacciones cuando se dan de baja desde un mantenimiento correctivo?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "86572b3d-4bc4-5522-a271-f4b22f3ef6a1",
+        "content_hash": "12f89bcd3dad05e66217cb2c06cea77c04e5001f0daa17a2841fe65b532905e7",
+        "enriched_sha256": "f29b7a60e704a89e3e10455e99052dc303c79abbc714c079baa340797787928b",
+        "stats": {
+          "TotalTokens": 214,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ActivosComputoRefaccion",
+        "method_name": "BajaRefaccionMantenimientoEntrega",
+        "anchors": [
+          "Baja de refaccion en activo desde el mantenimiento correctivo."
+        ]
+      },
+      {
+        "id": "8abef13f-c7b9-5d9a-bed5-35e71023132e",
+        "content_hash": "bd5ba82181b8d55f3191792d3fb5e7d3356eb0756f8416382de01ce87d30aaaa",
+        "enriched_sha256": "697ffaafbd845fd691c3990e1ea11a57f2ee12d572020624c105c4b86a89a0fb",
+        "stats": {
+          "TotalTokens": 214,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ActivosComputoRefaccion",
+        "method_name": "BajaRefaccionMantenimientoCorrectivo",
+        "anchors": [
+          "Baja de refaccion en activo desde el mantenimiento correctivo."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Cómo se avisa por correo al personal cuando se le asigna internamente un ticket?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "659a9077-dc8d-5f65-b899-0e4a77ffd1a6",
+        "content_hash": "6def9f2c2d1b98d55a80b56b6390d91b4ce5220403bf4eddf032d945ff215084",
+        "enriched_sha256": "cc81562bc87931fb5ec4c7693aef412d130815c82159766e45c09f5ccf4efade",
+        "stats": {
+          "TotalTokens": 562,
+          "MaxUsableTokens": 510,
+          "Discarded": 52,
+          "Truncated": true
+        },
+        "class_name": "EmailHelper",
+        "method_name": "SendTicketAsignationNotification",
+        "anchors": [
+          "Envía la notificación de asignación interna de un Ticket al personal asignado."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué pasa si el monto de un préstamo se sale del rango permitido por la excepción del concepto?",
+    "category": "parafraseada",
+    "chunks": [
+      {
+        "id": "067f7400-b8c5-5ec9-80fb-742da8f0a6a1",
+        "content_hash": "75d2ff13f90b0430672082af4b092706b78d5e47cda8bd8b994f394b4bfedc8e",
+        "enriched_sha256": "7460f9eecf47806e132750c0e2129286edffaeeb156c5f749cb2f2c8687f0f3d",
+        "stats": {
+          "TotalTokens": 616,
+          "MaxUsableTokens": 510,
+          "Discarded": 106,
+          "Truncated": true
+        },
+        "class_name": "Prestamo",
+        "method_name": "OnSaving",
+        "anchors": [
+          "El Monto Prestado esta fuera del rango permitido para la excepción del concepto seleccionado."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué hace el método CalcularDiaAjustadoAniversario y qué recibe?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "9973717b-9f9f-5d9c-9225-043a5fc785fb",
+        "content_hash": "2c0716d3fe0998f8e93e61ae2ed38299afabeb77dd9b3dbcb4055d28e3245fb5",
+        "enriched_sha256": "61f732d3119621e9e3821ba4d10cf674d10b3bb12accd3120f25f9bf6be252f6",
+        "stats": {
+          "TotalTokens": 369,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ProgramacionPagoHelper",
+        "method_name": "CalcularDiaAjustadoAniversario",
+        "anchors": [
+          "public static int CalcularDiaAjustadoAniversario(int diaBaseContrato, DateTime fechaObjetivo)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué valida el método ValidaCerrarTicket?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "05901169-c0c2-5dfe-8168-914962151f8e",
+        "content_hash": "d3ccf70530c30e476011662780e086eb676f0202466f6399d77ad271c1168a33",
+        "enriched_sha256": "792842e71568e7050861dc649893d763f89fce4d7cb92c1a0a1f50949c66de1c",
+        "stats": {
+          "TotalTokens": 477,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "TicketComputo",
+        "method_name": "ValidaCerrarTicket",
+        "anchors": [
+          "public bool ValidaCerrarTicket()"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué hace RevertDetails en la requisición de material?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "530cf48d-3542-5c0f-b9ac-d9038b85ba1d",
+        "content_hash": "7db58036bac8f6e3da7de57b17590d35cf736d2a32e5d401de9a94d0f74aa516",
+        "enriched_sha256": "403a21143906f2e8a21e126f4c1e19c1ec0788760237507ca0cd0f150186e8e1",
+        "stats": {
+          "TotalTokens": 558,
+          "MaxUsableTokens": 510,
+          "Discarded": 48,
+          "Truncated": true
+        },
+        "class_name": "RequisicionMaterial",
+        "method_name": "RevertDetails",
+        "anchors": [
+          "public void RevertDetails(Session s)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué devuelve BuscarLineaClasificacion?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "a5e7f382-2191-5a19-b0d7-e4ce718e1212",
+        "content_hash": "db3f05359f8e1dd969c2bb94f66d545feee778aa1dd223557261f91b9fd1cf8c",
+        "enriched_sha256": "6795cbb441f734cd87a922e3646501958262af706e29c7a7935a1c428c550c9f",
+        "stats": {
+          "TotalTokens": 345,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ClasificacionActivoComputoHelper",
+        "method_name": "BuscarLineaClasificacion",
+        "anchors": [
+          "public static TipoClasificacion BuscarLineaClasificacion(IObjectSpace os, DateTime fecha)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué obliga a implementar la interfaz IEntidadReport?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "285c6744-c6b8-5c87-a997-52dbd75e65fe",
+        "content_hash": "2e6c9789c78f98344c3b5c3519c2bfbb94bc73ae19bb2daa25c9c7df26f6a562",
+        "enriched_sha256": "9471d0810fc4ff30867494f86eb19b2127c1153b2c9b59c4be013623f0c840a6",
+        "stats": {
+          "TotalTokens": 106,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "IEntidadReport",
+        "method_name": "Report",
+        "anchors": [
+          "XtraReport Report();"
+        ]
+      },
+      {
+        "id": "87f3bcbd-f634-5eb5-919a-5b3c57a80798",
+        "content_hash": "2e6c9789c78f98344c3b5c3519c2bfbb94bc73ae19bb2daa25c9c7df26f6a562",
+        "enriched_sha256": "c89a9356a9df3890a72158e4e2086a9e65ce444689eefbe2ea815fc16779b4d1",
+        "stats": {
+          "TotalTokens": 107,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "IEntidadVolatileReport",
+        "method_name": "Report",
+        "anchors": [
+          "XtraReport Report();"
+        ]
+      },
+      {
+        "id": "913ba80b-d46e-5a8a-87d8-f59357b982ae",
+        "content_hash": "2e6c9789c78f98344c3b5c3519c2bfbb94bc73ae19bb2daa25c9c7df26f6a562",
+        "enriched_sha256": "ae84a8ed3a1f1cb7673cfba31827598f29203c1eb1102b1ade53a0dfc65465cf",
+        "stats": {
+          "TotalTokens": 108,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "IEntidadReport",
+        "method_name": "Report",
+        "anchors": [
+          "XtraReport Report();"
+        ]
+      },
+      {
+        "id": "d1b7f641-5687-5790-be48-f857d2e22958",
+        "content_hash": "2e6c9789c78f98344c3b5c3519c2bfbb94bc73ae19bb2daa25c9c7df26f6a562",
+        "enriched_sha256": "f9ee226c12477f898c5e41cd510de7c140a51b0356e21ae15da61d951f32aada",
+        "stats": {
+          "TotalTokens": 105,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "IEntidadVolatileReport",
+        "method_name": "Report",
+        "anchors": [
+          "XtraReport Report();"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué sobrecargas de Create ofrece el proveedor de GUID COMB?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "b28043d5-7efe-56c5-8436-c1064cc77ad5",
+        "content_hash": "b78421c5d566e6b0e934df07f0573ad5dc2b72def3a11c5dfd9e872425846e3d",
+        "enriched_sha256": "05337742a8829f49969a0804df6b84eec29da67a0e9e1d004b2fe5fcb42c56c5",
+        "stats": {
+          "TotalTokens": 157,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ICombProvider",
+        "method_name": "Create",
+        "anchors": [
+          "Guid Create(Guid value, DateTime timestamp);"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿De qué hereda y qué interfaces implementa la clase AlmacenComputoEmpleado?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "9ab60d1e-2a81-5e2c-bbb0-4fb374aad7bb",
+        "content_hash": "550d5d13a9715892089f252379ccdea874672a227a869ee2483923a5a799b18d",
+        "enriched_sha256": "046229d3c9ad5d22de675ca91fd4caf733a94e40f2f3638a4b746a36b16ce4b9",
+        "stats": {
+          "TotalTokens": 658,
+          "MaxUsableTokens": 510,
+          "Discarded": 148,
+          "Truncated": true
+        },
+        "class_name": "AlmacenComputoEmpleado",
+        "method_name": null,
+        "anchors": [
+          ": AuditEstatusBaseObject, IEntidadUndeletable, IEstatusBaja, IEstatusUndo, IEntidadDelayed"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué hace BeforeEstatusChange en EntregaContable cuando el estatus pasa a Cancelado?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "d6f8d7a4-5b6c-5a59-9bf4-f5e7dc5f0254",
+        "content_hash": "0df30735c63a722dd6609f860de32fec91d3a8245f5701d6f5a3c99b8cfd3aff",
+        "enriched_sha256": "b5909463f47ce01d2d48ff67f7938cbebfe55399ecc43e244992de8f49fbb7c2",
+        "stats": {
+          "TotalTokens": 400,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "EntregaContable",
+        "method_name": "BeforeEstatusChange",
+        "anchors": [
+          "No se puede cancelar la Entrega Contable actual, no cuenta con el permiso necesario."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué hace ValidarFechaAniversarioAjustada y qué devuelve?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "a04fbe48-8e93-588e-9bf7-ccbd4f9fae26",
+        "content_hash": "2ff0551e1cf985010612a89cd46136ef04cd4a8ebcd7224ca925b366c950249f",
+        "enriched_sha256": "748f0145839c8db7011d177fa5c8b916c1b5db24c8ff49000971e092b3d981e3",
+        "stats": {
+          "TotalTokens": 546,
+          "MaxUsableTokens": 510,
+          "Discarded": 36,
+          "Truncated": true
+        },
+        "class_name": "ProgramacionPagoHelper",
+        "method_name": "ValidarFechaAniversarioAjustada",
+        "anchors": [
+          "public static (bool esValido, string mensajeError) ValidarFechaAniversarioAjustada("
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué propiedad de ActivosComputo desactiva la sincronización automática de los datos del personal asignado?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "4b19b630-869b-5cf9-bed9-41cdf9569adb",
+        "content_hash": "75b751e69b0d663a6d0f9e89516661690df777a69d821b946b680e3e757183ac",
+        "enriched_sha256": "ad019583dc3f7eb5d7e12f0f91a6d6ea2781270bf6d272987eb1239c1f8acada",
+        "stats": {
+          "TotalTokens": 502,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ActivosComputo",
+        "method_name": null,
+        "anchors": [
+          "public bool EsDeshabilitarSincronizacion"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Cómo implementa ReymaBaseObject el método GetProperty?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "35a38a15-db7b-5c62-8ae3-6879825e1c76",
+        "content_hash": "636460d423ab8213775386363d63cb253003ffbb5e9221003b695e336630af49",
+        "enriched_sha256": "6f72ae76ba9dfb46caaa1bc4ff9a0c3ccbe5fc17f5657a1f0f2d2360ee82af44",
+        "stats": {
+          "TotalTokens": 272,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ReymaBaseObject",
+        "method_name": "GetProperty",
+        "anchors": [
+          "protected T GetProperty<T>([CallerMemberName] string propertyName = null)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Por qué la consulta de existencias de cómputo usa un LEFT JOIN pre-agregado?",
+    "category": "simbolo",
+    "chunks": [
+      {
+        "id": "b43c4113-d20d-5fb5-8c5f-bac6e4d47deb",
+        "content_hash": "9771bc33034d33c6a626dfd37fc51154a64099d54a32ade023000307d9222985",
+        "enriched_sha256": "67f59b7deec6632300349777724287758e1bc8a64d3c685f0b666da24636f71b",
+        "stats": {
+          "TotalTokens": 480,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "FiltroExistenciasComputo",
+        "method_name": "ObtenerConsulta",
+        "anchors": [
+          "LEFT JOIN pre-agregado para evitar subconsultas correlacionadas"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué impide cancelar una devolución cuando la cantidad devuelta no coincide con la cantidad en devolución?",
+    "category": "ambigua",
+    "chunks": [
+      {
+        "id": "1a6705d8-ee2a-598c-a563-612c79035fdf",
+        "content_hash": "8e043a51f79ca3a9b46f76982eb665c5b74ce8d20f1e3943868594334537970a",
+        "enriched_sha256": "587d36e5ec777675fe03703d320c25efa9c63eda5e33883e7b90a85410f7b69e",
+        "stats": {
+          "TotalTokens": 414,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "Devolucion",
+        "method_name": "BeforeEstatusChange",
+        "anchors": [
+          "La cantidad devuelta y la cantidad en devolución no son iguales, favor de realizar los ajustes correspondientes e intentar nuevamente."
+        ]
+      },
+      {
+        "id": "f64df6a1-b441-5876-beaf-fa40d21cbee9",
+        "content_hash": "8e043a51f79ca3a9b46f76982eb665c5b74ce8d20f1e3943868594334537970a",
+        "enriched_sha256": "69fb46b1d179116264f77816d51478fd52ecfa6714df59bb2e12865eda440743",
+        "stats": {
+          "TotalTokens": 418,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "DevolucionInterna",
+        "method_name": "BeforeEstatusChange",
+        "anchors": [
+          "La cantidad devuelta y la cantidad en devolución no son iguales, favor de realizar los ajustes correspondientes e intentar nuevamente."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué pasa si intento registrar un movimiento de inventario con cantidad cero?",
+    "category": "ambigua",
+    "chunks": [
+      {
+        "id": "24bf3b7c-649e-5379-9d7f-7200a2b51119",
+        "content_hash": "629148a807909a2e5485628011194036ec2edbd247a7d508571d330629b91513",
+        "enriched_sha256": "3c796904521948d9a7fb0b69283518a0a00f98c3794bbbb8e2b849911c7f0381",
+        "stats": {
+          "TotalTokens": 619,
+          "MaxUsableTokens": 510,
+          "Discarded": 109,
+          "Truncated": true
+        },
+        "class_name": "DevolucionInterna",
+        "method_name": "DoAddSalidaAlmacen",
+        "anchors": [
+          "No se pueden hacer movimientos con cantidad cero (0)"
+        ]
+      },
+      {
+        "id": "4a619f47-d527-5bbc-98c1-68fd378a0e44",
+        "content_hash": "07544f6d92ee7d59c543ae41a10e38210ffd8a54affdabe4c6c84156ae39f403",
+        "enriched_sha256": "a84e8e6e325072a6dd37410126b48a244ff2582d395e39b7090793d79e93c1eb",
+        "stats": {
+          "TotalTokens": 567,
+          "MaxUsableTokens": 510,
+          "Discarded": 57,
+          "Truncated": true
+        },
+        "class_name": "DevolucionInterna",
+        "method_name": "DoAddEntradaAlmacen",
+        "anchors": [
+          "No se pueden hacer movimientos con cantidad cero (0)"
+        ]
+      },
+      {
+        "id": "629fb95e-197c-5b38-957f-3f521a785839",
+        "content_hash": "68ef038618dd7ff3967f32a4ba087a4e39f02f0e6ae1d4b4c7311a4588c57b05",
+        "enriched_sha256": "0d758a3df24930b03b938b9aa26dfd081f677bc89e4c805f924b180eb489703d",
+        "stats": {
+          "TotalTokens": 559,
+          "MaxUsableTokens": 510,
+          "Discarded": 49,
+          "Truncated": true
+        },
+        "class_name": "Devolucion",
+        "method_name": "DoAddEntradaAlmacen",
+        "anchors": [
+          "No se pueden hacer movimientos con cantidad cero (0)"
+        ]
+      },
+      {
+        "id": "90984075-567d-59de-8694-f6d9fe24dfcf",
+        "content_hash": "9b80079b55c7c8f7233d017a3617dcbcb1ad3b70aed6470d022c83fa4c8b5713",
+        "enriched_sha256": "45ce5369c97551f39ca042321f8d2896f72fea31040ec550281a0a14cf1607a5",
+        "stats": {
+          "TotalTokens": 612,
+          "MaxUsableTokens": 510,
+          "Discarded": 102,
+          "Truncated": true
+        },
+        "class_name": "Devolucion",
+        "method_name": "DoAddSalidaAlmacen",
+        "anchors": [
+          "No se pueden hacer movimientos con cantidad cero (0)"
+        ]
+      },
+      {
+        "id": "b27590c2-42ca-565f-a3bd-d93f5a80e187",
+        "content_hash": "e398e69ebee0c420d72f00ffb5385a61541f5a345a746bd615b00cc63e83aadc",
+        "enriched_sha256": "ae6adadf5475b4828cbfa58ed8fd6be102f93290e7fabb6d6206abefa2c610a1",
+        "stats": {
+          "TotalTokens": 603,
+          "MaxUsableTokens": 510,
+          "Discarded": 93,
+          "Truncated": true
+        },
+        "class_name": "DevolucionInterna",
+        "method_name": "DoAddSalidaUbicacion",
+        "anchors": [
+          "No se pueden hacer movimientos con cantidad cero (0)"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué ocurre si el usuario no tiene una central de compra asignada al abrir los pendientes de compra?",
+    "category": "ambigua",
+    "chunks": [
+      {
+        "id": "ec041abb-204f-5d54-a33c-3677d692f779",
+        "content_hash": "ad795aa364ae25d46abab3e9234474bf6cf3016b1b9a7fee28cf437427e15c26",
+        "enriched_sha256": "84e8ec7eb2f029eb8a2805550585eaa681f0f3b3375b4da4619cf826d25e718e",
+        "stats": {
+          "TotalTokens": 251,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "FiltroSolicitudesCompraPendientes",
+        "method_name": null,
+        "anchors": [
+          "El Usuario no cuenta con central de compra asignada."
+        ]
+      },
+      {
+        "id": "f51d2288-1a53-5da4-9d10-a95587ce68e5",
+        "content_hash": "2fb429d3d06fb011071da546c0d79ce36bdda590977463e99f306d466a58eb18",
+        "enriched_sha256": "0c1f95175f46dcbe4a1a24dd8f6636a53bf869bd71a868a238f7a96affa97580",
+        "stats": {
+          "TotalTokens": 245,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "FiltroOrdenesCompraPendientes",
+        "method_name": null,
+        "anchors": [
+          "El Usuario no cuenta con central de compra asignada."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Qué ocurre al importar una plantilla de Excel con un formato que no corresponde?",
+    "category": "ambigua",
+    "chunks": [
+      {
+        "id": "2bbf5c66-97f0-5a33-8a94-1259a520173c",
+        "content_hash": "eb3d1ab92ed997c7e0561fdcd0ec8e183bfe688b1e67114e1d35e1d5dccb410e",
+        "enriched_sha256": "51a8ae86ab5919801dad862992cefdd76ecd8fafedf0657b376f831a4045075c",
+        "stats": {
+          "TotalTokens": 404,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "ImportarOrdenCompraDetalle",
+        "method_name": "ObtenerImportacion",
+        "anchors": [
+          "La plantilla no cuenta con el formato correcto, contacte a Sistemas."
+        ]
+      },
+      {
+        "id": "3fc662e9-9da4-5600-a3ac-aa65029c5ff2",
+        "content_hash": "4802c86df40d74e4e4b5eae5c3e522292b37b75ee25d96e1b01a5fb633278646",
+        "enriched_sha256": "e7bc724fec92764f4cdcbd556754082abbe2939b7759ce1a40dbd35dc793aa3d",
+        "stats": {
+          "TotalTokens": 476,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "InventarioCiclico",
+        "method_name": "CargarExcel",
+        "anchors": [
+          "La plantilla no cuenta con el formato correcto, contacte a Sistemas."
+        ]
+      },
+      {
+        "id": "5907d3af-c8ac-52f3-a99b-890423a59701",
+        "content_hash": "3557c7a7962bf2536c38baee8447a767464da0a2dbe37255d00bacfdae9a7ee4",
+        "enriched_sha256": "f4b636a0422676581547bfba9910fcf568d4d68c02862c8d4b11e10911c60486",
+        "stats": {
+          "TotalTokens": 329,
+          "MaxUsableTokens": 510,
+          "Discarded": 0,
+          "Truncated": false
+        },
+        "class_name": "InventarioCiclico",
+        "method_name": "CargarExcel",
+        "anchors": [
+          "La plantilla no cuenta con el formato correcto, contacte a Sistemas."
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Quién autoriza las solicitudes de pago de un contrato de licencias?",
+    "category": "ambigua",
+    "chunks": [
+      {
+        "id": "78b40b31-554a-5a31-b282-4330f9065dcf",
+        "content_hash": "fe0aa19fea5c617df81e8398e09292aa145c7165ee8c48f28cf5fba8a4217e67",
+        "enriched_sha256": "fb4f07b9c9be4007d48f04f4db24aac74de448588d012a46e0a053c826cd5186",
+        "stats": {
+          "TotalTokens": 590,
+          "MaxUsableTokens": 510,
+          "Discarded": 80,
+          "Truncated": true
+        },
+        "class_name": "Precontrato",
+        "method_name": null,
+        "anchors": [
+          "Indica el personal que autoriza las solicitudes de pago"
+        ]
+      },
+      {
+        "id": "d75ec4a0-b7df-551f-b966-ce10884406d7",
+        "content_hash": "983f1e690775ac50135a259ea0ec2b8313629735b999e4607539a583d56748f1",
+        "enriched_sha256": "c36e4353948823e0f80c89b38fa94c48a372ca0d0ece645428eb02ae2f2afdc2",
+        "stats": {
+          "TotalTokens": 532,
+          "MaxUsableTokens": 510,
+          "Discarded": 22,
+          "Truncated": true
+        },
+        "class_name": "Contrato",
+        "method_name": null,
+        "anchors": [
+          "Indica el personal que autoriza las solicitudes de pago"
+        ]
+      }
+    ]
+  },
+  {
+    "question": "¿Cómo se calcula el aguinaldo y la prima vacacional del personal?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Cada cuántos días caduca la contraseña de un usuario y cuántos intentos fallidos bloquean la cuenta?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Cómo se despliega el sistema en un clúster de Kubernetes?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Qué esquema de GraphQL expone la aplicación?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Cuáles son los criterios de aceptación de la historia de usuario US-17?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Cómo se sincronizan los catálogos de productos con MongoDB?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Qué modelo de embeddings y qué base vectorial usa la búsqueda?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  },
+  {
+    "question": "¿Cómo se indexan los documentos en Elasticsearch para la búsqueda de productos?",
+    "category": "fuera-de-dominio",
+    "chunks": []
+  }
+]

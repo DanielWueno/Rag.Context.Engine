@@ -365,9 +365,9 @@
     "SourceFile": "AlmacenComputoEmpleado.cs",
     "TargetSectionHeader": null,
     "TargetContentContains": [
-      "public class AlmacenComputoEmpleado: AuditEstatusBaseObject, IEntidadUndeletable, IEstatusBaja, IEstatusUndo, IEntidadDelayed"
+      ": AuditEstatusBaseObject, IEntidadUndeletable, IEstatusBaja, IEstatusUndo, IEntidadDelayed"
     ],
-    "Note": "Declaración verbatim. Se eligió esta clase y no otra porque su declaración no lleva espacio antes de los dos puntos: el chunker normaliza 'Nombre : Base' a 'Nombre: Base', así que una declaración con espacio no es anclable literalmente contra el índice."
+    "Note": "El ancla conserva la base y todas las interfaces que pide la pregunta, dentro de AlmacenComputoEmpleado.cs. Desde 5.g el chunker normaliza un espacio antes de ':', mientras la fuente no lo lleva. Se usa el sufijo desde ':' que existe literalmente en ambos, sin depender de ese whitespace. Corregida el 2026-09-12 antes del A/B de 5.h; cambia eval_set_hash y no es comparable directamente con el baseline historico."
   },
   {
     "Question": "¿Qué hace BeforeEstatusChange en EntregaContable cuando el estatus pasa a Cancelado?",

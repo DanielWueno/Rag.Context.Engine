@@ -1,0 +1,86 @@
+{
+  "item": "5.h-filtro-de-longitud-minima-descarta-declaraciones-cortas",
+  "fecha": "2026-09-12",
+  "objetivo": "Recuperar declaraciones de tipos cortas sin readmitir otros micro-chunks ni promover una regresion de retrieval.",
+  "motor": {
+    "commit_base": "03db9c2",
+    "cambios_sin_commit": true,
+    "chunking_contract_version": 3,
+    "embedding_max_sequence_length": 256,
+    "embedding_dimensions": 384,
+    "qdrant": "v1.14.1"
+  },
+  "corpus": {
+    "repositorio": "BusinessSuite.Xaf",
+    "commit": "4bcb5264a053a38348b9356df283b8f9bd98146d",
+    "entradas_git_status": 3,
+    "archivos_escaneados": 2103,
+    "archivos_omitidos": 0,
+    "chunks_generados": 23473,
+    "chunks_indexados": 23473,
+    "duracion_ingesta_segundos": 179.67,
+    "indexed_id_content_hash_sha256": "5a6a8e2cc43a72d59815a61ba75358d7f4427bb0cb66b16c066ab326dfd869b8",
+    "algoritmo_huella": "SHA256 del UTF-8 de json.dumps(sorted([(point_id, payload.content_hash), ...]), separators=(',', ':')) sobre toda la coleccion experimental."
+  },
+  "aislamiento": {
+    "qdrant": "Desechable, sin volumen, puertos 7333/7334 publicados solo en 127.0.0.1.",
+    "cache": "SQLite separada de la cache compartida del usuario.",
+    "resumen_llm": false,
+    "bandas": ["dense", "sparse-code"],
+    "colecciones_servidas_modificadas": false
+  },
+  "protocolo": [
+    "Ingestar el corpus real con la excepcion experimental habilitada.",
+    "Reconstruir el control en otra coleccion con el mismo esquema, copiando los mismos IDs, payloads y vectores solo para Content.Trim().Length >= 60; el largo se cuenta en unidades UTF-16.",
+    "No volver a vectorizar el control: asi no se mezclan cambios de modelo, chunker ni normalizacion con el efecto del filtro.",
+    "Contar pares (file_path, class_name) de CSharp sin ningun chunk_type=Class, igual que el criterio historico.",
+    "Antes de evaluar, corregir el ancla de AlmacenComputoEmpleado al sufijo de su lista de herencia, presente en fuente y payload. Las 55 preguntas son medibles en ambos brazos.",
+    "Ejecutar rag eval con el mismo eval-set, k=10, min_score=0.10, sin rerank, declarando IndexShortTypeDeclarations=false en el control y true en el experimental.",
+    "Repetir ambos evals: los resultados agregados se mantienen."
+  ],
+  "cobertura": {
+    "antes": {
+      "puntos": 22615,
+      "pares_archivo_tipo": 2098,
+      "sin_chunk_class": 398,
+      "porcentaje_sin_chunk_class": 18.970448045757866
+    },
+    "despues": {
+      "puntos": 23473,
+      "pares_archivo_tipo": 2186,
+      "sin_chunk_class": 0,
+      "porcentaje_sin_chunk_class": 0
+    },
+    "declaraciones_cortas_anadidas": 858,
+    "casos_recuperados": ["ICombProvider", "IEntidadReport"],
+    "criterio_menor_a_2_por_ciento": true
+  },
+  "recall_at_10": {
+    "total": { "n": 47, "antes": 22, "despues": 20 },
+    "literal": { "n": 12, "antes": 4, "despues": 4 },
+    "parafraseada": { "n": 18, "antes": 8, "despues": 7 },
+    "simbolo": { "n": 12, "antes": 7, "despues": 6 },
+    "ambigua": { "n": 5, "antes": 3, "despues": 3 },
+    "negativos_excluidos_del_recall": 8
+  },
+  "artefactos": {
+    "antes": "docs/eval/quality/5.h-filtro-antes.eval.json",
+    "despues": "docs/eval/quality/5.h-filtro-despues.eval.json",
+    "eval_set": "docs/eval/bsuite-repo.eval-set.json",
+    "eval_set_hash": "5c0b6532ac78"
+  },
+  "decision": {
+    "index_short_type_declarations_default": false,
+    "promover_a_colecciones_servidas": false,
+    "motivo": "La cobertura mejora, pero se pierden dos preguntas de recall@10, mas que el margen de una pregunta. El experimento queda opt-in; 5.h no se da por cerrado como mejora activa.",
+    "pendiente": "Resolver la regresion local y medir con la fusion real de tres bandas antes de habilitarlo de forma general. Mantener separados el efecto del filtro, la persistencia/uso de simbolos y el experimento de truncamiento."
+  },
+  "limites": [
+    "No es una comparacion contra el baseline historico de tres bandas ni prueba una regresion de ese pipeline.",
+    "El control reconstruido usa el chunker actual, incluida la normalizacion de 5.g; aisla el filtro, no todos los cambios desde el baseline historico.",
+    "Los indices de Qdrant se construyeron por separado. Repetir consultas prueba estabilidad de esas colecciones, no descarta variacion por reconstruccion de HNSW; confirmar con busqueda exacta o replicas antes de atribuir toda la diferencia al filtro.",
+    "El conteo de pares cambia porque algunos tipos no tenian ningun chunk antes. Cero pares sin Class no demuestra cobertura de tipos que el chunker no emite.",
+    "Motor y corpus tenian cambios sin commit: el commit por si solo no reproduce exactamente la corrida; se conservan el protocolo, la huella del indice y ambos resultados.",
+    "Las colecciones temporales se eliminan al terminar. La reingesta y el rebaseline de las colecciones de uso normal siguen pendientes en 5.e."
+  ]
+}

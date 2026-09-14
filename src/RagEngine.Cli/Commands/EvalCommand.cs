@@ -59,19 +59,22 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     private readonly CrossEncoderOptions _crossEncoderOptions;
     private readonly RetrievalFusionOptions _fusionOptions;
     private readonly OllamaOptions _ollamaOptions;
+    private readonly IngestionOptions _ingestionOptions;
 
     public EvalCommand(
         ISemanticRetriever retriever,
         IOptions<OnnxBrainOptions> brainOptions,
         IOptions<CrossEncoderOptions> crossEncoderOptions,
         IOptions<RetrievalFusionOptions> fusionOptions,
-        IOptions<OllamaOptions> ollamaOptions)
+        IOptions<OllamaOptions> ollamaOptions,
+        IOptions<IngestionOptions> ingestionOptions)
     {
         _retriever = retriever;
         _brainOptions = brainOptions.Value;
         _crossEncoderOptions = crossEncoderOptions.Value;
         _fusionOptions = fusionOptions.Value;
         _ollamaOptions = ollamaOptions.Value;
+        _ingestionOptions = ingestionOptions.Value;
     }
 
     /// <summary>
@@ -98,6 +101,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             WeightResumen = _fusionOptions.WeightResumen,
             RrfK = _fusionOptions.RrfK,
             ChunkingContractVersion = ChunkingContract.Version,
+            IndexShortTypeDeclarations = _ingestionOptions.IndexShortTypeDeclarations,
             ResumenPromptVersion =
                 OllamaBusinessSummaryGenerator.ComputePromptVersion(_ollamaOptions.ModelId),
         };

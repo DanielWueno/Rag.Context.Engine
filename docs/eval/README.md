@@ -20,6 +20,10 @@
   `infra/gate-bandas-barrido.py`.
 - `quality/*.json` — corridas de `infra/quality-baseline.py`: respuestas completas de la
   API más métricas mecánicas de calidad. No miden recall; miden lo que ve el usuario.
+- `quality/5.h-filtro-*.json` — excepción al punto anterior: A/B de recall del filtro
+  de declaraciones cortas en dos bandas. El archivo `5.h-filtro-protocolo.json`
+  registra cobertura, procedencia y límites; no reemplaza los baselines de tres
+  bandas ni autoriza activar el experimento por defecto.
 - `quality/4.4-antes-media.json` y `quality/4.4-despues-todas.json` — respuestas del CLI
   antes y después de reescribir la rama (b) de `LowConfidencePrompt.Addendum`, con las
   consultas seleccionadas por la banda que les da su score en `gate-bandas.scores.json`.
@@ -46,6 +50,7 @@ dos números son comparables:
 | `cross_encoder_model` | El rerank cambia el orden final. |
 | `weight_codigo`, `weight_sparse`, `weight_resumen`, `rrf_k` | Los pesos de la fusión RRF a 3 bandas mueven el recall varios puntos. |
 | `chunking_contract_version` | Si los chunks del índice se generaron con otro criterio de corte, nada es comparable. |
+| `index_short_type_declarations` | Declara el experimento de admisión de tipos cortos; un baseline antiguo sin este campo lo reporta como no declarado. |
 | `resumen_prompt_version` | El tercer vector de la fusión se genera con ese prompt; cambiarlo cambia lo indexado. |
 
 ## Verificar que un eval-set siga siendo medible
@@ -62,6 +67,17 @@ está indexado y que algún chunk indexado lo contiene con la misma comparación
 `rag eval`. Un ancla que sólo existe en el archivo pero no sobrevive al chunker hace que
 la pregunta falle siempre sin que nada lo denuncie. Córrelo después de cada re-ingesta
 que mueva `chunking_contract_version`.
+
+El contrato 3 (2026-09-12) permite conservar declaraciones cortas de tipos durante
+la ingesta con `Ingestion:IndexShortTypeDeclarations=true` (experimental, desactivado
+por defecto) e incluye la normalización de `Nombre : Base` de 5.g. El ancla de
+`AlmacenComputoEmpleado` se corrigió para usar el sufijo desde `:` con su base e
+interfaces: existe literalmente en la fuente y en el nuevo índice, sin depender
+del espacio anterior a `:`. Esto cambia `eval_set_hash`; los baselines históricos
+se conservan y requieren regeneración en 5.e, no una comparación directa.
+Al evaluar, usa el mismo valor de `Ingestion:IndexShortTypeDeclarations` que durante
+la ingesta: la procedencia registra la configuración declarada del proceso; todavía
+no la recupera del manifiesto de la colección (5.f).
 
 ## Regenerar un baseline
 

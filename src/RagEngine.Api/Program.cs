@@ -733,3 +733,9 @@ finally
 
     Log.CloseAndFlush();
 }
+
+// Marcador necesario para WebApplicationFactory<Program> (5.f.4-harness-4-actores):
+// los top-level statements generan una clase Program interna por defecto, invisible
+// desde el ensamblado de tests. Esta declaración parcial y pública no cambia ningún
+// comportamiento de arranque — solo expone el tipo de entrada para el harness HTTP.
+public partial class Program;

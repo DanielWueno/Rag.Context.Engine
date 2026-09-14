@@ -4,6 +4,13 @@
 > Pasó por una revisión adversarial con contexto limpio, que reordenó las prioridades y añadió
 > cuatro grietas que la primera pasada no vio. Delta del ledger en el apéndice.
 
+> **Reconciliación complementaria, 2026-09-12:** los pendientes accionables de §6
+> pasan al ledger: opciones → `9.8`, RRF → `9.7`, métricas globales → `13.5`;
+> manifiesto continúa en `5.f`. LightRAG amplía `9.1` con contexto/filtros obligatorios
+> comprobables localmente y `9.4` conserva SQLite detrás del puerto. Postgres e identidad
+> corporativa son capacidades pendientes, no prerrequisitos del refactor local.
+> El análisis y sus decisiones originales se conservan como registro fechado.
+
 ## 1. Veredicto en una página
 
 **No hay refactorización grande que hacer. Hay una decisión con consecuencia funcional viva, un

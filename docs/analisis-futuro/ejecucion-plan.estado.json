@@ -805,8 +805,7 @@
           "_control_del_filtro": "No depende de cerrar 5.h: medir con IndexShortTypeDeclarations=false, registrando su valor. El experimento de cobertura queda separado de la instrumentacion de truncamiento.",
           "_ejecucion": "Entorno: Copilot CLI. Modelo solicitado: sonnet. Modelo efectivo: claude-sonnet-5 (modelo nativo de esta sesion de Copilot CLI). Esfuerzo efectivo: default (no configurable via ledger en este entorno). Motivo: sonnet es el alias mas directo disponible; no se simula alias Claude.",
           "fecha": "2026-09-14",
-          "resultado": "Instrumentado con el tokenizador EFECTIVO (WordPiece y SentencePiece), no una aproximacion. IVectorizationBrain gana MaxSequenceLength y GenerateBatchEmbeddingsWithStatsAsync (nuevo, deja intacto GenerateBatchEmbeddingsAsync para no romper otros consumidores ni cambiar el embedding real producido). OnnxVectorizationBrain.ComputeSpecialTokenCount verifica S dinamicamente contra IDs sin truncar (BertTokenizer.EncodeToIds('', addSpecialTokens:true/false); para SentencePiece S=2 es constante propia del wrapper, documentado como tal, no del tokenizer). AnalyzeTokenization cuenta T con una pasada de tokenizacion SEPARADA de la que arma el tensor (EncodeWordPiece/EncodeSentencePiece quedan sin tocar): asi desactivar la medicion no cambia contenido/embeddings/indices, tal como pide el rollback. TokenizationStats(TotalTokens,MaxUsableTokens,Discarded,Truncated) viaja en VectorizationBatchResult. DefaultIngestionPipeline.ProcessBatchAsync usa el nuevo metodo, acumula T por corrida en PipelineStats (candado propio) e incrementa rag_chunks_truncated_total y el nuevo rag_tokens_discarded_total (RagEngineMetrics) por chunk ADMITIDO de la fase de embedding, independientemente del resultado del upsert a Qdrant. TokenPercentileCalculator (nuevo, extraido para poder probarlo aislado) calcula percentil nearest-rank (indice=ceil(p*n), 1-indexado); n=0 no emite percentiles ficticios (null). IngestionSummary expone TokensObserved/TokensP50/TokensP95/TokensMaxUsable/ChunksTruncatedTotal/TokensDiscardedTotal; IngestCommand imprime la fila de tokens (o 'sin datos' si n=0) y advierte solo cuando p95 supera L (capacidad util), no M (limite bruto). VERIFICADO: (1) TokenPercentileCalculatorTests (7 casos) prueba n=0, tripleta L-1/L/L+1 con L=8/256/510, un solo valor, insensibilidad al orden y n=20 con indices nearest-rank exactos — puramente aritmetico, sin tokenizador. (2) OnnxVectorizationBrainTokenizationTests corre CONTRA LOS MODELOS ONNX Y TOKENIZERS REALES ya descargados en esta maquina (~/models/all-MiniLM-L6-v2 WordPiece y ~/models/paraphrase-multilingual-MiniLM-L12-v2 SentencePiece; se saltan solo si faltan, mismo patron que CrossEncoderStableGateScoreTests de 1.7): construye fixtures de C#, TypeScript, prosa y prefijo enriquecido (ChunkBuilder.HeaderPrefix real) ajustados a T=L-1/L/L+1 EXACTOS contra el tokenizador real (recorte/relleno con un filler de 1 token verificado en tiempo de ejecucion, nunca asumido), con M=MaxSequenceLength=10 de prueba y S verificado dinamicamente (2 en ambas familias, por razones distintas). Las 8 combinaciones (4 contenidos x 2 familias) confirman descartados=[0,0,1] y truncado=[false,false,true] exactos, MaxUsableTokens consistente, y que la medicion no rompe el embedding real (dimension correcta en los 3 chunks). 15/15 tests nuevos en verde, suite completa 207/207 (antes 192/192), dotnet build sin advertencias. (3) Ingesta CLI real end-to-end: se levanto Docker Desktop y se arranco el contenedor qdrant-local ya existente (sin tocar sus 10 colecciones), se ingesto un fixture aislado de 2 archivos (C#+TS) en una coleccion NUEVA '11-1-fixture-truncamiento' (--con-resumen NO activado, cache de resumenes intacta) y la tabla final del CLI mostro 'Tokens medidos (n): 7', 'Tokens p50/p95: 86 / 180 (L=254)', 'Chunks truncados: 0', 'Tokens descartados: 0' sin advertencia (p95 < L), confirmando el wiring end-to-end real. Coleccion de fixture borrada al terminar (DELETE /collections/11-1-fixture-truncamiento); las 10 colecciones originales quedaron intactas. LIMITE DOCUMENTADO: no se forzo un batch real que dispare la advertencia p95>L end-to-end en Qdrant (los 8 casos L-1/L/L+1 SI la cubren a nivel de OnnxVectorizationBrain con M=10 controlado); tampoco se registro una corrida con --con-resumen para verificar que la medicion excluye resumenes (la exclusion es estructural: el brain solo se llama vía GenerateBatchEmbeddingsWithStatsAsync en la fase de embedding de chunks admitidos, RunResumenPhaseAsync sigue usando GenerateEmbeddingAsync simple sin stats). IndexShortTypeDeclarations se registro como false por defecto (sin cambios, ver appsettings) en la corrida de humo; no se abrio un experimento de cobertura aparte, que sigue siendo responsabilidad de 5.h.",
-          "_control_del_filtro": "No depende de cerrar 5.h: medir con IndexShortTypeDeclarations=false, registrando su valor. El experimento de cobertura queda separado de la instrumentacion de truncamiento."
+          "resultado": "Instrumentado con el tokenizador EFECTIVO (WordPiece y SentencePiece), no una aproximacion. IVectorizationBrain gana MaxSequenceLength y GenerateBatchEmbeddingsWithStatsAsync (nuevo, deja intacto GenerateBatchEmbeddingsAsync para no romper otros consumidores ni cambiar el embedding real producido). OnnxVectorizationBrain.ComputeSpecialTokenCount verifica S dinamicamente contra IDs sin truncar (BertTokenizer.EncodeToIds('', addSpecialTokens:true/false); para SentencePiece S=2 es constante propia del wrapper, documentado como tal, no del tokenizer). AnalyzeTokenization cuenta T con una pasada de tokenizacion SEPARADA de la que arma el tensor (EncodeWordPiece/EncodeSentencePiece quedan sin tocar): asi desactivar la medicion no cambia contenido/embeddings/indices, tal como pide el rollback. TokenizationStats(TotalTokens,MaxUsableTokens,Discarded,Truncated) viaja en VectorizationBatchResult. DefaultIngestionPipeline.ProcessBatchAsync usa el nuevo metodo, acumula T por corrida en PipelineStats (candado propio) e incrementa rag_chunks_truncated_total y el nuevo rag_tokens_discarded_total (RagEngineMetrics) por chunk ADMITIDO de la fase de embedding, independientemente del resultado del upsert a Qdrant. TokenPercentileCalculator (nuevo, extraido para poder probarlo aislado) calcula percentil nearest-rank (indice=ceil(p*n), 1-indexado); n=0 no emite percentiles ficticios (null). IngestionSummary expone TokensObserved/TokensP50/TokensP95/TokensMaxUsable/ChunksTruncatedTotal/TokensDiscardedTotal; IngestCommand imprime la fila de tokens (o 'sin datos' si n=0) y advierte solo cuando p95 supera L (capacidad util), no M (limite bruto). VERIFICADO: (1) TokenPercentileCalculatorTests (7 casos) prueba n=0, tripleta L-1/L/L+1 con L=8/256/510, un solo valor, insensibilidad al orden y n=20 con indices nearest-rank exactos — puramente aritmetico, sin tokenizador. (2) OnnxVectorizationBrainTokenizationTests corre CONTRA LOS MODELOS ONNX Y TOKENIZERS REALES ya descargados en esta maquina (~/models/all-MiniLM-L6-v2 WordPiece y ~/models/paraphrase-multilingual-MiniLM-L12-v2 SentencePiece; se saltan solo si faltan, mismo patron que CrossEncoderStableGateScoreTests de 1.7): construye fixtures de C#, TypeScript, prosa y prefijo enriquecido (ChunkBuilder.HeaderPrefix real) ajustados a T=L-1/L/L+1 EXACTOS contra el tokenizador real (recorte/relleno con un filler de 1 token verificado en tiempo de ejecucion, nunca asumido), con M=MaxSequenceLength=10 de prueba y S verificado dinamicamente (2 en ambas familias, por razones distintas). Las 8 combinaciones (4 contenidos x 2 familias) confirman descartados=[0,0,1] y truncado=[false,false,true] exactos, MaxUsableTokens consistente, y que la medicion no rompe el embedding real (dimension correcta en los 3 chunks). 15/15 tests nuevos en verde, suite completa 207/207 (antes 192/192), dotnet build sin advertencias. (3) Ingesta CLI real end-to-end: se levanto Docker Desktop y se arranco el contenedor qdrant-local ya existente (sin tocar sus 10 colecciones), se ingesto un fixture aislado de 2 archivos (C#+TS) en una coleccion NUEVA '11-1-fixture-truncamiento' (--con-resumen NO activado, cache de resumenes intacta) y la tabla final del CLI mostro 'Tokens medidos (n): 7', 'Tokens p50/p95: 86 / 180 (L=254)', 'Chunks truncados: 0', 'Tokens descartados: 0' sin advertencia (p95 < L), confirmando el wiring end-to-end real. Coleccion de fixture borrada al terminar (DELETE /collections/11-1-fixture-truncamiento); las 10 colecciones originales quedaron intactas. LIMITE DOCUMENTADO: no se forzo un batch real que dispare la advertencia p95>L end-to-end en Qdrant (los 8 casos L-1/L/L+1 SI la cubren a nivel de OnnxVectorizationBrain con M=10 controlado); tampoco se registro una corrida con --con-resumen para verificar que la medicion excluye resumenes (la exclusion es estructural: el brain solo se llama vía GenerateBatchEmbeddingsWithStatsAsync en la fase de embedding de chunks admitidos, RunResumenPhaseAsync sigue usando GenerateEmbeddingAsync simple sin stats). IndexShortTypeDeclarations se registro como false por defecto (sin cambios, ver appsettings) en la corrida de humo; no se abrio un experimento de cobertura aparte, que sigue siendo responsabilidad de 5.h."
         },
         {
           "id": "11.2-experimento-3-brazos",
@@ -858,7 +857,7 @@
           "esfuerzo": "medium",
           "multiagente": false,
           "horas_maquina": 0.3,
-          "estado": "bloqueado",
+          "estado": "hecho",
           "por_que_este_modelo": "Medicion reproducible con separacion de procedencias, sin elegir umbrales a posteriori.",
           "origen": "LightRAG propuesta 11.4 y §1.1; se evita ciclo con 5.e el 2026-09-12.",
           "archivos": "docs/eval/baselines/, docs/eval/quality/, docs/eval/bsuite-repo.umbral-de-decision.md, infra/verificar-anclas-eval.py",
@@ -867,7 +866,11 @@
           "bloqueado_por": "11.2-experimento-3-brazos",
           "_condicion_de_reentrada": "Responsable: mantenedor de evals. Comprobar 11.2-experimento-3-brazos hecho y resolver su resultado: si selecciono cambio, exigir 11.3-presupuesto-en-tokens-reales hecho y cambiar bloqueado_por a ese ID antes de volver a pendiente; si fue nulo, conservar arista a 11.2 y 11.3 bloqueado. Sin cierre artificial de 11.3 ni dependencia de 5.e.",
           "_preparacion_de_verificacion": "Faltan controles de 11.2 y, segun su resultado, 11.3; fijar protocolo de replicas y comparador de aciertos/empates, hashes y categorias. El script de anclas no valida estabilidad ni umbrales y rag eval no es por si solo gate de regresion.",
-          "_condicion_de_ejecucion": "Si 11.2 selecciona un cambio, ejecutar 11.3-presupuesto-en-tokens-reales antes de esta ficha y citar su resultado. Si 11.2 es nulo, no depende de cerrar 11.3. Esta condicion alternativa no es una dependencia dura del arnes y se revisa manualmente; nunca depende de 5.e-salto-de-contrato-y-rebaseline."
+          "_condicion_de_ejecucion": "Si 11.2 selecciona un cambio, ejecutar 11.3-presupuesto-en-tokens-reales antes de esta ficha y citar su resultado. Si 11.2 es nulo, no depende de cerrar 11.3. Esta condicion alternativa no es una dependencia dura del arnes y se revisa manualmente; nunca depende de 5.e-salto-de-contrato-y-rebaseline.",
+          "_ejecucion": "Entorno: Copilot CLI. Modelo solicitado: sonnet. Modelo efectivo: claude-sonnet-5 (coordinador de esta sesion, sin fan-out; multiagente:false). Esfuerzo efectivo: medium. horas_maquina=0.3 (<1h, no requiere confirmacion de coste). Reconciliacion previa (2026-09-14): bloqueado_por=11.2-experimento-3-brazos, item hecho el 2026-09-14 con resultado NULO (ningun brazo alcanzo >=2 aciertos netos denso). Segun _condicion_de_reentrada de esta ficha: 11.2 nulo => se conserva la arista a 11.2 (hecho) y 11.3-presupuesto-en-tokens-reales NO se persigue/NO se fabrica su cierre; bloqueado_por se mantiene documentado como 11.2 pero deja de bloquear la ejecucion porque su condicion (11.2 hecho + resultado resuelto) ya se cumplio.",
+          "fecha": "2026-09-14",
+          "verificacion_comando": "python3 docs/eval/quality/11.4/verify.py",
+          "resultado": "Reconciliado y ejecutado el 2026-09-14 por Claude Sonnet 5 en Copilot CLI (coordinador de sesion, sin fan-out). bloqueado_por=11.2-experimento-3-brazos: 11.2 cerro hecho el mismo dia con resultado NULO (ningun brazo >=2 aciertos netos denso); segun la _condicion_de_reentrada propia de esta ficha, un 11.2 nulo NO exige 11.3-presupuesto-en-tokens-reales (sigue bloqueado, sin fabricar su cierre) y el bloqueo se levanta. REPRODUCIBILIDAD: dos corridas nuevas de `rag eval --eval-set docs/eval/bsuite-repo.eval-set.json -c bsuite-repo -k 10 --json` contra la coleccion bsuite-repo en vivo (22.592 puntos) dieron hit_any_at_k/hit_full_at_k identicos en las 55 preguntas (0 diffs) y recall@10 identico a la linea base historica de esta tabla: total 19/47, simbolo 2/12; archivadas en docs/eval/quality/11.4/repro-{1,2}.eval.json. HALLAZGO DE PROCEDENCIA: las corridas de hoy reportan chunking_contract_version=3 (constante de codigo tras el fix de 5.g) e index_short_type_declarations=false, mientras la linea base archivada quedo con version=2 y sin ese campo; el recall identico confirma que bsuite-repo NO fue reingestado (5.e-salto-de-contrato-y-rebaseline sigue bloqueado por 5.h, que sigue bloqueado sin promover) pese a que el numero de contrato subio. Se documento en docs/eval/bsuite-repo.umbral-de-decision.md que la version de contrato en el provenance no prueba re-ingesta y que hay que cruzar siempre contra el estado real de 5.e antes de comparar. CONTROL REGISTRADO: mientras 5.e no cierre, el control post-5.h/pre-simbolos de Ola 5/6 ES la linea base historica ya archivada (19/47, simbolo 2/12); no hay nada que regenerar porque el indice servido no cambio. Se aclaro ademas que si 5.h se promueve antes que la Ola 5, sus aciertos de cobertura (ICombProvider/IEntidadReport) no deben contarse como parte de las +3 preguntas de simbolo que exige Ola 5: hay que aislar en el reporte por pregunta cual acierto viene del filtro de longitud y cual de defined_symbols/consumed_symbols. TRUNCAMIENTO (11.2) separado: las seis colecciones efimeras del experimento ya se eliminaron (ver resultado de 11.2) y ninguna se promueve como control de Ola 5/6; el resultado nulo solo implica no perseguir 11.3, sin efecto sobre esta tabla. UMBRAL DE SALTO FIJADO: se sustituyo el umbral ambiguo en puntos porcentuales ('+25 puntos') por una formula en preguntas netas fijada ANTES de 6.a: umbral = max(4, ceil(0.25*n)) sobre el n respondible que produzca 6.c-preguntas-de-salto, con la misma regla de +-1 pregunta de no-regresion que el resto de la tabla; 6.c debe heredar la formula, no renegociarla con el resultado ya visto. VERIFICACION: python3 docs/eval/quality/11.4/verify.py (ejecutado en invocacion separada, exit 0) compara las dos corridas archivadas, exige 0 diffs, recall total y de simbolo identicos a la linea base historica, y exige que el documento de umbrales contenga los cuatro marcadores de esta reconciliacion; se probo que falla (exit 1) al tamperar un solo hit de una corrida. dotnet build 0/0 (sin cambios de codigo en este item, solo documentacion y evidencia). LIMITE: no se reingesto bsuite-repo (fuera de alcance, pertenece a 5.e); el control declarado sigue siendo el historico hasta que esa reingesta ocurra; esta ficha no decide contenido de 6.c, solo fija su formula de aceptacion."
         },
         {
           "id": "11.5-charspertoken-por-lenguaje",
@@ -979,7 +982,9 @@
           "por_que_este_modelo": "Ahora incluye contrato de compatibilidad y publicacion por ACL; requiere juicio y negativos de autorizacion, no solo revivir un record.",
           "archivos": "src/RagEngine.Core/Domain/CollectionManifest.cs, src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs, src/RagEngine.Core/Abstractions/, src/RagEngine.Api/Program.cs, src/RagEngine.Cli/Commands/IngestCommand.cs, tests/RagEngine.Core.Tests/",
           "rollback": "Respaldar y versionar los manifiestos antes de migrar. Restaurar lector/escritor y manifiestos compatibles sin tocar vectores ni cache. Si ya hay ACL publicadas, suspender esa publicacion antes de revertir: dejar de validar NO puede abrir acceso empresarial.",
-          "_absorbe": ["12.3-acl-en-el-manifiesto"],
+          "_absorbe": [
+            "12.3-acl-en-el-manifiesto"
+          ],
           "_alcance_local": "Contrato y pruebas con identidades sinteticas; no depende de 12.2-identidad-y-auditoria. Compartir lectura del manifiesto con 7.a-perfil-por-coleccion. En colecciones mixtas no inferir tenant solo por repository_name: la restriccion por punto la implementa 9.1-puertos-del-vector-store.",
           "evidencia": "Verificado el 2026-08-24: un grep de CollectionManifest sobre src/ devuelve SÓLO su propia definición. Nadie escribe ni lee la clave __manifest__. El tipo existe exactamente para el problema que hoy tiene 3.1 abierto.",
           "origen": "plan-refinamiento-arquitectonico-produccion.md (2026-08-24); ampliado el 2026-09-12 con lightrag-rag-anything-y-los-huecos-del-motor.md §4.1, §4.3-4.5, §7 (12.3 absorbido)."
@@ -1033,10 +1038,16 @@
           "por_que_este_modelo": "Ejecutar el protocolo estructural una vez preparados controles y fixtures de tenants; no asumir que los comandos existentes cubren toda la aceptacion.",
           "archivos": "src/RagEngine.Core/Infrastructure/Chunking/ChunkingContract.cs, src/RagEngine.Core/Domain/IngestionTypes.cs, src/RagEngine.Core/Pipeline/DefaultIngestionPipeline.cs, src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs, docs/eval/baselines/",
           "rollback": "Conservar snapshot de la coleccion, payload previo y copia consistente de cache. Restaurar indice/contrato/baseline juntos; tenant puede revertirse con migracion de payload sin regenerar resumenes. Contar misses reales si hace falta re-ingestar. No borrar una ACL ya publicada al revertir.",
-          "_absorbe": ["12.7-tenant-en-el-payload"],
+          "_absorbe": [
+            "12.7-tenant-en-el-payload"
+          ],
           "_seguimiento_local_del_filtro": "El seguimiento especifico de cobertura frente a recall queda en 5.h-filtro-de-longitud-minima-descarta-declaraciones-cortas, bajo responsabilidad de su ejecutor. Decision informada el 2026-09-12: mantener la excepcion opt-in experimental y desactivada por defecto; antes de promoverla, resolver la regresion del A/B aislado de dos bandas y medir tres bandas comparables. Esta ficha no considera cumplida la mejora estructural por alcanzar cobertura <2% ni exige activar la excepcion; la re-ingesta/baseline de colecciones servidas sigue pendiente. No hay dependencia de infraestructura remota.",
           "_avance_informado_2026_09_12": "ChunkingContract.Version ya paso de 2 a 3 para registrar la seleccion opt-in del filtro y la normalizacion de 5.g. No repetir ese salto por cerrar administrativamente 5.e. La re-ingesta aislada y A/B de dos bandas terminaron; resultados, procedencia y limites en docs/eval/quality/5.h-filtro-protocolo.json. Cobertura 18,97% ->0% sin Class, pero recall@10 22/47 ->20/47: la opcion permanece false y 5.h bloqueado por calidad, no por infraestructura. Las colecciones y cache desechables se retiraron; re-ingesta y baseline de colecciones servidas siguen pendientes. Esto no cierra 5.h, 5.g ni 5.e.",
-          "_dependencias_adicionales": ["5.d-payload-e-indice-de-simbolos", "5.f-revivir-collection-manifest", "11.4-rebaseline-olas-5-y-6"],
+          "_dependencias_adicionales": [
+            "5.d-payload-e-indice-de-simbolos",
+            "5.f-revivir-collection-manifest",
+            "11.4-rebaseline-olas-5-y-6"
+          ],
           "_reconciliacion": "LightRAG §4.1, §4.4 y 12.7. Tenant se prepara aprovechando la re-ingesta, pero no exige autenticacion corporativa ni inventar organizational: usar identidad local explicita y mapeo versionado de origen; si falta mapeo empresarial, dejar sin publicar. set_payload permite completarlo despues. 11.4 NO depende de 5.e; 5.g mantiene su estado bloqueado y se verifica su criterio con esta re-ingesta sin crear un ciclo de cierre.",
           "nota_de_versionado": "El salto de ChunkingContract.Version es una etiqueta de comparabilidad de baselines, no un peaje. NO agrupar varios cambios de chunking en un solo salto para \"ahorrar\" una re-ingesta: agrupar era la respuesta a un coste que no existe y su precio real es perder atribución de causa, que es exactamente lo que encareció el diagnóstico del boost estructural.",
           "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
@@ -1161,8 +1172,12 @@
           "archivos": "src/RagEngine.Api/Program.cs:159, :212, :308",
           "rollback": "Restaurar la validacion anterior solo en modo local aislado; en un despliegue empresarial, mantener denegacion generica y no volver a listar colecciones ajenas.",
           "bloqueado_por": "5.f-revivir-collection-manifest",
-          "_dependencias_adicionales": ["3.2-api-endurecida"],
-          "_absorbe": ["12.5-corregir-el-criterio-de-7.b"],
+          "_dependencias_adicionales": [
+            "3.2-api-endurecida"
+          ],
+          "_absorbe": [
+            "12.5-corregir-el-criterio-de-7.b"
+          ],
           "_reconciliacion": "LightRAG §4.5 y 12.5: el cambio documental de criterio se incorpora aqui; la implementacion sigue pendiente, no se crea una ficha duplicada hecha por haber editado texto.",
           "dependencia": "ProblemDetails ya llego con 3.2-api-endurecida (hecho). No degradar el criterio a un cuerpo simple ni abrir una variante temporal del contrato.",
           "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
@@ -1275,7 +1290,10 @@
           "verificacion": "Pipeline/DefaultIngestionPipeline.cs sin using Qdrant.* ni tipos concretos en firmas; separar escritura y administracion y reutilizar el puerto de retrieval, no inventar un megapuerto. Interrumpir/reanudar un fixture con resumen_pending no reprocesa lo terminado ni pierde SummaryVector. Construir RetrievalOptions sin contexto explicito falla al compilar; contexto local para CLI/eval, autorizado para empresa, nunca null=todo. Tests con dos tenants y dos modulos: busqueda densa, sparse, resumen, fetch de fuentes y two-hop aplican dentro del puerto el mismo filtro obligatorio; la expansion no reintroduce puntos no autorizados. Evaluaciones locales con contexto equivalente mantienen hit@k por pregunta contra controles de igual hash/n. Derivar modulo de namespace/relative_path sin re-ingesta.",
           "archivos": "src/RagEngine.Core/Abstractions/ISemanticRetriever.cs, src/RagEngine.Core/Domain/RetrievalResult.cs (RetrievalOptions), src/RagEngine.Core/Infrastructure/VectorStore/, src/RagEngine.Core/Pipeline/DefaultIngestionPipeline.cs, src/RagEngine.Api/Program.cs, src/RagEngine.Cli/Commands/, tests/RagEngine.Core.Tests/",
           "bloqueado_por": "7.b-validar-coleccion-en-la-api",
-          "_absorbe": ["12.4-filtro-en-el-puerto", "12.6-filtro-por-modulo-intra-coleccion"],
+          "_absorbe": [
+            "12.4-filtro-en-el-puerto",
+            "12.6-filtro-por-modulo-intra-coleccion"
+          ],
           "_limite_de_activacion": "Puertos, contexto obligatorio, politica y fixtures se construyen localmente. La activacion REAL de ACL por modulo requiere un mapa corporativo autorizado de roles/permission-roles a modulos validado en 12.2-identidad-y-auditoria (bloqueado); no es dependencia dura del refactor. Sin ese mapa declarar solo autorizacion por sistema; no inferir permisos del nombre de una carpeta ni mantener una matriz paralela. Esta nota delimita alcance local, no difiere esta ficha.",
           "_reconciliacion": "LightRAG §4.3-4.4 y §4.8: conserva los roles vector/KV/grafo/estado sin imponer un backend. 9.5-tests-de-arquitectura congela la obligacion de contexto despues del refactor.",
           "horas_maquina": 0.3,
@@ -1341,7 +1359,11 @@
           "estado": "bloqueado",
           "_condicion_de_reentrada": "Responsable: mantenedor de arquitectura. Exigir hechos 9.1-puertos-del-vector-store, 9.2-hosts-sin-qdrantclient, 9.3-resultado-estructurado-de-generacion y 9.4-puerto-de-cache-de-resumenes. 9.2 ya encadena 9.1; 9.3 y 9.4 son independientes, no se les inventa orden tecnico. Comprobar los cuatro cierres antes de volver a pendiente; despues construir la barrera sin excepciones.",
           "_preparacion_de_verificacion": "El proyecto de arquitectura y mutantes de contexto obligatorio no existen. Crearlos en esta ficha tras los refactors, con referencias a Core/Api/Cli y mutaciones que reintroduzcan dependencias/filtro omitido; solo entonces fijar comando que ejecute reglas y controles rojos. CompositionRootTests no es sustituto.",
-          "_dependencias_adicionales": ["9.1-puertos-del-vector-store", "9.2-hosts-sin-qdrantclient", "9.3-resultado-estructurado-de-generacion"],
+          "_dependencias_adicionales": [
+            "9.1-puertos-del-vector-store",
+            "9.2-hosts-sin-qdrantclient",
+            "9.3-resultado-estructurado-de-generacion"
+          ],
           "archivos": "tests/ (proyecto de arquitectura nuevo con referencias a Core/Api/Cli), src/RagEngine.Core/RagEngine.Core.csproj, src/RagEngine.Api/RagEngine.Api.csproj, src/RagEngine.Cli/RagEngine.Cli.csproj, RagEngine.slnx",
           "_reconciliacion": "LightRAG 12.4: añadir guardia sobre todos los constructores/factorias de RetrievalOptions y caminos de busqueda; una mutacion que quite contexto obligatorio o permita ruta alternativa sin filtro debe fallar. Pruebas locales con fixtures, no requieren IdentityServer.",
           "por_que_este_modelo": "Escribir reglas sobre namespaces y montar un proyecto de tests nuevo. Mecanico una vez decidido el alcance.",
@@ -1542,7 +1564,9 @@
           "verificacion": "Guardar hash/arquitectura/binario efectivo y StableGateScore junto a umbrales en perfil. Test rechaza usar calibracion con hash distinto. Para cambiar binario, barrido del labeled-set de gate (referencia historica 65, declarar n efectivo presente/ausente), no usar las 47 de recall para calibrar. A/B emparejado: ninguna fabricacion nueva y respuestas correctas no inferiores al control; documentar cruces por pregunta y abstenciones, aunque recall@10 coincida.",
           "rollback": "Restaurar binario y su perfil/umbrales juntos; conservar ambos barridos. No mezclar calibracion int8 con fp32.",
           "bloqueado_por": "7.a-perfil-por-coleccion",
-          "_dependencias_adicionales": ["4.5-regresion-bandas-y-estabilidad"],
+          "_dependencias_adicionales": [
+            "4.5-regresion-bandas-y-estabilidad"
+          ],
           "_limite_de_activacion": "Esta ficha implementa el contrato hash/umbrales local con fixtures; no depende de otro binario. Barrido adicional solo al proponer usarlo; x64 real sigue bloqueado por 3.5-portabilidad-x64 antes de desplegarlo. No declarar calibrado un binario no probado ni bloquear retrieval del Mac."
         },
         {
@@ -1561,7 +1585,12 @@
           "verificacion": "Confirmar con operador Authority/audience por entorno, forma simple/multiple de organizational, client vs roles/permission-roles, consulta a permissions.service y registro del recurso rym.ti.ragengine.read/write/admin. Sin token/expirado/audiencia errada ->401; .read no puede escribir/admin ->403; claim ambiguo/ausente no concede tenant. Probar usuario y client_credentials con sub persistido en todos los eventos, sin guardar tokens. ACL exige scope del sistema indexado ademas de operacion RAG y tenant. Para modulo exigir mapa aprobado; si falta, documentar grano por sistema y dejar activacion fina pendiente, no inventar permisos.",
           "rollback": "Deshabilitar perfil/publicacion empresarial conservando auditoria y claves fuera del repo; volver al modo local explicitamente aislado, nunca a API anonima publicada.",
           "bloqueado_por": "12.11-auditoria-local-con-actor",
-          "_dependencias_adicionales": ["5.f-revivir-collection-manifest", "9.5-tests-de-arquitectura", "12.8-secretos-y-tls", "12.9-retencion-del-log"],
+          "_dependencias_adicionales": [
+            "5.f-revivir-collection-manifest",
+            "9.5-tests-de-arquitectura",
+            "12.8-secretos-y-tls",
+            "12.9-retencion-del-log"
+          ],
           "_diferido": "Integracion empresarial futura: no bloquea ninguna ficha de retrieval/ingesta local.",
           "_condicion_de_ejecucion": "Habilitar consumidores empresariales y disponer del registro/scopes y semantica de claims confirmados. El objetivo se mantiene; no se marca irrelevante por trabajar localmente."
         }
@@ -1590,7 +1619,10 @@
           "verificacion": "Fixture de >=10 documentos con exito, fallo de parseo, fallo de upsert y cancelacion: registro por run_id/documento con ruta relativa+repo, content_hash, contrato, actor, tiempos y estado pending/running/succeeded/failed. Matar/reanudar el proceso lista exactamente faltantes/fallidos, conserva historia y no duplica completados. Fallo entre upsert y persistencia se reconcilia idempotentemente. Backend local con un escritor y puerto propio; ninguna historia anterior se inventa.",
           "rollback": "Respaldar/exportar tablas con version de esquema; restaurar lector anterior y snapshot si procede sin borrar historia. Reanudar a partir de evidencias existentes, nunca reiniciar todo el corpus a ciegas.",
           "bloqueado_por": "12.11-auditoria-local-con-actor",
-          "_dependencias_adicionales": ["8.f-identidad-de-chunk-sin-ruta-absoluta", "9.1-puertos-del-vector-store"]
+          "_dependencias_adicionales": [
+            "8.f-identidad-de-chunk-sin-ruta-absoluta",
+            "9.1-puertos-del-vector-store"
+          ]
         },
         {
           "id": "13.3-opentelemetry",
@@ -1624,7 +1656,10 @@
           "verificacion": "Exporter en memoria/local recibe una traza raiz y spans con duracion de los cinco pasos cuando se ejecutan; pasos omitidos quedan declarados, no inventados. Mismo trace_id en auditoria y logs. Fixture de streaming cancelado/fallo cierra spans con estado correcto; no guarda pregunta, fuentes ni credenciales por defecto.",
           "rollback": "Apagar sampling/exportacion; conservar eventos de auditoria y contrato del turno.",
           "bloqueado_por": "13.3-opentelemetry",
-          "_dependencias_adicionales": ["9.3-resultado-estructurado-de-generacion", "12.11-auditoria-local-con-actor"]
+          "_dependencias_adicionales": [
+            "9.3-resultado-estructurado-de-generacion",
+            "12.11-auditoria-local-con-actor"
+          ]
         },
         {
           "id": "13.5-metricas-que-faltan",
@@ -1642,7 +1677,10 @@
           "verificacion": "Fixture de turnos en cada banda, con/sin rerank, fallo/cancelacion y cache hit/miss produce contadores e histogramas exactos en exportador local. Denominadores de hit-rate y latencia documentados; reutilizar rag_chunks_truncated_total de 11.1, no duplicarlo. Instancias de prueba paralelas no contaminan contadores: encapsular estado global por instancia/Meter o probar aislamiento equivalente sin crear un puerto por cada metrica.",
           "rollback": "Desactivar instrumentos nuevos conservando nombres/unidades de los cuatro antiguos y sin cambiar comportamiento de retrieval.",
           "bloqueado_por": "13.4-trazas-del-turno",
-          "_dependencias_adicionales": ["11.1-medir-truncamiento", "9.4-puerto-de-cache-de-resumenes"]
+          "_dependencias_adicionales": [
+            "11.1-medir-truncamiento",
+            "9.4-puerto-de-cache-de-resumenes"
+          ]
         },
         {
           "id": "13.6-consola-de-administracion",
@@ -1661,7 +1699,12 @@
           "verificacion": "Prueba de recorrido con operador local no desarrollador: identificar coleccion, perfil/ACL, contrato, ultima ingesta y sus fallos, actor y ultimo eval con procedencia. Datos se leen de puertos, no placeholders ni logs parseados. Fixture no administrador no puede ejecutar acciones administrativas ni ver colecciones ajenas; modo consulta separado. Tras reinicio conserva historial. No necesita IDP corporativo para recorrido local.",
           "rollback": "Deshabilitar la consola conservando CLI, datos y auditoria; no revertir esquemas ni borrar historial.",
           "bloqueado_por": "13.1-estado-por-documento",
-          "_dependencias_adicionales": ["7.a-perfil-por-coleccion", "9.2-hosts-sin-qdrantclient", "12.11-auditoria-local-con-actor", "13.5-metricas-que-faltan"]
+          "_dependencias_adicionales": [
+            "7.a-perfil-por-coleccion",
+            "9.2-hosts-sin-qdrantclient",
+            "12.11-auditoria-local-con-actor",
+            "13.5-metricas-que-faltan"
+          ]
         },
         {
           "id": "13.2-kv-a-postgres",
@@ -1699,7 +1742,10 @@
           "verificacion": "En Postgres local, migracion desde manifiestos Qdrant y almacenes locales conserva conteos/hash, ACL, actores y transiciones; consulta a coleccion con manifiesto ausente/inconsistente se deniega en perfil empresarial. Permisos de DB separan administracion de ACL, escritor de auditoria y consulta. Fallo a mitad se reanuda sin duplicados. Vectores siguen en Qdrant: no sustituir sparse/vectores nombrados/RRF por pgvector sin experimento separado.",
           "rollback": "Snapshot y exportacion versionada de manifiestos, eventos y estados, corte de escrituras durante cambio; rollback conserva ACL cerradas y delta de historia. No volver a manifest inerte si ya se publico multiempresa.",
           "bloqueado_por": "13.1-estado-por-documento",
-          "_dependencias_adicionales": ["5.f-revivir-collection-manifest", "12.11-auditoria-local-con-actor"],
+          "_dependencias_adicionales": [
+            "5.f-revivir-collection-manifest",
+            "12.11-auditoria-local-con-actor"
+          ],
           "_diferido": "Adaptadores compartidos futuros; backend local actual permanece valido mientras tenga un escritor.",
           "_condicion_de_ejecucion": "Requerimiento aprobado de estado compartido/administracion multiusuario. Se prueba con contenedores locales antes de proponer un servidor corporativo."
         }
@@ -1784,7 +1830,10 @@
           "verificacion": "Antes de generar descripciones etiquetar >=20 preguntas de relacion y >=10 negativos con evidencia origen/destino; congelar n/hash. Cada descripcion cita simbolos y fragmentos fuente; invalidar por hash/version sin alterar cache de resumenes de chunk. A/B banda OFF/ON y barrido de peso en conjunto de calibracion separado: ganar >=4 aciertos netos @10 en las >=20 de relacion; no perder mas de 1 neto por eval-set de control ni fabricar relaciones en los >=10 negativos. Registrar llamada LLM/cache, coste, latencia y escala RRF, no promover modo mix por reputacion externa.",
           "rollback": "Peso de relacion=0/bandera OFF y control anterior; almacenar vectores/descripciones en espacio separado para no borrar dense/sparse/resumen ni su cache.",
           "bloqueado_por": "9.7-rrf-calibracion-y-produccion",
-          "_dependencias_adicionales": ["11.4-rebaseline-olas-5-y-6", "5.b-resumen-por-archivo"],
+          "_dependencias_adicionales": [
+            "11.4-rebaseline-olas-5-y-6",
+            "5.b-resumen-por-archivo"
+          ],
           "_condicion_de_ejecucion": "Instrumento de truncamiento resuelto y experimento de granularidad 5.b evaluado, incluso si conserva resumen por chunk. No depende de grafo persistido ni de computo remoto.",
           "advertencia_de_coste": "2 h es estimacion provisional del A/B y generacion de descripciones, no permiso ni coste medido. Contar pares unicos, cache misses y llamadas antes de generar, reestimar y pedir confirmacion; no asumir ahorro diez veces ni repetir resumen por cada chunk."
         },
@@ -1804,7 +1853,10 @@
           "verificacion": "Entrada: 6.d documenta >=11 colisiones de 30. Comparar mismo conjunto con cualificacion sintactica, resolucion semantica y prototipo de grafo LOCAL, sin imponer Neo4j/servicio nuevo. Promover solo alternativa con >=27/30 expansiones correctas, ganancia de salto >=max(4,ceil(0,25*n_salto)) frente al control sin expansion, cero perdidas fuera del subconjunto y aumento p95 <=150 ms sobre mismas consultas. Si gana grafo, fixture de alta/actualizacion/borrado/reanudacion conserva aristas versionadas sin huerfanos y filtros de autorizacion en cada salto. Si mejora una alternativa menor, no desplegar grafo por simetria y conservar su activacion bloqueada con la evidencia.",
           "rollback": "Desactivar adaptador/expansion y restaurar indice y estado de relaciones de control; conservar snapshot del grafo para no perder procedencia ni mezclar versiones. Cache y vectores de chunks no se reemplazan.",
           "bloqueado_por": "6.d-precision-del-join-por-nombre",
-          "_dependencias_adicionales": ["11.4-rebaseline-olas-5-y-6", "9.1-puertos-del-vector-store"],
+          "_dependencias_adicionales": [
+            "11.4-rebaseline-olas-5-y-6",
+            "9.1-puertos-del-vector-store"
+          ],
           "_condicion_de_ejecucion": "Exclusivamente >=11/30 colisiones medidas por 6.d; resultado nulo de recall por si solo no habilita grafo.",
           "advertencia_de_coste": "2 h provisionales para tres alternativas y mediciones; reestimar construccion/actualizacion y misses si se usa LLM, y pedir confirmacion. No trasladar ingesta a servidores como requisito."
         },
@@ -1930,7 +1982,10 @@
           "verificacion": "Solo con resultado/aprobacion de 16.1: canal autenticado y cifrado o tunel aprobado, acceso ajeno rechazado, sin exponer Ollama desnudo en 0.0.0.0. Prueba con datos autorizados de generacion y resumen, desconexion/suspension del equipo, timeout y reanudacion sin repetir resultados finalizados; retorno a endpoint local verificado. Medir latencia con >=20 turnos emparejados y coste LLM real por misses, no asumir 19 h. ONNX permanece en proceso; no prometer NPU ni embeddings remotos.",
           "rollback": "Restaurar endpoint local, revocar tuneles/credenciales y cerrar exclusivamente puertos abiertos por esta prueba; conservar cache y progreso consistente.",
           "bloqueado_por": "16.1-comparar-capacidad-remota",
-          "_dependencias_adicionales": ["8.e-resiliencia-en-generacion", "12.8-secretos-y-tls"],
+          "_dependencias_adicionales": [
+            "8.e-resiliencia-en-generacion",
+            "12.8-secretos-y-tls"
+          ],
           "_diferido": "Propuesta futura sin dependencia para trabajo local.",
           "_condicion_de_ejecucion": "Caso remoto aprobado, equipo disponible y gobernanza del dato acordada. Ni el analisis ni esta ficha autorizan enviar codigo privado a otra maquina."
         },
@@ -1951,7 +2006,12 @@
           "verificacion": "Con aprobacion de infraestructura para Qdrant (sin sustituirlo por pgvector por decreto), probar en entorno autorizado: API tras TLS/Ingress y JwtBearer, Qdrant solo ClusterIP con PVC/snapshot restaurable, ingesta local por tunel/RBAC sin publicar Qdrant. Portabilidad x64 real cerrada y umbrales ligados al binario efectivo; corte del Mac/inferencia devuelve error/degradacion controlada, no fabricacion. Evals de mismos hashes/n pierden <=1 acierto neto por set; gate cumple su propio labeled-set, no inferirlo del recall. Postgres solo si las migraciones de estado/cache se aprobaron y validaron.",
           "rollback": "Restaurar servicio local/config y snapshots consistentes de vectores, manifiestos, cache y eventos; conservar delta escrito durante piloto, retirar recursos nuevos tras verificar retorno. No borrar almacenamiento corporativo preexistente.",
           "bloqueado_por": "16.2-ollama-remoto-reversible",
-          "_dependencias_adicionales": ["3.5-portabilidad-x64", "8.e-resiliencia-en-generacion", "12.2-identidad-y-auditoria", "12.10-recalibrar-el-gate-por-binario"],
+          "_dependencias_adicionales": [
+            "3.5-portabilidad-x64",
+            "8.e-resiliencia-en-generacion",
+            "12.2-identidad-y-auditoria",
+            "12.10-recalibrar-el-gate-por-binario"
+          ],
           "_diferido": "Despliegue futuro: no condiciona ninguna ficha local.",
           "_condicion_de_ejecucion": "Decision explicita de migracion y presupuesto/operacion aceptados; si se elige Postgres, completar tambien 13.2-kv-a-postgres y 13.7-manifiestos-estado-y-auditoria-en-postgres antes del corte."
         }

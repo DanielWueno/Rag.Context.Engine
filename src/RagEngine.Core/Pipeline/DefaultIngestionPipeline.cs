@@ -193,6 +193,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         sw.Stop();
 
+        var (tokensN, tokensP50, tokensP95) = stats.ComputeTokenPercentiles();
+
         var summary = new IngestionSummary(
             FilesScanned: stats.FilesScanned,
             ChunksGenerated: stats.ChunksGenerated,
@@ -202,7 +204,13 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             EstimatedMemoryPeakBytes: GC.GetTotalMemory(false),
             ResumenesCompleted: resumenStats?.Completed ?? 0,
             ResumenesPending: resumenStats?.Pending ?? 0,
-            ResumenesSinNegocio: resumenStats?.SinNegocio ?? 0);
+            ResumenesSinNegocio: resumenStats?.SinNegocio ?? 0,
+            TokensObserved: tokensN,
+            TokensP50: tokensP50,
+            TokensP95: tokensP95,
+            TokensMaxUsable: stats.TokensMaxUsable,
+            ChunksTruncatedTotal: stats.ChunksTruncatedTotal,
+            TokensDiscardedTotal: stats.TokensDiscardedTotal);
 
         _logger.LogInformation(
             "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Obsoletos borrados: {Deleted}, Duration: {Elapsed}",
@@ -340,7 +348,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         // resumen habilitado, en paralelo también se busca el estado de resumen que estos
         // mismos chunk IDs ya tuvieran de una corrida anterior (decisión: re-ingestar nunca
         // debe destruir un resumen ya generado — ver GetExistingResumenStateAsync).
-        var denseTask = _brain.GenerateBatchEmbeddingsAsync(texts, ct);
+        var denseTask = _brain.GenerateBatchEmbeddingsWithStatsAsync(texts, ct);
         var sparseTask = Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
         var existingResumenTask = markResumenPending
             ? _vectorStore.GetExistingResumenStateAsync(collectionName, batch.Select(c => c.Id).ToList(), ct)
@@ -355,9 +363,22 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             await Task.WhenAll(denseTask, sparseTask, existingResumenTask);
 
-            denseVectors = (await denseTask).ToArray();
+            var denseResult = await denseTask;
+            denseVectors = denseResult.Embeddings.ToArray();
             sparseVectors = await sparseTask;
             existingResumenStates = await existingResumenTask;
+
+            // 11.1: contar T/descartados/truncados de la fase de embedding de
+            // chunks ADMITIDOS, independientemente de si el upsert a Qdrant
+            // más abajo termina en éxito o error — el costo de tokenización ya
+            // se pagó y es lo que hay que medir.
+            stats.RecordTokenizationStats(denseResult.Stats);
+            long batchTruncated = denseResult.Stats.Count(s => s.Truncated);
+            long batchDiscarded = denseResult.Stats.Sum(s => (long)s.Discarded);
+            if (batchTruncated > 0)
+                RagEngineMetrics.ChunksTruncatedTotal.Add(batchTruncated, new KeyValuePair<string, object?>("collection", collectionName));
+            if (batchDiscarded > 0)
+                RagEngineMetrics.TokensDiscardedTotal.Add(batchDiscarded, new KeyValuePair<string, object?>("collection", collectionName));
         }
         catch (Exception)
         {
@@ -602,5 +623,43 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         public int ChunksIndexed;
         public int PointsDeleted;
         public int FilesSkipped;
+
+        // ── 11.1: medición de tokens reales de la fase de embedding ─────────
+        // Un solo escritor lógico por lote (ProcessBatchAsync agrega sus propios
+        // T antes de soltar el control), pero varios consumidores concurrentes
+        // pueden llamar a la vez: se protege con un candado propio, separado de
+        // los contadores Interlocked de arriba porque agrega a una lista, no a
+        // un entero.
+        private readonly object _tokenStatsLock = new();
+        private readonly List<int> _tokenCounts = [];
+        public long ChunksTruncatedTotal;
+        public long TokensDiscardedTotal;
+        public int TokensMaxUsable;
+
+        public void RecordTokenizationStats(IReadOnlyList<TokenizationStats> batchStats)
+        {
+            lock (_tokenStatsLock)
+            {
+                foreach (var s in batchStats)
+                {
+                    _tokenCounts.Add(s.TotalTokens);
+                    if (s.Truncated) ChunksTruncatedTotal++;
+                    TokensDiscardedTotal += s.Discarded;
+                    TokensMaxUsable = s.MaxUsableTokens;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Percentil nearest-rank (1-indexado, indice=ceil(p*n)) sobre T
+        /// ordenados. n=0 no produce percentiles ficticios: retorna null.
+        /// </summary>
+        public (int N, int? P50, int? P95) ComputeTokenPercentiles()
+        {
+            lock (_tokenStatsLock)
+            {
+                return Diagnostics.TokenPercentileCalculator.Compute(_tokenCounts);
+            }
+        }
     }
 }

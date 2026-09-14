@@ -4,6 +4,7 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 
 namespace RagEngine.Core.Infrastructure.Vectorization;
 
@@ -35,9 +36,21 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
     private readonly Tokenizer _tokenizer;
     private readonly OnnxBrainOptions _options;
     private readonly ILogger<OnnxVectorizationBrain> _logger;
+
+    /// <summary>
+    /// S: número de tokens especiales que el tokenizador efectivo añade por
+    /// entrada (ítem 11.1). Se verifica dinámicamente contra IDs sin truncar
+    /// en el constructor — NO se infiere del nombre de la familia (WordPiece
+    /// añade [CLS]/[SEP] vía la propia librería; SentencePiece los añade este
+    /// código manualmente con la convención fairseq, ver EncodeSentencePiece).
+    /// </summary>
+    private readonly int _specialTokenCount;
+
     private bool _disposed;
 
     public int EmbeddingDimensions => _options.EmbeddingDimensions;
+
+    public int MaxSequenceLength => _options.MaxSequenceLength;
 
     public OnnxVectorizationBrain(
         IOptions<OnnxBrainOptions> options,
@@ -72,6 +85,7 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
         _session = new InferenceSession(_options.ModelPath, sessionOptions);
 
         _tokenizer = CreateTokenizer();
+        _specialTokenCount = ComputeSpecialTokenCount();
 
         _logger.LogInformation(
             "ONNX model loaded. Tokenizer: {Tokenizer}, Embedding dimension: {Dim}, MaxSeqLen: {Seq}",
@@ -105,20 +119,78 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
         }
     }
 
+    /// <summary>
+    /// Calcula S verificándolo contra IDs reales sin truncar, no asumiéndolo del
+    /// nombre de la familia (11.1 §_oraculo_de_aceptacion). Para WordPiece, se
+    /// mide la diferencia real que <see cref="BertTokenizer"/> añade con
+    /// addSpecialTokens=true vs false sobre una entrada vacía ([CLS]/[SEP]).
+    /// Para SentencePiece este código añade &lt;s&gt;/&lt;/s&gt; manualmente
+    /// (ver <see cref="EncodeSentencePiece"/>): S=2 es una constante propia,
+    /// no un comportamiento del tokenizer subyacente.
+    /// </summary>
+    private int ComputeSpecialTokenCount()
+    {
+        if (_options.TokenizerType == OnnxTokenizerKind.SentencePiece)
+            return 2; // <s> + </s>, insertados por este código (XlmrBosId/XlmrEosId).
+
+        var bert = (BertTokenizer)_tokenizer;
+        int withSpecials = bert.EncodeToIds(string.Empty, addSpecialTokens: true).Count;
+        int withoutSpecials = bert.EncodeToIds(string.Empty, addSpecialTokens: false).Count;
+        return withSpecials - withoutSpecials;
+    }
+
+    /// <summary>
+    /// Cuenta T (tokens no especiales del texto completo, antes de truncar) con
+    /// el tokenizador efectivo y deriva descartados/truncado contra L=M-S
+    /// (ítem 11.1). Tokeniza aparte de <see cref="EncodeWordPiece"/>/
+    /// <see cref="EncodeSentencePiece"/> a propósito: así desactivar esta
+    /// medición no cambia el contenido ni el embedding real producido.
+    /// </summary>
+    private TokenizationStats AnalyzeTokenization(string text)
+    {
+        int total = _options.TokenizerType == OnnxTokenizerKind.SentencePiece
+            ? _tokenizer.EncodeToIds(text).Count
+            : ((BertTokenizer)_tokenizer).EncodeToIds(text, addSpecialTokens: false).Count;
+
+        int usable = Math.Max(0, _options.MaxSequenceLength - _specialTokenCount);
+        int discarded = Math.Max(0, total - usable);
+        bool truncated = total > usable;
+
+        return new TokenizationStats(total, usable, discarded, truncated);
+    }
+
     /// <inheritdoc />
     public Task<float[]> GenerateEmbeddingAsync(
         string text, CancellationToken cancellationToken = default)
-        => Task.Run(() => EmbedBatch([text])[0], cancellationToken);
+        => Task.Run(() => EmbedBatch([text]).Embeddings[0], cancellationToken);
 
     /// <inheritdoc />
     public Task<IReadOnlyList<float[]>> GenerateBatchEmbeddingsAsync(
         IEnumerable<string> texts,
         CancellationToken cancellationToken = default)
-        => Task.Run(() => (IReadOnlyList<float[]>)EmbedBatch(texts.ToList()), cancellationToken);
+        => Task.Run(() => EmbedBatch(texts.ToList()).Embeddings, cancellationToken);
 
-    private IReadOnlyList<float[]> EmbedBatch(IReadOnlyList<string> texts)
+    /// <inheritdoc />
+    public Task<VectorizationBatchResult> GenerateBatchEmbeddingsWithStatsAsync(
+        IEnumerable<string> texts,
+        CancellationToken cancellationToken = default)
+        => Task.Run(() =>
+        {
+            var (embeddings, stats) = EmbedBatch(texts.ToList());
+            return new VectorizationBatchResult(embeddings, stats);
+        }, cancellationToken);
+
+    private (IReadOnlyList<float[]> Embeddings, IReadOnlyList<TokenizationStats> Stats) EmbedBatch(
+        IReadOnlyList<string> texts)
     {
         int batchSize = texts.Count;
+
+        // Medición 11.1: se hace ANTES de tokenizar para el tensor, con una
+        // pasada propia que nunca trunca (ver AnalyzeTokenization). No influye
+        // en el contenido de encoded[i] ni en seqLen.
+        var stats = new TokenizationStats[batchSize];
+        for (int i = 0; i < batchSize; i++)
+            stats[i] = AnalyzeTokenization(texts[i]);
 
         // ── Pass 1: tokenizar todo el lote (acotado por MaxSequenceLength) ──
         var encoded = new long[batchSize][];
@@ -190,7 +262,7 @@ public sealed class OnnxVectorizationBrain : IVectorizationBrain, IDisposable
         for (int i = 0; i < batchSize; i++)
             result[i] = MeanPoolAndNormalize(hiddenState, attnMask, i, seqLen);
 
-        return result;
+        return (result, stats);
     }
 
     /// <summary>

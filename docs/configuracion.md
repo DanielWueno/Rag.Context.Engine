@@ -36,6 +36,35 @@
 | `MaxSequenceLength` | Techo de truncamiento. El costo de inferencia escala con la longitud real del lote (padding dinámico), así que subirlo solo afecta a los chunks largos. |
 | `StableGateScore` | Con `true`, el score del resultado #1 se recalcula en un lote de tamaño 1 tras el re-rank, y deja de depender del `TopK`. Es el número que lee el gate de confianza, así que cambiarlo obliga a revisar `LowConfidenceThreshold` / `HighConfidenceThreshold`. Ver [Score estable del gate](#score-estable-del-gate-crossencoderstablegatescore). |
 
+## Autorización de lectura HTTP (`Authorization:Mode`)
+
+`src/RagEngine.Api/appsettings.json` declara `"Authorization": { "Mode": "Local" }`.
+También se puede fijar `Authorization__Mode=Local|Empresarial` al arrancar el host;
+los modos desconocidos se rechazan, nunca se convierten en Local.
+
+- **Local** (default): operador y evals usan un administrador sintético, sin consultar
+  identidad ni IDP. Cualquier cliente que alcance esta API obtiene ese acceso:
+  reservarlo para un entorno local de confianza, no para una frontera empresarial.
+- **Empresarial**: `/api/search`, `/api/ask` y `/api/ask/stream` comprueban el manifiesto
+  antes de recuperar contenido, generar texto o abrir SSE. Sin identidad autenticada
+  devuelven 403; no hay fallback local ni headers de bypass. Este ítem no instala un
+  IDP/JWT: sin un autenticador de confianza que establezca `HttpContext.User`, las
+  lecturas empresariales quedan denegadas.
+
+El adaptador acepta una única identidad autenticada: rol `admin` en `ClaimTypes.Role`
+o el `RoleClaimType` configurado por el host; claims `scope` repetidos o separados
+por espacios; un único valor distinto de `tenant` (opcional). No mezcla identidades
+ni acepta tenants ambiguos. Todos los identificadores de permiso son ordinales y
+sensibles a mayúsculas. Un administrador lee siempre; otro actor necesita algún
+`RequiredScopes` coincidente **y**, si `Tenants` tiene elementos, un tenant permitido.
+`Tenants=[]` no restringe tenant, pero sigue exigiendo scope. Sin manifiesto o con
+`RequiredScopes=[]`, sólo lee el administrador.
+
+El modo se fija al iniciar; cambiarlo requiere reiniciar, no re-ingestar ni modificar
+vectores/manifiestos. Este control cubre las tres rutas HTTP, no convierte el CLI,
+el acceso directo a Qdrant ni los endpoints de diagnóstico/listado en una frontera
+empresarial. IDP real, auditoría y endurecimiento de despliegue quedan fuera de alcance.
+
 ## Declaraciones cortas (`Ingestion:IndexShortTypeDeclarations`)
 
 Experimento local de 5.h, **desactivado por defecto**. Con `true`, una declaración

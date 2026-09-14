@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Json;
@@ -10,6 +11,7 @@ using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Vectorization;
+using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Services.Generation;
 using RagEngine.Core.Services.Summary;
 using RagEngine.Core.Utilities;
@@ -166,6 +168,57 @@ try
     app.UseStaticFiles();
 
     var defaultCollection = builder.Configuration["Qdrant:DefaultCollection"] ?? "default";
+
+    static CollectionIdentity? ReadCollectionIdentity(HttpContext http)
+    {
+        // Sólo claims de una identidad autenticada por el host. No se interpretan
+        // headers/token crudos como identidad ni se mezclan privilegios de identidades.
+        var identities = http.User.Identities.Where(identity => identity.IsAuthenticated).ToArray();
+        if (identities.Length != 1)
+            return null;
+
+        var identity = identities[0];
+        var tenants = identity.FindAll("tenant").Select(claim => claim.Value)
+            .Distinct(StringComparer.Ordinal).ToArray();
+        if (tenants.Length > 1)
+            return null;
+
+        return new CollectionIdentity
+        {
+            IsAuthenticated = true,
+            Actor = new CollectionActor
+            {
+                // RoleClaimType permite el mapeo del host; "admin" es sensible a mayúsculas.
+                IsAdministrator = identity.HasClaim(ClaimTypes.Role, "admin") ||
+                    identity.HasClaim(identity.RoleClaimType, "admin"),
+                // "scope" admite claims repetidos (arrays mapeados por el host) y valores
+                // separados por espacios; "tenant" es un identificador único opcional.
+                Scopes = identity.FindAll("scope")
+                    .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                    .Distinct(StringComparer.Ordinal).ToArray(),
+                Tenant = tenants.SingleOrDefault()
+            }
+        };
+    }
+
+    static async Task<IResult?> AuthorizeCollectionAsync(
+        string collection,
+        HttpContext http,
+        QdrantVectorStore store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        CancellationToken cancellationToken)
+    {
+        // Manifiesto ausente equivale a no publicado: sólo administrador, no acceso público.
+        var manifest = await store.GetManifestAsync(collection, cancellationToken);
+        // La lectura de HttpContext.User es perezosa: Local nunca toca la fuente de identidad.
+        var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
+        return authorization.Authorize(manifest, actor)
+            ? null
+            : Results.Problem(
+                title: "No tiene autorización para leer esta colección.",
+                statusCode: StatusCodes.Status403Forbidden);
+    }
 
     // /api/ask and /api/ask/stream retrieve sources independently from the
     // RagGenerationService call that actually answers the question, so the two
@@ -343,10 +396,14 @@ try
         return Results.Ok(new { message = "Metrics recorded. Check with: dotnet-counters monitor -p <PID> --counters 'Rag.Context.Engine'" });
     });
 
+    // Retrieval/generación/caché se resuelven después de autorizar: el binding de
+    // parámetros DI los construiría antes del handler, incluso para devolver 403.
     app.MapPost("/api/search", async (
         RagQueryRequest request,
-        ISemanticRetriever retriever,
-        SummaryCache summaryCache,
+        HttpContext http,
+        QdrantVectorStore store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -354,6 +411,13 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
+        var denied = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+            return denied;
+
+        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
+        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
@@ -395,11 +459,10 @@ try
 
     app.MapPost("/api/ask", async (
         RagQueryRequest request,
-        ISemanticRetriever retriever,
-        IRagGenerationService generation,
-        ConfidenceGate confidenceGate,
-        IMetaIntentDetector metaIntentDetector,
-        SummaryCache summaryCache,
+        HttpContext http,
+        QdrantVectorStore store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -407,6 +470,16 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
+        var denied = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+            return denied;
+
+        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
+        var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
+        var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
+        var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
+        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;
@@ -487,11 +560,9 @@ try
     app.MapPost("/api/ask/stream", async (
         RagQueryRequest request,
         HttpContext http,
-        ISemanticRetriever retriever,
-        IRagGenerationService generation,
-        ConfidenceGate confidenceGate,
-        IMetaIntentDetector metaIntentDetector,
-        SummaryCache summaryCache,
+        QdrantVectorStore store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -503,6 +574,19 @@ try
         }
 
         var collection = request.Collection ?? defaultCollection;
+        var denied = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+        {
+            await denied.ExecuteAsync(http);
+            return;
+        }
+
+        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
+        var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
+        var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
+        var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
+        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
         var topK = request.TopK ?? 10;
         var minScore = request.MinScore ?? 0.10f;
         var rerank = request.Rerank ?? true;

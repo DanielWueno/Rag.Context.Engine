@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Qdrant.Client;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using Xunit;
 
@@ -180,11 +181,8 @@ public sealed class CollectionManifestPersistenceTests : IAsyncLifetime
 
     /// <summary>
     /// Segunda mitad del criterio de 5.f.2: una colección migrada así debe ser rechazada
-    /// por cualquier actor no-administrador, sin importar qué scope reclame. 5.f.3-acl-
-    /// autorizacion-y-modo-local (bloqueado por este ítem) aún no existe, así que aquí se usa
-    /// un stub local mínimo con la única regla de seguridad que este ítem debe garantizar
-    /// (vacío = no publicado); el diseño completo de ACL (mapeo de actor/tenant/scopes) queda
-    /// fuera de alcance y es responsabilidad de 5.f.3.
+    /// por cualquier actor no-administrador, sin importar qué scope reclame.
+    /// Usa la autorización real de 5.f.3 para comprobar que la migración no publica.
     /// </summary>
     [Fact]
     public void Coleccion_migrada_es_rechazada_por_cualquier_actor_no_administrador()
@@ -200,12 +198,10 @@ public sealed class CollectionManifestPersistenceTests : IAsyncLifetime
             """;
         var migrado = CollectionManifest.FromJson(manifiestoAntiguoJson);
 
-        static bool EsAutorizadoStub(CollectionManifest manifest, bool actorEsAdmin, IReadOnlyList<string> actorScopes) =>
-            actorEsAdmin || (manifest.IsPublished && actorScopes.Intersect(manifest.RequiredScopes).Any());
-
-        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: new[] { "rag.read.sistema" }));
-        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: Array.Empty<string>()));
-        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: new[] { "cualquier-otro-scope" }));
-        Assert.True(EsAutorizadoStub(migrado, actorEsAdmin: true, actorScopes: Array.Empty<string>()));
+        var authorization = new CollectionAuthorizationService();
+        Assert.False(authorization.Authorize(migrado, new CollectionActor { Scopes = ["rag.read.sistema"] }));
+        Assert.False(authorization.Authorize(migrado, new CollectionActor()));
+        Assert.False(authorization.Authorize(migrado, new CollectionActor { Scopes = ["cualquier-otro-scope"] }));
+        Assert.True(authorization.Authorize(migrado, new CollectionActor { IsAdministrator = true }));
     }
 }

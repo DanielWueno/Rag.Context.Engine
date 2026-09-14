@@ -7,6 +7,7 @@ using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Scanning;
@@ -41,6 +42,15 @@ public static class ServiceCollectionExtensions
 
         services.Configure<QdrantOptions>(
             configuration.GetSection(QdrantOptions.SectionName));
+
+        services.Configure<CollectionAuthorizationOptions>(
+            configuration.GetSection(CollectionAuthorizationOptions.SectionName));
+        services.AddOptions<CollectionAuthorizationOptions>()
+            .Validate(options => Enum.IsDefined(options.Mode),
+                "Authorization:Mode debe ser Local o Empresarial.")
+            .ValidateOnStart();
+        services.AddSingleton<ICollectionAuthorizationService, CollectionAuthorizationService>();
+        services.AddSingleton<ICollectionActorResolver, CollectionActorResolver>();
 
         services.Configure<CrossEncoderOptions>(
             configuration.GetSection(CrossEncoderOptions.SectionName));

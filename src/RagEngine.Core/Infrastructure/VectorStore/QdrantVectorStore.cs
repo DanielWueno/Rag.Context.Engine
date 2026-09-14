@@ -27,6 +27,25 @@ public sealed class QdrantVectorStore
     /// </summary>
     public const string ResumenPendingPayloadKey = "resumen_pending";
 
+    /// <summary>
+    /// Clave de payload donde se guarda el <see cref="CollectionManifest"/> serializado
+    /// como JSON. Vive en un único point reservado (<see cref="ManifestPointId"/>), no en
+    /// los points de chunks — ver <see cref="UpsertManifestAsync"/> y
+    /// <see cref="GetManifestAsync"/>.
+    /// </summary>
+    public const string ManifestPayloadKey = "__manifest__";
+
+    /// <summary>Marca booleana del point reservado del manifiesto, usada para excluirlo de búsquedas (ver BuildFilter en QdrantSemanticRetriever).</summary>
+    public const string IsManifestPayloadKey = "is_manifest";
+
+    /// <summary>
+    /// Id fijo y reservado para el único point que guarda el manifiesto de la colección.
+    /// Ningún chunk real puede colisionar con este UUID porque los ids de chunk son
+    /// UUIDv5 derivados de ruta+línea+hash de contenido (ver ChunkBuilder), y este valor
+    /// no es uno de ellos.
+    /// </summary>
+    public static readonly Guid ManifestPointId = new("00000000-0000-0000-0000-00000000ffff");
+
     private static readonly TimeSpan SchemaCacheTtl = TimeSpan.FromMinutes(5);
 
     private readonly QdrantClient _client;
@@ -564,5 +583,100 @@ public sealed class QdrantVectorStore
         };
 
         return new PendingResumenPoint(pointId, chunk);
+    }
+
+    /// <summary>
+    /// Persiste (crea o reemplaza) el <see cref="CollectionManifest"/> de una colección
+    /// en su point reservado (<see cref="ManifestPointId"/>). Idempotente: es un upsert,
+    /// igual que el resto de escrituras de este store. El point lleva un vector denso de
+    /// ceros del tamaño de <see cref="CollectionManifest.EmbeddingDimension"/> — nunca se
+    /// recupera por similitud porque <see cref="IsManifestPayloadKey"/> lo excluye de las
+    /// búsquedas (ver <c>QdrantSemanticRetriever.BuildFilter</c>).
+    /// </summary>
+    public async Task UpsertManifestAsync(
+        string collectionName,
+        CollectionManifest manifest,
+        CancellationToken ct = default)
+    {
+        var point = new PointStruct
+        {
+            Id = new PointId { Uuid = ManifestPointId.ToString() }
+        };
+
+        var denseVec = new Vector();
+        denseVec.Data.AddRange(new float[manifest.EmbeddingDimension]);
+        var namedVectors = new NamedVectors();
+        namedVectors.Vectors[DenseVectorName] = denseVec;
+        point.Vectors = new Vectors { Vectors_ = namedVectors };
+
+        point.Payload[IsManifestPayloadKey] = new Value { BoolValue = true };
+        point.Payload[ManifestPayloadKey] = new Value { StringValue = manifest.ToJson() };
+
+        await _client.UpsertAsync(collectionName, new[] { point }, wait: true, cancellationToken: ct);
+
+        _logger.LogInformation(
+            "Manifiesto persistido para '{Collection}': modelo '{Model}' (sha256 {Hash}), perfil '{Profile}', {ScopeCount} scopes, {TenantCount} tenants.",
+            collectionName, manifest.ModelName, manifest.ModelOnnxSha256, manifest.Profile ?? "(default)",
+            manifest.RequiredScopes.Count, manifest.Tenants.Count);
+    }
+
+    /// <summary>
+    /// Lee el manifiesto de una colección. Devuelve null si la colección no tiene
+    /// manifiesto todavía (colección nunca escrita por este mecanismo, o creada por una
+    /// versión anterior a este ítem) — un null NUNCA implica publicación por defecto.
+    /// </summary>
+    public async Task<CollectionManifest?> GetManifestAsync(string collectionName, CancellationToken ct = default)
+    {
+        var ids = new List<PointId> { new() { Uuid = ManifestPointId.ToString() } };
+        var points = await _client.RetrieveAsync(collectionName, ids, withPayload: true, withVectors: false, cancellationToken: ct);
+
+        if (points.Count == 0) return null;
+        if (!points[0].Payload.TryGetValue(ManifestPayloadKey, out var raw)) return null;
+
+        return CollectionManifest.FromJson(raw.StringValue);
+    }
+
+    /// <summary>
+    /// Compara el hash ONNX del modelo con el que quedó registrado en el manifiesto
+    /// existente de la colección. Si no hay manifiesto todavía (primera ingesta), no hay
+    /// nada contra qué validar y no lanza. Si el manifiesto existe y el hash no coincide,
+    /// lanza <see cref="ManifestModelMismatchException"/> citando explícitamente el hash
+    /// esperado (el que trae el modelo actual) y el encontrado (el que quedó grabado).
+    /// </summary>
+    public async Task EnsureModelCompatibleAsync(
+        string collectionName,
+        string expectedModelOnnxSha256,
+        CancellationToken ct = default)
+    {
+        var existing = await GetManifestAsync(collectionName, ct);
+        if (existing is null) return;
+
+        if (!string.Equals(existing.ModelOnnxSha256, expectedModelOnnxSha256, StringComparison.Ordinal))
+        {
+            throw new ManifestModelMismatchException(collectionName, expectedModelOnnxSha256, existing.ModelOnnxSha256);
+        }
+    }
+}
+
+/// <summary>
+/// Error accionable: la colección fue indexada con un modelo ONNX distinto al que se
+/// está usando ahora. Re-indexar es la única salida — mezclar embeddings de dos
+/// modelos en la misma colección corrompe silenciosamente la búsqueda por similitud.
+/// </summary>
+public sealed class ManifestModelMismatchException : Exception
+{
+    public string CollectionName { get; }
+    public string ExpectedModelOnnxSha256 { get; }
+    public string FoundModelOnnxSha256 { get; }
+
+    public ManifestModelMismatchException(string collectionName, string expectedModelOnnxSha256, string foundModelOnnxSha256)
+        : base(
+            $"La colección '{collectionName}' fue indexada con un modelo ONNX distinto. " +
+            $"Esperado (modelo actual): {expectedModelOnnxSha256}. Encontrado (manifiesto guardado): {foundModelOnnxSha256}. " +
+            "Hace falta re-indexar la colección con el modelo actual.")
+    {
+        CollectionName = collectionName;
+        ExpectedModelOnnxSha256 = expectedModelOnnxSha256;
+        FoundModelOnnxSha256 = foundModelOnnxSha256;
     }
 }

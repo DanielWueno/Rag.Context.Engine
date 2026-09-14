@@ -265,6 +265,17 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     {
         var conditions = new List<Condition>();
 
+        // El point reservado del manifiesto (QdrantVectorStore.ManifestPointId) vive en la
+        // misma colección que los chunks; nunca debe aparecer como resultado de búsqueda.
+        var excludeManifest = new Condition
+        {
+            Field = new FieldCondition
+            {
+                Key = QdrantVectorStore.IsManifestPayloadKey,
+                Match = new Match { Boolean = true }
+            }
+        };
+
         if (options.FilterByLanguage.HasValue)
         {
             conditions.Add(new Condition
@@ -290,8 +301,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         }
 
         return conditions.Count == 0
-            ? null
-            : new Filter { Must = { conditions } };
+            ? new Filter { MustNot = { excludeManifest } }
+            : new Filter { Must = { conditions }, MustNot = { excludeManifest } };
     }
 
     private static RetrievalResult MapToRetrievalResult(ScoredPoint point, RetrievalScoreScale scale)

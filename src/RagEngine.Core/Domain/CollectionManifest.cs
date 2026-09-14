@@ -44,6 +44,16 @@ public sealed record CollectionManifest
     /// <summary>Tenants permitidos a leer esta colección cuando <see cref="RequiredScopes"/> no está vacío.</summary>
     public IReadOnlyList<string> Tenants { get; init; } = Array.Empty<string>();
 
+    /// <summary>
+    /// Invariante de publicación: true solo cuando hay al menos un scope requerido.
+    /// Un manifiesto migrado desde el esquema antiguo (5.f.2-migracion-manifiestos-antiguos)
+    /// llega con <see cref="RequiredScopes"/> vacío y por lo tanto siempre es false aquí —
+    /// "vacío" nunca implica "publicado". La aplicación completa de autorización (mapeo de
+    /// actor a scopes/tenants) vive en 5.f.3-acl-autorizacion-y-modo-local; esta propiedad
+    /// solo expone la invariante de datos para que sea verificable sin duplicar lógica.
+    /// </summary>
+    public bool IsPublished => RequiredScopes.Count > 0;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,

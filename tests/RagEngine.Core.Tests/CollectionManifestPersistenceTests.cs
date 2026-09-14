@@ -149,4 +149,63 @@ public sealed class CollectionManifestPersistenceTests : IAsyncLifetime
         Assert.Empty(manifest.Tenants);
         Assert.Null(manifest.Profile);
     }
+
+    /// <summary>
+    /// Cubre 5.f.2-migracion-manifiestos-antiguos: un manifiesto en formato antiguo (sin
+    /// Profile/RequiredScopes/Tenants en el JSON) migrado al esquema extendido resulta en
+    /// RequiredScopes=[] y Tenants=[], y por lo tanto <see cref="CollectionManifest.IsPublished"/>
+    /// debe ser false. Vacío tras migrar debe seguir significando "solo administrador".
+    /// </summary>
+    [Fact]
+    public void Manifiesto_antiguo_migra_a_esquema_extendido_sin_publicar_por_defecto()
+    {
+        const string manifiestoAntiguoJson = """
+            {
+              "CollectionName": "coleccion-legado",
+              "ModelName": "modelo-legado",
+              "ModelOnnxSha256": "hash-legado",
+              "EmbeddingDimension": 384,
+              "CreatedAt": "2025-06-01T00:00:00Z",
+              "LastIndexedAt": "2025-06-01T00:00:00Z",
+              "TotalChunks": 7
+            }
+            """;
+
+        var migrado = CollectionManifest.FromJson(manifiestoAntiguoJson);
+
+        Assert.Empty(migrado.RequiredScopes);
+        Assert.Empty(migrado.Tenants);
+        Assert.False(migrado.IsPublished);
+    }
+
+    /// <summary>
+    /// Segunda mitad del criterio de 5.f.2: una colección migrada así debe ser rechazada
+    /// por cualquier actor no-administrador, sin importar qué scope reclame. 5.f.3-acl-
+    /// autorizacion-y-modo-local (bloqueado por este ítem) aún no existe, así que aquí se usa
+    /// un stub local mínimo con la única regla de seguridad que este ítem debe garantizar
+    /// (vacío = no publicado); el diseño completo de ACL (mapeo de actor/tenant/scopes) queda
+    /// fuera de alcance y es responsabilidad de 5.f.3.
+    /// </summary>
+    [Fact]
+    public void Coleccion_migrada_es_rechazada_por_cualquier_actor_no_administrador()
+    {
+        const string manifiestoAntiguoJson = """
+            {
+              "CollectionName": "coleccion-legado",
+              "ModelName": "modelo-legado",
+              "ModelOnnxSha256": "hash-legado",
+              "EmbeddingDimension": 384,
+              "TotalChunks": 7
+            }
+            """;
+        var migrado = CollectionManifest.FromJson(manifiestoAntiguoJson);
+
+        static bool EsAutorizadoStub(CollectionManifest manifest, bool actorEsAdmin, IReadOnlyList<string> actorScopes) =>
+            actorEsAdmin || (manifest.IsPublished && actorScopes.Intersect(manifest.RequiredScopes).Any());
+
+        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: new[] { "rag.read.sistema" }));
+        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: Array.Empty<string>()));
+        Assert.False(EsAutorizadoStub(migrado, actorEsAdmin: false, actorScopes: new[] { "cualquier-otro-scope" }));
+        Assert.True(EsAutorizadoStub(migrado, actorEsAdmin: true, actorScopes: Array.Empty<string>()));
+    }
 }

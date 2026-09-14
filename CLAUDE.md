@@ -1,6 +1,9 @@
 # Guía de Desarrollo con Claude
 
-Este archivo documenta cómo colaborar con este proyecto usando Claude como asistente.
+@AGENTS.md
+
+El protocolo compartido vive en `AGENTS.md`; este archivo conserva el contexto
+técnico y la entrada nativa de Claude. No mantiene una segunda copia del flujo.
 
 ## Setup Local
 
@@ -25,18 +28,20 @@ El proyecto sigue un plan estructurado en olas (Ola 1: red de seguridad, Ola 2: 
 
 El estado del plan vive en **docs/analisis-futuro/ejecucion-plan.estado.json** (ledger).
 
-Ejecutar un ítem: `/plan-siguiente [id-ítem]`  
+Ejecutar un ítem en Claude: `/arnes-plan:plan-siguiente [id-ítem]`
+
 Revisar estado: `/arnes-plan:plan-estado` → consulta el ledger actual.
 
 ## Verificación
 
-Antes de cambios importantes:
+Comandos disponibles; elegir los necesarios según el criterio del ítem. Los
+conteos de tests y colecciones se consultan, no se asumen a partir de esta guía.
 
 ```bash
 dotnet build           # Debe compilar sin errores ni advertencias
-dotnet test            # 140 tests verdes
-dotnet run --project src/RagEngine.Cli doctor             # Diagnóstico completo
-dotnet run --project src/RagEngine.Cli status             # 9 colecciones operativas
+dotnet test
+dotnet run --project src/RagEngine.Cli -- doctor           # Diagnóstico local
+dotnet run --project src/RagEngine.Cli -- status           # Estado real de colecciones
 ```
 
 ## Commits y PRs
@@ -51,17 +56,15 @@ dotnet run --project src/RagEngine.Cli status             # 9 colecciones operat
 1. **Reproducibilidad:** baselines con procedencia (commit, config, hash de dataset)
 2. **Determinismo:** IDs de chunk basados en contenido; idempotencia en re-ingestas
 3. **Tests:** criterio de aceptación mecánico, verificable sin agentes (salvo regresión silenciosa)
-4. **Caché de resúmenes:** SQLite versionada; cambio de prompt_version = regeneración completa (~19 h)
+4. **Caché de resúmenes:** clave `(content_hash, prompt_version)`; contar misses antes de re-ingestar. Cambio de prompt_version puede exigir regeneración completa (~19 h históricas).
 5. **Multilingüismo:** consulta en ES/EN contra cualquier corpus, soporte simétrico
 
-## Recorrido Típico de Cambio
+## Flujo y selección de modelos
 
-1. Entender el alcance (leer el ítem del plan, los docs en `docs/analisis-futuro/`)
-2. Compilar y verificar el estado actual (`dotnet build`, `rag doctor`)
-3. Implementar y probar localmente (si requiere ingesta, usar micro-repo ~1 min)
-4. Ejecutar suite de tests (`dotnet test`)
-5. Cerrar el ítem: actualizar ledger, commit
-6. Si es Ola 1, verificación es binaria (sí/no); Ola 2+, A/B si hay regresión silenciosa
+Seguir `AGENTS.md` y, dentro del plugin de Claude, su
+`commands/plan-siguiente.md`. Los valores `haiku`, `sonnet` y `opus` del ledger
+siguen siendo los que usa el plugin. La tabla de candidatos Copilot de `AGENTS.md`
+no cambia la selección nativa de Claude.
 
 ## Contacto y Problemas
 

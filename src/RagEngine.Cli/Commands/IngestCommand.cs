@@ -290,7 +290,38 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                         : "[green]0[/]");
             }
 
+            // 11.1: tokens reales/descartados/truncados con el tokenizador
+            // efectivo, medidos en la fase de embedding de chunks admitidos.
+            // n=0 no imprime percentiles ficticios.
+            if (summary.TokensObserved > 0)
+            {
+                summaryTable.AddRow("Tokens medidos (n)", $"[cyan]{summary.TokensObserved:N0}[/]");
+                summaryTable.AddRow("Tokens p50/p95",
+                    $"[white]{summary.TokensP50:N0} / {summary.TokensP95:N0}[/] [grey](L={summary.TokensMaxUsable:N0})[/]");
+                summaryTable.AddRow("Chunks truncados",
+                    summary.ChunksTruncatedTotal > 0
+                        ? $"[yellow]{summary.ChunksTruncatedTotal:N0}[/]"
+                        : "[green]0[/]");
+                summaryTable.AddRow("Tokens descartados",
+                    summary.TokensDiscardedTotal > 0
+                        ? $"[yellow]{summary.TokensDiscardedTotal:N0}[/]"
+                        : "[green]0[/]");
+            }
+            else
+            {
+                summaryTable.AddRow("Tokens medidos (n)", "[grey]sin datos[/]");
+            }
+
             AnsiConsole.Write(summaryTable);
+
+            // Advertencia contra L (capacidad útil), no contra M (límite bruto):
+            // un p95 <= M pero > L ya está perdiendo contenido real por chunk.
+            if (summary.TokensP95 is int p95 && p95 > summary.TokensMaxUsable)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[yellow]\u26a0\ufe0f  p95 de tokens ({p95:N0}) supera la capacidad útil del tokenizador " +
+                    $"(L={summary.TokensMaxUsable:N0}): una porcion relevante de chunks se esta truncando.[/]");
+            }
         }
 
         AnsiConsole.WriteLine();

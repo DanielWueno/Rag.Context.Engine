@@ -300,6 +300,18 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             });
         }
 
+        if (!string.IsNullOrWhiteSpace(options.FilterByTenant))
+        {
+            conditions.Add(new Condition
+            {
+                Field = new FieldCondition
+                {
+                    Key = QdrantVectorStore.TenantPayloadKey,
+                    Match = new Match { Keyword = options.FilterByTenant }
+                }
+            });
+        }
+
         return conditions.Count == 0
             ? new Filter { MustNot = { excludeManifest } }
             : new Filter { Must = { conditions }, MustNot = { excludeManifest } };

@@ -52,13 +52,22 @@ public enum SummaryGranularity
 /// <summary>
 /// Input request for the ingestion pipeline.
 /// </summary>
+/// <param name="Tenant">
+/// Identidad local explícita del tenant dueño de esta corrida de ingesta (ítem 5.e,
+/// absorbe 12.7-tenant-en-el-payload). Null/vacío significa "sin tenant" — el punto
+/// se indexa igual, pero no participa en un filtro por tenant en la búsqueda. No
+/// exige IDP ni autenticación corporativa: es una etiqueta de procedencia versionada
+/// que el operador local declara al ingestar, completable después vía set_payload
+/// sin regenerar resúmenes ni re-chunkear.
+/// </param>
 public sealed record IngestionRequest(
     string RepositoryPath,
     string CollectionName,
     ScanProfile Profile,
     ChunkingOptions Options,
     bool ForceReindex = false,
-    bool EnableResumenLlm = false
+    bool EnableResumenLlm = false,
+    string? Tenant = null
 );
 
 /// <summary>

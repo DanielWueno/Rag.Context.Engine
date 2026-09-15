@@ -55,6 +55,14 @@ public sealed class QdrantVectorStore
     public const string ConsumedSymbolsPayloadKey = "consumed_symbols";
 
     /// <summary>
+    /// Clave de payload (keyword) con el tenant explícito dueño de este punto (ítem 5.e,
+    /// absorbe 12.7-tenant-en-el-payload). Se omite por completo cuando la ingesta no
+    /// declaró tenant — nunca se escribe vacío — para que un filtro por tenant no
+    /// excluya por accidente puntos de una colección sin mapeo de tenant definido.
+    /// </summary>
+    public const string TenantPayloadKey = "tenant";
+
+    /// <summary>
     /// Id fijo y reservado para el único point que guarda el manifiesto de la colección.
     /// Ningún chunk real puede colisionar con este UUID porque los ids de chunk son
     /// UUIDv5 derivados de ruta+línea+hash de contenido (ver ChunkBuilder), y este valor
@@ -348,11 +356,19 @@ public sealed class QdrantVectorStore
     /// (archivos nuevos o modificados) nunca pierde resúmenes ya generados. Si es null
     /// (punto nunca visto), se marca <see cref="ResumenPendingPayloadKey"/>=true.
     /// </param>
+    /// <param name="tenant">
+    /// Identidad local explícita del tenant dueño de este lote (ítem 5.e). Null/vacío
+    /// no escribe la clave de payload: un punto sin tenant nunca queda excluido por un
+    /// filtro de tenant (ver <see cref="ResumenPayloadKeyTenant"/> más abajo y
+    /// QdrantSemanticRetriever.BuildFilter), igual que Tenants vacío en
+    /// CollectionManifest significa "sin restricción", nunca "sin acceso".
+    /// </param>
     public async Task<int> UpsertBatchAsync(
         string collectionName,
         IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector, ExistingResumenState? ExistingResumen)> batch,
         bool waitForCommit = true,
         bool markResumenPending = false,
+        string? tenant = null,
         CancellationToken ct = default)
     {
         if (batch.Count == 0) return 0;
@@ -412,6 +428,9 @@ public sealed class QdrantVectorStore
                 point.Payload[DefinedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.DefinedSymbols);
             if (item.Chunk.ConsumedSymbols.Count > 0)
                 point.Payload[ConsumedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.ConsumedSymbols);
+
+            if (!string.IsNullOrWhiteSpace(tenant))
+                point.Payload[TenantPayloadKey] = new Value { StringValue = tenant };
 
             if (markResumenPending)
             {

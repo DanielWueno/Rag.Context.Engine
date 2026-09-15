@@ -162,7 +162,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             var consumerTasks = Enumerable.Range(0, ConsumerCount)
                 .Select(_ => ConsumeAndIndexAsync(
                     request.CollectionName, channel.Reader,
-                    request.Options.BatchSize, request.EnableResumenLlm, progress, stats, cancellationToken))
+                    request.Options.BatchSize, request.EnableResumenLlm, request.Tenant, progress, stats, cancellationToken))
                 .ToArray();
 
             // Run producer and consumers concurrently; propagate any exception
@@ -324,6 +324,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ChannelReader<CodeChunk> reader,
         int batchSize,
         bool markResumenPending,
+        string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
         CancellationToken ct)
@@ -336,20 +337,21 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
             if (batch.Count >= batchSize)
             {
-                await ProcessBatchAsync(collectionName, batch, markResumenPending, progress, stats, ct);
+                await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, ct);
                 batch.Clear();
             }
         }
 
         // Flush remaining chunks
         if (batch.Count > 0)
-            await ProcessBatchAsync(collectionName, batch, markResumenPending, progress, stats, ct);
+            await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, ct);
     }
 
     private async Task ProcessBatchAsync(
         string collectionName,
         List<CodeChunk> batch,
         bool markResumenPending,
+        string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
         CancellationToken ct)
@@ -428,7 +430,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             // waitForCommit: false — el WAL de Qdrant garantiza durabilidad; diferir
             // la aplicación de los índices saca ~300 ms/lote de la ruta crítica.
             await _vectorStore.UpsertBatchAsync(
-                collectionName, triples, waitForCommit: false, markResumenPending: markResumenPending, ct: ct);
+                collectionName, triples, waitForCommit: false, markResumenPending: markResumenPending, tenant: tenant, ct: ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
             RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
 

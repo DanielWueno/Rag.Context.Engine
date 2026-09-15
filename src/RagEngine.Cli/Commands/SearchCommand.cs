@@ -40,6 +40,10 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         [CommandOption("--namespace|-n")]
         public string? Namespace { get; init; }
 
+        [CommandOption("--tenant")]
+        [System.ComponentModel.Description("Filtra por tenant explícito de payload (ítem 5.e). Sin valor: sin restricción.")]
+        public string? Tenant { get; init; }
+
         [CommandOption("--rerank|-r")]
         public bool Rerank { get; init; }
 
@@ -75,6 +79,7 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
             MinimumSimilarityScore = settings.MinScore,
             FilterByLanguage = settings.Language,
             FilterByNamespace = settings.Namespace,
+            FilterByTenant = settings.Tenant,
             UseReRanking = settings.Rerank
         };
 

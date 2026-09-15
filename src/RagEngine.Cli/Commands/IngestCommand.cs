@@ -70,6 +70,10 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         [Description("Genera un tercer vector de resumen de negocio vía LLM (opt-in). Default: false.")]
         public bool EnableResumenLlm { get; set; } = false;
 
+        [CommandOption("--tenant")]
+        [Description("Identidad local explícita del tenant dueño de esta ingesta (ítem 5.e). Sin valor: sin tenant en el payload.")]
+        public string? Tenant { get; set; }
+
         public override ValidationResult Validate()
         {
             if (!Directory.Exists(RepositoryPath))
@@ -119,6 +123,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             settings.ForceReindex ? "[red]YES \u26a0\ufe0f[/]" : "[green]No[/]");
         configTable.AddRow("[grey]Con Resumen (LLM)[/]",
             settings.EnableResumenLlm ? "[cyan]YES[/]" : "[grey]No[/]");
+        if (!string.IsNullOrWhiteSpace(settings.Tenant))
+            configTable.AddRow("[grey]Tenant[/]", $"[cyan]{settings.Tenant}[/]");
 
         AnsiConsole.Write(configTable);
         AnsiConsole.WriteLine();
@@ -166,7 +172,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 BatchSize = settings.BatchSize
             },
             ForceReindex: settings.ForceReindex,
-            EnableResumenLlm: settings.EnableResumenLlm
+            EnableResumenLlm: settings.EnableResumenLlm,
+            Tenant: settings.Tenant
         );
 
         // \u2500\u2500 Live Progress Display \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500

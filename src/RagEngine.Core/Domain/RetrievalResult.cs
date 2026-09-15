@@ -49,6 +49,15 @@ public sealed record RetrievalOptions
     /// <summary>Filter results by namespace prefix.</summary>
     public string? FilterByNamespace { get; init; }
 
+    /// <summary>
+    /// Filtra resultados por tenant explícito de payload (ítem 5.e). Null/vacío no
+    /// restringe: incluye puntos con cualquier tenant y puntos sin tenant declarado
+    /// (colección compartida/mixta o fuente sin mapeo). Con valor, exige coincidencia
+    /// exacta — un punto sin tenant en payload NO matchea un filtro con valor, igual
+    /// que <c>CollectionManifest.Tenants</c> exige coincidencia exacta cuando no está vacío.
+    /// </summary>
+    public string? FilterByTenant { get; init; }
+
     /// <summary>The Qdrant collection to search.</summary>
     public required string CollectionName { get; init; }
 

@@ -684,11 +684,29 @@ public sealed class QdrantVectorStore
     /// Lee el manifiesto de una colección. Devuelve null si la colección no tiene
     /// manifiesto todavía (colección nunca escrita por este mecanismo, o creada por una
     /// versión anterior a este ítem) — un null NUNCA implica publicación por defecto.
+    ///
+    /// Ítem 7.b: una colección que NO EXISTE en absoluto hace que RetrieveAsync lance
+    /// Grpc.Core.RpcException(StatusCode.NotFound) en vez de devolver una lista vacía —
+    /// a diferencia de una colección existente sin manifiesto, que sí devuelve vacío.
+    /// Sin este catch, AuthorizeCollectionAsync dejaba escapar esa excepción como 500,
+    /// lo que distinguía observablemente "no existe" (500) de "existe pero es ajena/no
+    /// publicada" (403) — justo la filtración de existencia que este ítem cierra. Se
+    /// normaliza a null: para el llamador, "no existe" y "existe sin manifiesto" deben
+    /// ser indistinguibles.
     /// </summary>
     public async Task<CollectionManifest?> GetManifestAsync(string collectionName, CancellationToken ct = default)
     {
         var ids = new List<PointId> { new() { Uuid = ManifestPointId.ToString() } };
-        var points = await _client.RetrieveAsync(collectionName, ids, withPayload: true, withVectors: false, cancellationToken: ct);
+
+        IReadOnlyList<Qdrant.Client.Grpc.RetrievedPoint> points;
+        try
+        {
+            points = await _client.RetrieveAsync(collectionName, ids, withPayload: true, withVectors: false, cancellationToken: ct);
+        }
+        catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+        {
+            return null;
+        }
 
         if (points.Count == 0) return null;
         if (!points[0].Payload.TryGetValue(ManifestPayloadKey, out var raw)) return null;

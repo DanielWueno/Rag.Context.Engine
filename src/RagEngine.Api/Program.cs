@@ -395,12 +395,35 @@ try
     // Alimenta el selector de colección de la página — así el equipo no
     // depende de que quede fija a un proyecto (hoy innovapp-docs, mañana
     // podría ser cualquier otra colección ingestada).
+    //
+    // Ítem 7.b: este listado usaba ListCollectionsAsync sin filtrar, así que en modo
+    // Empresarial cualquier actor autenticado (o incluso sin autenticar) veía los
+    // nombres de TODAS las colecciones, incluidas las ajenas o no publicadas —
+    // exactamente la filtración que /api/search, /api/ask y /api/ask/stream ya
+    // evitan al negar por AuthorizeCollectionAsync. Ahora aplica la misma
+    // ICollectionAuthorizationService por colección: solo entran al listado las que
+    // el actor puede leer. En modo Local (todo actor es administrador implícito),
+    // el comportamiento no cambia — sigue siendo el listado completo de siempre.
     app.MapGet("/api/collections", async (
         Qdrant.Client.QdrantClient qdrant,
+        QdrantVectorStore store,
+        HttpContext http,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
         CancellationToken cancellationToken) =>
     {
-        var collections = await qdrant.ListCollectionsAsync(cancellationToken);
-        return Results.Ok(new { collections, @default = defaultCollection });
+        var allCollections = await qdrant.ListCollectionsAsync(cancellationToken);
+        var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
+
+        var visibleCollections = new List<string>();
+        foreach (var collection in allCollections)
+        {
+            var manifest = await store.GetManifestAsync(collection, cancellationToken);
+            if (authorization.Authorize(manifest, actor))
+                visibleCollections.Add(collection);
+        }
+
+        return Results.Ok(new { collections = visibleCollections, @default = defaultCollection });
     });
 
     // Endpoint de prueba para verificar que los instrumentos de métricas están activos

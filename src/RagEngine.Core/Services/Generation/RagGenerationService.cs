@@ -114,6 +114,7 @@ public sealed class RagGenerationService : IRagGenerationService
         bool useReRanking = false,
         ResponseMode responseMode = ResponseMode.Simple,
         IReadOnlyList<ChatTurn>? history = null,
+        PromptFamily? promptFamily = null,
         Func<string, CancellationToken, Task>? onStatus = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -180,7 +181,7 @@ public sealed class RagGenerationService : IRagGenerationService
         // The retrieved chunks decide which persona/rules fit the content: a repo
         // that's mostly Markdown/plain-text specs needs synthesis-across-chunks and
         // document/section citations, not code-line citations and fenced code blocks.
-        var promptTemplate = SystemPromptComposer.SelectTemplate(chunks, responseMode);
+        var promptTemplate = SystemPromptComposer.SelectTemplate(chunks, responseMode, promptFamily);
         var systemPrompt = SystemPromptComposer.ComposeGrounded(
             promptTemplate, contextBlock, assessment.ConfidenceAddendum);
 

@@ -42,6 +42,12 @@ public interface IRagGenerationService
     ///   used for retrieval — history is injected into the LLM prompt for conversational
     ///   continuity, not re-searched against Qdrant.
     /// </param>
+    /// <param name="promptFamily">
+    ///   Ítem 7.a: familia de prompt forzada por el perfil de la colección (resuelta por
+    ///   el llamador, típicamente la API, vía <c>IRetrievalProfileResolver</c>). Null
+    ///   (el default) conserva la heurística de contenido de siempre — ver
+    ///   <c>SystemPromptComposer.SelectTemplate</c>.
+    /// </param>
     /// <param name="onStatus">
     ///   Optional callback invoked with a short human-readable status label at
     ///   intermediate pipeline transitions the caller cannot otherwise observe —
@@ -63,6 +69,7 @@ public interface IRagGenerationService
         bool useReRanking = false,
         ResponseMode responseMode = ResponseMode.Simple,
         IReadOnlyList<ChatTurn>? history = null,
+        PromptFamily? promptFamily = null,
         Func<string, CancellationToken, Task>? onStatus = null,
         CancellationToken cancellationToken = default);
 }

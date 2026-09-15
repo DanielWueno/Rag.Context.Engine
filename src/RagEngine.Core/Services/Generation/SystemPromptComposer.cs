@@ -42,10 +42,28 @@ internal static class SystemPromptComposer
     /// docs-oriented: a simple majority is enough, since mixed repositories (e.g. a few
     /// README hits alongside mostly code) should still get the code prompt.
     /// </summary>
-    internal static string SelectTemplate(IReadOnlyList<RetrievalResult> chunks, ResponseMode responseMode)
+    /// <param name="forcedFamily">
+    /// Ítem 7.a: familia de prompt declarada por el perfil de la colección. Null o
+    /// <see cref="PromptFamily.Auto"/> (el default de todo llamador que no resuelve un
+    /// perfil) conserva EXACTAMENTE la heurística de contenido de siempre — solo
+    /// <see cref="PromptFamily.Code"/>/<see cref="PromptFamily.Docs"/> la sobrescriben,
+    /// y solo para <see cref="ResponseMode.Technical"/> (Simple sigue ganando siempre).
+    /// </param>
+    internal static string SelectTemplate(
+        IReadOnlyList<RetrievalResult> chunks,
+        ResponseMode responseMode,
+        PromptFamily? forcedFamily = null)
     {
         if (responseMode == ResponseMode.Simple)
             return SimpleSystemPromptTemplate;
+
+        switch (forcedFamily)
+        {
+            case PromptFamily.Code:
+                return CodeSystemPromptTemplate;
+            case PromptFamily.Docs:
+                return DocsSystemPromptTemplate;
+        }
 
         var docChunks = chunks.Count(c => c.Metadata.Language.IsDocumentation());
         return docChunks * 2 >= chunks.Count ? DocsSystemPromptTemplate : CodeSystemPromptTemplate;

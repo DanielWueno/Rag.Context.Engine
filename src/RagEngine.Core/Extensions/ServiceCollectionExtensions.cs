@@ -69,6 +69,14 @@ public static class ServiceCollectionExtensions
             .Validate(o => o.Weight > 0, "TwoHop:Weight debe ser mayor a 0 (un peso <=0 deja el salto inerte).")
             .ValidateOnStart();
 
+        // Ítem 7.a: catálogo de perfiles de recuperación por colección. Sin declarar
+        // (sección "RetrievalProfiles" ausente) el diccionario queda vacío y
+        // RetrievalProfileResolver resuelve siempre a null — comportamiento idéntico
+        // al de antes de este ítem.
+        services.Configure<RetrievalProfileCatalogOptions>(
+            configuration.GetSection(RetrievalProfileCatalogOptions.SectionName));
+        services.AddSingleton<IRetrievalProfileResolver, RetrievalProfileResolver>();
+
         // OllamaOptions también se registra aquí (no solo en AddRagEngineGeneration):
         // la Fase 2 de ingesta (resumen de negocio) necesita el endpoint de Ollama
         // sin que el host tenga que habilitar generación conversacional. Configure<T>

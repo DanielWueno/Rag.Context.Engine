@@ -24,6 +24,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly QdrantVectorStore _vectorStore;
     private readonly RetrievalFusionOptions _fusionOptions;
     private readonly TwoHopOptions _twoHopOptions;
+    private readonly IRetrievalProfileResolver _profileResolver;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
     private readonly ResiliencePipeline _resiliencePipeline;
 
@@ -35,6 +36,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         QdrantVectorStore vectorStore,
         IOptions<RetrievalFusionOptions> fusionOptions,
         IOptions<TwoHopOptions> twoHopOptions,
+        IRetrievalProfileResolver profileResolver,
         ILogger<QdrantSemanticRetriever> logger,
         ResiliencePipelineProvider<string> pipelineProvider)
     {
@@ -45,6 +47,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         _vectorStore = vectorStore;
         _fusionOptions = fusionOptions.Value;
         _twoHopOptions = twoHopOptions.Value;
+        _profileResolver = profileResolver;
         _logger = logger;
         _resiliencePipeline = pipelineProvider.GetPipeline("qdrant");
     }
@@ -83,6 +86,13 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             // 3. Build Qdrant filter from RetrievalOptions
             var filter = BuildFilter(options);
 
+            // Ítem 7.a: perfil por colección. Null (sin CollectionManifest.Profile
+            // declarado, o nombre ausente del catálogo) preserva EXACTAMENTE el
+            // comportamiento global de siempre — ver los operadores `?? _twoHopOptions...`
+            // y `?? _fusionOptions...` de abajo, ninguno cambia sin un perfil resuelto.
+            var profile = await _profileResolver.ResolveAsync(options.CollectionName, cancellationToken);
+            var twoHopEnabled = profile?.TwoHopEnabled ?? _twoHopOptions.Enabled;
+
             // 4. Execute Hybrid Search using Prefetch and RRF Fusion
             // El pool de candidatos de cada rama (prefetch) debe ser varias veces
             // más ancho que el corte final: RRF premia el consenso entre ramas, y
@@ -107,7 +117,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             // del salto (ver resultado del ítem en el ledger).
             ulong baseFinalLimit = (ulong)(options.UseReRanking ? options.TopK * 3 : options.TopK);
             ulong prefetchLimit = Math.Max(baseFinalLimit * 4, 40);
-            ulong finalLimit = (!options.UseReRanking && _twoHopOptions.Enabled)
+            ulong finalLimit = (!options.UseReRanking && twoHopEnabled)
                 ? baseFinalLimit + (ulong)_twoHopOptions.MaxExpansionResults
                 : baseFinalLimit;
             var payloadSelector = new WithPayloadSelector { Enable = true };
@@ -158,10 +168,14 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             }
             else
             {
+                // Ítem 7.a: los overrides de pesos/RrfK del perfil (si los hay) solo se
+                // aplican a esta rama — la fusión nativa de Qdrant (rama !hasSummaryVector,
+                // arriba) no expone pesos por rama y no los necesita.
+                var effectiveFusion = ApplyFusionOverrides(_fusionOptions, profile?.Fusion);
                 searchResults = await _resiliencePipeline.ExecuteAsync(async ct =>
                     await SearchWeightedFusionAsync(
                         options.CollectionName, queryVector, sparseValues, sparseIndices,
-                        filter, prefetchLimit, finalLimit, payloadSelector, ct),
+                        filter, prefetchLimit, finalLimit, payloadSelector, effectiveFusion, ct),
                     cancellationToken);
             }
 
@@ -179,10 +193,12 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
                 .ToList();
 
             // 5.b Ítem 6.a: expansión por símbolo. Apagado por defecto
-            // (TwoHopOptions.Enabled=false) — con el flag en false este bloque no
-            // ejecuta ningún QueryAsync adicional y el comportamiento es idéntico al
-            // de antes de 6.a (ver rollback de la ficha).
-            if (_twoHopOptions.Enabled && searchResults.Count > 0)
+            // (TwoHopOptions.Enabled=false), salvo que el perfil de la colección
+            // (ítem 7.a) lo encienda/apague explícitamente vía twoHopEnabled — con el
+            // flag efectivo en false este bloque no ejecuta ningún QueryAsync
+            // adicional y el comportamiento es idéntico al de antes de 6.a (ver
+            // rollback de la ficha).
+            if (twoHopEnabled && searchResults.Count > 0)
             {
                 results = await ExpandBySymbolAsync(
                     options, queryVector, filter, searchResults, results, cancellationToken);
@@ -236,6 +252,10 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     /// PoC (poc/RagEngine.Poc.FreeSearch/RecallEvaluator.cs), con los pesos calibrados
     /// ahí como default de <see cref="RetrievalFusionOptions"/>.
     /// </summary>
+    /// <param name="fusionOptions">
+    /// Pesos/RrfK efectivos para esta consulta: el global de siempre, salvo que el
+    /// perfil de la colección (ítem 7.a) los sobrescriba — ver <see cref="ApplyFusionOverrides"/>.
+    /// </param>
     private async Task<IReadOnlyList<ScoredPoint>> SearchWeightedFusionAsync(
         string collectionName,
         float[] queryVector,
@@ -245,6 +265,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         ulong prefetchLimit,
         ulong finalLimit,
         WithPayloadSelector payloadSelector,
+        RetrievalFusionOptions fusionOptions,
         CancellationToken ct)
     {
         var denseTask = _client.QueryAsync(
@@ -273,13 +294,13 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         foreach (var point in denseResults.Concat(sparseResults).Concat(resumenResults))
             pointsById.TryAdd(point.Id.Uuid, point);
 
-        var k = _fusionOptions.RrfK;
+        var k = fusionOptions.RrfK;
         var scored = pointsById.Keys.Select(id =>
         {
             double score = 0.0;
-            if (denseRank.TryGetValue(id, out var rc)) score += _fusionOptions.WeightCodigo / (k + rc);
-            if (sparseRank.TryGetValue(id, out var rs)) score += _fusionOptions.WeightSparse / (k + rs);
-            if (resumenRank.TryGetValue(id, out var rr)) score += _fusionOptions.WeightResumen / (k + rr);
+            if (denseRank.TryGetValue(id, out var rc)) score += fusionOptions.WeightCodigo / (k + rc);
+            if (sparseRank.TryGetValue(id, out var rs)) score += fusionOptions.WeightSparse / (k + rs);
+            if (resumenRank.TryGetValue(id, out var rr)) score += fusionOptions.WeightResumen / (k + rr);
             return (Id: id, Score: score);
         })
         .OrderByDescending(x => x.Score)
@@ -294,6 +315,28 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             result.Add(point);
         }
         return result;
+    }
+
+    /// <summary>
+    /// Ítem 7.a: aplica los overrides opcionales de <paramref name="overrides"/> sobre
+    /// <paramref name="baseline"/> (los pesos globales de "RetrievalFusion" en
+    /// appsettings.json). Cada campo null de <paramref name="overrides"/> conserva el
+    /// valor de <paramref name="baseline"/> — un perfil sin overrides de fusión
+    /// (<paramref name="overrides"/> null) devuelve <paramref name="baseline"/> tal
+    /// cual, sin crear una copia, preservando el baseline byte a byte.
+    /// </summary>
+    internal static RetrievalFusionOptions ApplyFusionOverrides(
+        RetrievalFusionOptions baseline, RetrievalProfileFusionWeights? overrides)
+    {
+        if (overrides is null) return baseline;
+
+        return baseline with
+        {
+            WeightCodigo = overrides.WeightCodigo ?? baseline.WeightCodigo,
+            WeightSparse = overrides.WeightSparse ?? baseline.WeightSparse,
+            WeightResumen = overrides.WeightResumen ?? baseline.WeightResumen,
+            RrfK = overrides.RrfK ?? baseline.RrfK
+        };
     }
 
     private static Dictionary<string, int> ToRankMap(IReadOnlyList<ScoredPoint> ranked)

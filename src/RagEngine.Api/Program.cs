@@ -201,7 +201,12 @@ try
         };
     }
 
-    static async Task<IResult?> AuthorizeCollectionAsync(
+    /// <summary>
+    /// Autoriza la colección y devuelve el manifiesto ya leído (o null si nunca se
+    /// publicó uno) para que el llamador pueda resolver el perfil de recuperación
+    /// (ítem 7.a) sin repetir el round-trip a Qdrant que ya hizo esta función.
+    /// </summary>
+    static async Task<(IResult? Denied, CollectionManifest? Manifest)> AuthorizeCollectionAsync(
         string collection,
         HttpContext http,
         QdrantVectorStore store,
@@ -213,12 +218,27 @@ try
         var manifest = await store.GetManifestAsync(collection, cancellationToken);
         // La lectura de HttpContext.User es perezosa: Local nunca toca la fuente de identidad.
         var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
-        return authorization.Authorize(manifest, actor)
+        var denied = authorization.Authorize(manifest, actor)
             ? null
             : Results.Problem(
                 title: "No tiene autorización para leer esta colección.",
                 statusCode: StatusCodes.Status403Forbidden);
+        return (denied, manifest);
     }
+
+    /// <summary>
+    /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore/rerank para una
+    /// request. El valor explícito del cliente SIEMPRE gana; en su ausencia, el
+    /// perfil de la colección (si hay uno declarado y existe en el catálogo) decide;
+    /// sin perfil resuelto, se cae exactamente en los literales 10/0.10f/true que ya
+    /// usaba este endpoint antes de este ítem — el baseline queda intacto.
+    /// </summary>
+    static (int TopK, float MinScore, bool Rerank, PromptFamily? PromptFamily) ResolveEffectiveRetrievalDefaults(
+        RagQueryRequest request, RetrievalProfile? profile) => (
+        request.TopK ?? profile?.TopK ?? 10,
+        request.MinScore ?? profile?.MinScore ?? 0.10f,
+        request.Rerank ?? profile?.UseReRanking ?? true,
+        profile?.PromptFamily);
 
     // /api/ask and /api/ask/stream retrieve sources independently from the
     // RagGenerationService call that actually answers the question, so the two
@@ -404,6 +424,7 @@ try
         QdrantVectorStore store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -411,16 +432,15 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
-        var denied = await AuthorizeCollectionAsync(
+        var (denied, manifest) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
             return denied;
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
-        var topK = request.TopK ?? 10;
-        var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? true;
+        var (topK, minScore, rerank, _) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
 
         var stopwatch = Stopwatch.StartNew();
         var results = await retriever.SearchAsync(
@@ -463,6 +483,7 @@ try
         QdrantVectorStore store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -470,7 +491,7 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
-        var denied = await AuthorizeCollectionAsync(
+        var (denied, manifest) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
             return denied;
@@ -480,9 +501,8 @@ try
         var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
         var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
-        var topK = request.TopK ?? 10;
-        var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? true;
+        var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
         var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
@@ -517,7 +537,7 @@ try
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
             request.Query, collection, topK, minScore, rerank, responseMode, history,
-            onStatus: null, cancellationToken: cancellationToken))
+            promptFamily, onStatus: null, cancellationToken: cancellationToken))
         {
             answer.Append(fragment);
         }
@@ -563,6 +583,7 @@ try
         QdrantVectorStore store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -574,7 +595,7 @@ try
         }
 
         var collection = request.Collection ?? defaultCollection;
-        var denied = await AuthorizeCollectionAsync(
+        var (denied, manifest) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
         {
@@ -587,9 +608,8 @@ try
         var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
         var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
-        var topK = request.TopK ?? 10;
-        var minScore = request.MinScore ?? 0.10f;
-        var rerank = request.Rerank ?? true;
+        var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
         var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
 
@@ -657,6 +677,7 @@ try
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
             request.Query, collection, topK, minScore, rerank, responseMode, history,
+            promptFamily,
             onStatus: async (message, ct) => await SendAsync("status", new { message }),
             cancellationToken: cancellationToken))
         {

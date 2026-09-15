@@ -7,12 +7,23 @@ resultados: un umbral elegido a posteriori no decide nada.
 
 ## El instrumento
 
-- **Ground truth:** `docs/eval/bsuite-repo.eval-set.json` — 55 preguntas, 47 con
-  chunk-ancla y 8 negativos adversariales sin ancla.
-- **Línea base:** `docs/eval/baselines/bsuite-repo.norerank.baseline.json`, sin rerank,
-  `k=10`, `min_score=0.10`, con el bloque `provenance` completo.
-- **Colección:** `bsuite-repo` (22.592 puntos, 20.475 chunks de C#, 1.773 de JavaScript,
-  146 secciones de Markdown, 198 de texto plano).
+- **Ground truth:** `docs/eval/bsuite-repo.eval-set.json` — originalmente 55 preguntas
+  (47 con chunk-ancla y 8 negativos adversariales sin ancla; ver "Línea base medida"
+  abajo). El ítem `6.c-preguntas-de-salto` (2026-09-15) añadió 29 preguntas más:
+  20 de categoría `salto` (ViewController/BO → Servicio/Regla, respuesta correcta
+  en el archivo de la regla, no en el punto de entrada) y 9 de categoría
+  `salto-negativo` (la regla ya está completa en el archivo consultado; el salto no
+  debería ayudar). Total actual: **84 preguntas**. Ver sección "Ola 6" de "Umbrales"
+  para el `n` de salto y su línea base propia.
+- **Línea base (Olas 4 y 5, 55 preguntas):**
+  `docs/eval/baselines/bsuite-repo.norerank.baseline.json`, sin rerank, `k=10`,
+  `min_score=0.10`, con el bloque `provenance` completo.
+- **Línea base de salto (Ola 6, 84 preguntas, sin expansión por símbolo):**
+  `docs/eval/baselines/bsuite-repo.6c-salto.norerank.baseline.json`, misma
+  configuración, corrida el 2026-09-15 antes de tocar `6.a`.
+- **Colección:** `bsuite-repo` (22.592 puntos en la línea base de 2026-08-31;
+  23.058 puntos tras la re-ingesta de `5.e` el 2026-09-15, mismo esquema de chunks
+  de C#, JavaScript, Markdown y texto plano).
 
 Cada ancla se verificó dos veces: que el literal está en el archivo fuente **y** que
 está dentro del `content` de un chunk realmente indexado. Un ancla que sólo existe en
@@ -141,6 +152,25 @@ vez de darlo por bueno.
   esta tabla. Ejemplos: `n=12` → umbral 4; `n=20` → umbral 5; `n=40` → umbral 10.
   El ítem 6.c fija el `n` real y hereda este umbral tal cual; no debe re-derivar
   ni renegociar la fórmula a posteriori con el resultado ya visto.
+
+  **`n` real fijado por `6.c-preguntas-de-salto` (2026-09-15):** 20 preguntas de
+  salto respondibles (categoría `salto` en `docs/eval/bsuite-repo.eval-set.json`,
+  cada una con ancla verificada contra el código fuente de `BusinessSuite.Xaf`
+  y contra el índice de `bsuite-repo` con `infra/verificar-anclas-eval.py`) más 9
+  negativos (categoría `salto-negativo`: pregunta respondible cuya regla ya está
+  completa en el archivo que un retriever de un solo salto encontraría, sin
+  dependencia externa relevante — el salto no debería ayudar aquí ni empeorar).
+  Con `n=20`, **`umbral = max(4, ceil(0.25*20)) = 5`** preguntas netas de ganancia,
+  heredado tal cual de la fórmula de arriba, fijado ANTES de tocar `6.a`.
+  **Línea base sin expansión por símbolo** (misma corrida que produjo
+  `docs/eval/baselines/bsuite-repo.6c-salto.norerank.baseline.json`, commit
+  `9aaa1e7`, `chunking_contract_version` 3): `salto` recall@10 **11/20**;
+  `salto-negativo` recall@10 4/9 (informativo, no entra en el criterio de mejora
+  ni en la no-regresión de Ola 6, sólo documenta que estas preguntas no dependen
+  de un salto para tener oportunidad de acertar). `6.a` se acepta si gana **≥5
+  preguntas netas** sobre esas 11/20 y no pierde ninguna del resto del eval-set
+  (los 64 ítems fuera de `salto`, incluidos los 9 `salto-negativo`) fuera del
+  margen de ±1 ya declarado para el resto de esta tabla.
 
 El segundo salto además tiene presupuesto: el ítem `6.b-presupuesto-del-segundo-salto`
 lo acota. Una mejora de recall comprada con una latencia que nadie declaró no es una

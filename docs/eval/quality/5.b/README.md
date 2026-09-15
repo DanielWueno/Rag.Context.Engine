@@ -36,7 +36,80 @@
   `bsuite-repo` (19/47 total, 2/12 símbolo — coincide con la línea base congelada en
   11.4) y en `bsuite-auditorias` (11/16).
 
-## Por qué el ítem queda `bloqueado` (no `hecho`)
+## Diagnóstico de drift de fuente (ronda siguiente, misma sesión)
+
+Antes de decidir cómo reentrar, se verificó la existencia en disco de cada
+`SourceFile` de AMBOS eval-sets contra el árbol actual de BusinessSuite.Xaf
+(`docs/eval/quality/5.b/diagnostico-drift-fuente.json`):
+
+- **`bsuite-repo`: 47/47 preguntas respondibles vivas (100%)** — el corpus que
+  generó ese baseline sigue intacto en el árbol actual, con un único root
+  (`/Users/DevStudio/Documents/Projects/BusinessSuite.Xaf`). No hace falta
+  recuperar ningún commit histórico para este set.
+- **`bsuite-auditorias`: 0/15 vivas (100% muertas)** — confirma que el bloqueo de
+  la ronda anterior es real: el módulo completo fue eliminado del árbol fuente.
+  Este set queda **fuera de alcance** de 5.b; necesitaría su propia investigación
+  (¿la feature de auditorías fue removida del producto? ¿hay un fork/rama que la
+  conserve?) antes de poder evaluarse.
+
+**Decisión**: proceder con el A/B real de 5.b sobre `bsuite-repo` (corpus vivo,
+sin drift), dejando `bsuite-auditorias` documentado como no evaluable hoy.
+
+## Resultado del A/B real sobre `bsuite-repo` — FAIL decisivo
+
+Se ejecutó una ingesta `PerFile` completa y real (Ollama `qwen2.5-coder` local,
+caché SQLite aislada, colección Qdrant aislada `bsuite-repo-5b-perfile`) sobre
+los 22.600 chunks de `bsuite-repo`. Duración: **02:56:29**. Llamadas LLM reales:
+**2.202** (grupos únicos archivo/tipo, `prompt_version=4dab4480`) — factor de
+reducción real **10.26×** (22.600/2.202), confirmando la hipótesis de costo
+"÷~10" de la ficha con datos reales.
+
+`rag eval` + `comparar.py` contra el baseline histórico
+(`docs/eval/baselines/bsuite-repo.norerank.baseline.json`, mismo corpus, sin
+drift):
+
+| Categoría | Control | Candidato (PerFile) |
+|---|---|---|
+| Respondibles (total) | 19/47 | **7/47** |
+| literal | 7/12 | 1/12 |
+| parafraseada | 8/18 | 3/18 |
+| ambigua | 2/5 | 1/5 |
+| símbolo | 2/12 | 2/12 |
+| fuera-de-dominio (negativo) | 0/8 | 0/8 |
+
+**Pérdida neta: 12 preguntas @10** (umbral de la ficha: ≤1). `comparar.py`
+reporta `FAIL`. Verificado con muestreo manual que no es un bug de
+instrumentación: los `top_score` de preguntas puntuales cayeron de forma
+consistente entre control y candidato para las mismas preguntas.
+
+**Causa probable** (hipótesis razonada, no verificada exhaustivamente): con
+`weight_resumen=2.5` en la fusión ponderada (RRF sobre canales
+código/sparse/resumen), el canal de resumen aporta el mayor peso de la señal.
+Al compartir el mismo vector de resumen entre TODOS los chunks de un
+archivo/clase, ese canal deja de discriminar entre chunks individuales del
+mismo archivo (métodos/propiedades distintas quedan indistinguibles para el
+canal de resumen), degradando severamente el ranking fino que el resumen por
+chunk sí aportaba.
+
+**Conclusión**: la hipótesis de 5.b (reducir el costo de Ollama agrupando
+resúmenes por archivo/tipo sin perder recall) queda **refutada** con evidencia
+real. El ahorro de costo (10.26× menos llamadas LLM) no compensa la pérdida de
+calidad. `SummaryGranularity=PerChunk` permanece como default y único modo
+recomendado en producción. `SummaryGranularity=PerFile` queda en el código
+como modo opt-in ya implementado y testeado (243/243 tests), mantenido solo
+como referencia histórica/experimental — **no promovido**.
+
+Evidencia archivada en `docs/eval/quality/5.b/bsuite-repo-ab/`
+(`candidato.perfile.json`, `comparador-salida.txt`, `instrumentacion.json`) y
+`docs/eval/quality/5.b/diagnostico-drift-fuente.json`. Artefactos experimentales
+(colección Qdrant, caché SQLite temporal) limpiados tras extraer la evidencia.
+
+El ítem se cierra como `descartado` (no `bloqueado`, no `hecho`): se obtuvo un
+resultado real y conclusivo — no una imposibilidad de medir.
+
+---
+
+## Historial: por qué el ítem quedó `bloqueado` en la ronda anterior
 
 Se lanzó una ingesta real en modo `PerFile` (`Ingestion__SummaryGranularity=PerFile`,
 caché SQLite aislada) sobre el subconjunto de auditorías, reconstruyendo primero los
@@ -64,7 +137,13 @@ que generó los baselines — exactamente lo que el protocolo del proyecto proh�
 justificadamente, registrar el cambio y medir ambos brazos con la misma
 procedencia").
 
-## Condición de reentrada
+## Condición de reentrada (histórica — ya no aplica, ver arriba)
+
+La condición descrita abajo dejó de ser el camino elegido: en vez de recuperar
+un commit histórico o re-congelar un baseline, se diagnosticó que `bsuite-repo`
+no tenía drift (100% vivo) y se ejecutó el A/B directamente sobre el árbol
+actual, sin tocar anclas. `bsuite-auditorias` sigue con el mismo bloqueo (0%
+vivo) y sigue fuera de alcance de 5.b.
 
 Antes de poder ejecutar el A/B pre-registrado de 5.b hace falta, en este orden:
 1. Recuperar el commit/tag exacto de BusinessSuite.Xaf usado para congelar

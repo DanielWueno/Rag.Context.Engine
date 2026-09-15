@@ -1,0 +1,10 @@
+== bsuite-repo ==
+  respondibles: control 19/47 -> candidato 7/47 (perdida neta = 12)
+    ambigua: control 2/5 -> candidato 1/5
+    fuera-de-dominio: control 0/8 -> candidato 0/8 <- categoria negativa
+    literal: control 7/12 -> candidato 1/12
+    parafraseada: control 8/18 -> candidato 3/18
+    simbolo: control 2/12 -> candidato 2/12
+
+FAIL:
+  - [bsuite-repo] perdida neta de 12 preguntas respondibles @10 supera el umbral <=1 de la ficha 5.b

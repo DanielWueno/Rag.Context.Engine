@@ -76,6 +76,18 @@ public enum RetrievalScoreScale
     /// invariante de orden en la documentación de este enum.
     /// </summary>
     CrossEncoderStable,
+
+    /// <summary>
+    /// Candidato incorporado por el segundo salto por símbolo (ítem 6.a,
+    /// <c>TwoHopOptions</c>): no salió del vector de la consulta original contra este
+    /// chunk, sino de un <c>QueryAsync</c> filtrado por <c>defined_symbols</c> ∈ los
+    /// <c>consumed_symbols</c> de los primeros resultados de la fusión primaria. El
+    /// score es, igual que <see cref="RankFusionNative"/>/<see cref="RankFusionWeighted"/>,
+    /// función del rango combinado de una re-fusión RRF de segundo nivel entre la
+    /// fusión primaria y este salto — no de la similitud, y no comparable entre
+    /// consultas.
+    /// </summary>
+    SymbolExpansion,
 }
 
 /// <summary>
@@ -100,6 +112,7 @@ public static class RetrievalScoreScaleExtensions
         RetrievalScoreScale.CrossEncoderStable  => true,
         RetrievalScoreScale.RankFusionNative    => false,
         RetrievalScoreScale.RankFusionWeighted  => false,
+        RetrievalScoreScale.SymbolExpansion     => false,
         _ => false,
     };
 
@@ -114,6 +127,7 @@ public static class RetrievalScoreScaleExtensions
         RetrievalScoreScale.RankFusionWeighted  => "RRF ponderado",
         RetrievalScoreScale.CrossEncoderBatched => "cross-encoder",
         RetrievalScoreScale.CrossEncoderStable  => "cross-encoder estable",
+        RetrievalScoreScale.SymbolExpansion     => "expansión por símbolo",
         _ => scale.ToString(),
     };
 }

@@ -61,6 +61,14 @@ public static class ServiceCollectionExtensions
         services.Configure<RetrievalFusionOptions>(
             configuration.GetSection(RetrievalFusionOptions.SectionName));
 
+        services.Configure<TwoHopOptions>(
+            configuration.GetSection(TwoHopOptions.SectionName));
+        services.AddOptions<TwoHopOptions>()
+            .Validate(o => o.SeedResults > 0, "TwoHop:SeedResults debe ser mayor a 0.")
+            .Validate(o => o.MaxExpansionResults > 0, "TwoHop:MaxExpansionResults debe ser mayor a 0.")
+            .Validate(o => o.Weight > 0, "TwoHop:Weight debe ser mayor a 0 (un peso <=0 deja el salto inerte).")
+            .ValidateOnStart();
+
         // OllamaOptions también se registra aquí (no solo en AddRagEngineGeneration):
         // la Fase 2 de ingesta (resumen de negocio) necesita el endpoint de Ollama
         // sin que el host tenga que habilitar generación conversacional. Configure<T>

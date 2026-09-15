@@ -124,6 +124,12 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
                 $"[{resumenColor}]{completedCount:N0}/{pointCount:N0} puntos ({pending:N0} pendientes)[/]");
         }
 
+        // Ítem 5.d: observabilidad del índice de payload que habilita el filtro por
+        // símbolo del segundo salto (6.a) sin escanear la colección entera.
+        var hasSymbolIndex = info.PayloadSchema.ContainsKey(QdrantVectorStore.DefinedSymbolsPayloadKey);
+        table.AddRow("[dim]Índice símbolos[/]",
+            hasSymbolIndex ? "[green]creado (defined_symbols)[/]" : "[dim]no creado[/]");
+
         var panel = new Panel(table)
         {
             Header = new PanelHeader($" Colección: [bold cyan]{Markup.Escape(collectionName)}[/] ", Justify.Left),

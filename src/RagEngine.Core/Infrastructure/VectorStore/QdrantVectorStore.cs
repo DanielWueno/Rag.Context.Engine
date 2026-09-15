@@ -39,6 +39,22 @@ public sealed class QdrantVectorStore
     public const string IsManifestPayloadKey = "is_manifest";
 
     /// <summary>
+    /// Clave de payload (lista de keywords) con los nombres de símbolos que este chunk
+    /// declara (ver <see cref="CodeChunk.DefinedSymbols"/>). Indexada en Qdrant (ítem 5.d)
+    /// para permitir el segundo salto símbolo→definición del ítem 6.a sin escanear toda
+    /// la colección.
+    /// </summary>
+    public const string DefinedSymbolsPayloadKey = "defined_symbols";
+
+    /// <summary>
+    /// Clave de payload (lista de keywords) con los nombres de símbolos que este chunk
+    /// referencia (ver <see cref="CodeChunk.ConsumedSymbols"/>). Sin índice propio por
+    /// ahora — el ítem 5.d solo exige indexar <see cref="DefinedSymbolsPayloadKey"/>,
+    /// que es el lado de la unión usado para expandir hacia la definición.
+    /// </summary>
+    public const string ConsumedSymbolsPayloadKey = "consumed_symbols";
+
+    /// <summary>
     /// Id fijo y reservado para el único point que guarda el manifiesto de la colección.
     /// Ningún chunk real puede colisionar con este UUID porque los ids de chunk son
     /// UUIDv5 derivados de ruta+línea+hash de contenido (ver ChunkBuilder), y este valor
@@ -126,6 +142,15 @@ public sealed class QdrantVectorStore
             collectionName,
             vectorsConfig: vectorsConfig,
             sparseVectorsConfig: sparseConfig,
+            cancellationToken: ct);
+
+        // Ítem 5.d: índice keyword sobre defined_symbols para que el segundo salto de 6.a
+        // filtre sin escanear toda la colección. Solo se indexa el lado "definición" de la
+        // unión (defined_symbols) — consumed_symbols no lo necesita todavía.
+        await _client.CreatePayloadIndexAsync(
+            collectionName,
+            DefinedSymbolsPayloadKey,
+            PayloadSchemaType.Keyword,
             cancellationToken: ct);
 
         _logger.LogInformation(
@@ -380,6 +405,14 @@ public sealed class QdrantVectorStore
             if (item.Chunk.Metadata.MethodName is not null)
                 point.Payload["method_name"] = new Value { StringValue = item.Chunk.Metadata.MethodName };
 
+            // Listas vacías se omiten: no tiene sentido indexar/filtrar por una clave sin
+            // valores, y evita ensuciar el payload de chunks de estrategias sin símbolos
+            // (Markdown, Fallback) o donde la extracción sintáctica falló (ítem 5.c).
+            if (item.Chunk.DefinedSymbols.Count > 0)
+                point.Payload[DefinedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.DefinedSymbols);
+            if (item.Chunk.ConsumedSymbols.Count > 0)
+                point.Payload[ConsumedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.ConsumedSymbols);
+
             if (markResumenPending)
             {
                 // Punto ya existente: conserva su estado (pending true/false tal cual estaba).
@@ -399,6 +432,14 @@ public sealed class QdrantVectorStore
             batch.Count, collectionName);
 
         return batch.Count;
+    }
+
+    /// <summary>Serializa una lista de nombres de símbolos como un ListValue de keywords de Qdrant.</summary>
+    private static Value ToKeywordListValue(IReadOnlyList<string> symbols)
+    {
+        var listValue = new ListValue();
+        listValue.Values.AddRange(symbols.Select(s => new Value { StringValue = s }));
+        return new Value { ListValue = listValue };
     }
 
     /// <summary>

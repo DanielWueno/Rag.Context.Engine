@@ -967,13 +967,22 @@
           "multiagente": false,
           "verificacion": "`rag status` muestra el índice creado y un filtro por defined_symbols responde en <50 ms sobre bsuite-repo (medido, no estimado).",
           "horas_maquina": 0.1,
-          "estado": "bloqueado",
+          "estado": "hecho",
           "_preparacion_de_verificacion": "StatusCommand no muestra indices de payload y no existe medicion de filtro que falle al superar 50 ms. Falta fijar simbolos del corpus, consulta exacta, calentamiento, numero de repeticiones y estadistico al que se aplica <50 ms. El mantenedor de retrieval debe fijar ese protocolo antes del cambio y preparar captura de status y respuesta Qdrant; no usar existencia de claves como prueba de latencia.",
           "_condicion_de_reentrada": "Mantenedor de retrieval: versionar fixture/protocolo de filtro sobre bsuite-repo aislado y comando de comprobacion de indice, resultado y limite temporal; volver a pendiente sin cambiar el umbral <50 ms ni exigir activar 5.h.",
           "por_que_este_modelo": "Trece claves de payload ya se escriben en el mismo bloque; añadir dos y un índice es mecánico.",
           "archivos": "src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs:266-283",
           "rollback": "Las dos claves sobran sin romper nada (el retriever no las lee hasta 6.a) y el índice se borra con una llamada.",
-          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md."
+          "origen": "Ola nacida de la evaluación del documento externo de refinamiento arquitectónico, 2026-08-24. Análisis completo en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md.",
+          "_ejecucion": {
+            "entorno": "Copilot CLI",
+            "modelo_solicitado": "sonnet",
+            "modelo_efectivo": "claude-sonnet-5",
+            "esfuerzo_efectivo": "low",
+            "motivo": "Cambio mecanico de payload+indice con oraculo de latencia ambiguo; se completo la preparacion (fixture aislado bsuite-repo-5d-bench sin resumen LLM, protocolo Stopwatch 5 warm-up + 20 repeticiones, estadistico p95 <50ms) antes de implementar, decidido junto al usuario."
+          },
+          "fecha": "2026-09-15",
+          "resultado": "Preparacion del oraculo (criterio original ambiguo: no fijaba fixture, simbolo, calentamiento, repeticiones ni estadistico): decidido junto al usuario NO tocar bsuite-repo (servida, 22.592 puntos) para la medicion, ya que hoy no tiene defined_symbols y backfillearla es tocar una coleccion servida; en su lugar se ingesto el MISMO corpus fuente (BusinessSuite.Xaf) a una coleccion aislada bsuite-repo-5d-bench SIN --con-resumen (evita costo LLM), con el codigo ya modificado. bsuite-repo permanece intacta y sin backfill: su re-ingesta formal sigue siendo responsabilidad de 5.e (bloqueada), que heredara este codigo. Cambios: QdrantVectorStore.cs anade DefinedSymbolsPayloadKey/ConsumedSymbolsPayloadKey, escribe ambas listas (ToKeywordListValue -> Qdrant ListValue) en UpsertBatchAsync solo si no estan vacias, y CreateHybridCollectionAsync crea un indice Keyword sobre defined_symbols en toda coleccion nueva via CreatePayloadIndexAsync. StatusCommand.cs muestra fila \"Indice simbolos\" leyendo info.PayloadSchema. Verificado con rag status -c bsuite-repo-5d-bench: fila muestra creado (defined_symbols). Ingesta bench: 2103 archivos, 22615 chunks, ~2m53s, sin LLM. Muestreo confirmo defined_symbols/consumed_symbols poblados con simbolos reales (ej. Execute -> [Execute], consumed_symbols con 40+ identificadores). Simbolo elegido para el benchmark: \"Execute\" (multiplicidad media, count=22; Dispose=192 descartado por ubicuo, GetOrderAsync/Save/ProcessAsync/ValidateAsync=0 descartados por ausentes en este corpus). Protocolo: 5 llamadas de calentamiento descartadas + 20 repeticiones via REST points/scroll (limit=50, with_payload=false, with_vectors=false, filtro defined_symbols any=[Execute]), cronometradas con time.perf_counter. Resultado: p50=1.03ms p95=1.45ms (min=0.79ms max=1.45ms, n=20) - muy por debajo de <50ms. Coleccion bsuite-repo-5d-bench borrada al terminar (DELETE confirmado, ya no aparece en /collections). bsuite-repo (real) verificada sin cambios antes y despues. dotnet build: 0 errores/0 advertencias. dotnet test: 265/265 correctas."
         },
         {
           "id": "5.f-revivir-collection-manifest",

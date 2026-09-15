@@ -1099,7 +1099,7 @@
           "modelo": "sonnet",
           "esfuerzo": "medium",
           "multiagente": false,
-          "estado": "pendiente",
+          "estado": "descartado",
           "bloqueado_por": null,
           "horas_maquina": 0.5,
           "fecha": "2026-09-15",
@@ -1111,7 +1111,8 @@
           "rollback": "Bandera de configuracion (extension del enum SummaryGranularity existente, ej. 'Hybrid', o un predicado de clasificacion inyectable). PerChunk sigue siendo el default; nada de produccion cambia hasta que ambos gates pasen.",
           "por_que_este_modelo": "El diseno central (calibrar el criterio de 'boilerplate', el umbral de indiferencia, y la logica hibrida) ya esta acotado por la leccion de 5.b -- no es exploracion arquitectonica desde cero, es una extension mecanica con un criterio de aceptacion ya definido en esta ficha.",
           "archivos": "src/RagEngine.Core/Domain/IngestionTypes.cs, src/RagEngine.Core/Services/Summary/*, Pipeline/DefaultIngestionPipeline.cs (extiende RunResumenPhasePerFileAsync de 5.b), docs/eval/quality/5.i/*",
-          "_condicion_de_reentrada": "Ninguna: es un item nuevo, se ejecuta cuando se decida priorizar. Si Gate 0 no supera el umbral de 15%, el item se cierra 'descartado' sin pasar a implementacion -- eso es un cierre valido en la misma corrida, no una condicion de bloqueo pendiente."
+          "_condicion_de_reentrada": "No hay condicion de reentrada planeada. Si en el futuro se quisiera revivir la idea de granularidad selectiva, necesitaria un clasificador semantico validado (no heuristica de nombre/atributo) con su propia medicion de precision/recall contra juicio humano antes de considerarse siquiera para Gate 0 -- eso seria, en la practica, un item nuevo con un diseño distinto, no una reactivacion de este.",
+          "resultado": "Descartado en analisis 2026-09-15 (misma sesion que cerro 5.b), antes de gastar el Gate 0 -- decision de diseño, no de evidencia empirica adicional. Motivo: la clasificacion 'boilerplate vs negocio' que este item necesitaria es por naturaleza un parche de coincidencia sintactica (sufijo de archivo, atributo, % de propiedades triviales), no un juicio semantico real. Eso tiene tres problemas estructurales que no se resuelven agregando mas reglas: (1) degradacion silenciosa -- si un archivo clasificado boilerplate hoy adquiere logica de negocio mañana, la heuristica no lo detecta, se pierde resolucion de resumen exactamente donde empieza a importar, y ningun test se pone en rojo (mismo patron de riesgo ya señalado en la advertencia original de 5.b: un resumen peor no es un test rojo, es un ranking un poco peor); (2) circularidad -- una clasificacion confiable de 'este archivo necesita resumen fino' requeriria analisis costoso, lo cual anula el ahorro que se busca; (3) fragilidad entre repos variados -- las convenciones de generacion de codigo (designer/partial/atributos) no son uniformes entre proyectos ni estables en el tiempo, por lo que la heuristica necesitaria mantenimiento continuo y perderia precision fuera del caso XAF que la origino. Con dos motivos independientes en contra (perdida de calidad medida en 5.b por el peso del canal resumen, y ahora fragilidad estructural del clasificador propuesto), no se justifica ni el costo barato del Gate 0. Se cierra sin implementacion. PerChunk sigue siendo el unico modo de granularidad de resumen recomendado."
         },
         {
           "id": "5.a-chunker-de-xaml",

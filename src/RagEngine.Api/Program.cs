@@ -227,17 +227,23 @@ try
     }
 
     /// <summary>
-    /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore/rerank para una
-    /// request. El valor explícito del cliente SIEMPRE gana; en su ausencia, el
-    /// perfil de la colección (si hay uno declarado y existe en el catálogo) decide;
-    /// sin perfil resuelto, se cae exactamente en los literales 10/0.10f/true que ya
-    /// usaba este endpoint antes de este ítem — el baseline queda intacto.
+    /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore para una request.
+    /// El valor explícito del cliente SIEMPRE gana; en su ausencia, el perfil de la
+    /// colección (si hay uno declarado y existe en el catálogo) decide; sin perfil
+    /// resuelto, topK/minScore caen exactamente en los literales 10/0.10f que ya
+    /// usaba este endpoint antes de ese ítem — ese baseline queda intacto.
+    ///
+    /// Ítem 7.c: rerank YA NO tiene un default silencioso a <c>true</c>. Sin valor
+    /// explícito del cliente ni perfil que lo declare, el resultado es <c>false</c>
+    /// — quien quiere pagar el costo del cross-encoder lo pide por request o lo
+    /// publica en el perfil de la colección; no vuelve a ser un efecto lateral
+    /// invisible del endpoint.
     /// </summary>
     static (int TopK, float MinScore, bool Rerank, PromptFamily? PromptFamily) ResolveEffectiveRetrievalDefaults(
         RagQueryRequest request, RetrievalProfile? profile) => (
         request.TopK ?? profile?.TopK ?? 10,
         request.MinScore ?? profile?.MinScore ?? 0.10f,
-        request.Rerank ?? profile?.UseReRanking ?? true,
+        request.Rerank ?? profile?.UseReRanking ?? false,
         profile?.PromptFamily);
 
     // /api/ask and /api/ask/stream retrieve sources independently from the

@@ -52,6 +52,11 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
 
         [CommandOption("--json")]
         public bool Json { get; init; }
+
+        [CommandOption("--dump-hits")]
+        [Description("Solo con --json: agrega rank/score/match por resultado crudo (sin filtrar por min-score) "
+                    + "para poder simular otras politicas de corte en post-proceso. No cambia el recall reportado.")]
+        public bool DumpHits { get; init; }
     }
 
     private readonly ISemanticRetriever _retriever;
@@ -304,7 +309,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             hits = [];
         }
 
-        return Evaluate(item, hits, cutoffs);
+        return Evaluate(item, hits, cutoffs, settings.DumpHits);
     }
 
     /// <summary>
@@ -313,14 +318,27 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     /// coinciden con el archivo fuente esperado. Preguntas sin SourceFile (fuera-de-dominio)
     /// no tienen ground truth — solo se reporta el score más alto observado.
     /// </summary>
-    private static EvalItemResult Evaluate(EvalItem item, IReadOnlyList<RetrievalResult> hits, int[] cutoffs)
+    private static EvalItemResult Evaluate(EvalItem item, IReadOnlyList<RetrievalResult> hits, int[] cutoffs, bool dumpHits)
     {
         float topScore = hits.Count > 0 ? hits[0].SimilarityScore : 0f;
         var targetFileNames = item.TargetFileNames;
 
+        List<HitDetail>? hitDetails = null;
+        if (dumpHits)
+        {
+            hitDetails = hits.Select((h, i) =>
+            {
+                bool isTarget = targetFileNames.Contains(
+                    Path.GetFileName(h.Metadata.RelativeFilePath), StringComparer.OrdinalIgnoreCase);
+                bool matchesAnchor = isTarget
+                    && item.TargetContentContains.Any(a => h.Content.Contains(a, StringComparison.Ordinal));
+                return new HitDetail(i + 1, h.SimilarityScore, isTarget, matchesAnchor);
+            }).ToList();
+        }
+
         if (targetFileNames.Count == 0 || item.TargetContentContains.Count == 0)
         {
-            return new EvalItemResult(item.Question, item.Category, item.SourceFile, topScore, [], []);
+            return new EvalItemResult(item.Question, item.Category, item.SourceFile, topScore, [], [], hitDetails);
         }
 
         var hitAny = new Dictionary<int, bool>();
@@ -342,7 +360,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             hitFull[k] = full;
         }
 
-        return new EvalItemResult(item.Question, item.Category, item.SourceFile, topScore, hitAny, hitFull);
+        return new EvalItemResult(item.Question, item.Category, item.SourceFile, topScore, hitAny, hitFull, hitDetails);
     }
 
     private static void RenderReport(Settings settings, List<EvalItemResult> results, int[] cutoffs)
@@ -437,5 +455,13 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         string? SourceFile,
         float TopScore,
         [property: JsonPropertyName("hit_any_at_k")] Dictionary<int, bool> HitAnyAtK,
-        [property: JsonPropertyName("hit_full_at_k")] Dictionary<int, bool> HitFullAtK);
+        [property: JsonPropertyName("hit_full_at_k")] Dictionary<int, bool> HitFullAtK,
+        [property: JsonPropertyName("hits")] List<HitDetail>? Hits = null);
+
+    /// <summary>
+    /// Detalle crudo de un resultado (solo con --dump-hits), usado para simular en
+    /// post-proceso politicas de corte distintas a la que efectivamente se aplico
+    /// (ver 7.d-investigar-corte-adaptativo-de-ruido). No afecta el recall reportado.
+    /// </summary>
+    private sealed record HitDetail(int Rank, float Score, bool IsTargetFile, bool MatchesAnchor);
 }

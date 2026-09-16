@@ -1,0 +1,1546 @@
+{
+  "collection": "micro-repo",
+  "top_k": 10,
+  "rerank": true,
+  "min_score": 0,
+  "generated_at": "2026-09-16T00:10:13.409418+00:00",
+  "provenance": {
+    "git_commit": "3d33d6a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/tickets-microservice.eval-set.json",
+    "eval_set_hash": "2ae380bb02df",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": "model_qint8_arm64.onnx",
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFC\u00F3mo levanto un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.2119455,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.2119455,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.1742261,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.17199157,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.15995136,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.14630568,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.11310815,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.10595698,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.10297319,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.09791231,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.094406866,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 datos son obligatorios para crear un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.3451809,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.3451809,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.23168747,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.112328455,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.06025139,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03956333,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03168534,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.029062392,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.027686868,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.018585976,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.01740415,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se necesita para cerrar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "CerrarTicketCommandHandler.cs",
+      "top_score": 0.3099681,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.3099681,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.15768877,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.1456983,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.14415261,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.056147102,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040994782,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.039288078,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036568258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.024579352,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.023716806,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo reasigno un ticket a otra persona?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.56847036,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.56847036,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.44631422,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.44236368,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.40223023,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.376261,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.35811,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.3518224,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.34399155,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.29372144,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.26275262,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo adjunto un documento o evidencia a un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.4641626,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.4641626,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.52291876,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.46399048,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.44359714,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.3820365,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.3160734,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.2711878,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.25569984,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.24327716,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.24288991,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo registro el avance o una actividad en un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.9571998,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9571998,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.893684,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.85590416,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.8358823,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.83296597,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.70373225,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.6025643,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.48716086,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.4220544,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 10,
+          "score": 0.39693266,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo paso un ticket a Mesa de Ayuda?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.999094,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.999094,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.9939917,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9557451,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.94760567,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.9236225,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 6,
+          "score": 0.82715476,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.81953347,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.78871465,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.7861106,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.70705265,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo recibo un ticket que me asignaron?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.6103799,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.6103799,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.6419231,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.55018497,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.52898943,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.3738848,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.3461971,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.31257012,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.29580992,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.2752986,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.2646292,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo cambio el tipo de servicio de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.9207486,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9207486,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8966816,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.8845032,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.85568684,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.82155055,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.7757942,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.71965617,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.6104269,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.49020627,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.4099406,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo actualizo o subo el documento de cierre de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.8600816,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.8600816,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.8160597,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.8151524,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.7798517,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.70381,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.68403363,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.35098362,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.34808266,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.30388322,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.3027062,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 condiciones deben cumplirse para poder reasignar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "ReasignarTicketCommandHandler.cs",
+      "top_score": 0.12637901,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.12637901,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.25045198,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.12660003,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.10298086,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.10150098,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.06404752,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.06275237,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.057372715,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.055075932,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.04739076,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 casos un ticket necesita autorizaci\u00F3n digital?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.92987967,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.92987967,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.3222514,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.23064443,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.12248998,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.050152734,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 6,
+          "score": 0.024567425,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.009996492,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0060189213,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 9,
+          "score": 0.0051623993,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0045464076,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 a veces me piden llenar el campo M\u00F3dulo al cerrar un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "ValidarMostrarModuloTicketCommandHandler.cs",
+      "top_score": 0.4823173,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.4823173,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.022718588,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.01078789,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.008172528,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.002021021,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0016308625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0015903634,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.00121914,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0011817929,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.00080711325,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo puedo mandar un ticket a Mesa de Ayuda?",
+      "category": "bsuite-codigo",
+      "source_file": "ValidarMesaAyudaTicketCommandHandler.cs",
+      "top_score": 0.18763648,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.18763648,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0917424,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.08925937,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.07353032,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.061359856,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.041120864,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03183867,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.029277742,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.027431794,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.026498696,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo consulto mis solicitudes de servicio?",
+      "category": "bsuite-codigo",
+      "source_file": "SolicitudesServicioController.cs",
+      "top_score": 0.8769629,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.8769629,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7136723,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.65386933,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.6459907,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.52844626,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.5025448,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.44965008,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.4202153,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.37549257,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.2956188,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFD\u00F3nde veo a qui\u00E9n se han asignado los tickets?",
+      "category": "bsuite-codigo",
+      "source_file": "TicketsAsignacionesController.cs",
+      "top_score": 0.64685196,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.64685196,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.07246819,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.07217809,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.042833336,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04184002,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.038208414,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.029069312,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.02901443,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.025608988,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.024568975,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 tipos de servicio corresponden a un departamento?",
+      "category": "bsuite-codigo",
+      "source_file": "TicketsTipoServicioController.cs",
+      "top_score": 0.50235355,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.50235355,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.4058522,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.28777462,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.15849587,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.061583098,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04596622,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040047973,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.039444614,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.038280085,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.028598242,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 informaci\u00F3n se guarda de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": "Ticket.cs",
+      "top_score": 0.047591943,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.047591943,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.03615194,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.026146134,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.020666348,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.019054936,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.018315813,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.01752195,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.01705486,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.014811714,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.012234986,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se registra el seguimiento y las actividades de un ticket?",
+      "category": "bsuite-codigo",
+      "source_file": null,
+      "top_score": 0.772794,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.772794,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.78016245,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.705566,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.61857784,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.3581739,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.3168302,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.278768,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.25220668,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.24998063,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.24343006,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    }
+  ]
+}

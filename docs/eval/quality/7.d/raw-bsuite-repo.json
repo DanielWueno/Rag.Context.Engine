@@ -1,0 +1,6666 @@
+{
+  "collection": "bsuite-repo",
+  "top_k": 10,
+  "rerank": false,
+  "min_score": 0,
+  "generated_at": "2026-09-16T00:05:43.17376+00:00",
+  "provenance": {
+    "git_commit": "3d33d6a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/bsuite-repo.eval-set.json",
+    "eval_set_hash": "cdb39feef4ee",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": null,
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFEn qu\u00E9 estatus deben estar los activos relacionados para poder finalizar una recolecci\u00F3n?",
+      "category": "literal",
+      "source_file": "RecoleccionActivo.cs",
+      "top_score": 0.060957503,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060957503,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05999504,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05376984,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.049108736,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04724967,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.046717856,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 no se puede cancelar una entrega contable que ya tiene facturas pagadas?",
+      "category": "literal",
+      "source_file": "EntregaContable.cs",
+      "top_score": 0.05125,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05125,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0490524,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si el saldo de una cuenta por pagar queda por debajo de cero?",
+      "category": "literal",
+      "source_file": "Transaccion.cs",
+      "top_score": 0.05464481,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05464481,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05386248,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.048900064,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se valida sobre la caja chica al registrar un pr\u00E9stamo?",
+      "category": "literal",
+      "source_file": "Prestamo.cs",
+      "top_score": 0.05909646,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05909646,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05875947,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0579924,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05588486,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.05498405,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 6,
+          "score": 0.052481882,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.050771605,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.050656814,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.050594494,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.049701124,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 restricci\u00F3n hay entre la moneda de las transacciones y la de la cuenta bancaria con la que se paga?",
+      "category": "literal",
+      "source_file": "Pago.cs",
+      "top_score": 0.061951347,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061951347,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.059375,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.055928852,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.052380953,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.050396826,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.050177228,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.048485387,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04757621,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.045433436,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 requisito tienen los productos especiales o gen\u00E9ricos dentro de una solicitud de compra?",
+      "category": "literal",
+      "source_file": "SolicitudCompraDetalle.cs",
+      "top_score": 0.05126065,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05126065,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04385965,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04383117,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo una requisici\u00F3n de material no es candidata a reversa?",
+      "category": "literal",
+      "source_file": "RequisicionMaterial.cs",
+      "top_score": 0.07095131,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07095131,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05479882,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05277778,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05003001,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.044887956,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se valida sobre el almac\u00E9n antes de afectar el inventario en una entrada de c\u00F3mputo?",
+      "category": "literal",
+      "source_file": "AlmacenComputoEntrada.cs",
+      "top_score": 0.050864197,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.050864197,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.045111112,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuede un usuario cerrar un ticket de c\u00F3mputo asignado a otro departamento?",
+      "category": "literal",
+      "source_file": "TicketComputo.cs",
+      "top_score": 0.057866722,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057866722,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.048631474,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.045918368,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04508986,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04330986,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04292528,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03958414,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.039314862,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFSe puede usar la misma comprobaci\u00F3n de pr\u00E9stamo en dos solicitudes de reembolso distintas?",
+      "category": "literal",
+      "source_file": "SolicitudReembolsoDetalle.cs",
+      "top_score": 0.061951347,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061951347,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.060957503,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05825397,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.056154013,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.054356616,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.053337146,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.05021645,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.048071764,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.04454596,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.04207927,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 nombre debe tener la hoja de la plantilla de Excel al importar un inventario c\u00EDclico?",
+      "category": "literal",
+      "source_file": "InventarioCiclico.cs",
+      "top_score": 0.0581308,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0581308,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05007391,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.045967743,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.045840897,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.045413177,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.042176872,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03938296,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 ocurre al registrar una salida de almac\u00E9n con un producto marcado como nuevo?",
+      "category": "literal",
+      "source_file": "SalidaDetalle.cs",
+      "top_score": 0.045624062,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.045624062,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se decide si un equipo de c\u00F3mputo pertenece a primera, segunda o tercera l\u00EDnea seg\u00FAn su antig\u00FCedad?",
+      "category": "parafraseada",
+      "source_file": "ClasificacionActivoComputoHelper.cs",
+      "top_score": 0.061290324,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061290324,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.056459796,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.052637722,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04887218,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa cuando el d\u00EDa de aniversario de un contrato no existe en el mes, por ejemplo el 31 en febrero?",
+      "category": "parafraseada",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.059375,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.059375,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.058281176,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05509526,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05393773,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.053281855,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.053224206,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.05281409,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.051048554,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.048923228,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.048852656,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 significa que un contrato de licencias se renueve por s\u00ED solo al vencer?",
+      "category": "parafraseada",
+      "source_file": "Contrato.cs",
+      "top_score": 0.060957503,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060957503,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.059824187,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05754336,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.056870718,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.056787804,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.05427223,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053281855,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.052440032,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.05126065,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.050367646,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 relaci\u00F3n debe haber entre las cantidades m\u00EDnima y m\u00E1xima de un producto en el almac\u00E9n?",
+      "category": "parafraseada",
+      "source_file": "Existencia.cs",
+      "top_score": 0.056837264,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.056837264,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.048784003,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04514991,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.044732418,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.042567566,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.042357787,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFSe pueden juntar pr\u00E9stamos de distintas cajas chicas en una misma solicitud de reembolso?",
+      "category": "parafraseada",
+      "source_file": "PrestamoViewController.cs",
+      "top_score": 0.07288342,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07288342,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.061869003,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.061618526,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.06065028,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.05790308,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.057579186,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.056450218,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.053521127,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.049701124,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.048557386,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 un usuario ve solamente algunas subfamilias en la consulta de existencias de c\u00F3mputo?",
+      "category": "parafraseada",
+      "source_file": "FiltroExistenciasComputo.cs",
+      "top_score": 0.040983606,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04045954,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03873563,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 impide cerrar un ticket cuyo diagn\u00F3stico sigue pendiente de autorizaci\u00F3n digital?",
+      "category": "parafraseada",
+      "source_file": "TicketComputo.cs",
+      "top_score": 0.057948355,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057948355,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.056461677,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05645161,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05427223,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.053983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04869102,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04699381,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0462406,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.045931283,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.043384004,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuede repetirse el mismo n\u00FAmero telef\u00F3nico entre dos l\u00EDneas de telefon\u00EDa?",
+      "category": "parafraseada",
+      "source_file": "LineaTelefonia.cs",
+      "top_score": 0.057281774,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057281774,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0485446,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuede haber dos activos de c\u00F3mputo con el mismo c\u00F3digo de barras?",
+      "category": "parafraseada",
+      "source_file": "ActivosComputo.cs",
+      "top_score": 0.040983606,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 validaci\u00F3n existe entre la fecha de inicio y la de finalizaci\u00F3n de un proyecto?",
+      "category": "parafraseada",
+      "source_file": "SolicitudServicio.cs",
+      "top_score": 0.052193813,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.052193813,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05031343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.049089253,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.043326184,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.042119566,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04029412,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 monto m\u00EDnimo debe tener un vale de gasto de vi\u00E1ticos para poder continuar?",
+      "category": "parafraseada",
+      "source_file": "SolicitudViaticoBlazor.cs",
+      "top_score": 0.055945616,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.055945616,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.055714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04486479,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFSe puede repetir la clave corta de una subrama dentro de la misma categor\u00EDa?",
+      "category": "parafraseada",
+      "source_file": "Subrama.cs",
+      "top_score": 0.062295083,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.062295083,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04938978,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04905763,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04856255,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.045288045,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.043302946,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFDe qu\u00E9 clase base deben heredar los objetos de negocio del sistema?",
+      "category": "parafraseada",
+      "source_file": "constitution.md",
+      "top_score": 0.05438567,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05438567,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04806612,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 idioma se deben nombrar las clases y propiedades nuevas del proyecto?",
+      "category": "parafraseada",
+      "source_file": "constitution.md",
+      "top_score": 0.059375,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.059375,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05859173,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.049647596,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036936477,
+          "is_target_file": true,
+          "matches_anchor": true
+        }
+      ]
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 momento se le asigna el folio consecutivo a un documento de compras?",
+      "category": "parafraseada",
+      "source_file": "ProcesoBaseObject.cs",
+      "top_score": 0.05036114,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05036114,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.045952883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04238452,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se hace con las refacciones cuando se dan de baja desde un mantenimiento correctivo?",
+      "category": "parafraseada",
+      "source_file": "ActivosComputoRefaccion.cs",
+      "top_score": 0.061296105,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061296105,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.061290324,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05757576,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.056764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.056349207,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.05584619,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053362757,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.052624363,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.052481882,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.051291928,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se avisa por correo al personal cuando se le asigna internamente un ticket?",
+      "category": "parafraseada",
+      "source_file": "EmailHelper.cs",
+      "top_score": 0.060819287,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060819287,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05485498,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05402121,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.05280416,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04968254,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.045978907,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04307777,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04287846,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si el monto de un pr\u00E9stamo se sale del rango permitido por la excepci\u00F3n del concepto?",
+      "category": "parafraseada",
+      "source_file": "Prestamo.cs",
+      "top_score": 0.054767024,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.054767024,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05379945,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05179928,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.04970469,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.047114197,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0422773,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.040145576,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 hace el m\u00E9todo CalcularDiaAjustadoAniversario y qu\u00E9 recibe?",
+      "category": "simbolo",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.052427355,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.052427355,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.048817568,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 valida el m\u00E9todo ValidaCerrarTicket?",
+      "category": "simbolo",
+      "source_file": "TicketComputo.cs",
+      "top_score": 0.05228979,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05228979,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.049108736,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.042776812,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 hace RevertDetails en la requisici\u00F3n de material?",
+      "category": "simbolo",
+      "source_file": "RequisicionMaterial.cs",
+      "top_score": 0.057427842,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057427842,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.053087156,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05153743,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.048275862,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04678715,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.045424554,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 devuelve BuscarLineaClasificacion?",
+      "category": "simbolo",
+      "source_file": "ClasificacionActivoComputoHelper.cs",
+      "top_score": 0.060994014,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060994014,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 obliga a implementar la interfaz IEntidadReport?",
+      "category": "simbolo",
+      "source_file": "IEntidadReport.cs",
+      "top_score": 0.07307754,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07307754,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.071077846,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.069553725,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05303208,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.051963296,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0508658,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.050509732,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.044827588,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 sobrecargas de Create ofrece el proveedor de GUID COMB?",
+      "category": "simbolo",
+      "source_file": "IProvider.cs",
+      "top_score": 0.052238807,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.052238807,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05105042,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFDe qu\u00E9 hereda y qu\u00E9 interfaces implementa la clase AlmacenComputoEmpleado?",
+      "category": "simbolo",
+      "source_file": "AlmacenComputoEmpleado.cs",
+      "top_score": 0.055689488,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.055689488,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05400782,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0427451,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04270923,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04258242,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03759058,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 hace BeforeEstatusChange en EntregaContable cuando el estatus pasa a Cancelado?",
+      "category": "simbolo",
+      "source_file": "EntregaContable.cs",
+      "top_score": 0.060983606,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.054450758,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.054051846,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.050771605,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.050496574,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.049174055,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.046284705,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04571339,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.04161836,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.041258316,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 hace ValidarFechaAniversarioAjustada y qu\u00E9 devuelve?",
+      "category": "simbolo",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.040983606,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 propiedad de ActivosComputo desactiva la sincronizaci\u00F3n autom\u00E1tica de los datos del personal asignado?",
+      "category": "simbolo",
+      "source_file": "ActivosComputo.cs",
+      "top_score": 0.053864248,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.053864248,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo implementa ReymaBaseObject el m\u00E9todo GetProperty?",
+      "category": "simbolo",
+      "source_file": "ReymaBaseObject.cs",
+      "top_score": 0.05105042,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05105042,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.049932066,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.042188805,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04103967,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04053715,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 la consulta de existencias de c\u00F3mputo usa un LEFT JOIN pre-agregado?",
+      "category": "simbolo",
+      "source_file": "FiltroExistenciasComputo.cs",
+      "top_score": 0.05350379,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05350379,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04547491,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.041476816,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 impide cancelar una devoluci\u00F3n cuando la cantidad devuelta no coincide con la cantidad en devoluci\u00F3n?",
+      "category": "ambigua",
+      "source_file": "DevolucionInterna.cs",
+      "top_score": 0.060680576,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060680576,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.06032258,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.059375,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.057199627,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.051563,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04966475,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.047246575,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.047185846,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.046564,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.043355484,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si intento registrar un movimiento de inventario con cantidad cero?",
+      "category": "ambigua",
+      "source_file": "DevolucionInterna.cs",
+      "top_score": 0.05146154,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05146154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05089514,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 ocurre si el usuario no tiene una central de compra asignada al abrir los pendientes de compra?",
+      "category": "ambigua",
+      "source_file": "FiltroSolicitudesCompraPendientes.cs",
+      "top_score": 0.060277823,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060277823,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05999504,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.056167692,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.054554865,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.051174413,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.050666902,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04750148,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 8,
+          "score": 0.041459627,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 ocurre al importar una plantilla de Excel con un formato que no corresponde?",
+      "category": "ambigua",
+      "source_file": "InventarioCiclico.cs",
+      "top_score": 0.061577883,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061577883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0574393,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05239583,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05012048,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.049116347,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.047530863,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.046939686,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04682168,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.045413177,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.042544372,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQui\u00E9n autoriza las solicitudes de pago de un contrato de licencias?",
+      "category": "ambigua",
+      "source_file": "Contrato.cs",
+      "top_score": 0.0572057,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0572057,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05306828,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05153743,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05128085,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.042615466,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040877525,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula el aguinaldo y la prima vacacional del personal?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.0429198,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0429198,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040457282,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04026595,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.039925374,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.039868735,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03959471,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCada cu\u00E1ntos d\u00EDas caduca la contrase\u00F1a de un usuario y cu\u00E1ntos intentos fallidos bloquean la cuenta?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.055908978,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.055908978,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05427223,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.053846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.053480476,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.05083627,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se despliega el sistema en un cl\u00FAster de Kubernetes?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.040983606,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 esquema de GraphQL expone la aplicaci\u00F3n?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.045381527,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.045381527,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1les son los criterios de aceptaci\u00F3n de la historia de usuario US-17?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.05588486,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05588486,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.052220393,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.048700716,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04789557,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.043962903,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se sincronizan los cat\u00E1logos de productos con MongoDB?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.040983606,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 modelo de embeddings y qu\u00E9 base vectorial usa la b\u00FAsqueda?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.0590625,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0590625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.055689964,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.052591708,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.047747314,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.044186436,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040990047,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se indexan los documentos en Elasticsearch para la b\u00FAsqueda de productos?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.040983606,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 le pasa al estatus de una solicitud de cuenta de TI cuando el usuario la cancela desde el formulario?",
+      "category": "salto",
+      "source_file": "SolicitudCuentaTI.cs",
+      "top_score": 0.050198413,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.050198413,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.044994634,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFA qu\u00E9 estatus queda un equipo de c\u00F3mputo solicitado cuando se aprueba?",
+      "category": "salto",
+      "source_file": "SolicitudServicioEquipoComputo.cs",
+      "top_score": 0.059190262,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.059190262,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05400503,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.046336997,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.042931102,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.042748917,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQui\u00E9n queda registrado como responsable de la revisi\u00F3n cuando se aprueba una solicitud de servicio?",
+      "category": "salto",
+      "source_file": "SolicitudServicio.cs",
+      "top_score": 0.05815851,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05815851,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.048431765,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.046618357,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.045661766,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.039447103,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo influye la ponderaci\u00F3n de cada grupo del checklist en la calificaci\u00F3n final de una auditor\u00EDa?",
+      "category": "salto",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.07700096,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07700096,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05822055,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.056269757,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.055411257,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.051064927,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.050594494,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.047563486,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.046875514,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.04678715,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.046151742,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si falta la fecha de aniversario del contrato o de la programaci\u00F3n al validar un pago?",
+      "category": "salto",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.060680576,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060680576,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.059773013,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05884653,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05763393,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.054614253,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.054418705,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.05356522,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.051735315,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.050438598,
+          "is_target_file": true,
+          "matches_anchor": true
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se compara para saber si la fecha de una programaci\u00F3n de pago respeta el ciclo de aniversario del contrato?",
+      "category": "salto",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.061634056,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061634056,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.057866722,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.057864524,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.05588486,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.055689964,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.054554865,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.053348213,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0525446,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 10,
+          "score": 0.05183934,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se revisa del expediente de un empleado antes de asignarle un equipo de c\u00F3mputo?",
+      "category": "salto",
+      "source_file": "Empleado.cs",
+      "top_score": 0.058378138,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.058378138,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0525446,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.045238096,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04506301,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 datos de auditor\u00EDa se registran cuando se cancela una salida de almac\u00E9n de c\u00F3mputo por un mantenimiento?",
+      "category": "salto",
+      "source_file": "AlmacenComputoSalida.cs",
+      "top_score": 0.05862491,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05862491,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05698925,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05542805,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.055214316,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.054419193,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.053835228,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.047821138,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04404762,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 fecha se registra en la salida de c\u00F3mputo cuando se cancela un traspaso?",
+      "category": "salto",
+      "source_file": "AlmacenComputoSalida.cs",
+      "top_score": 0.05702576,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05702576,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.048444726,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04719422,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.046292715,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.045730077,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 no se puede modificar un activo de c\u00F3mputo que ya est\u00E1 cancelado al intentar recuperarlo de un traspaso?",
+      "category": "salto",
+      "source_file": "ActivosComputo.cs",
+      "top_score": 0.044422083,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.044422083,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFDe d\u00F3nde se toma la informaci\u00F3n al crear una devoluci\u00F3n interna a proveedor?",
+      "category": "salto",
+      "source_file": "Devolucion.cs",
+      "top_score": 0.06065028,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.06065028,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05862491,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.056996435,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.056866806,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.056771398,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.054722223,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053040996,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.050873917,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.050438598,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.05009058,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 debe coincidir entre la orden de compra y la cantidad de licencias de la b\u00F3veda al renovar una licencia?",
+      "category": "salto",
+      "source_file": "BovedaLicenciaHelper.cs",
+      "top_score": 0.07707402,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07707402,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05969742,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.057427842,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.054455265,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.053647824,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.053362757,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053333335,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.053266823,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.052818004,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.052055556,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 debe cuadrar entre la programaci\u00F3n de pago y la b\u00F3veda de licencias activas del contrato al renovar?",
+      "category": "salto",
+      "source_file": "BovedaLicenciaHelper.cs",
+      "top_score": 0.061951347,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061951347,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.06031746,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05877404,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.054545455,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.052055556,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.05160471,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.05130811,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.049059235,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.04494863,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.04456328,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si el contrato relacionado a una programaci\u00F3n de pago no tiene b\u00F3veda de licencias asociada?",
+      "category": "salto",
+      "source_file": "BovedaLicenciaHelper.cs",
+      "top_score": 0.060635082,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060635082,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.060373977,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05831694,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05787879,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.056029107,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.053030305,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 7,
+          "score": 0.053019486,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.049544074,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.048228227,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0465769,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 otra validaci\u00F3n de licencias y orden de compra se aplica cuando una programaci\u00F3n de pago del m\u00F3dulo de licencias intenta renovar?",
+      "category": "salto",
+      "source_file": "BovedaLicenciaHelper.cs",
+      "top_score": 0.060635082,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.060635082,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.05968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.057032987,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.056630068,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.053706877,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.052323233,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04918976,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.04844027,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.04633333,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.041491948,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se decide si una orden de compra se clasifica como de proyectos o como de inventario en stock?",
+      "category": "salto",
+      "source_file": "OrdenCompra.cs",
+      "top_score": 0.056277726,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.056277726,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05235521,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.043095976,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 tipos de solicitudes y compras se incluyen al generar la proyecci\u00F3n de compras?",
+      "category": "salto",
+      "source_file": "ProyeccionesCompras.cs",
+      "top_score": 0.044882245,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.044882245,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se determina si el correo de un ticket de origen tiene una plantilla registrada antes de crear subtickets?",
+      "category": "salto",
+      "source_file": "CuentaCorreoPlantillaHelper.cs",
+      "top_score": 0.07043371,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07043371,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.06718596,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.065651074,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.060635082,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.05757576,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.056764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.055811573,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.053555254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.052901432,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.05103896,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula cu\u00E1ntos periodos completos de pago han transcurrido desde el aniversario del contrato?",
+      "category": "salto",
+      "source_file": "ProgramacionPagoHelper.cs",
+      "top_score": 0.05831694,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05831694,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.058281176,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0581308,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.057372358,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.054820262,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.05464481,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.053968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.053943545,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.053115,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.052894738,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se registra en la bit\u00E1cora del hallazgo cuando se reabre una acci\u00F3n correctiva de auditor\u00EDa?",
+      "category": "salto",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.053115,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.053115,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.045718774,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04522947,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.043581415,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1nto deben sumar los porcentajes asignados en el prorrateo de gasto de una solicitud de servicio?",
+      "category": "salto-negativo",
+      "source_file": "SolicitudServicioProrrateoGasto.cs",
+      "top_score": 0.05862491,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05862491,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05677828,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.055566803,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.047453817,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04588107,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.04418449,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.043010753,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 comentario es obligatorio capturar antes de marcar como revisada una solicitud de equipo de c\u00F3mputo?",
+      "category": "salto-negativo",
+      "source_file": "SolicitudServicioEquipoComputo.cs",
+      "top_score": 0.052429713,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.052429713,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.047173914,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04578192,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03787879,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 estatus debe estar un ticket de c\u00F3mputo para poder cancelarse?",
+      "category": "salto-negativo",
+      "source_file": "TicketComputo.cs",
+      "top_score": 0.05732763,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05732763,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.053480476,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.052380953,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04578957,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.042063493,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040983606,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.039859265,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03968254,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03846154,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 condiciones debe cumplir una requisici\u00F3n de material de c\u00F3mputo para poder cancelarse?",
+      "category": "salto-negativo",
+      "source_file": "RequisicionMaterial.cs",
+      "top_score": 0.057890147,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057890147,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05491616,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05128085,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.045625426,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.040379938,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03968254,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03938296,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFSe puede cancelar directamente una solicitud de servicio de equipo de c\u00F3mputo una vez creada?",
+      "category": "salto-negativo",
+      "source_file": "SolicitudServicioEquipoComputo.cs",
+      "top_score": 0.057032987,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.057032987,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.046917345,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 mensaje de error se muestra si los porcentajes del prorrateo de gasto no suman 100% en la segunda validaci\u00F3n del mismo m\u00E9todo?",
+      "category": "salto-negativo",
+      "source_file": "SolicitudServicioProrrateoGasto.cs",
+      "top_score": 0.059293468,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.059293468,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.035714287,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 mensaje recibe el usuario si intenta cancelar un pago que no admite cancelaci\u00F3n?",
+      "category": "salto-negativo",
+      "source_file": "Pago.cs",
+      "top_score": 0.062295083,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.062295083,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05318645,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.052297723,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036231883,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPor qu\u00E9 se rechaza un pago cuyas transacciones est\u00E1n en una moneda distinta a la cuenta bancaria?",
+      "category": "salto-negativo",
+      "source_file": "Pago.cs",
+      "top_score": 0.06038659,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.06038659,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.05942928,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.05526511,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.054051846,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.053661034,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.05315815,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.050838627,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03990363,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 debe seleccionar el usuario antes de generar el reporte de necesidades funcionales de negocio?",
+      "category": "salto-negativo",
+      "source_file": "SolicitudServicioNecesidadViewController.cs",
+      "top_score": 0.061951347,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061951347,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.044355646,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.04280397,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0390625,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03846154,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.03787879,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03731343,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.036764707,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    }
+  ]
+}

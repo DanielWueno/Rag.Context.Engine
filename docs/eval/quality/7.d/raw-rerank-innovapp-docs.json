@@ -1,0 +1,2066 @@
+{
+  "collection": "innovapp-docs",
+  "top_k": 10,
+  "rerank": true,
+  "min_score": 0,
+  "generated_at": "2026-09-16T00:09:58.796407+00:00",
+  "provenance": {
+    "git_commit": "3d33d6a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/innovapp-docs.eval-set.json",
+    "eval_set_hash": "1f9571b91552",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": "model_qint8_arm64.onnx",
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFQui\u00E9n puede cancelar un ticket que est\u00E1 en estatus Registrado?",
+      "category": "literal",
+      "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
+      "top_score": 0.9947513,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9947513,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.96150607,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9441861,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.89115363,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.8126093,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.5948214,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.56450516,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.3961947,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.3960609,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.35323143,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si el motivo de cancelaci\u00F3n seleccionado es \u0027Otro\u0027?",
+      "category": "literal",
+      "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
+      "top_score": 0.9973131,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9973131,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.9894917,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.98386616,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9696568,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.9503281,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.94815135,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.83613706,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.36481282,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.33587795,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.27144393,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo se muestra el bloque de encuesta de satisfacci\u00F3n en la Trayectoria?",
+      "category": "literal",
+      "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
+      "top_score": 0.9799804,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9799804,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.9718955,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.95748997,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9264999,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.819556,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.8092222,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.7935178,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.741018,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.7201903,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.62306285,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 es el Folio \u00DAnico de Atenci\u00F3n?",
+      "category": "literal",
+      "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.9991185,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9991185,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.9875838,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9873187,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9821692,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.97861165,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.95475423,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.93772036,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.9366709,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.83111167,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.82989615,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 estatus del Ticket generan correo electr\u00F3nico?",
+      "category": "literal",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.94158393,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.94158393,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8681927,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.80988014,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.77146786,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7669984,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.70920634,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.7023843,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.6698822,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.48742434,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.3710435,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se marca una notificaci\u00F3n como le\u00EDda?",
+      "category": "literal",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.99882025,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.99882025,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.997914,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9817686,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9715025,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.96981984,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.89336425,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.8843396,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.8824056,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.87199885,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.86134076,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 insignia se muestra cuando un estatus del timeline es terminal?",
+      "category": "literal",
+      "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
+      "top_score": 0.9989367,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9989367,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.9941387,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9785135,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9584738,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.94010746,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.8318509,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.7249926,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.5164327,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.29823947,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.22415696,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 permiso se necesita para marcar un ticket como \u0027Ing. en Traslado\u0027?",
+      "category": "literal",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.9965758,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9965758,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.9887445,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.9663684,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.94087434,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.93399763,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.93339753,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.9159232,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.915848,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.88917124,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.879064,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "Si levant\u00E9 un ticket por error y ya no lo necesito, \u00BFlo puedo borrar yo mismo?",
+      "category": "parafraseada",
+      "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
+      "top_score": 0.8997643,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.8997643,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.3046078,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.2374831,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.22212383,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.08030889,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.044400517,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.030664004,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.027936338,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.027393548,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.024834419,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "Si escojo \u0027otro\u0027 como raz\u00F3n para cancelar, \u00BFtengo que explicar por qu\u00E9?",
+      "category": "parafraseada",
+      "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
+      "top_score": 0.6555098,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.6555098,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.6137339,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.37681693,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.22946085,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 5,
+          "score": 0.12039844,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.028298723,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.027261306,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.024326846,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.013238902,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.012639413,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFEn qu\u00E9 momento me sale la pregunta de qu\u00E9 tan contento qued\u00E9 con el servicio?",
+      "category": "parafraseada",
+      "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
+      "top_score": 0.014766347,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.014766347,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.016642151,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0049816077,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0032078521,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0031260622,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0029654938,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0022411528,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0013602679,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0013053288,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0012877561,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFHay un n\u00FAmero que identifique mi caso sin importar si termin\u00F3 siendo ticket o solicitud de servicio?",
+      "category": "parafraseada",
+      "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.992057,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.992057,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8167665,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.29360792,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.25863853,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.21581033,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.21503462,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.19568747,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.18703598,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.1626033,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.11970524,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFMe avisan por correo cuando resuelven mi problema?",
+      "category": "parafraseada",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.086542614,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.086542614,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.029783633,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.013664102,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.013334148,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.011117352,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.0085798055,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.00812688,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0063524456,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0041521606,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0038176845,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo le hago para que ya no me aparezca como pendiente algo que ya vi?",
+      "category": "parafraseada",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.15097636,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.15097636,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.032768983,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03230114,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0299165,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.02581235,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.021156793,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.018771889,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.017586123,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.016588526,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.015850909,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo s\u00E9 qu\u00E9 pasos ya se completaron en mi caso?",
+      "category": "parafraseada",
+      "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
+      "top_score": 0.08642679,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.08642679,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.09580136,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.092756286,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0441251,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0351787,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.02850498,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.027785793,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.022429032,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.018709525,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.017967388,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFNecesito un permiso especial para decir que el t\u00E9cnico ya va en camino a atender mi ticket?",
+      "category": "parafraseada",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.8741979,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.8741979,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.67288643,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.42960477,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.38538027,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.377774,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.2358918,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.20651545,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.20319642,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.16106793,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.14700466,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuedo cancelar mi ticket en cualquier momento?",
+      "category": "ambigua",
+      "source_file": "Cancelaci\u00F3n de Ticket por el usuario.md",
+      "top_score": 0.39012945,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.39012945,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.25003207,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.24497859,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.20851822,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.19180483,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.09629135,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.093299955,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.070067495,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.06651488,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.06223845,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1l es la diferencia entre el folio del ticket y el Folio \u00DAnico de Atenci\u00F3n?",
+      "category": "ambigua",
+      "source_file": "Folio \u00DAnico de Atenci\u00F3n \u002B Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.9993855,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9993855,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.9967259,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 3,
+          "score": 0.98893005,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.97439766,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.9702551,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.95428044,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.9152464,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.9136938,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.8999318,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.80509096,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFSe me notifica igual por correo que por la app cuando mi ticket cambia de estatus?",
+      "category": "ambigua",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.9208558,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9208558,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8516574,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.8134631,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7819619,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.73586565,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.69397646,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.58493495,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.489284,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.46158284,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.3452687,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 significa que un nodo del timeline est\u00E9 \u0027en curso\u0027 comparado con uno que ya pas\u00F3 pero no termin\u00F3 el proceso?",
+      "category": "ambigua",
+      "source_file": "Redise\u00F1o UX-UI de Mis Tickets - L\u00EDnea de Tiempo de Trayectoria.md",
+      "top_score": 0.7544438,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.7544438,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.67675406,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.58493316,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.44305408,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.20833057,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.19551907,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.12390703,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.08622516,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.05567839,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.045265023,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo solicito mis vacaciones o d\u00EDas econ\u00F3micos?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.03146341,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.03146341,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.016155176,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.012798216,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.008902532,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0074743987,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.006597074,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.006174792,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.005936447,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.005896159,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.004222305,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se factura un ticket a un cliente externo?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.7147845,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.7147845,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.46886295,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.41095787,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.2369539,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.23387699,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.19439982,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.185678,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.14804053,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.09469712,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.08409516,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuedo cancelar una encuesta de satisfacci\u00F3n despu\u00E9s de haberla enviado?",
+      "category": "fuera-de-dominio",
+      "source_file": "Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
+      "top_score": 0.65601987,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.65601987,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.421855,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.27933967,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.1630234,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.16243453,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.14981855,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.13774987,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.050529677,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.037789233,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.019302137,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si el CAU pierde la conexi\u00F3n a internet durante una investigaci\u00F3n?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.36587843,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.36587843,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.28014082,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.14124234,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.14096123,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.08292765,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.08192189,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.06499031,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.06128574,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.035261337,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.025647443,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFPuedo ver la encuesta de un ticket ajeno?",
+      "category": "regresion-conocida",
+      "source_file": "Pruebas Funcionales - Encuesta de Satisfacci\u00F3n al Cierre de Ticket.md",
+      "top_score": 0.2646882,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.2646882,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.20077601,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.12050855,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.10584409,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.07667427,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.067160696,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.060995437,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.042651378,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.031755317,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.026476251,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa si un ticket espera confirmaci\u00F3n y nadie responde?",
+      "category": "regresion-conocida",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.34588498,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.34588498,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.2664163,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.2181718,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.19844261,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.09864695,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.092555605,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.084055625,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.079623096,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.07372949,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.06383715,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    }
+  ]
+}

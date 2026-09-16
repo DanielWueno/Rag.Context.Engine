@@ -8,9 +8,17 @@ Fecha: 2026-09-03 · Estado: análisis previo, sin cambios en código
 > Ninguna bloquea el trabajo local. Las recomendaciones históricas de abrir Ollama a
 > la LAN no son autorización de ejecución: cualquier prueba futura exige aprobación,
 > transporte protegido y retorno local. `infra/bench/` se conserva sin modificaciones.
-> **Relevo del 2026-09-14:** ese directorio es un prototipo local sin versionar,
-> excluido de los commits del motor y del ledger. Su inventario y precauciones de uso
-> están registrados en `16.1`; no es una herramienta de aceptación ya aprobada.
+> **Relevo del 2026-09-14:** ese directorio era, hasta entonces, un prototipo local
+> sin versionar, excluido de los commits del motor y del ledger.
+> **Reconciliación del 2026-09-15:** a pedido explícito del usuario, los 5 archivos
+> de código/doc (`README.md`, `capacidad-ia.sh`, `capacidad-ia.ps1`,
+> `comparar-capacidad.py`, `maquinas/.gitignore`) se versionaron sin modificarlos;
+> los datos por máquina (`maquinas/*.json`, `*.txt`, `*.html`) siguen fuera del
+> repo. Versionarlo NO lo convierte en una herramienta de aceptación ya aprobada
+> ni avanza `16.1`, que sigue bloqueado por sus propias condiciones de reentrada
+> (decisión explícita, permisos, candidatos autorizados, `14.1-eval-nocturno`
+> hecho). Detalle completo en la nota `_artefactos_previos_sin_versionar` de
+> `16.1`.
 
 ## 1. Pregunta
 

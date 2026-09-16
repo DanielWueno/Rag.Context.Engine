@@ -1,0 +1,5 @@
+# Los registros e informes de cada equipo son datos locales, no parte del repo.
+*.json
+*.txt
+*.html
+!.gitignore

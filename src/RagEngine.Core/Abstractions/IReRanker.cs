@@ -22,6 +22,9 @@ public interface IReRanker
     /// returned results carry the cross-encoder score in
     /// <see cref="RetrievalResult.SimilarityScore"/> (sigmoid, range 0..1) y lo
     /// declaran en <see cref="RetrievalResult.ScoreScale"/>.
+    /// Empates exactos del score de ranking se resuelven por UUID de chunk canonico
+    /// (formato D minusculas), en orden ordinal ascendente, antes de cortar TopK.
+    /// <see cref="RetrievalResult.RankingScore"/> conserva ese score aunque cambie el gate.
     ///
     /// <para><b>El orden devuelto es el contrato; el score no lo reconstruye.</b> Una
     /// implementación puede re-puntuar la posición #0 en una escala distinta al resto —

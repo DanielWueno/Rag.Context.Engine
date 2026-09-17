@@ -121,6 +121,7 @@ Corre un conjunto de preguntas con respuesta conocida (*ground-truth*) contra la
 | `--rerank`, `-r` | apagado | Aplica el cross-encoder antes de medir |
 | `--baseline` | — | Compara contra un baseline previo y dice si los números son comparables |
 | `--json` | apagado | Emite el resultado completo por stdout (el progreso va a stderr) |
+| `--dump-hits` | apagado | Con `--json`, agrega UUID canónico, posición, score, score/escala de ranking y coincidencias por resultado |
 
 **Qué cuenta como acierto.** Un resultado acierta si cae dentro de los primeros K **y** su archivo coincide con el esperado **y** su contenido incluye alguno de los fragmentos ancla del eval-set. El reporte da dos medidas: `hit-any` (apareció al menos un ancla) y, para la categoría `ambigua`, `hit-full` (aparecieron todos).
 
@@ -130,7 +131,13 @@ Corre un conjunto de preguntas con respuesta conocida (*ground-truth*) contra la
 
 Genera los baselines con el árbol limpio: si hay cambios sin commitear el archivo sale con `git_dirty: true` y la corrida no es reproducible.
 
-**Compara recall, no `top_score`.** El campo `top_score` se conserva para diagnosticar, pero no es estable entre corridas cuando los candidatos del top están empatados.
+**Compara recall y resultados identificados, no solo `top_score`.** Desde 9.1.1 los
+empates se resuelven antes de los cortes. `ranking_score` conserva el score que
+decidió el orden aunque el gate estable sustituya `score` del primer resultado.
+Cada pregunta registra `retrieval_succeeded`, `elapsed_ms`, `vector_queries` y
+`candidates_returned` (incluye candidatos repetidos al ampliar prefijos, no distancias
+calculadas por el servidor). Una búsqueda fallida o un eval-set vacío devuelve error;
+una búsqueda correcta sin candidatos conserva `hits: []` y éxito explícito.
 
 Los eval-sets disponibles, los baselines vigentes y el detalle de la procedencia están en [eval/README.md](eval/README.md).
 

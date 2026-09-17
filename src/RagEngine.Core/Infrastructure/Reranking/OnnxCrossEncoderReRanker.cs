@@ -83,15 +83,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             () => ScorePairs(query, orderedCandidates, cancellationToken),
             cancellationToken);
 
-        var reranked = orderedCandidates
-            .Zip(scores, (candidate, score) => candidate with
-            {
-                SimilarityScore = score,
-                ScoreScale = RetrievalScoreScale.CrossEncoderBatched,
-            })
-            .OrderByDescending(r => r.SimilarityScore)
-            .Take(topK)
-            .ToList();
+        var reranked = RankScoredCandidates(orderedCandidates, scores, topK);
 
         long stableGateMs = 0;
         if (_options.StableGateScore && reranked.Count > 0)
@@ -137,6 +129,21 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             reranked.Count > 0 ? reranked[0].SimilarityScore : 0f);
 
         return reranked.AsReadOnly();
+    }
+
+    internal static List<RetrievalResult> RankScoredCandidates(
+        IReadOnlyList<RetrievalResult> candidates, IReadOnlyList<float> scores, int topK)
+    {
+        if (candidates.Count != scores.Count)
+            throw new ArgumentException("Every reranking candidate must have a score.", nameof(scores));
+        var scored = candidates.Zip(scores, (candidate, score) => candidate with
+        {
+            SimilarityScore = score,
+            ScoreScale = RetrievalScoreScale.CrossEncoderBatched,
+            RankingScore = score,
+            RankingScoreScale = RetrievalScoreScale.CrossEncoderBatched
+        });
+        return RankingOrder.Descending(scored, r => r.RankingScore, r => r.ChunkId).Take(topK).ToList();
     }
 
     private (InferenceSession, Tokenizer) LoadModel()

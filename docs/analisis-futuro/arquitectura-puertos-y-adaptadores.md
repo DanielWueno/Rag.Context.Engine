@@ -199,6 +199,55 @@ Cerrar el hijo **no cierra 9.1 automáticamente**: después, en otra conversaci�
 se revalidarán sus contratos y se enlazará un comando de aceptación real a la
 nueva evidencia. No se ejecuta `9.2` durante este relevo.
 
+**Ejecución de 9.1.1, 2026-09-17:** desempate por UUID D minúsculas ordinal,
+solo con scores exactamente iguales y antes de cada corte. Las fuentes densa,
+dispersa y resumen usan prefijos exactos ampliados hasta completar el empate;
+si el techo de 32 768 candidatos no permite demostrar completitud, fallan.
+La fórmula RRF de dos vectores conserva la aritmética nativa (float32,
+`1/(2 + rango_base_cero)`), pero se calcula en el adaptador para controlar
+los desempates; pesos y k de la fusión ponderada no cambian. Two-hop y reranker
+comparten la regla, sin ordenar por el score estable del gate. Eval incorpora
+UUID, posición, score/escala de ranking, latencia y contadores de consultas y
+candidatos devueltos. Un error de búsqueda o expansión no se convierte en vacío.
+
+Evidencia nueva: `docs/eval/quality/9.1.1/`. `control.patch` y `candidate.patch`
+versionan los cambios completos sobre `bb9b11f` y `9690c49`; el protocolo prueba
+identidad del código de ranking/instrumentación, con adaptaciones mecánicas
+del store y mapeo anteriores a los puertos. Se conservan cuatro datasets,
+145 preguntas (133 ancladas, 12 sin anclas), modelos, configuración y hashes
+de payload/vectores. Las tres réplicas de cada brazo tienen idénticos IDs,
+orden y scores; A/B no cambia ningún hit-any/full por pregunta en 1/3/5/10.
+Los contratos cubren 257 empatados (más que prefetch 40/120), inserciones normal,
+inversa y permutada, candidatos prohibidos con UUID menor, cortes 1/5/10,
+negativos y control adversarial de truncamiento.
+
+`pre-fix/pre-fix.trx` conserva seis fallos antes de cambiar producto. Ese fixture
+inicial probaba ambos schemas con denso/sparse; la cobertura posterior exige
+además el vector de resumen realmente poblado. `initial/` conserva íntegra
+la primera medición, también estable. La segunda vuelve a congelar ambos brazos
+tras ampliar los negativos de autorización y corregir un comentario XML, sin
+cambiar ranking, preguntas ni umbrales; todas sus capturas coinciden también
+con las de `initial/`. No se eligió una pareja favorable.
+
+No se oculta el cambio frente al historial inestable: `verification.json`
+detalla por pregunta ganancias en @1 y pérdidas en @5. Permanecen las pérdidas
+de «importar auditorías desde Excel» y «pasar un ticket a Mesa de Ayuda», y
+respecto de la segunda pareja histórica, «registrar avance/actividad».
+Hit@10 no cambia. No es una mejora de recall demostrada: es estabilidad y
+equivalencia bajo la misma política. Dos rondas completas de captura costaron
+aproximadamente 222 segundos, incluidos builds y fingerprints; sin LLM,
+reingesta ni escrituras en índices servidos. Los contadores de candidatos
+incluyen repeticiones y no miden operaciones internas de distancia en Qdrant.
+
+Aceptación manual (no ejecutada por hooks):
+`dotnet build --no-restore --nologo -warnaserror && python3 -m unittest discover -s docs/eval/quality/9.1.1 -p 'test_accept.py' && DOTNET_PROCESSOR_COUNT=1 python3 docs/eval/quality/9.1.1/accept.py --run-tests`.
+El límite de concurrencia evita solapar el cierre global de ONNX del harness API
+con tests que lo usan: las ejecuciones paralelas abortaron y no se contaron como
+éxito. La aceptación conserva los 72 contratos, sin omisiones, más seis tests
+del comparador. El problema de lifetime global queda registrado, no corregido
+fuera del alcance. **9.1 sigue bloqueado** hasta su reentrada y aceptación propias
+en otra conversación; 9.2 no se ejecutó.
+
 ### 3.5 `IRagGenerationService` no abstrae: obliga al host a duplicar el paso anterior
 
 `Api/Program.cs:397-410` y `:506-517` hacen **dos llamadas independientes a `ISemanticRetriever` por

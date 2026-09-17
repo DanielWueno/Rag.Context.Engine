@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="76986142-862d-4fc6-adbf-55b9d22d68c6" name="@Mac-mini-de-Reyma-3 2026-09-17 12:29:49" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-17T12:29:49.2157080-06:00" queuing="2026-09-17T12:29:49.2157080-06:00" start="2026-09-17T12:29:46.0065770-06:00" finish="2026-09-17T12:29:49.5828550-06:00" />
+  <TestSettings name="default" id="db31c2a1-1e35-46ff-bd82-ac5014e41c7f">
+    <Deployment runDeploymentRoot="_Mac-mini-de-Reyma-3_2026-09-17_12_29_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="dfe2b641-0d58-4693-923e-4ca1bf17f62f" testId="af2f2b20-f8a5-b0d7-9aa1-062197f7cbeb" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CosineSimilarity, esperado: True)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0016470" startTime="2026-09-17T12:29:48.4270690-06:00" endTime="2026-09-17T12:29:48.4285060-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dfe2b641-0d58-4693-923e-4ca1bf17f62f" />
+    <UnitTestResult executionId="8344aa0c-3eea-4cca-a6ef-fdebf05f41e1" testId="5765148e-446a-4deb-f752-c558c729089d" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.ReRank_ConEmpateEnCabeza_DevuelveListaNoMonotonaYNoLaReordena" computerName="Mac-mini-de-Reyma-3" duration="00:00:02.1386186" startTime="2026-09-17T12:29:46.2861100-06:00" endTime="2026-09-17T12:29:48.4267340-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8344aa0c-3eea-4cca-a6ef-fdebf05f41e1" />
+    <UnitTestResult executionId="69b65e90-ca4b-4c2e-a180-2704fdd85b8c" testId="5bb592f1-8466-9f36-5e8e-937b166e83c0" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.ConfidenceGate_PuntuaLaBandaConElChunkCeroYNoConElScoreMasAlto" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0008804" startTime="2026-09-17T12:29:49.5314330-06:00" endTime="2026-09-17T12:29:49.5322660-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69b65e90-ca4b-4c2e-a180-2704fdd85b8c" />
+    <UnitTestResult executionId="b31bb323-c623-490b-a42d-da26cbdb5fbf" testId="f64a0e82-a7be-c424-5b39-747334095358" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: RankFusionNative, esperado: False)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0001583" startTime="2026-09-17T12:29:48.4291970-06:00" endTime="2026-09-17T12:29:48.4293310-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b31bb323-c623-490b-a42d-da26cbdb5fbf" />
+    <UnitTestResult executionId="00d1670a-328b-4029-b44e-a22e4ebe3a20" testId="fee8b122-701a-0588-e071-d8fc4c1d82dd" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CrossEncoderBatched, esperado: True)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0004360" startTime="2026-09-17T12:29:48.4287510-06:00" endTime="2026-09-17T12:29:48.4291590-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00d1670a-328b-4029-b44e-a22e4ebe3a20" />
+    <UnitTestResult executionId="78803149-68cd-412d-9d73-95b73d6eea89" testId="46b975af-3195-9ebe-9ea4-491615cb3c2c" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: RankFusionWeighted, esperado: False)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0001547" startTime="2026-09-17T12:29:48.4293740-06:00" endTime="2026-09-17T12:29:48.4295030-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="78803149-68cd-412d-9d73-95b73d6eea89" />
+    <UnitTestResult executionId="d3f46485-b9f5-41d0-af54-cdb977d0f5b2" testId="88bbb2a0-7d1a-eb64-bb06-57743328da10" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.ReRank_LaRepuntuacionDelCeroCambiaElScorePeroNoElOrden" computerName="Mac-mini-de-Reyma-3" duration="00:00:01.1016855" startTime="2026-09-17T12:29:48.4295620-06:00" endTime="2026-09-17T12:29:49.5313300-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d3f46485-b9f5-41d0-af54-cdb977d0f5b2" />
+    <UnitTestResult executionId="2899e103-17a5-4a3f-bb23-ce8bbe199682" testId="b0128adf-a156-8934-b0a5-2cd17c7c55cf" testName="RagEngine.Core.Tests.CrossEncoderStableGateScoreTests.ElScoreDelGanadorEsInvarianteAlTamanoDelPool" computerName="Mac-mini-de-Reyma-3" duration="00:00:01.6234538" startTime="2026-09-17T12:29:46.2866160-06:00" endTime="2026-09-17T12:29:47.9128770-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2899e103-17a5-4a3f-bb23-ce8bbe199682" />
+    <UnitTestResult executionId="ec62dc1c-d430-4dbf-90af-338273e84326" testId="ddfcc0ed-badd-451d-2cc6-d74d768b77d0" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CrossEncoderStable, esperado: True)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0001691" startTime="2026-09-17T12:29:48.4285920-06:00" endTime="2026-09-17T12:29:48.4287040-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ec62dc1c-d430-4dbf-90af-338273e84326" />
+    <UnitTestResult executionId="38382be8-8d56-4629-9854-328e0398d79c" testId="ac08733a-d349-e281-b80a-cef295d30aa1" testName="RagEngine.Core.Tests.RetrievalScoreContractTests.GenerationContextAssembler_PreservaElOrdenRecibido" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0153469" startTime="2026-09-17T12:29:49.5323140-06:00" endTime="2026-09-17T12:29:49.5476470-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38382be8-8d56-4629-9854-328e0398d79c" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CrossEncoderBatched, esperado: True)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="fee8b122-701a-0588-e071-d8fc4c1d82dd">
+      <Execution id="00d1670a-328b-4029-b44e-a22e4ebe3a20" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="LaEscalaDeclaraSiElScoreEsComparableEntreConsultas" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: RankFusionWeighted, esperado: False)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="46b975af-3195-9ebe-9ea4-491615cb3c2c">
+      <Execution id="78803149-68cd-412d-9d73-95b73d6eea89" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="LaEscalaDeclaraSiElScoreEsComparableEntreConsultas" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.ConfidenceGate_PuntuaLaBandaConElChunkCeroYNoConElScoreMasAlto" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="5bb592f1-8466-9f36-5e8e-937b166e83c0">
+      <Execution id="69b65e90-ca4b-4c2e-a180-2704fdd85b8c" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="ConfidenceGate_PuntuaLaBandaConElChunkCeroYNoConElScoreMasAlto" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.GenerationContextAssembler_PreservaElOrdenRecibido" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="ac08733a-d349-e281-b80a-cef295d30aa1">
+      <Execution id="38382be8-8d56-4629-9854-328e0398d79c" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="GenerationContextAssembler_PreservaElOrdenRecibido" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: RankFusionNative, esperado: False)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="f64a0e82-a7be-c424-5b39-747334095358">
+      <Execution id="b31bb323-c623-490b-a42d-da26cbdb5fbf" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="LaEscalaDeclaraSiElScoreEsComparableEntreConsultas" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CosineSimilarity, esperado: True)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="af2f2b20-f8a5-b0d7-9aa1-062197f7cbeb">
+      <Execution id="dfe2b641-0d58-4693-923e-4ca1bf17f62f" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="LaEscalaDeclaraSiElScoreEsComparableEntreConsultas" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.LaEscalaDeclaraSiElScoreEsComparableEntreConsultas(escala: CrossEncoderStable, esperado: True)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="ddfcc0ed-badd-451d-2cc6-d74d768b77d0">
+      <Execution id="ec62dc1c-d430-4dbf-90af-338273e84326" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="LaEscalaDeclaraSiElScoreEsComparableEntreConsultas" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.ReRank_ConEmpateEnCabeza_DevuelveListaNoMonotonaYNoLaReordena" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="5765148e-446a-4deb-f752-c558c729089d">
+      <Execution id="8344aa0c-3eea-4cca-a6ef-fdebf05f41e1" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="ReRank_ConEmpateEnCabeza_DevuelveListaNoMonotonaYNoLaReordena" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.CrossEncoderStableGateScoreTests.ElScoreDelGanadorEsInvarianteAlTamanoDelPool" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="b0128adf-a156-8934-b0a5-2cd17c7c55cf">
+      <Execution id="2899e103-17a5-4a3f-bb23-ce8bbe199682" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.CrossEncoderStableGateScoreTests" name="ElScoreDelGanadorEsInvarianteAlTamanoDelPool" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.RetrievalScoreContractTests.ReRank_LaRepuntuacionDelCeroCambiaElScorePeroNoElOrden" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="88bbb2a0-7d1a-eb64-bb06-57743328da10">
+      <Execution id="d3f46485-b9f5-41d0-af54-cdb977d0f5b2" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.RetrievalScoreContractTests" name="ReRank_LaRepuntuacionDelCeroCambiaElScorePeroNoElOrden" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="af2f2b20-f8a5-b0d7-9aa1-062197f7cbeb" executionId="dfe2b641-0d58-4693-923e-4ca1bf17f62f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5765148e-446a-4deb-f752-c558c729089d" executionId="8344aa0c-3eea-4cca-a6ef-fdebf05f41e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5bb592f1-8466-9f36-5e8e-937b166e83c0" executionId="69b65e90-ca4b-4c2e-a180-2704fdd85b8c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f64a0e82-a7be-c424-5b39-747334095358" executionId="b31bb323-c623-490b-a42d-da26cbdb5fbf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fee8b122-701a-0588-e071-d8fc4c1d82dd" executionId="00d1670a-328b-4029-b44e-a22e4ebe3a20" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="46b975af-3195-9ebe-9ea4-491615cb3c2c" executionId="78803149-68cd-412d-9d73-95b73d6eea89" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="88bbb2a0-7d1a-eb64-bb06-57743328da10" executionId="d3f46485-b9f5-41d0-af54-cdb977d0f5b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b0128adf-a156-8934-b0a5-2cd17c7c55cf" executionId="2899e103-17a5-4a3f-bb23-ce8bbe199682" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ddfcc0ed-badd-451d-2cc6-d74d768b77d0" executionId="ec62dc1c-d430-4dbf-90af-338273e84326" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ac08733a-d349-e281-b80a-cef295d30aa1" executionId="38382be8-8d56-4629-9854-328e0398d79c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Resultados sin formato de lista" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Todos los resultados cargados" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="10" executed="10" passed="10" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.0+00ab0a9ec4 (64-bit .NET 10.0.10)
+[xUnit.net 00:00:00.03]   Discovering: RagEngine.Core.Tests
+[xUnit.net 00:00:00.06]   Discovered:  RagEngine.Core.Tests
+[xUnit.net 00:00:00.07]   Starting:    RagEngine.Core.Tests
+[xUnit.net 00:00:03.34]   Finished:    RagEngine.Core.Tests
+libc++abi: terminating due to uncaught exception of type std::__1::system_error: mutex lock failed: Invalid argument
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

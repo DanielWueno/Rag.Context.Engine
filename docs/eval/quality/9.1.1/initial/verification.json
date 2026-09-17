@@ -1,0 +1,340 @@
+{
+  "passed": true,
+  "protocol_sha256": "136abf573e4d66bcf18826bacbe38caa3e81b252462b02be54f9b6f56cf828dd",
+  "sets": {
+    "innovapp-docs": {
+      "n": 26,
+      "anchored": 22,
+      "unanchored": 4,
+      "control_hit_any_10": 8,
+      "candidate_hit_any_10": 8,
+      "differences": [],
+      "historical_deltas": {
+        "9.1/control": [
+          {
+            "question": "¿Qué estatus del Ticket generan correo electrónico?",
+            "category": "literal",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          }
+        ],
+        "9.1/candidate": [
+          {
+            "question": "¿Qué estatus del Ticket generan correo electrónico?",
+            "category": "literal",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          }
+        ],
+        "replica/control": [
+          {
+            "question": "¿Qué estatus del Ticket generan correo electrónico?",
+            "category": "literal",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          }
+        ],
+        "replica/candidate": []
+      },
+      "cost": {
+        "A": {
+          "queries": 195,
+          "candidates_returned": 9594,
+          "elapsed_ms": 1525.4625,
+          "max_question_ms": 175.4515
+        },
+        "B": {
+          "queries": 195,
+          "candidates_returned": 9594,
+          "elapsed_ms": 1491.0973000000004,
+          "max_question_ms": 174.7125
+        }
+      }
+    },
+    "bsuite-repo": {
+      "n": 84,
+      "anchored": 76,
+      "unanchored": 8,
+      "control_hit_any_10": 34,
+      "candidate_hit_any_10": 34,
+      "differences": [],
+      "historical_deltas": {
+        "9.1/control": [],
+        "9.1/candidate": [],
+        "replica/control": [],
+        "replica/candidate": []
+      },
+      "cost": {
+        "A": {
+          "queries": 924,
+          "candidates_returned": 47406,
+          "elapsed_ms": 18167.4025,
+          "max_question_ms": 261.4517
+        },
+        "B": {
+          "queries": 924,
+          "candidates_returned": 47406,
+          "elapsed_ms": 18214.809699999998,
+          "max_question_ms": 250.5575
+        }
+      }
+    },
+    "bsuite-auditorias": {
+      "n": 16,
+      "anchored": 16,
+      "unanchored": 0,
+      "control_hit_any_10": 9,
+      "candidate_hit_any_10": 9,
+      "differences": [],
+      "historical_deltas": {
+        "9.1/control": [
+          {
+            "question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          },
+          {
+            "question": "¿Cómo importo auditorías desde un archivo Excel?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "9.1/candidate": [
+          {
+            "question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          },
+          {
+            "question": "¿Cómo importo auditorías desde un archivo Excel?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "replica/control": [
+          {
+            "question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          },
+          {
+            "question": "¿Cómo importo auditorías desde un archivo Excel?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "replica/candidate": [
+          {
+            "question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@1": {
+                "before": false,
+                "after": true
+              },
+              "hit_full_at_k@1": {
+                "before": false,
+                "after": true
+              }
+            }
+          },
+          {
+            "question": "¿Cómo importo auditorías desde un archivo Excel?",
+            "category": "bsuite-auditorias",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ]
+      },
+      "cost": {
+        "A": {
+          "queries": 174,
+          "candidates_returned": 8364,
+          "elapsed_ms": 1350.5296,
+          "max_question_ms": 171.7077
+        },
+        "B": {
+          "queries": 174,
+          "candidates_returned": 8364,
+          "elapsed_ms": 1354.7085,
+          "max_question_ms": 171.8717
+        }
+      }
+    },
+    "tickets-microservice": {
+      "n": 19,
+      "anchored": 19,
+      "unanchored": 0,
+      "control_hit_any_10": 5,
+      "candidate_hit_any_10": 5,
+      "differences": [],
+      "historical_deltas": {
+        "9.1/control": [
+          {
+            "question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "9.1/candidate": [
+          {
+            "question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "replica/control": [
+          {
+            "question": "¿Cómo registro el avance o una actividad en un ticket?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          },
+          {
+            "question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ],
+        "replica/candidate": [
+          {
+            "question": "¿Cómo registro el avance o una actividad en un ticket?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          },
+          {
+            "question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+            "category": "bsuite-codigo",
+            "changes": {
+              "hit_any_at_k@5": {
+                "before": true,
+                "after": false
+              }
+            }
+          }
+        ]
+      },
+      "cost": {
+        "A": {
+          "queries": 159,
+          "candidates_returned": 8364,
+          "elapsed_ms": 1329.8761999999997,
+          "max_question_ms": 170.8352
+        },
+        "B": {
+          "queries": 159,
+          "candidates_returned": 8364,
+          "elapsed_ms": 1347.3268999999998,
+          "max_question_ms": 178.0226
+        }
+      }
+    }
+  },
+  "contracts": {
+    "total": 72,
+    "classes": {
+      "ModuleBoundaryTests": 25,
+      "RetrievalAuthorizationContextHttpHarnessTests": 19,
+      "RetrievalOptionsCompileContractTests": 2,
+      "VectorStoreResumeTests": 3,
+      "DeterministicRankingTests": 9,
+      "SymbolExpansionMergeTests": 4,
+      "RetrievalScoreContractTests": 9,
+      "CrossEncoderStableGateScoreTests": 1
+    }
+  }
+}

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Diagnostics;
 using Microsoft.Extensions.Options;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Extensions;
@@ -131,7 +132,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         if (items.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]⚠  El eval-set está vacío.[/]");
-            return 0;
+            return 1;
         }
 
         var cutoffs = Cutoffs.Where(k => k <= settings.TopK).ToArray();
@@ -299,6 +300,8 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             UseReRanking = settings.Rerank
         };
 
+        using var diagnostics = new RankingDiagnostics();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         IReadOnlyList<RetrievalResult> hits;
         try
         {
@@ -307,10 +310,16 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Falló la búsqueda para \"{item.Question}\": {ex.Message}");
-            hits = [];
+            throw;
         }
 
-        return Evaluate(item, hits, cutoffs, settings.DumpHits);
+        return Evaluate(item, hits, cutoffs, settings.DumpHits) with
+        {
+            RetrievalSucceeded = true,
+            ElapsedMs = sw.Elapsed.TotalMilliseconds,
+            VectorQueries = diagnostics.Queries,
+            CandidatesReturned = diagnostics.CandidatesReturned
+        };
     }
 
     /// <summary>
@@ -333,7 +342,8 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
                     Path.GetFileName(h.Metadata.RelativeFilePath), StringComparer.OrdinalIgnoreCase);
                 bool matchesAnchor = isTarget
                     && item.TargetContentContains.Any(a => h.Content.Contains(a, StringComparison.Ordinal));
-                return new HitDetail(i + 1, h.SimilarityScore, isTarget, matchesAnchor);
+                return new HitDetail(i + 1, h.SimilarityScore, isTarget, matchesAnchor,
+                    h.ChunkId, h.RankingScore, h.RankingScoreScale.ToString());
             }).ToList();
         }
 
@@ -457,12 +467,20 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         float TopScore,
         [property: JsonPropertyName("hit_any_at_k")] Dictionary<int, bool> HitAnyAtK,
         [property: JsonPropertyName("hit_full_at_k")] Dictionary<int, bool> HitFullAtK,
-        [property: JsonPropertyName("hits")] List<HitDetail>? Hits = null);
+        [property: JsonPropertyName("hits")] List<HitDetail>? Hits = null)
+    {
+        public bool RetrievalSucceeded { get; init; }
+        public double ElapsedMs { get; init; }
+        public long VectorQueries { get; init; }
+        public long CandidatesReturned { get; init; }
+    }
 
     /// <summary>
     /// Detalle crudo de un resultado (solo con --dump-hits), usado para simular en
     /// post-proceso politicas de corte distintas a la que efectivamente se aplico
     /// (ver 7.d-investigar-corte-adaptativo-de-ruido). No afecta el recall reportado.
     /// </summary>
-    private sealed record HitDetail(int Rank, float Score, bool IsTargetFile, bool MatchesAnchor);
+    private sealed record HitDetail(
+        int Rank, float Score, bool IsTargetFile, bool MatchesAnchor,
+        string ChunkId, double RankingScore, string RankingScoreScale);
 }

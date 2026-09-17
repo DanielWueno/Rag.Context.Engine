@@ -24,7 +24,12 @@ public sealed record RetrievalResult(
     RetrievalScoreScale ScoreScale,
     CodeChunkMetadata Metadata,
     string ContentHash
-);
+)
+{
+    /// <summary>Score used for ordering, before any stable-gate replacement.</summary>
+    public double RankingScore { get; init; } = SimilarityScore;
+    public RetrievalScoreScale RankingScoreScale { get; init; } = ScoreScale;
+}
 
 /// <summary>
 /// Parameters for refining a semantic search query.

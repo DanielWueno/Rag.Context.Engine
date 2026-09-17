@@ -59,18 +59,33 @@ Vector disperso BM25-style calculado en C# puro (sin modelo, sin red), zero-allo
 ## Fusión y umbrales — `QdrantSemanticRetriever`
 
 ```
-QueryAsync(
-  prefetch: [ denso  (limit = 4×TopK, ScoreThreshold = min-score),
-              disperso (limit = 4×TopK) ],
-  query: Fusion.Rrf,
-  limit: TopK )
+Qdrant exacto → prefijos completos en empates → score descendente / UUID ordinal
+  → corte de cada rama (mínimo 40, 4×pool final)
+  → fusión RRF en el adaptador → score descendente / UUID ordinal → corte final
 ```
 
 Tres reglas que importan:
 
 1. **El pool de cada rama es 4× el corte final** (mínimo 40). Con listas de tamaño TopK, RRF solo puede intercalar dos listas cortas; con pools anchos emerge el *consenso* denso∩disperso, que es su verdadera señal.
 2. **`min-score` se aplica SOLO al prefetch denso**, donde el score es coseno `[0..1]`. La rama dispersa no se filtra (sus dot products TF no tienen escala comparable) — así los anclajes léxicos exactos sobreviven aunque la semántica densa sea débil.
-3. **El score final es RRF, no coseno.** Vale `Σ 1/(k + rank)` — el tope práctico observado es `0.5` (rank 1 de una rama). Es una función del *ranking*: no lo compares contra umbrales de similitud ni lo interpretes como "50% de parecido".
+3. **El score final es RRF, no coseno.** Para dos vectores se conserva la fórmula nativa de Qdrant: `Σ 1/(2 + rank_base_cero)`, acumulada en float32; una rama aporta como máximo `0.5`. Con resumen se conserva la fórmula ponderada y sus pesos calibrados. No son umbrales de similitud.
+
+**Desempates (9.1.1).** Cada etapa conserva su score de ranking sin redondeo ni epsilon;
+solo ante igualdad exacta ordena por UUID de chunk en formato D minúsculas, ordinal
+ascendente. Se aplica antes del prefetch, fusión, expansión por símbolo y reranking.
+La rama de dos vectores conserva la semántica RRF nativa, pero ya no delega la fusión
+al servidor: Qdrant no permite imponer allí el desempate previo al corte.
+
+`DeterministicVectorQuery` empieza con `límite + 1`, usa búsqueda exacta y duplica
+el prefijo solo mientras el empate cruza su extremo. No usa un overfetch fijo como
+prueba de completitud. El techo es 32 768 candidatos por consulta: si todavía no
+puede probar completitud, falla explícitamente; no devuelve un subconjunto arbitrario.
+Esto puede costar más que HNSW, especialmente con muchos empates. Los logs y eval
+registran consultas, candidatos **devueltos** (incluidas repeticiones) y latencia;
+no son un contador de distancias calculadas dentro de Qdrant. Los filtros se
+mantienen en cada ampliación; el guard exacto de módulo y sus posibles resultados
+menores que TopK siguen vigentes. Un fallo del segundo salto ahora se propaga,
+en vez de aparentar una expansión vacía correcta.
 
 ### Escala de `min-score` (denso, coseno)
 

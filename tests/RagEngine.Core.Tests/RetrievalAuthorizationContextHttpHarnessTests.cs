@@ -228,7 +228,155 @@ public sealed class RetrievalAuthorizationContextHttpHarnessTests : IAsyncLifeti
         Assert.All(sources!, s => Assert.StartsWith("alpha/", s.File));
     }
 
-    private QdrantSemanticRetriever BuildRetriever(bool twoHopEnabled)
+    [Theory]
+    [InlineData("dense-query", false, false)]
+    [InlineData("sparse-query", false, false)]
+    [InlineData("summary-query", false, false)]
+    [InlineData("twohop-query", true, false)]
+    [InlineData("dense-query", false, true)]
+    [InlineData("twohop-query", true, true)]
+    public async Task Modulo_alpha_rechaza_colisiones_de_prefijo(
+        string query, bool twoHopEnabled, bool rerank)
+    {
+        await SeedPrefixCollisionsAsync();
+        var retriever = BuildRetriever(twoHopEnabled);
+        var unrestricted = await retriever.SearchAsync(query, new RetrievalOptions
+        {
+            Context = RetrievalContext.Local,
+            CollectionName = _collection,
+            TopK = 20,
+            MinimumSimilarityScore = 0f
+        });
+        Assert.Contains(unrestricted, r => r.Metadata.RelativeFilePath == "alpha-oculto/Archivo.cs");
+        Assert.Contains(unrestricted, r => r.Metadata.RelativeFilePath == "alpha-private/Secrets.cs");
+
+        var results = await retriever.SearchAsync(query, AuthorizedOptions(ModuleAlpha, topK: 20) with
+        {
+            UseReRanking = rerank
+        });
+
+        Assert.NotEmpty(results);
+        Assert.All(results, AssertAuthorizedAlpha);
+        Assert.DoesNotContain(results, r => r.Metadata.RelativeFilePath == "alpha-oculto/Archivo.cs");
+        Assert.DoesNotContain(results, r => r.Metadata.RelativeFilePath == "alpha-private/Secrets.cs");
+    }
+
+    [Fact]
+    public async Task Api_search_no_expone_fuentes_de_alpha_oculto()
+    {
+        await SeedPrefixCollisionsAsync();
+        using var response = await _http.SendAsync(
+            TestActor.User(TenantA, ModuleAlpha).BuildSearchRequest(_collection, "dense-query"));
+        response.EnsureSuccessStatusCode();
+        var sources = await response.Content.ReadFromJsonAsync<List<SearchSource>>();
+
+        Assert.NotNull(sources);
+        Assert.NotEmpty(sources);
+        Assert.All(sources, s => Assert.StartsWith("alpha/", s.File));
+    }
+
+    [Theory]
+    [InlineData(false, "alpha", 4)]
+    [InlineData(true, "alpha", 4)]
+    [InlineData(true, "alpha/Noise1.cs", 1)]
+    [InlineData(true, "alpha-private", 0)]
+    [InlineData(true, "beta", 0)]
+    public async Task Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(
+        bool authorized, string explicitModule, int expectedCount)
+    {
+        await SeedPrefixCollisionsAsync();
+        var results = await BuildRetriever(twoHopEnabled: true).SearchAsync("dense-query", new RetrievalOptions
+        {
+            Context = authorized
+                ? RetrievalContext.ForAuthorized(TenantA, ModuleAlpha)
+                : RetrievalContext.Local with { Module = ModuleBeta },
+            FilterByTenant = TenantA,
+            FilterByModule = explicitModule,
+            CollectionName = _collection,
+            TopK = 20,
+            MinimumSimilarityScore = 0f
+        });
+
+        Assert.Equal(expectedCount, results.Count);
+        Assert.All(results, AssertAuthorizedAlpha);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Fusion_nativa_y_two_hop_filtran_antes_del_reranker(bool twoHopEnabled)
+    {
+        await _client.DeleteCollectionAsync(_collection);
+        await _store.EnsureCollectionAsync(_collection, Dimension, includeSummaryVector: false);
+        for (var i = 0; i < 3; i++)
+        {
+            await SeedPointAsync(
+                TenantA, $"alpha/Allowed{i}.cs", "alpha", "allowed",
+                V(1f, i * 0.1f, 0f, 0f), [], null,
+                consumedSymbols: i == 0 ? [SharedSymbol] : []);
+        }
+        await SeedPointAsync(
+            TenantA, "alpha-oculto/Archivo.cs", "alpha-oculto", "hop-only forbidden definition",
+            V(0.8f, 0.6f, 0f, 0f), [], null, definedSymbols: [SharedSymbol]);
+        var reranker = new RecordingReRanker();
+        var retriever = BuildRetriever(twoHopEnabled, reranker);
+        var options = new RetrievalOptions
+        {
+            Context = RetrievalContext.Local,
+            FilterByTenant = TenantA,
+            CollectionName = _collection,
+            TopK = 1,
+            MinimumSimilarityScore = 0.95f,
+            UseReRanking = true
+        };
+
+        await retriever.SearchAsync("dense-query", options);
+        if (twoHopEnabled)
+        {
+            // Absent from dense prefetch, but actually introduced by the symbol hop.
+            Assert.Contains(reranker.Candidates, r =>
+                r.Metadata.RelativeFilePath == "alpha-oculto/Archivo.cs" &&
+                r.ScoreScale == RetrievalScoreScale.SymbolExpansion);
+        }
+        else
+        {
+            Assert.Equal(3, reranker.Candidates.Count);
+            Assert.DoesNotContain(reranker.Candidates, r => r.Metadata.RelativeFilePath == "alpha-oculto/Archivo.cs");
+        }
+
+        var results = await retriever.SearchAsync("dense-query", options with
+        {
+            Context = RetrievalContext.ForAuthorized(TenantA, ModuleAlpha)
+        });
+
+        Assert.Single(results);
+        Assert.Equal(twoHopEnabled ? 2 : 3, reranker.Candidates.Count);
+        Assert.All(reranker.Candidates, r => Assert.StartsWith("alpha/", r.Metadata.RelativeFilePath));
+        Assert.All(results, r => Assert.StartsWith("alpha/", r.Metadata.RelativeFilePath));
+
+        // Also exercise the native primary-fusion guard with the collision in its pool.
+        await retriever.SearchAsync("dense-query", options with
+        {
+            Context = RetrievalContext.ForAuthorized(TenantA, ModuleAlpha),
+            TopK = 20,
+            MinimumSimilarityScore = 0f
+        });
+        Assert.Equal(3, reranker.Candidates.Count);
+        Assert.All(reranker.Candidates, r => Assert.StartsWith("alpha/", r.Metadata.RelativeFilePath));
+    }
+
+    private async Task SeedPrefixCollisionsAsync()
+    {
+        foreach (var path in new[] { "alpha-oculto/Archivo.cs", "alpha-private/Secrets.cs" })
+        {
+            await SeedPointAsync(
+                TenantA, path, path.Split('/')[0], "prefix collision",
+                V(1f, 0f, 1f, 0f), [new SparseEntry(17, 2f)], V(0f, 1f, 0f, 0f),
+                definedSymbols: [SharedSymbol], consumedSymbols: [SharedSymbol]);
+        }
+    }
+
+    private QdrantSemanticRetriever BuildRetriever(bool twoHopEnabled, IReRanker? reranker = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -236,7 +384,7 @@ public sealed class RetrievalAuthorizationContextHttpHarnessTests : IAsyncLifeti
         services.AddSingleton(_client);
         services.AddSingleton<IVectorizationBrain>(_brain);
         services.AddSingleton<ISparseTokenizer>(_sparseTokenizer);
-        services.AddSingleton<IReRanker, PassthroughReRanker>();
+        services.AddSingleton<IReRanker>(reranker ?? new PassthroughReRanker());
         services.AddSingleton<QdrantVectorStore>(_store);
         services.AddSingleton<IVectorStoreAdmin>(_store);
         services.AddSingleton<IRetrievalProfileResolver, NullRetrievalProfileResolver>();
@@ -270,7 +418,7 @@ public sealed class RetrievalAuthorizationContextHttpHarnessTests : IAsyncLifeti
         string content,
         float[] denseVector,
         IReadOnlyList<SparseEntry> sparseVector,
-        float[] summaryVector,
+        float[]? summaryVector,
         IReadOnlyList<string>? definedSymbols = null,
         IReadOnlyList<string>? consumedSymbols = null)
     {
@@ -363,6 +511,19 @@ public sealed class RetrievalAuthorizationContextHttpHarnessTests : IAsyncLifeti
             int topK,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<RetrievalResult>>(candidates.Take(topK).ToList());
+    }
+
+    private sealed class RecordingReRanker : IReRanker
+    {
+        public IReadOnlyList<RetrievalResult> Candidates { get; private set; } = [];
+
+        public Task<IReadOnlyList<RetrievalResult>> ReRankAsync(
+            string query, IReadOnlyList<RetrievalResult> candidates, int topK,
+            CancellationToken cancellationToken = default)
+        {
+            Candidates = candidates;
+            return Task.FromResult<IReadOnlyList<RetrievalResult>>(candidates.Take(topK).ToArray());
+        }
     }
 
     private sealed class NullRetrievalProfileResolver : IRetrievalProfileResolver

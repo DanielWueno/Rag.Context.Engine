@@ -67,7 +67,10 @@ public sealed record RetrievalOptions
     /// <summary>
     /// Filtra por módulo lógico derivado del namespace/ruta relativa ya guardados en
     /// payload. Igual que tenant: null/vacío no restringe; con valor exige coincidencia
-    /// del módulo dentro del puerto de retrieval.
+    /// ordinal exacta o un descendiente separado por '.' (namespace) o '/' (ruta).
+    /// Se comprueba dentro del puerto antes y después de two-hop; se combina con AND
+    /// con el módulo del contexto autorizado. El prefiltro de Qdrant es aproximado:
+    /// descartar candidatos puede devolver menos de TopK, sin rellenado adicional.
     /// </summary>
     public string? FilterByModule { get; init; }
 

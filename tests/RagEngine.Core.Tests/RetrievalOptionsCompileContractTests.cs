@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using RagEngine.Core.Tests.Calibration;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RagEngine.Core.Tests;
 
@@ -8,10 +10,33 @@ namespace RagEngine.Core.Tests;
 /// Verifica por compilación real el contrato exigido por 9.1: construir
 /// <c>RetrievalOptions</c> sin contexto explícito debe fallar ANTES de correr.
 /// </summary>
-public sealed class RetrievalOptionsCompileContractTests
+public sealed class RetrievalOptionsCompileContractTests(ITestOutputHelper output)
 {
     [Fact]
-    public void RetrievalOptions_sin_contexto_explicito_no_compila()
+    public async Task RetrievalOptions_sin_contexto_explicito_no_compila()
+    {
+        var (exitCode, buildOutput) = await BuildFixtureAsync("RetrievalOptionsMissingContext");
+
+        Assert.NotEqual(0, exitCode);
+        var diagnostics = Regex.Matches(buildOutput, @"error (CS\d+):[^\r\n]*");
+        Assert.NotEmpty(diagnostics);
+        Assert.All(diagnostics.Cast<Match>(), diagnostic =>
+        {
+            Assert.Equal("CS9035", diagnostic.Groups[1].Value);
+            Assert.Contains("'RetrievalOptions.Context'", diagnostic.Value, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public async Task RetrievalOptions_con_contexto_local_compila()
+    {
+        var (exitCode, buildOutput) = await BuildFixtureAsync("RetrievalOptionsWithContext");
+
+        Assert.True(exitCode == 0, buildOutput);
+        Assert.DoesNotMatch(@"error [A-Z]+\d+:", buildOutput);
+    }
+
+    private async Task<(int ExitCode, string Output)> BuildFixtureAsync(string fixture)
     {
         var repoRoot = RepoRootLocator.Find();
         var project = Path.Combine(
@@ -19,8 +44,8 @@ public sealed class RetrievalOptionsCompileContractTests
             "tests",
             "RagEngine.Core.Tests",
             "CompileFixtures",
-            "RetrievalOptionsMissingContext",
-            "RetrievalOptionsMissingContext.csproj");
+            fixture,
+            $"{fixture}.csproj");
 
         var psi = new ProcessStartInfo("dotnet", $"build \"{project}\" --nologo")
         {
@@ -32,14 +57,12 @@ public sealed class RetrievalOptionsCompileContractTests
 
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("No se pudo lanzar 'dotnet build' para el fixture de compilación.");
-        var stdout = process.StandardOutput.ReadToEnd();
-        var stderr = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
 
-        var output = stdout + Environment.NewLine + stderr;
-
-        Assert.NotEqual(0, process.ExitCode);
-        Assert.Contains("RetrievalOptions", output, StringComparison.Ordinal);
-        Assert.Contains("Context", output, StringComparison.Ordinal);
+        var buildOutput = await stdout + Environment.NewLine + await stderr;
+        output.WriteLine(buildOutput);
+        return (process.ExitCode, buildOutput);
     }
 }

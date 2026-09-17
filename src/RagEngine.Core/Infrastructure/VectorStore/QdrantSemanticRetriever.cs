@@ -188,9 +188,14 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
                 ? RetrievalScoreScale.RankFusionWeighted
                 : RetrievalScoreScale.RankFusionNative;
 
-            IReadOnlyList<RetrievalResult> results = searchResults
-                .Select(point => MapToRetrievalResult(point, fusionScale))
-                .ToList();
+            var activeModules = GetActiveModules(options).ToArray();
+            var authorizedPrimary = searchResults
+                .Select(point => (Point: point, Result: MapToRetrievalResult(point, fusionScale)))
+                .Where(candidate => activeModules.All(module => MatchesModuleBoundary(candidate.Result.Metadata, module)))
+                .ToArray();
+            // Keep points/results aligned: rejected payloads must not seed symbol expansion.
+            searchResults = authorizedPrimary.Select(candidate => candidate.Point).ToArray();
+            IReadOnlyList<RetrievalResult> results = authorizedPrimary.Select(candidate => candidate.Result).ToArray();
 
             // 5.b Ítem 6.a: expansión por símbolo. Apagado por defecto
             // (TwoHopOptions.Enabled=false), salvo que el perfil de la colección
@@ -202,6 +207,9 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             {
                 results = await ExpandBySymbolAsync(
                     options, queryVector, filter, searchResults, results, cancellationToken);
+                results = results
+                    .Where(result => activeModules.All(module => MatchesModuleBoundary(result.Metadata, module)))
+                    .ToArray();
             }
 
             // 6. Optional Cross-Encoder re-ranking over the widened pool.
@@ -580,16 +588,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             conditions.Add(BuildTenantFilter(options.Context.Tenant));
         }
 
-        if (!string.IsNullOrWhiteSpace(options.FilterByModule))
-        {
-            conditions.Add(BuildModuleFilter(options.FilterByModule));
-        }
-
-        if (options.Context.Mode == RetrievalContextMode.Authorized &&
-            !string.IsNullOrWhiteSpace(options.Context.Module))
-        {
-            conditions.Add(BuildModuleFilter(options.Context.Module));
-        }
+        foreach (var module in GetActiveModules(options))
+            conditions.Add(BuildModuleFilter(module));
 
         return conditions.Count == 0
             ? new Filter { MustNot = { excludeManifest } }
@@ -605,6 +605,32 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         }
     };
 
+    private static IEnumerable<string> GetActiveModules(RetrievalOptions options)
+    {
+        if (!string.IsNullOrWhiteSpace(options.FilterByModule))
+            yield return options.FilterByModule;
+
+        if (options.Context.Mode == RetrievalContextMode.Authorized &&
+            !string.IsNullOrWhiteSpace(options.Context.Module))
+            yield return options.Context.Module;
+    }
+
+    internal static bool MatchesModuleBoundary(CodeChunkMetadata metadata, string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return MatchesBoundary(metadata.Namespace, module, '.') ||
+               MatchesBoundary(metadata.RelativeFilePath, module, '/');
+    }
+
+    private static bool MatchesBoundary(string? value, string module, char separator) =>
+        value is not null &&
+        value.StartsWith(module, StringComparison.Ordinal) &&
+        (value.Length == module.Length || value[module.Length] == separator);
+
+    // Match.Text is only a candidate prefilter, not an authorization boundary.
+    // MatchesModuleBoundary enforces exact roots/descendants without re-ingestion.
     internal static Condition BuildModuleFilter(string module) => new()
     {
         Filter = new Filter

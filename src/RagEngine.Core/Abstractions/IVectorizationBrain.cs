@@ -10,7 +10,7 @@ public interface IVectorizationBrain
 {
     /// <summary>
     /// Dimensionality of the output vector space (384 for all-MiniLM-L6-v2).
-    /// Required for Qdrant collection configuration.
+    /// Required for vector-store collection configuration.
     /// </summary>
     int EmbeddingDimensions { get; }
 

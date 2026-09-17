@@ -5,7 +5,7 @@ namespace RagEngine.Core.Domain;
 
 /// <summary>
 /// Tracks model identity, ACL publication contract and collection metadata to detect
-/// semantic drift. Stored as a single Qdrant point (see
+/// semantic drift. Stored as a single vector-store point (see
 /// <see cref="Infrastructure.VectorStore.QdrantVectorStore.UpsertManifestAsync"/>) whose
 /// payload carries the JSON-serialized manifest under the
 /// <see cref="Infrastructure.VectorStore.QdrantVectorStore.ManifestPayloadKey"/> key.
@@ -63,7 +63,7 @@ public sealed record CollectionManifest
         PropertyNameCaseInsensitive = true
     };
 
-    /// <summary>Serializa este manifiesto al JSON que se guarda en el payload de Qdrant.</summary>
+    /// <summary>Serializa este manifiesto al JSON que se guarda en el payload del backend vectorial.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, JsonOptions);
 
     /// <summary>

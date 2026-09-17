@@ -15,7 +15,7 @@ public sealed record CodeChunk
     /// </summary>
     public required Guid Id { get; init; }
 
-    /// <summary>The raw source text of this chunk (stored in Qdrant payload).</summary>
+    /// <summary>The raw source text of this chunk (stored in the vector store's payload).</summary>
     public required string Content { get; init; }
 
     /// <summary>

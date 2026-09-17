@@ -17,7 +17,7 @@ public interface IRagGenerationService
     ///   The natural-language question or code description submitted by the user.
     /// </param>
     /// <param name="collectionName">
-    ///   The Qdrant collection that holds the indexed chunks for the target codebase.
+    ///   The vector-store collection that holds the indexed chunks for the target codebase.
     /// </param>
     /// <param name="retrievalContext">Explicit authorization context for this turn.</param>
     /// <param name="topK">
@@ -42,7 +42,7 @@ public interface IRagGenerationService
     ///   Prior turns of the conversation, oldest first, supplied by the caller on every
     ///   call (this service holds no session state). Only <paramref name="query"/> is
     ///   used for retrieval — history is injected into the LLM prompt for conversational
-    ///   continuity, not re-searched against Qdrant.
+    ///   continuity, not re-searched against the vector store.
     /// </param>
     /// <param name="promptFamily">
     ///   Ítem 7.a: familia de prompt forzada por el perfil de la colección (resuelta por

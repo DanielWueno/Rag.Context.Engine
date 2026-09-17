@@ -36,7 +36,7 @@ public enum RetrievalScoreScale
     CosineSimilarity,
 
     /// <summary>
-    /// Semantica Reciprocal Rank Fusion de Qdrant (<c>Fusion.Rrf</c>) sobre las ramas densa y
+    /// Semantica Reciprocal Rank Fusion nativa del backend vectorial (<c>Fusion.Rrf</c>) sobre las ramas densa y
     /// dispersa, todas con peso igual. Es una <b>función del ranking, no de la
     /// similitud</b>: su magnitud (1/(2+rango base cero), sumada por rama) depende de
     /// en qué puesto quedó el chunk dentro de esta consulta y no significa nada al

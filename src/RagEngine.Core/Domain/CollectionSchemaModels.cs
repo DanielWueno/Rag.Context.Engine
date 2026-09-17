@@ -12,7 +12,7 @@ public enum CollectionSchemaStatus
 }
 
 /// <summary>
-/// Hechos crudos del esquema de una colección ya traducidos desde Qdrant.
+/// Hechos crudos del esquema de una colección ya traducidos desde el backend vectorial.
 /// </summary>
 public sealed record CollectionSchemaSnapshot(
     string Name,
@@ -35,7 +35,7 @@ public sealed record CollectionSchemaReport(
 
 /// <summary>
 /// Estado operacional reportado por el motor de vectores (equivalente al semáforo
-/// verde/amarillo/rojo de Qdrant). <c>Unknown</c> cubre cualquier valor futuro que el
+/// verde/amarillo/rojo de un backend vectorial típico). <c>Unknown</c> cubre cualquier valor futuro que el
 /// backend concreto pueda devolver y que este puerto no conozca todavía — se colorea
 /// igual que <c>Red</c> en los adaptadores primarios, nunca como sano.
 /// </summary>

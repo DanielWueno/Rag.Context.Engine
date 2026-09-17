@@ -74,12 +74,12 @@ public sealed record RetrievalOptions
     /// payload. Igual que tenant: null/vacío no restringe; con valor exige coincidencia
     /// ordinal exacta o un descendiente separado por '.' (namespace) o '/' (ruta).
     /// Se comprueba dentro del puerto antes y después de two-hop; se combina con AND
-    /// con el módulo del contexto autorizado. El prefiltro de Qdrant es aproximado:
+    /// con el módulo del contexto autorizado. El prefiltro del backend vectorial es aproximado:
     /// descartar candidatos puede devolver menos de TopK, sin rellenado adicional.
     /// </summary>
     public string? FilterByModule { get; init; }
 
-    /// <summary>The Qdrant collection to search.</summary>
+    /// <summary>The vector-store collection to search.</summary>
     public required string CollectionName { get; init; }
 
     /// <summary>If true, applies Cross-Encoder re-ranking for higher precision.</summary>

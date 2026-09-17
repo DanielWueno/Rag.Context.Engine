@@ -133,6 +133,38 @@ ni sobre colecciones servidas para «refrescar» este resultado histórico.
 
 ## Comparar contra un baseline
 
+Para automatización usa el [gate nocturno local](../operaciones.md#eval-nocturno-local-ítem-141):
+`rag eval --baseline` informa, pero **no devuelve un fallo** por regresión o
+incomparabilidad. `infra/eval-nocturno/runner.py` sí distingue esos estados de
+una dependencia ausente, conserva IDs/categorías de cada pérdida y no promueve
+baselines automáticamente.
+
+El inventario congelado está en `infra/eval-nocturno/inventory.json`: cinco
+perfiles sobre cuatro datasets. Mantiene las referencias históricas de 11.4
+salvo `bsuite-repo`, que selecciona la referencia ya existente de 6.c con
+76 respondibles y 8 negativos. Los baselines antiguos no tienen toda la
+procedencia exigida hoy: producen **incomparable**, nunca un verde inferido.
+Los resultados nuevos incluyen `nightly_context` con hashes completos de los
+modelos, configuración e índice (payloads y vectores, incluido el manifiesto).
+Son evidencia candidata, **no nuevas referencias aceptadas**.
+
+El ID de pregunta del gate es el prefijo de 16 caracteres del SHA-256 UTF-8 de
+`Question`. Su correspondencia se reconstruye con el dataset de hash congelado;
+no depende del orden de filas. Los negativos se comprueban como parte de la
+cobertura, pero no entran en recall ni prueban abstención/calidad de respuesta.
+
+```bash
+# Comparador manual sin servicios: salida 0/1/2 = ok/regresión/incomparable.
+python3 infra/eval-nocturno/runner.py compare \
+  --dataset docs/eval/bsuite-repo.eval-set.json \
+  --baseline /ruta/referencia.result.json \
+  --candidate /ruta/candidato.result.json
+
+# Aceptación de 14.1: controles adversariales + los cinco evals REALES.
+# Falla si falta infraestructura, cobertura o la evidencia versionada.
+python3 infra/eval-nocturno/accept.py
+```
+
 ```bash
 dotnet run --project src/RagEngine.Cli -- eval \
   --eval-set docs/eval/innovapp-docs.eval-set.json -c innovapp-docs -k 10 --rerank \

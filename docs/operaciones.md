@@ -25,6 +25,84 @@ no se vuelve a llamar a Ollama.
 > VirtioFS/gRPC-FUSE no la garantiza entre el host y la VM de Linux. **Baja `rag-api` antes de
 > correr una ingesta con `--con-resumen`.** Ver el runbook de recuperación más abajo.
 
+## Eval nocturno local (ítem 14.1)
+
+El runner ejecuta secuencialmente los **cinco perfiles** de
+`infra/eval-nocturno/inventory.json`, con `top_k=10` y `min_score=0.1`.
+Requiere Python 3.9+, .NET 10 restaurado, Qdrant local y los dos modelos ONNX
+con sus tokenizadores; **no necesita Ollama ni genera resúmenes**.
+
+```bash
+# Manual: árbol de trabajo autorizado por el operador; no instala el schedule.
+python3 infra/eval-nocturno/runner.py run
+
+# Tras revisar y COMMITTEAR el código, con el checkout limpio:
+# instala un LaunchAgent diario a las 03:00, hora local.
+python3 infra/eval-nocturno/runner.py install --hour 3 --minute 0
+launchctl print "gui/$(id -u)/com.rag-engine.eval-nocturno"
+```
+
+`--models-dir` (default `$RAG_MODELS_DIR` o `~/models`) fija la ubicación.
+El destino es deliberadamente loopback; el runner manual permite
+`--http-port`/`--grpc-port`. La clave opcional `Qdrant__ApiKey` se toma del
+entorno del proceso, nunca se guarda en el plist ni en los informes. Un servicio
+autenticado requiere que el operador la aprovisione también en el entorno de
+launchd; sin ella la alarma será de infraestructura, no un falso recall cero.
+
+**Aislamiento y preflight.** Verifica hashes de datasets/referencias, denominadores,
+archivos de modelos, conexión gRPC y colecciones no vacías. Publica una vez el CLI
+en el directorio de la corrida, comprueba el JSON completo de cada eval y compara
+hashes de todos los puntos/payloads/vectores antes y después. Rechaza configuraciones
+`appsettings.*.json` adicionales. La configuración es la versionada del CLI más
+`config/shared.appsettings.json`; no hereda overrides arbitrarios del terminal.
+Los cambios de esos archivos, de modelos o del índice invalidan la comparación.
+No toca colecciones, manifiestos ni WAL compartido: logs, auditoría y eventual
+caché del proceso se aíslan dentro de la corrida. Un lock evita dos runners simultáneos.
+
+| Exit | Estado | Acción |
+|---|---|---|
+| 0 | `ok` | Como máximo una pregunta neta perdida @10 por set; también se listan pérdidas brutas aunque haya ganancias. |
+| 1 | `regression` | Más de una pérdida neta en algún set; investigar sus IDs y categorías. Dos pérdidas con n=47 son 4,26 pp, no 2 pp. |
+| 2 | `incomparable` | Cambió/falta dataset, configuración, identidad, cobertura o índice; no interpretar como descenso ni éxito de recall. |
+| 3 | `infrastructure` | Modelos/Qdrant ausentes, build/comando fallido, timeout o checkout no autorizado. |
+
+En estados mixtos prevalece infraestructura sobre incomparable sobre regresión;
+`report.json` conserva el estado de cada perfil. Las alarmas aparecen en stderr
+y en el informe, **sin correo ni servicio externo**. Cada ejecución conserva
+`logs/eval-nocturno/<UTC>/report.json`, resultados JSON y stdout/stderr por perfil;
+el contenido detallado permanece local/ignorado por git. `schedule.stdout` y
+`schedule.stderr` están en `~/Library/Application Support/rag-engine/eval-nocturno/`.
+Consultar además `last exit code` con `launchctl print`. No hay rotación automática
+de estos artefactos: archivar corridas revisadas antes de retirar directorios
+individuales, especialmente el `app/` publicado de cada corrida.
+
+**Estado inicial y referencias.** Los cinco perfiles se ejecutan realmente, pero
+sus referencias históricas carecen de campos necesarios: la alarma inicial es
+`incomparable`. No se han sustituido para ocultarlo. Para habilitar una comparación
+futura, revisar explícitamente la procedencia y los resultados nuevos, conservar
+la referencia histórica y seleccionar un archivo nuevo con su SHA-256 en el
+inventario, en un cambio revisado. No completar retrospectivamente campos que no
+se midieron, ni actualizar referencias porque haya una regresión.
+
+**Código de confianza.** El LaunchAgent ejecuta una copia del runner fuera del
+checkout, fijada al commit limpio instalado. Rechaza cambios de HEAD/árbol antes
+de compilar o ejecutar el CLI. No hace fetch, pull ni checkout, ni ejecuta código
+de PR; el CI público sólo ejecuta fixtures sin modelos, corpus ni secretos.
+Después de un commit nuevo el job alarma hasta que el operador lo revise y
+reinstale. Una máquina dormida no ejecuta a las 03:00; launchd puede ejecutar el
+evento al despertar. No se configura wake ni `KeepAlive`.
+
+**Rollback/reinstalación**, sin borrar runner, resultados ni baselines:
+
+```bash
+launchctl bootout "gui/$(id -u)/com.rag-engine.eval-nocturno"
+# Conservar el plist anterior con otro nombre, fuera de LaunchAgents:
+mv ~/Library/LaunchAgents/com.rag-engine.eval-nocturno.plist \
+  ~/Library/Application\ Support/rag-engine/eval-nocturno/schedule-anterior-$(date +%Y%m%dT%H%M%S).plist
+# Solo para reinstalar, tras revisar el nuevo commit limpio:
+python3 infra/eval-nocturno/runner.py install --hour 3 --minute 0
+```
+
 ## Observabilidad
 
 - **Logs estructurados:** Serilog → `logs/rag-engine-YYYYMMDD.json` (CompactJsonFormatter). La consola solo muestra `Warning+`; el archivo lo tiene todo, incluyendo `CorrelationId` por búsqueda. Fuente de verdad para tiempos de ingesta y conteos:

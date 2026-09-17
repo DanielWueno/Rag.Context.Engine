@@ -50,3 +50,8 @@ jobs:
           --configuration Release
           --no-build
           --logger "console;verbosity=normal"
+
+      # Solo fixtures: nunca ejecutar el job local contra corpus/modelos privados
+      # desde pull_request, ni usar un runner self-hosted para este workflow.
+      - name: Contratos del gate de eval nocturno (sin servicios)
+        run: python3 -m unittest discover -s infra/eval-nocturno -p 'test_runner.py'

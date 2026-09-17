@@ -1677,7 +1677,11 @@
           "_preparacion_de_verificacion": "Aceptacion documental por lectura del disparador y comparacion de historial; no hay un comando que decida acceso autorizado y validez de esa redaccion. Un assert sobre el JSON que se acaba de escribir seria autoevaluacion. Esta reconciliacion no ejecuta 10.2 ni modifica 3.5.",
           "por_que_este_modelo": "Explicitar una condicion ya documentada sin reinterpretarla ni modificar el estado tecnico.",
           "origen": "Analisis docs/analisis-futuro/arquitectura-puertos-y-adaptadores.md (2026-08-31), hallazgo 5.2. El item NO esta abandonado: implementado y verificado en arm64 (122/122 tests, rag doctor OK); solo falta hardware x64 para probar la otra rama.",
-          "rollback": "git revert. Solo el ledger."
+          "rollback": "git revert. Solo el ledger.",
+          "_condicion_de_reentrada": "Responsable: mantenedor del proceso y operador de infraestructura. Disparador único: acceso autorizado a una máquina x64 real con el runtime y el archivo model.onnx disponibles. En ese momento, volver a pendiente para ejecutar 3.5-portabilidad-x64 en esa máquina, verificando la selección x64 contra el runtime real y conservando la verificación arm64 existente. No desbloquear por disponer solo de un overload parametrizado, un emulador o una compilación cruzada; no cambiar el estado de 3.5 ni declarar superada la prueba hasta contar con esa evidencia.",
+          "estado": "hecho",
+          "fecha": "2026-09-17",
+          "resultado": "Se añadió al item 3.5 la condición de reentrada legible y explícita: acceso autorizado a una máquina x64 real con runtime y model.onnx disponibles; exige volver a pendiente, ejecutar y verificar la rama x64 contra el runtime real, conservando la evidencia arm64. Se preservaron intactos el estado bloqueado, la razón de bloqueo, fechas y resultado histórico de 3.5. No se ejecutó ni se alteró 3.5."
         },
         {
           "id": "10.3-plan-a-ledger-con-computo-local",

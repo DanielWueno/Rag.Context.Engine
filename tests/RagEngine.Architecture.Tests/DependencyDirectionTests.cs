@@ -74,6 +74,43 @@ public sealed class DependencyDirectionTests
         AssertNoForbiddenUsings(Path.Combine(repoRoot, "src", "RagEngine.Cli"));
     }
 
+    public static TheoryData<string> CoreNonCompositionFolders => new()
+    {
+        "Domain",
+        "Abstractions",
+        "Services",
+        "Pipeline",
+        "Infrastructure"
+    };
+
+    /// <summary>
+    /// Ítem 9.8: <c>Extensions/</c> es la composición del host DENTRO de Core (arma el
+    /// contenedor de DI). Ninguna otra carpeta puede depender de ella — la dirección es
+    /// Extensions/ → { Domain, Abstractions, Services, Pipeline, Infrastructure }, nunca
+    /// al revés. Caso real que disparó esta regla: <c>OllamaOptions</c> vivía en
+    /// <c>Extensions/GenerationServiceExtensions.cs</c> pero
+    /// <c>Infrastructure/Summary/OllamaBusinessSummaryGenerator.cs</c> y
+    /// <c>Pipeline/DefaultIngestionPipeline.cs</c> la necesitaban — un contrato de
+    /// opciones consumido por un adaptador no puede vivir en la composición.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(CoreNonCompositionFolders))]
+    public void Ninguna_capa_de_Core_depende_de_Extensions_la_composicion_del_host(string folder)
+    {
+        var repoRoot = RepoRootLocator.Find();
+        var folderPath = Path.Combine(repoRoot, "src", "RagEngine.Core", folder);
+
+        Assert.True(Directory.Exists(folderPath), $"No existe la carpeta vigilada: {folderPath}");
+
+        var violations = ForbiddenUsingScanner.FindViolations(folderPath, ["RagEngine.Core.Extensions"]);
+
+        Assert.True(
+            violations.Count == 0,
+            $"'{folder}/' no puede depender de Extensions/ (la composición del host). " +
+            "Mueve el tipo/contrato compartido a Domain/ o Abstractions/:" +
+            Environment.NewLine + string.Join(Environment.NewLine, violations));
+    }
+
     /// <summary>
     /// Control negativo del propio arnés: si esta lista queda vacía porque el
     /// escaneo de directorios se rompió silenciosamente (ruta mal escrita, filtro

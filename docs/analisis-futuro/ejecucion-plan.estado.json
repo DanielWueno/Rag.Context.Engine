@@ -1627,14 +1627,21 @@
           "esfuerzo": "medium",
           "multiagente": false,
           "horas_maquina": 0.1,
-          "estado": "pendiente",
+          "estado": "hecho",
           "_preparacion_de_verificacion": "Faltan pruebas de binding/defaults/entorno en ambos hosts y regla de arquitectura para Extensions. Preparar fixture de valores anteriores, ruta y prompt_version antes del movimiento y apoyarse en barrera de 9.5 una vez exista. Un test de DI verde no fija esos valores.",
           "por_que_este_modelo": "Refactor de contratos/configuracion con compatibilidad observable, no renombrado por simetria.",
           "origen": "arquitectura-puertos-y-adaptadores.md §6 (opciones repartidas), incorporado el 2026-09-12 sin reabrir olas cerradas.",
           "archivos": "src/RagEngine.Core/Domain/IngestionTypes.cs, src/RagEngine.Core/Extensions/GenerationServiceExtensions.cs, src/RagEngine.Core/Services/Summary/OllamaBusinessSummaryGenerator.cs, src/RagEngine.Core/Infrastructure/, tests/RagEngine.Core.Tests/",
           "verificacion": "Documentar regla de pertenencia y eliminar la dependencia del generador de resumenes hacia Extensions para leer OllamaOptions. Tests fijan mismo binding, defaults y variables de entorno en ambos hosts; ninguna clave, ruta de cache o prompt_version cambia. La guardia de arquitectura detecta reintroducir la dependencia.",
           "rollback": "Restaurar tipos/registros previos conservando claves y valores; no migrar cache ni re-ingestar.",
-          "bloqueado_por": "9.5-tests-de-arquitectura"
+          "resultado": "OllamaOptions vivia en Extensions/GenerationServiceExtensions.cs (composicion del host) pero era consumida por adaptadores/pipeline de Core (Infrastructure/Summary/OllamaBusinessSummaryGenerator.cs, Pipeline/DefaultIngestionPipeline.cs) y por ambos hosts (Api/Program.cs, Cli/Commands/EvalCommand.cs) — violacion real de direccion de dependencias confirmada por grep antes de tocar codigo. RagGenerationOptions y MetaIntentOptions se verificaron NO afectadas (no estaban mal ubicadas). Se movio la clase a src/RagEngine.Core/Domain/OllamaOptions.cs (mismo patron que IngestionOptions en Domain/IngestionTypes.cs); GenerationServiceExtensions.cs conserva solo el wiring de DI (Configure<OllamaOptions>) con 'using RagEngine.Core.Domain;'. Se elimino el 'using RagEngine.Core.Extensions;' ya innecesario de OllamaBusinessSummaryGenerator.cs, DefaultIngestionPipeline.cs, Cli/Commands/EvalCommand.cs y VectorStoreResumeTests.cs (los 4 ya tenian 'using RagEngine.Core.Domain;', sin cambios funcionales). Se extendio tests/RagEngine.Architecture.Tests/DependencyDirectionTests.cs con el theory 'Ninguna_capa_de_Core_depende_de_Extensions_la_composicion_del_host' (Domain/Abstractions/Services/Pipeline/Infrastructure), verificado con mutacion real: se reinserto temporalmente 'using RagEngine.Core.Extensions;' en OllamaBusinessSummaryGenerator.cs, la guardia fallo con el archivo:linea exactos, luego se revirtio (diff vacio confirmado). Se creo tests/RagEngine.Core.Tests/OllamaOptionsBindingContractTests.cs para fijar el contrato observable exigido por la ficha: SectionName=='Ollama' y defaults (Endpoint/ModelId/TimeoutSeconds) sin cambio, binding identico desde los appsettings.json reales de Api y Cli (valores confirmados identicos entre ambos hosts antes del movimiento), y binding por variable de entorno (Ollama__ModelId) sigue sobrescribiendo el valor tal como usan ambos hosts en despliegue. ResumenCachePath y ComputePromptVersion no fueron tocados (diff vacio verificado en Domain/IngestionTypes.cs y en la logica de hash), preservando el cache de resumenes. Evidencia: 'dotnet build' 0 errores/0 advertencias; RagEngine.Architecture.Tests 13/13 (incluye el mutante de control real, no solo confianza); OllamaOptionsBindingContractTests 3/3; RagEngine.Core.Tests: 221 tests sin fallas nuevas (excluyendo el unico fallo preexistente y no relacionado GenerationHttpHarnessTests.Responses_sources_prompts_and_sse_match_pre_refactor_control, reproducido identico al baseline de 9.5, fuera de alcance). No se re-ingesto ni se toco ninguna coleccion de Qdrant.",
+          "_ejecucion": {
+            "entorno": "Copilot CLI",
+            "modelo_solicitado": "sonnet (perfil de la ficha)",
+            "modelo_efectivo": "claude-sonnet-5",
+            "esfuerzo_efectivo": "medium",
+            "motivo": "Refactor acotado de ubicacion de contrato de opciones con criterio de aceptacion ya definido en la ficha (binding/defaults/entorno fijos, guardia de arquitectura); no requiere diseno experimental ni causa raiz nueva."
+          }
         }
       ]
     },

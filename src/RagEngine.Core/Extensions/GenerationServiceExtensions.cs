@@ -7,6 +7,7 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 using RagEngine.Core.Services.Generation;
 using RagEngine.Core.Infrastructure.Generation;
 using RagEngine.Core.Infrastructure.Summary;
@@ -15,26 +16,11 @@ namespace RagEngine.Core.Extensions;
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Typed options — bound from the "Ollama" section of appsettings.json
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// <summary>
-/// Configuration options for the local Ollama LLM endpoint.
-/// Bound from appsettings.json → "Ollama" section.
-/// </summary>
-public sealed class OllamaOptions
-{
-    public const string SectionName = "Ollama";
-
-    /// <summary>Base URL of the Ollama OpenAI-compatible API endpoint.</summary>
-    public string Endpoint { get; init; } = "http://localhost:11434/v1";
-
-    /// <summary>Model tag to use (must be pulled in Ollama beforehand).</summary>
-    public string ModelId { get; init; } = "qwen2.5-coder";
-
-    /// <summary>Request timeout in seconds for long LLM generations.</summary>
-    public int TimeoutSeconds { get; init; } = 120;
-}
-
+//
+//  Ítem 9.8: OllamaOptions se movió a RagEngine.Core.Domain (ver Domain/OllamaOptions.cs).
+//  Este archivo sólo la CONSUME para configurar el binding y construir el Kernel;
+//  ya no la define, porque adaptadores de aplicación (Infrastructure/, Pipeline/)
+//  la necesitaban y no pueden depender de Extensions/ (la composición del host).
 // ─────────────────────────────────────────────────────────────────────────────
 //  Generation DI extension  (separate from AddRagEngineCore to keep
 //  the Core extension focused on infrastructure and allow hosts that

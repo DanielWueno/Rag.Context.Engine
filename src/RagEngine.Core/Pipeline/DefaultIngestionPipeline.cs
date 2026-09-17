@@ -6,7 +6,6 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Diagnostics;
-using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Summary;
 
 namespace RagEngine.Core.Pipeline;

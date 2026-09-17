@@ -10,7 +10,6 @@ using Polly;
 using Polly.Registry;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
-using RagEngine.Core.Extensions;
 
 namespace RagEngine.Core.Infrastructure.Summary;
 

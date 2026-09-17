@@ -6,7 +6,6 @@ using RagEngine.Core.Domain;
 using RagEngine.Core.Diagnostics;
 using Microsoft.Extensions.Options;
 using RagEngine.Cli.Infrastructure;
-using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.VectorStore;

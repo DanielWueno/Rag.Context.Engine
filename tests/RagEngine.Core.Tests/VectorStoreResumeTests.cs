@@ -5,7 +5,6 @@ using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
-using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;

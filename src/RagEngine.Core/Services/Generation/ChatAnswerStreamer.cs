@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Polly;
+using Polly.Registry;
 using RagEngine.Core.Domain;
 
 namespace RagEngine.Core.Services.Generation;
@@ -18,13 +20,22 @@ namespace RagEngine.Core.Services.Generation;
 /// </summary>
 internal sealed class ChatAnswerStreamer
 {
+    /// <summary>Nombre del pipeline registrado con <c>AddResiliencePipeline</c> (ítem 8.e).</summary>
+    public const string ResiliencePipelineName = "ollama-chat";
+
     private readonly Kernel _kernel;
     private readonly ILogger<ChatAnswerStreamer> _logger;
+    private readonly ResiliencePipeline _resiliencePipeline;
 
-    public ChatAnswerStreamer(Kernel kernel, ILogger<ChatAnswerStreamer> logger)
+    public ChatAnswerStreamer(
+        Kernel kernel,
+        ILogger<ChatAnswerStreamer> logger,
+        ResiliencePipelineProvider<string> pipelineProvider)
     {
         _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(pipelineProvider);
+        _resiliencePipeline = pipelineProvider.GetPipeline(ResiliencePipelineName);
     }
 
     /// <summary>
@@ -71,17 +82,46 @@ internal sealed class ChatAnswerStreamer
 
         _logger.LogInformation("[RAG] Streaming LLM response for query: {Query}", query);
 
-        await foreach (var streamChunk in chatService
-            .GetStreamingChatMessageContentsAsync(
-                chatHistory,
-                executionSettings,
-                _kernel,
-                cancellationToken))
+        // Ítem 8.e: antes de este cambio, el HttpClient de Ollama sólo tenía Timeout —
+        // ningún retry, ningún circuit breaker (a diferencia de Qdrant y del resumen
+        // de negocio, que ya usan AddResiliencePipeline). La resiliencia NO se puede
+        // envolver alrededor de todo el `await foreach` como en esos dos casos: acá el
+        // fallo puede llegar DESPUÉS de que ya se emitieron fragmentos al llamador
+        // (que a su vez ya los mandó por SSE al cliente), y reintentar desde cero
+        // duplicaría texto ya visto. Por eso el pipeline sólo cubre el intento de abrir
+        // el stream (crear un enumerador NUEVO y pedirle su primer elemento — un
+        // enumerador que ya lanzó una excepción no se puede "continuar", hay que
+        // reconstruirlo): una vez que ese primer elemento llegó, cualquier fallo
+        // posterior se deja propagar tal cual, sin reintentar.
+        IAsyncEnumerator<StreamingChatMessageContent>? enumerator = null;
+        try
         {
-            if (!string.IsNullOrEmpty(streamChunk.Content))
+            var hasNext = await _resiliencePipeline.ExecuteAsync(async ct =>
             {
-                yield return streamChunk.Content;
+                if (enumerator is not null)
+                    await enumerator.DisposeAsync();
+
+                enumerator = chatService
+                    .GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, _kernel, ct)
+                    .GetAsyncEnumerator(ct);
+                return await enumerator.MoveNextAsync();
+            }, cancellationToken);
+
+            while (hasNext)
+            {
+                var content = enumerator!.Current.Content;
+                if (!string.IsNullOrEmpty(content))
+                {
+                    yield return content;
+                }
+
+                hasNext = await enumerator.MoveNextAsync();
             }
+        }
+        finally
+        {
+            if (enumerator is not null)
+                await enumerator.DisposeAsync();
         }
 
         _logger.LogInformation("[RAG] Streaming complete for query: {Query}", query);

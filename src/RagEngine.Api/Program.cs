@@ -704,14 +704,37 @@ try
         // — ver Fase 1 punto 4 de docs/analisis-futuro/modo-respuesta-simple-codigo.md.
         var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
-        await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, responseMode, history,
-            promptFamily,
-            onStatus: async (message, ct) => await SendAsync("status", new { message }),
-            cancellationToken: cancellationToken))
+        try
         {
-            answer.Append(fragment);
-            await SendAsync("token", new { text = fragment });
+            await foreach (var fragment in generation.AskStreamingAsync(
+                request.Query, collection, topK, minScore, rerank, responseMode, history,
+                promptFamily,
+                onStatus: async (message, ct) => await SendAsync("status", new { message }),
+                cancellationToken: cancellationToken))
+            {
+                answer.Append(fragment);
+                await SendAsync("token", new { text = fragment });
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // El cliente cortó la conexión — no hay a quién mandarle un evento de error.
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Ítem 8.e: para acá la respuesta SSE ya se abrió (los eventos "status"/
+            // "sources" de arriba ya salieron), así que los headers ya se escribieron —
+            // no se puede convertir esto en un ProblemDetails 500 como hace
+            // UseExceptionHandler para /api/ask, que sí puede porque nada se había
+            // escrito todavía. Tampoco se reintenta: si ya se emitieron fragmentos de
+            // "token", reabrir la generación duplicaría lo que el cliente ya recibió
+            // (ChatAnswerStreamer ya no reintenta una vez abierto el stream, por la
+            // misma razón). Se cierra limpio con un evento "error" y se corta acá, sin
+            // "done" ni el log de QueryEvent de abajo, que asume una respuesta completa.
+            queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
+            await SendAsync("error", new { message = "Ocurrió un error generando la respuesta." });
+            return;
         }
         generationStopwatch.Stop();
 

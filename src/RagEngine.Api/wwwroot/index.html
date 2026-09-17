@@ -538,6 +538,11 @@ async function runAskStream() {
           currentTurn.content += payload.text;
           assistantBubble.textContent += payload.text;
           if (isNearBottom()) scrollToBottom();
+        } else if (eventName === 'error') {
+          // Ítem 8.e: el backend ya cerró el SSE limpio tras un fallo de generación
+          // (no reintenta ni convierte esto en un HTTP de error — los headers ya
+          // salieron). Mostrar el mensaje y tratar la conexión como terminada.
+          statusEl.textContent = payload.message || 'Ocurrió un error generando la respuesta.';
         } else if (eventName === 'done') {
           statusEl.textContent = '';
           renderChatLog(); // agrega el desplegable de fuentes ya con la respuesta completa

@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Services.Generation;
 using RagEngine.Core.Services.Summary;
@@ -102,6 +105,37 @@ public static class GenerationServiceExtensions
             return builder.Build();
         });
 
+        // ── 2b. Resilience pipeline para el HttpClient de chat conversacional ──
+        //
+        //  Ítem 8.e: hasta ahora el HttpClient de arriba sólo tenía Timeout — sin
+        //  retry ni circuit breaker, a diferencia de Qdrant y del generador de
+        //  resúmenes (ServiceCollectionExtensions.cs), que ya usan
+        //  AddResiliencePipeline. Retry corto (igual que el resumen: la interacción
+        //  es conversacional, un usuario esperando en pantalla no debe absorber
+        //  backoff largo) + circuit breaker (igual que Qdrant: si Ollama está caído,
+        //  cortar en vez de seguir intentando conexión por conexión). Ver
+        //  ChatAnswerStreamer.StreamAsync para por qué el pipeline sólo cubre la
+        //  apertura del stream y nunca reintenta una vez que ya se emitió contenido.
+        services.AddResiliencePipeline(ChatAnswerStreamer.ResiliencePipelineName, builder =>
+        {
+            builder.AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                MaxRetryAttempts = 2,
+                Delay = TimeSpan.FromSeconds(1),
+                BackoffType = DelayBackoffType.Constant
+            });
+
+            builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                FailureRatio = 0.5,
+                SamplingDuration = TimeSpan.FromSeconds(30),
+                MinimumThroughput = 5,
+                BreakDuration = TimeSpan.FromSeconds(15)
+            });
+        });
+
         // ── 3. Colaboradores de generación (ítem 2.2: un rol, una clase) ─────
         //
         //  Singleton porque todas sus dependencias lo son (Kernel, SummaryCache,
@@ -120,7 +154,8 @@ public static class GenerationServiceExtensions
             sp.GetRequiredService<ILogger<GenerationContextAssembler>>()));
         services.AddSingleton(sp => new ChatAnswerStreamer(
             sp.GetRequiredService<Kernel>(),
-            sp.GetRequiredService<ILogger<ChatAnswerStreamer>>()));
+            sp.GetRequiredService<ILogger<ChatAnswerStreamer>>(),
+            sp.GetRequiredService<Polly.Registry.ResiliencePipelineProvider<string>>()));
 
         // ── 4. Register the RAG orchestrator ─────────────────────────────────
         //

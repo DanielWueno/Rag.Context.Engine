@@ -305,7 +305,11 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     continue;
                 }
 
-                processedFiles.Add(artifact.AbsolutePath);
+                // Misma clave que ChunkBuilder.BuildIdentityKey (ítem 8.f): el barrido
+                // de obsoletos compara contra "file_path" en el payload, que ya no es
+                // la ruta absoluta, así que la comparación debe usar la misma clave.
+                processedFiles.Add(ChunkBuilder.BuildIdentityKey(
+                    request.Options.RepositoryName, artifact.RelativePath));
 
                 // Explicit GC hint after processing large C# files with Roslyn
                 if (artifact.SizeBytes > 100_000)

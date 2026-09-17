@@ -62,6 +62,20 @@ internal static class ChunkBuilder
         $"// Repository: {repositoryName}\n// File: {relativePath}";
 
     /// <summary>
+    /// Clave de identidad estable de un archivo dentro de un repositorio (ítem 8.f).
+    /// Se usa para derivar el Id determinista del chunk y el "file_path" del
+    /// payload, en vez de <see cref="RawArtifact.AbsolutePath"/>: la ruta absoluta
+    /// depende de dónde corrió el proceso que ingestó (host nativo vs bind mount
+    /// del contenedor), así que el mismo repositorio ingestado desde dos rutas
+    /// producía el doble de puntos en vez de reemplazar los existentes. Se
+    /// normalizan los separadores porque <c>Path.GetRelativePath</c> puede emitir
+    /// backslashes en Windows y el mismo archivo debe identificarse igual en
+    /// cualquier sistema operativo.
+    /// </summary>
+    public static string BuildIdentityKey(string repositoryName, string relativePath) =>
+        $"{repositoryName}/{relativePath.Replace('\\', '/')}";
+
+    /// <summary>
     /// Arma un chunk calculando su hash y su Id determinista. El Id se deriva de la
     /// línea inicial y del hash del contenido: mismo contenido en la misma posición
     /// produce siempre el mismo Id, que es lo que hace idempotente el re-upsert.
@@ -82,10 +96,11 @@ internal static class ChunkBuilder
         IReadOnlyList<string>? consumedSymbols = null)
     {
         var hash = ContentHasher.Compute(content);
+        var identityKey = BuildIdentityKey(repositoryName, artifact.RelativePath);
 
         return new CodeChunk
         {
-            Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
+            Id = DeterministicGuid.CreateForChunk(identityKey, startLine, hash),
             Content = content,
             EnrichedContent = enrichedContent,
             Type = type,
@@ -93,7 +108,7 @@ internal static class ChunkBuilder
             DefinedSymbols = definedSymbols ?? Array.Empty<string>(),
             ConsumedSymbols = consumedSymbols ?? Array.Empty<string>(),
             Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
+                FilePath: identityKey,
                 RelativeFilePath: artifact.RelativePath,
                 Language: language ?? artifact.Language,
                 Namespace: namespaceName,

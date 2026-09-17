@@ -69,6 +69,8 @@ try
             services.AddTransient<AskCommand>();
             services.AddTransient<DoctorCommand>();
             services.AddTransient<EvalCommand>();
+            services.AddTransient<AuditPurgeCommand>();
+            services.AddTransient<AuditHoldCommand>();
         })
         .Build();
 
@@ -112,6 +114,21 @@ app.Configure(config =>
         .WithExample(["eval"])
         .WithExample(["eval", "--collection", "innovapp-docs", "--rerank"])
         .WithExample(["eval", "--eval-set", "docs/eval/innovapp-docs.eval-set.json", "--json"]);
+
+    config.AddBranch("audit", audit =>
+    {
+        audit.SetDescription("Retención y minimización de logs de auditoría (ítem 12.9).");
+
+        audit.AddCommand<AuditPurgeCommand>("purge")
+            .WithDescription("Purga eventos de auditoría vencidos (respeta retención legal).")
+            .WithExample(["audit", "purge", "--older-than-days", "90"])
+            .WithExample(["audit", "purge", "--dry-run"]);
+
+        audit.AddCommand<AuditHoldCommand>("hold")
+            .WithDescription("Activa o libera la retención legal de un evento de auditoría.")
+            .WithExample(["audit", "hold", "evt-1234"])
+            .WithExample(["audit", "hold", "evt-1234", "--release"]);
+    });
 
     config.SetExceptionHandler((ex, _) =>
     {

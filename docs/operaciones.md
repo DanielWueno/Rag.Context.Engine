@@ -109,6 +109,92 @@ archivo sigue siendo legible con `sqlite3` aunque el escritor deje de usarse. Si
 habilita un acceso empresarial real y no hay forma de auditarlo con un actor verificado,
 **rechazar la operación o aplicar una política explícita — nunca continuar en silencio**.
 
+## Retención y minimización de logs (ítem `12.9-retencion-del-log`)
+
+Dos mecanismos independientes, uno por tipo de registro. Ninguno se activa ni purga nada por sí
+solo — ambos requieren una acción/configuración explícita del operador.
+
+### 1. Logs operativos (`rag-api-*.json` / `rag-engine-*.json`) — minimización por defecto
+
+El `QueryEvent` que registra cada consulta **NO incluye por defecto** la pregunta, la respuesta
+generada ni las fuentes citadas — sólo metadatos (colección, TopK, MinScore, duración, y
+`QueryLength`/`AnswerLength`/`ResultCount` en vez del contenido). Esto es así tanto en el evento de
+éxito como en el `LogError` que se emite si `/api/ask/stream` falla a mitad de la generación.
+
+Plazo operativo (independiente de la auditoría): ya existente desde antes de este ítem —
+`retainedFileCountLimit` en la configuración de Serilog de cada host (`Program.cs`): 30 días para
+la API, 7 días para el CLI. Es una retención por rotación de archivo, no requiere acción manual.
+
+**Diagnóstico local acotado** (opt-in, con caducidad obligatoria y aviso): un operador que necesita
+ver preguntas/respuestas reales para depurar un problema puntual lo activa así, en la sección
+`Logging` de `appsettings.json`:
+
+```json
+{
+  "Logging": {
+    "EnableQueryContentDiagnostics": true,
+    "QueryContentDiagnosticsExpiresAt": "2026-09-20T00:00:00Z"
+  }
+}
+```
+
+- Sin `QueryContentDiagnosticsExpiresAt` (o ya vencida), el diagnóstico **no tiene efecto** — se
+  registra un `LogWarning` al arrancar el host avisando que quedó inactivo, para que un
+  "se me olvidó apagarlo" no pase inadvertido.
+- El contrato de expiración (`RagEngine.Core.Diagnostics.QueryContentDiagnostics`) está cubierto
+  por `QueryContentDiagnosticsTests` con reloj sintético: al instante exacto de la caducidad, ya
+  está inactivo (borde estricto, a favor de minimizar).
+- Activarlo no cambia lo que se **audita** (sección anterior): la auditoría nunca guarda contenido,
+  con o sin diagnóstico activo.
+
+### 2. Auditoría (`audit.sqlite3`) — retención diferenciada con retención legal
+
+A diferencia de los logs operativos, la auditoría es historia inmutable y **no se purga
+automáticamente al arrancar nada**. La purga es una acción explícita del operador:
+
+```bash
+# Ver cuántos eventos serían purgados sin borrar nada:
+rag audit purge --dry-run --older-than-days 90
+
+# Purgar de verdad los eventos con Timestamp anterior a (ahora - 90 días):
+rag audit purge --older-than-days 90
+
+# Sin --older-than-days, usa Audit:RetentionDays de la configuración; si tampoco
+# está configurado, el comando falla en vez de asumir un plazo arbitrario.
+```
+
+| Clave | Efecto |
+|---|---|
+| `Audit:RetentionDays` | Plazo por defecto (en días) para `rag audit purge` sin `--older-than-days`. `null` (default, sin configurar) obliga a pasar el plazo explícitamente cada vez. |
+
+**Retención legal**: un evento marcado con retención legal activa **nunca** se purga, sin importar
+cuán vencido esté su plazo operativo.
+
+```bash
+rag audit hold evt-1234              # activa la retención legal
+rag audit hold evt-1234 --release    # la libera (vuelve a ser elegible para purga)
+```
+
+El contrato de purga (`IAuditEventStore.PurgeExpiredAsync`/`SetLegalHoldAsync`) está cubierto por
+`AuditEventStoreTests` con timestamps sintéticos fijos (nunca `DateTimeOffset.UtcNow` dentro del
+store — el reloj es el parámetro `olderThan` que decide el llamador): se fija el borde exacto del
+plazo (`Timestamp == olderThan` se conserva, `Timestamp < olderThan` se purga) y que un evento con
+retención legal activa sobrevive aunque esté vencido por años.
+
+**Rollback**: igual que en auditoría — respaldar el archivo `audit.sqlite3` antes de purgar. Lo ya
+purgado no se recupera; `rag audit purge --dry-run` existe justamente para ensayar antes de borrar.
+
+```bash
+cp ~/Library/Application\ Support/rag-engine/audit.sqlite3 /tmp/audit.sqlite3.bak-antes-de-purgar
+```
+
+### La política empresarial real de retención NO está definida aquí
+
+Los plazos de ejemplo (90 días, etc.) son ilustrativos, no una política aprobada. Cuando exista una
+política empresarial de retención/compliance real, se configura explícitamente con
+`Audit:RetentionDays` y `rag audit purge` — este ítem construye el mecanismo, no inventa el
+cumplimiento de una política que todavía no existe.
+
 ## Perfil publicado y TLS (ítem `12.8-secretos-y-tls`)
 
 Por default (`Transport:Published=false`) este host es **HTTP puro, loopback**: el

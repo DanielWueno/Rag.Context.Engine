@@ -66,6 +66,15 @@ public sealed record AuditEvent
     public required DateTimeOffset Timestamp { get; init; }
 
     public required int Version { get; init; }
+
+    /// <summary>
+    /// Retención legal activa (ítem 12.9): mientras sea <c>true</c>,
+    /// <see cref="Abstractions.IAuditEventStore.PurgeExpiredAsync"/> nunca borra este
+    /// evento, sin importar cuánto haya expirado su plazo operativo. Se marca
+    /// explícitamente vía <see cref="Abstractions.IAuditEventStore.SetLegalHoldAsync"/>
+    /// — nunca se infiere de la operación o el actor.
+    /// </summary>
+    public bool LegalHold { get; init; }
 }
 
 /// <summary>Nombres estables de operación usados como <see cref="AuditEvent.Operation"/>.</summary>

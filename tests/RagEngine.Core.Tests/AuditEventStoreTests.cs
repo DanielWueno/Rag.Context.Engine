@@ -162,4 +162,74 @@ public class AuditEventStoreTests : IDisposable
         var recuperado = Assert.Single(await store.ListAsync());
         Assert.Null(recuperado.Collection);
     }
+
+    // ── Ítem 12.9: retención con reloj controlado ────────────────────────────────
+    // El "reloj" acá es el parámetro olderThan de PurgeExpiredAsync (nunca
+    // DateTimeOffset.UtcNow dentro del store) — así el borde exacto del plazo se
+    // fija con timestamps sintéticos, sin depender de un timer real.
+    private static readonly DateTimeOffset Ahora = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Cutoff = Ahora.AddDays(-90);
+
+    [Fact]
+    public async Task Purgar_conserva_exactamente_los_eventos_dentro_del_plazo_y_expira_los_anteriores()
+    {
+        var store = SqliteAuditEventStore.Open(_rutaTemporal);
+        var dentro = Evento("evt-dentro", AuditOutcome.Success) with { Timestamp = Cutoff.AddSeconds(1) };
+        var justoEnElBorde = Evento("evt-borde", AuditOutcome.Success) with { Timestamp = Cutoff };
+        var vencido = Evento("evt-vencido", AuditOutcome.Success) with { Timestamp = Cutoff.AddSeconds(-1) };
+        await store.RecordAsync(dentro);
+        await store.RecordAsync(justoEnElBorde);
+        await store.RecordAsync(vencido);
+
+        var purgados = await store.PurgeExpiredAsync(Cutoff);
+
+        // Timestamp < olderThan se purga; Timestamp == olderThan se conserva (borde inclusivo
+        // a favor de conservar, nunca de borrar de más).
+        Assert.Equal(1, purgados);
+        var restantes = (await store.ListAsync()).Select(e => e.EventId).ToHashSet();
+        Assert.Equal(new HashSet<string> { "evt-dentro", "evt-borde" }, restantes);
+    }
+
+    [Fact]
+    public async Task Purgar_nunca_borra_un_evento_con_retencion_legal_activa_aunque_este_vencido()
+    {
+        var store = SqliteAuditEventStore.Open(_rutaTemporal);
+        var vencidoPeroRetenido = Evento("evt-retenido", AuditOutcome.Success) with { Timestamp = Cutoff.AddDays(-365) };
+        await store.RecordAsync(vencidoPeroRetenido);
+        await store.SetLegalHoldAsync("evt-retenido", legalHold: true);
+
+        var purgados = await store.PurgeExpiredAsync(Cutoff);
+
+        Assert.Equal(0, purgados);
+        var restante = Assert.Single(await store.ListAsync());
+        Assert.Equal("evt-retenido", restante.EventId);
+        Assert.True(restante.LegalHold);
+    }
+
+    [Fact]
+    public async Task Liberar_la_retencion_legal_vuelve_a_dejar_el_evento_elegible_para_purga()
+    {
+        var store = SqliteAuditEventStore.Open(_rutaTemporal);
+        var vencido = Evento("evt-x", AuditOutcome.Success) with { Timestamp = Cutoff.AddDays(-1) };
+        await store.RecordAsync(vencido);
+        await store.SetLegalHoldAsync("evt-x", legalHold: true);
+        await store.SetLegalHoldAsync("evt-x", legalHold: false);
+
+        var purgados = await store.PurgeExpiredAsync(Cutoff);
+
+        Assert.Equal(1, purgados);
+        Assert.Empty(await store.ListAsync());
+    }
+
+    [Fact]
+    public async Task SetLegalHoldAsync_sobre_un_event_id_inexistente_no_falla()
+    {
+        var store = SqliteAuditEventStore.Open(_rutaTemporal);
+
+        // No-op silencioso — nada que corregir si el operador pasa un id equivocado
+        // (typo, evento ya purgado); el contrato explícitamente no lanza.
+        await store.SetLegalHoldAsync("evt-no-existe", legalHold: true);
+
+        Assert.Empty(await store.ListAsync());
+    }
 }

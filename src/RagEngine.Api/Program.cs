@@ -126,6 +126,23 @@ try
 
     var app = builder.Build();
 
+    // Ítem 12.9: si el operador activó el diagnóstico de contenido de consulta pero
+    // quedó inactivo (caducó o no configuró la fecha de expiración), se avisa una vez
+    // al arrancar — un "se me olvidó apagarlo" no debe pasar inadvertido, y tampoco
+    // debe hacer que el diagnóstico se reactive solo.
+    {
+        var loggingOpts = app.Services.GetRequiredService<IOptions<LoggingOptions>>().Value;
+        if (QueryContentDiagnostics.IsExpiredOrMisconfigured(loggingOpts, DateTimeOffset.UtcNow))
+        {
+            app.Services.GetRequiredService<ILogger<Program>>().LogWarning(
+                "Logging:EnableQueryContentDiagnostics está activo pero " +
+                "Logging:QueryContentDiagnosticsExpiresAt ({ExpiresAt}) ya caducó o no está " +
+                "configurado — el QueryEvent NO incluirá pregunta/respuesta/fuentes hasta que " +
+                "se reconfigure una nueva caducidad futura.",
+                loggingOpts.QueryContentDiagnosticsExpiresAt);
+        }
+    }
+
     // Ítem 12.1: rate limiting + cota de concurrencia por actor sobre las tres rutas de
     // recuperación/generación. Se lee de app.Configuration (no builder.Configuration):
     // los overrides de configuración que WebApplicationFactory<Program> inyecta para
@@ -402,6 +419,32 @@ try
         }
     }
 
+    // Ítem 12.9: por defecto el QueryEvent de logs operativos (rag-api-*.json) NO
+    // lleva pregunta, respuesta ni fuentes citadas — sólo metadatos. Sólo se incluye
+    // contenido si el operador activó el diagnóstico Y configuró una caducidad Y esa
+    // caducidad todavía no pasó (QueryContentDiagnostics.IsActive, con el reloj real
+    // pasado explícitamente para que la lógica de expiración sea la misma que
+    // verifican los tests puros de esa clase). Un diagnóstico activado pero ya
+    // caducado o mal configurado se avisa una vez al arrancar el host (ver más abajo,
+    // junto al resto del bootstrap), no en cada request.
+    static object BuildSearchEventContent(
+        IOptions<LoggingOptions> loggingOptions, string query, IEnumerable<object> sources)
+    {
+        var sourceList = sources.ToList();
+        return QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow)
+            ? new { Query = query, Sources = sourceList }
+            : new { QueryLength = query.Length, ResultCount = sourceList.Count };
+    }
+
+    static object BuildAskEventContent(
+        IOptions<LoggingOptions> loggingOptions, string query, string answer, IEnumerable<object> sources)
+    {
+        var sourceList = sources.ToList();
+        return QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow)
+            ? new { Query = query, Answer = answer, Sources = sourceList }
+            : new { QueryLength = query.Length, AnswerLength = answer.Length, ResultCount = sourceList.Count };
+    }
+
     /// <summary>
     /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore para una request.
     /// El valor explícito del cliente SIEMPRE gana; en su ausencia, el perfil de la
@@ -575,6 +618,7 @@ try
         IRetrievalProfileResolver profileResolver,
         IAuditEventStore auditStore,
         IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -640,13 +684,13 @@ try
             {
                 Type = "search",
                 Collection = collection,
-                request.Query,
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
                 DurationMs = stopwatch.ElapsedMilliseconds,
-                ResultCount = sources.Count,
-                Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
+                Content = BuildSearchEventContent(
+                    loggingOptions, request.Query,
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
             });
 
         await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
@@ -666,6 +710,7 @@ try
         IRetrievalProfileResolver profileResolver,
         IAuditEventStore auditStore,
         IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -743,7 +788,6 @@ try
             {
                 Type = "ask",
                 Collection = collection,
-                request.Query,
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
@@ -751,8 +795,9 @@ try
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
-                Answer = answerText,
-                Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
+                Content = BuildAskEventContent(
+                    loggingOptions, request.Query, answerText,
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
             });
 
         await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
@@ -777,6 +822,7 @@ try
         IRetrievalProfileResolver profileResolver,
         IAuditEventStore auditStore,
         IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -880,7 +926,12 @@ try
             // (ChatAnswerStreamer ya no reintenta una vez abierto el stream, por la
             // misma razón). Se cierra limpio con un evento "error" y se corta acá, sin
             // "done" ni el log de QueryEvent de abajo, que asume una respuesta completa.
-            queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
+            // Ítem 12.9: el mensaje de error NO incluye la pregunta por defecto — mismo
+            // criterio de minimización que el QueryEvent de abajo.
+            if (QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow))
+                queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
+            else
+                queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream (longitud de query: {QueryLength})", request.Query.Length);
             await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
                 AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
             await SendAsync("error", new { message = "Ocurrió un error generando la respuesta." });
@@ -897,7 +948,6 @@ try
                 Type = "ask",
                 Transport = "sse",
                 Collection = collection,
-                request.Query,
                 TopK = topK,
                 MinScore = minScore,
                 Rerank = rerank,
@@ -905,8 +955,9 @@ try
                 HistoryTurns = history?.Count ?? 0,
                 DurationMs = stopwatch.ElapsedMilliseconds,
                 GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
-                Answer = answer.ToString(),
-                Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
+                Content = BuildAskEventContent(
+                    loggingOptions, request.Query, answer.ToString(),
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
             });
 
         await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,

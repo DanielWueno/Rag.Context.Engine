@@ -225,6 +225,32 @@ curl -sk https://127.0.0.1:5443/api/health   # handshake TLS + 200 sobre el cert
 Sin nada de esto (perfil local, default), el arranque no cambia. Ver el runbook con el
 ejemplo de proxy con TLS externo en [docs/operaciones.md](operaciones.md#perfil-publicado-y-tls-ítem-128-secretos-y-tls).
 
+## Minimización y retención de logs (ítem `12.9-retencion-del-log`)
+
+```json
+{
+  "Logging": {
+    "EnableQueryContentDiagnostics": false,
+    "QueryContentDiagnosticsExpiresAt": null
+  },
+  "Audit": {
+    "RetentionDays": null
+  }
+}
+```
+
+| Clave | Default | Efecto |
+|---|---|---|
+| `Logging:EnableQueryContentDiagnostics` | `false` | Con `true` **y** una `QueryContentDiagnosticsExpiresAt` futura, el `QueryEvent` de logs operativos incluye pregunta/respuesta/fuentes. Sin caducidad futura, no tiene efecto (se avisa al arrancar). |
+| `Logging:QueryContentDiagnosticsExpiresAt` | `null` | Caducidad obligatoria del diagnóstico anterior — ISO-8601 con offset. |
+| `Audit:RetentionDays` | `null` | Plazo por defecto (días) para `rag audit purge` sin `--older-than-days`. `null` obliga a pasar el plazo explícitamente. |
+
+Por defecto (sin configurar nada) el `QueryEvent` **nunca** incluye contenido de la consulta, y
+`rag audit purge` **nunca** se ejecuta solo — la retención de auditoría es siempre una acción
+manual del operador. Detalle completo, ejemplos de `rag audit purge`/`rag audit hold` y el
+contrato de retención legal en
+[docs/operaciones.md](operaciones.md#retención-y-minimización-de-logs-ítem-129-retencion-del-log).
+
 ## Declaraciones cortas (`Ingestion:IndexShortTypeDeclarations`)
 
 Experimento local de 5.h, **desactivado por defecto**. Con `true`, una declaración

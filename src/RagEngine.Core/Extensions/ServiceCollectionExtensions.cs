@@ -216,6 +216,12 @@ public static class ServiceCollectionExtensions
             return SqliteAuditEventStore.Open(auditOpts.DbPath);
         });
 
+        // ── Minimización/retención de logs operativos (ítem 12.9): por defecto no
+        // hay diagnóstico de contenido de consulta; el operador lo activa explícitamente
+        // con una caducidad obligatoria (ver QueryContentDiagnostics).
+        services.Configure<LoggingOptions>(
+            configuration.GetSection(LoggingOptions.SectionName));
+
         // ── 5. Chunking Strategies: Auto-Discovery ────────────────────────────
         services.AddSingleton<FallbackChunkingStrategy>();
 

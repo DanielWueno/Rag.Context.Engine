@@ -24,4 +24,22 @@ public interface IAuditEventStore
     /// volumen que la justificaría todavía).
     /// </summary>
     Task<IReadOnlyList<AuditEvent>> ListAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Marca (o desmarca) la retención legal de un evento (ítem 12.9). Un evento con
+    /// retención legal activa nunca es elegible para <see cref="PurgeExpiredAsync"/>,
+    /// sin importar cuánto haya excedido su plazo operativo. No-op silencioso si
+    /// <paramref name="eventId"/> no existe (no hay nada que fallar: idempotente).
+    /// </summary>
+    Task SetLegalHoldAsync(string eventId, bool legalHold, CancellationToken ct = default);
+
+    /// <summary>
+    /// Borra permanentemente los eventos con <c>Timestamp &lt; olderThan</c> que NO
+    /// tengan retención legal activa. Acción explícita del operador (nunca se llama
+    /// automáticamente al arrancar) — quien la invoca decide <paramref name="olderThan"/>
+    /// (típicamente <c>now - RetentionDays</c>), lo que hace el borde del plazo
+    /// verificable con un reloj de prueba sin depender de <see cref="DateTimeOffset.UtcNow"/>
+    /// dentro del store. Devuelve el número de filas borradas.
+    /// </summary>
+    Task<int> PurgeExpiredAsync(DateTimeOffset olderThan, CancellationToken ct = default);
 }

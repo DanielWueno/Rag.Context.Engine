@@ -3,7 +3,7 @@ namespace RagEngine.Core.Abstractions;
 /// <summary>
 /// Puerto de la caché de resúmenes de negocio (clave = content_hash + prompt_version).
 /// La capa de aplicación y los hosts dependen de esta interfaz, nunca de la clase
-/// concreta SQLite (<c>RagEngine.Core.Services.Summary.SummaryCache</c>) — así un
+/// concreta SQLite (<c>RagEngine.Core.Infrastructure.Summary.SummaryCache</c>) — así un
 /// backend distinto (ítem 13.2-kv-a-postgres) se agrega como otro adaptador sin
 /// tocar consumidores.
 /// </summary>

@@ -14,7 +14,7 @@ using RagEngine.Core.Infrastructure.Scanning;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using RagEngine.Core.Utilities;
 
 namespace RagEngine.Core.Extensions;

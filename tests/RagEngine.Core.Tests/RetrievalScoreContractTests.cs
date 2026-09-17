@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Services.Generation;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using RagEngine.Core.Utilities;
 using Xunit;
 using Xunit.Sdk;

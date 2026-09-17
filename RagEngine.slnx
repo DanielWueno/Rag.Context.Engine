@@ -9,5 +9,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj" />
+    <Project Path="tests/RagEngine.Architecture.Tests/RagEngine.Architecture.Tests.csproj" />
   </Folder>
 </Solution>

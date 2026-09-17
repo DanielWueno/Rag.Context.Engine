@@ -8,7 +8,8 @@ using Polly.CircuitBreaker;
 using Polly.Retry;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Services.Generation;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Generation;
+using RagEngine.Core.Infrastructure.Summary;
 
 namespace RagEngine.Core.Extensions;
 

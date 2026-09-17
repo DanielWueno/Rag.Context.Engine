@@ -11,7 +11,7 @@ using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Infrastructure.Vectorization;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using Spectre.Console;
 using Spectre.Console.Cli;
 

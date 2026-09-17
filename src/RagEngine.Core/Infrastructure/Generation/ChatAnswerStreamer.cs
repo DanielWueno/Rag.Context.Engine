@@ -6,7 +6,7 @@ using Polly;
 using Polly.Registry;
 using RagEngine.Core.Domain;
 
-namespace RagEngine.Core.Services.Generation;
+namespace RagEngine.Core.Infrastructure.Generation;
 
 /// <summary>
 /// Habla con el LLM: arma el <see cref="ChatHistory"/> (prompt de sistema + turnos

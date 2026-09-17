@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using RagEngine.Core.Services.Generation.Prompts;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using Xunit;
 
 namespace RagEngine.Core.Tests;

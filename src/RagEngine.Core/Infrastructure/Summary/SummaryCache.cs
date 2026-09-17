@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
 using RagEngine.Core.Abstractions;
 
-namespace RagEngine.Core.Services.Summary;
+namespace RagEngine.Core.Infrastructure.Summary;
 
 /// <summary>
 /// Caché SQLite de resúmenes de negocio, compartida entre TODAS las colecciones

@@ -9,7 +9,7 @@ using RagEngine.Core.Extensions;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using Xunit;
 
 namespace RagEngine.Core.Tests;

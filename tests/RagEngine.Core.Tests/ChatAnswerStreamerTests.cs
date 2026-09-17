@@ -8,7 +8,7 @@ using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Retry;
 using RagEngine.Core.Domain;
-using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Infrastructure.Generation;
 using Xunit;
 
 namespace RagEngine.Core.Tests;

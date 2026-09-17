@@ -12,7 +12,7 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
 
-namespace RagEngine.Core.Services.Summary;
+namespace RagEngine.Core.Infrastructure.Summary;
 
 /// <summary>
 /// Fallo de conexión con Ollama (host inalcanzable, timeout de transporte). Se

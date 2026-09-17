@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Services.Generation;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using Xunit;
 
 namespace RagEngine.Core.Tests;

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Data.Sqlite;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using Xunit;
 
 namespace RagEngine.Core.Tests;

@@ -15,7 +15,7 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Services.Generation.Prompts;
-using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Infrastructure.Summary;
 using RagEngine.Core.Utilities;
 using Xunit;
 

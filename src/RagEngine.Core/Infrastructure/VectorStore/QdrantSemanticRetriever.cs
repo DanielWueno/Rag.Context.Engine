@@ -301,16 +301,18 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         foreach (var point in denseResults.Concat(sparseResults).Concat(resumenResults))
             pointsById.TryAdd(DeterministicVectorQuery.ChunkId(point), point);
 
+        // Ítem 9.7: el mismo núcleo de fusión (RankFusion.Fuse) que calibra el sweep de
+        // pesos en poc/RecallEvaluator.RankByRrf. No reintroducir aquí una copia de la
+        // fórmula: cualquier cambio de k, pesos o desempate debe pasar por ese único
+        // punto para que calibración y producción sigan midiendo el mismo algoritmo.
         var k = fusionOptions.RrfK;
-        var scores = pointsById.Keys.Select(id =>
+        var branches = new[]
         {
-            double score = 0.0;
-            if (denseRank.TryGetValue(id, out var rc)) score += fusionOptions.WeightCodigo / (k + rc);
-            if (sparseRank.TryGetValue(id, out var rs)) score += fusionOptions.WeightSparse / (k + rs);
-            if (resumenRank.TryGetValue(id, out var rr)) score += fusionOptions.WeightResumen / (k + rr);
-            return (Id: id, Score: score);
-        });
-        var scored = RankingOrder.Descending(scores, x => x.Score, x => x.Id)
+            new RankFusion.Branch<string>(denseRank, fusionOptions.WeightCodigo),
+            new RankFusion.Branch<string>(sparseRank, fusionOptions.WeightSparse),
+            new RankFusion.Branch<string>(resumenRank, fusionOptions.WeightResumen),
+        };
+        var scored = RankFusion.Fuse(pointsById.Keys, k, branches, StringComparer.Ordinal)
         .Take((int)finalLimit)
         .ToList();
 

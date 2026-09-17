@@ -262,22 +262,24 @@ public sealed class RecallEvaluator
         return scored.OrderByDescending(x => x.Sim).Select(x => x.Idx).ToArray();
     }
 
-    /// <summary>RRF ponderado sobre N ramas: score(doc) = Σ_r w_r / (k + rank_r(doc)).</summary>
+    /// <summary>
+    /// RRF ponderado sobre N ramas: score(doc) = Σ_r w_r / (k + rank_r(doc)). Ítem 9.7:
+    /// delega en <see cref="RankFusion.Fuse{TId}"/>, el mismo núcleo que usa
+    /// <c>QdrantSemanticRetriever.SearchWeightedFusionAsync</c> en producción — antes de
+    /// este ítem el desempate de un score exacto dependía del orden de enumeración del
+    /// <c>Dictionary</c> interno, no de un criterio determinista como en producción.
+    /// </summary>
     private int[] RankByRrf(int count, (Dictionary<int, int> Rank, double Weight)[] branches)
         => RankByRrf(count, _settings.RrfK, branches);
 
     private static int[] RankByRrf(int count, double k, (Dictionary<int, int> Rank, double Weight)[] branches)
     {
-        var scores = new Dictionary<int, double>(count);
-        for (int c = 0; c < count; c++)
-        {
-            double s = 0.0;
-            foreach (var (rank, w) in branches)
-                if (rank.TryGetValue(c, out var r))
-                    s += w / (k + r);
-            scores[c] = s;
-        }
-        return scores.OrderByDescending(kv => kv.Value).Select(kv => kv.Key).ToArray();
+        var fusionBranches = branches
+            .Select(b => new RankFusion.Branch<int>(b.Rank, b.Weight))
+            .ToArray();
+        return RankFusion.Fuse(Enumerable.Range(0, count), k, fusionBranches, Comparer<int>.Default)
+            .Select(x => x.Id)
+            .ToArray();
     }
 
     private static Dictionary<int, int> ToRankMap(int[] ranked)

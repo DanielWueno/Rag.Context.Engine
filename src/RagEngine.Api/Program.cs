@@ -10,6 +10,7 @@ using RagEngine.Core.Abstractions;
 using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Services.Generation;
@@ -188,6 +189,10 @@ try
             .Distinct(StringComparer.Ordinal).ToArray();
         if (tenants.Length > 1)
             return null;
+        var modules = identity.FindAll("module").Select(claim => claim.Value)
+            .Distinct(StringComparer.Ordinal).ToArray();
+        if (modules.Length > 1)
+            return null;
 
         return new CollectionIdentity
         {
@@ -202,20 +207,26 @@ try
                 Scopes = identity.FindAll("scope")
                     .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                     .Distinct(StringComparer.Ordinal).ToArray(),
-                Tenant = tenants.SingleOrDefault()
+                Tenant = tenants.SingleOrDefault(),
+                Module = modules.SingleOrDefault()
             }
         };
     }
+
+    static RetrievalContext ResolveRetrievalContext(CollectionActor actor, CollectionAuthorizationOptions options) =>
+        options.Mode == AuthorizationMode.Local
+            ? RetrievalContext.Local
+            : RetrievalContext.ForAuthorized(actor.Tenant, actor.Module);
 
     /// <summary>
     /// Autoriza la colección y devuelve el manifiesto ya leído (o null si nunca se
     /// publicó uno) para que el llamador pueda resolver el perfil de recuperación
     /// (ítem 7.a) sin repetir el round-trip a Qdrant que ya hizo esta función.
     /// </summary>
-    static async Task<(IResult? Denied, CollectionManifest? Manifest)> AuthorizeCollectionAsync(
+    static async Task<(IResult? Denied, CollectionManifest? Manifest, CollectionActor Actor)> AuthorizeCollectionAsync(
         string collection,
         HttpContext http,
-        QdrantVectorStore store,
+        IVectorStoreAdmin store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
         CancellationToken cancellationToken)
@@ -229,7 +240,7 @@ try
             : Results.Problem(
                 title: "No tiene autorización para leer esta colección.",
                 statusCode: StatusCodes.Status403Forbidden);
-        return (denied, manifest);
+        return (denied, manifest, actor);
     }
 
     /// <summary>
@@ -418,7 +429,7 @@ try
     // el comportamiento no cambia — sigue siendo el listado completo de siempre.
     app.MapGet("/api/collections", async (
         Qdrant.Client.QdrantClient qdrant,
-        QdrantVectorStore store,
+        IVectorStoreAdmin store,
         HttpContext http,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
@@ -456,9 +467,10 @@ try
     app.MapPost("/api/search", async (
         RagQueryRequest request,
         HttpContext http,
-        QdrantVectorStore store,
+        IVectorStoreAdmin store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
@@ -467,10 +479,11 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
-        var (denied, manifest) = await AuthorizeCollectionAsync(
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
             return denied;
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
@@ -482,6 +495,7 @@ try
             request.Query,
             new RetrievalOptions
             {
+                Context = retrievalContext,
                 CollectionName = collection,
                 TopK = topK,
                 MinimumSimilarityScore = minScore,
@@ -515,9 +529,10 @@ try
     app.MapPost("/api/ask", async (
         RagQueryRequest request,
         HttpContext http,
-        QdrantVectorStore store,
+        IVectorStoreAdmin store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
@@ -526,10 +541,11 @@ try
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
 
         var collection = request.Collection ?? defaultCollection;
-        var (denied, manifest) = await AuthorizeCollectionAsync(
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
             return denied;
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
@@ -555,6 +571,7 @@ try
                 request.Query,
                 new RetrievalOptions
                 {
+                    Context = retrievalContext,
                     CollectionName = collection,
                     TopK = topK,
                     MinimumSimilarityScore = minScore,
@@ -571,7 +588,7 @@ try
         var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
         await foreach (var fragment in generation.AskStreamingAsync(
-            request.Query, collection, topK, minScore, rerank, responseMode, history,
+            request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
             promptFamily, onStatus: null, cancellationToken: cancellationToken))
         {
             answer.Append(fragment);
@@ -615,9 +632,10 @@ try
     app.MapPost("/api/ask/stream", async (
         RagQueryRequest request,
         HttpContext http,
-        QdrantVectorStore store,
+        IVectorStoreAdmin store,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
@@ -630,13 +648,14 @@ try
         }
 
         var collection = request.Collection ?? defaultCollection;
-        var (denied, manifest) = await AuthorizeCollectionAsync(
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
         {
             await denied.ExecuteAsync(http);
             return;
         }
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
@@ -674,6 +693,7 @@ try
                 request.Query,
                 new RetrievalOptions
                 {
+                    Context = retrievalContext,
                     CollectionName = collection,
                     TopK = topK,
                     MinimumSimilarityScore = minScore,
@@ -713,7 +733,7 @@ try
         try
         {
             await foreach (var fragment in generation.AskStreamingAsync(
-                request.Query, collection, topK, minScore, rerank, responseMode, history,
+                request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
                 promptFamily,
                 onStatus: async (message, ct) => await SendAsync("status", new { message }),
                 cancellationToken: cancellationToken))

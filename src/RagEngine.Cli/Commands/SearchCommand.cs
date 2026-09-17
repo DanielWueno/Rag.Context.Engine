@@ -44,6 +44,10 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         [System.ComponentModel.Description("Filtra por tenant explícito de payload (ítem 5.e). Sin valor: sin restricción.")]
         public string? Tenant { get; init; }
 
+        [CommandOption("--module")]
+        [System.ComponentModel.Description("Filtra por módulo lógico derivado de namespace/ruta relativa. Sin valor: sin restricción.")]
+        public string? Module { get; init; }
+
         [CommandOption("--rerank|-r")]
         public bool Rerank { get; init; }
 
@@ -74,12 +78,14 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
 
         var options = new RetrievalOptions
         {
+            Context = RetrievalContext.Local,
             CollectionName = settings.Collection,
             TopK = settings.TopK,
             MinimumSimilarityScore = settings.MinScore,
             FilterByLanguage = settings.Language,
             FilterByNamespace = settings.Namespace,
             FilterByTenant = settings.Tenant,
+            FilterByModule = settings.Module,
             UseReRanking = settings.Rerank
         };
 

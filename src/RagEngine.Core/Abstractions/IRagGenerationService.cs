@@ -64,6 +64,7 @@ public interface IRagGenerationService
     IAsyncEnumerable<string> AskStreamingAsync(
         string query,
         string collectionName,
+        RetrievalContext retrievalContext,
         int topK = 5,
         float minimumScore = 0.10f,
         bool useReRanking = false,

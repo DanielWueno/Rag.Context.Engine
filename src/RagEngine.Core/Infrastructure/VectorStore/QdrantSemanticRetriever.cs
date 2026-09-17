@@ -21,7 +21,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
     private readonly IReRanker _reRanker;
-    private readonly QdrantVectorStore _vectorStore;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
     private readonly RetrievalFusionOptions _fusionOptions;
     private readonly TwoHopOptions _twoHopOptions;
     private readonly IRetrievalProfileResolver _profileResolver;
@@ -33,7 +33,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
         IReRanker reRanker,
-        QdrantVectorStore vectorStore,
+        IVectorStoreAdmin vectorStoreAdmin,
         IOptions<RetrievalFusionOptions> fusionOptions,
         IOptions<TwoHopOptions> twoHopOptions,
         IRetrievalProfileResolver profileResolver,
@@ -44,7 +44,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
         _reRanker = reRanker;
-        _vectorStore = vectorStore;
+        _vectorStoreAdmin = vectorStoreAdmin;
         _fusionOptions = fusionOptions.Value;
         _twoHopOptions = twoHopOptions.Value;
         _profileResolver = profileResolver;
@@ -126,7 +126,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             // nunca un flag externo. Colecciones de 2 vectores siguen exactamente el
             // camino nativo de siempre (cero riesgo de regresión); solo las que tienen
             // el tercer vector "dense-resumen" pasan por la fusión ponderada manual.
-            var hasSummaryVector = await _vectorStore.HasSummaryVectorAsync(options.CollectionName, cancellationToken);
+            var hasSummaryVector = await _vectorStoreAdmin.HasSummaryVectorAsync(options.CollectionName, cancellationToken);
 
             IReadOnlyList<ScoredPoint> searchResults;
             if (!hasSummaryVector)
@@ -571,20 +571,65 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
 
         if (!string.IsNullOrWhiteSpace(options.FilterByTenant))
         {
-            conditions.Add(new Condition
-            {
-                Field = new FieldCondition
-                {
-                    Key = QdrantVectorStore.TenantPayloadKey,
-                    Match = new Match { Keyword = options.FilterByTenant }
-                }
-            });
+            conditions.Add(BuildTenantFilter(options.FilterByTenant));
+        }
+
+        if (options.Context.Mode == RetrievalContextMode.Authorized &&
+            !string.IsNullOrWhiteSpace(options.Context.Tenant))
+        {
+            conditions.Add(BuildTenantFilter(options.Context.Tenant));
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.FilterByModule))
+        {
+            conditions.Add(BuildModuleFilter(options.FilterByModule));
+        }
+
+        if (options.Context.Mode == RetrievalContextMode.Authorized &&
+            !string.IsNullOrWhiteSpace(options.Context.Module))
+        {
+            conditions.Add(BuildModuleFilter(options.Context.Module));
         }
 
         return conditions.Count == 0
             ? new Filter { MustNot = { excludeManifest } }
             : new Filter { Must = { conditions }, MustNot = { excludeManifest } };
     }
+
+    private static Condition BuildTenantFilter(string tenant) => new()
+    {
+        Field = new FieldCondition
+        {
+            Key = QdrantVectorStore.TenantPayloadKey,
+            Match = new Match { Keyword = tenant }
+        }
+    };
+
+    internal static Condition BuildModuleFilter(string module) => new()
+    {
+        Filter = new Filter
+        {
+            Should =
+            {
+                new Condition
+                {
+                    Field = new FieldCondition
+                    {
+                        Key = "namespace",
+                        Match = new Match { Text = module }
+                    }
+                },
+                new Condition
+                {
+                    Field = new FieldCondition
+                    {
+                        Key = "relative_path",
+                        Match = new Match { Text = module }
+                    }
+                }
+            }
+        }
+    };
 
     private static RetrievalResult MapToRetrievalResult(ScoredPoint point, RetrievalScoreScale scale)
     {

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Utilities;
 using Spectre.Console;
@@ -220,7 +221,7 @@ public sealed class DoctorCommand : AsyncCommand
         IReadOnlyList<CollectionSchemaReport> reports;
         try
         {
-            var store = _services.GetRequiredService<QdrantVectorStore>();
+            var store = _services.GetRequiredService<IVectorStoreAdmin>();
             reports = await store.InspectCollectionSchemasAsync(embeddingDimensions);
         }
         catch (Exception ex)

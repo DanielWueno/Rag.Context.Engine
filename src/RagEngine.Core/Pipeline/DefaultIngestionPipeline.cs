@@ -2,12 +2,9 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Qdrant.Client;
-using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
-using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Extensions;
 using RagEngine.Core.Services.Summary;
@@ -66,7 +63,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly ChunkingStrategyRouter _chunkRouter;
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
-    private readonly QdrantVectorStore _vectorStore;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
+    private readonly IVectorStoreWriter _vectorStoreWriter;
     private readonly IBusinessSummaryGenerator _summaryGenerator;
     private readonly SummaryCache _summaryCache;
     private readonly IOptions<IngestionOptions> _ingestionOptions;
@@ -78,7 +76,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ChunkingStrategyRouter chunkRouter,
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
-        QdrantVectorStore vectorStore,
+        IVectorStoreAdmin vectorStoreAdmin,
+        IVectorStoreWriter vectorStoreWriter,
         IBusinessSummaryGenerator summaryGenerator,
         SummaryCache summaryCache,
         IOptions<IngestionOptions> ingestionOptions,
@@ -89,7 +88,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         _chunkRouter = chunkRouter;
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
-        _vectorStore = vectorStore;
+        _vectorStoreAdmin = vectorStoreAdmin;
+        _vectorStoreWriter = vectorStoreWriter;
         _summaryGenerator = summaryGenerator;
         _summaryCache = summaryCache;
         _ingestionOptions = ingestionOptions;
@@ -122,8 +122,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         // path (con archivos nuevos, modificados, o sin cambios) siempre es seguro.
         if (request.EnableResumenLlm && !request.ForceReindex)
         {
-            var exists = await _vectorStore.CollectionExistsAsync(request.CollectionName, cancellationToken);
-            if (exists && !await _vectorStore.HasSummaryVectorAsync(request.CollectionName, cancellationToken))
+            var exists = await _vectorStoreAdmin.CollectionExistsAsync(request.CollectionName, cancellationToken);
+            if (exists && !await _vectorStoreAdmin.HasSummaryVectorAsync(request.CollectionName, cancellationToken))
             {
                 throw new InvalidOperationException(
                     $"La colección '{request.CollectionName}' ya existe sin el vector de resumen. " +
@@ -140,10 +140,10 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             // ── Step 1: Prepare collection ──────────────────────────────────────
             if (request.ForceReindex)
-                await _vectorStore.RecreateCollectionAsync(
+                await _vectorStoreAdmin.RecreateCollectionAsync(
                     request.CollectionName, _brain.EmbeddingDimensions, request.EnableResumenLlm, cancellationToken);
             else
-                await _vectorStore.EnsureCollectionAsync(
+                await _vectorStoreAdmin.EnsureCollectionAsync(
                     request.CollectionName, _brain.EmbeddingDimensions, request.EnableResumenLlm, cancellationToken);
 
             // ── Step 2: Producer/Consumer via bounded Channel ───────────────────
@@ -183,7 +183,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         // colección se acaba de recrear y no hay nada obsoleto que barrer.
         if (!request.ForceReindex)
         {
-            stats.PointsDeleted = await _vectorStore.DeleteSupersededPointsAsync(
+            stats.PointsDeleted = await _vectorStoreWriter.DeleteSupersededPointsAsync(
                 request.CollectionName, generatedIds, processedFiles, cancellationToken);
         }
 
@@ -369,13 +369,13 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var denseTask = _brain.GenerateBatchEmbeddingsWithStatsAsync(texts, ct);
         var sparseTask = Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
         var existingResumenTask = markResumenPending
-            ? _vectorStore.GetExistingResumenStateAsync(collectionName, batch.Select(c => c.Id).ToList(), ct)
-            : Task.FromResult<IReadOnlyDictionary<Guid, QdrantVectorStore.ExistingResumenState>>(
-                new Dictionary<Guid, QdrantVectorStore.ExistingResumenState>());
+            ? _vectorStoreWriter.GetExistingResumenStateAsync(collectionName, batch.Select(c => c.Id).ToList(), ct)
+            : Task.FromResult<IReadOnlyDictionary<Guid, ExistingResumenState>>(
+                new Dictionary<Guid, ExistingResumenState>());
 
         float[][] denseVectors;
         IReadOnlyList<IReadOnlyList<SparseEntry>> sparseVectors;
-        IReadOnlyDictionary<Guid, QdrantVectorStore.ExistingResumenState> existingResumenStates;
+        IReadOnlyDictionary<Guid, ExistingResumenState> existingResumenStates;
 
         try
         {
@@ -421,19 +421,18 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         // 3. Zip and Upsert
         var triples = batch
-            .Select((chunk, i) => (
-                Chunk: chunk,
-                DenseVector: denseVectors[i],
-                SparseVector: sparseVectors[i],
-                ExistingResumen: existingResumenStates.GetValueOrDefault(chunk.Id)
-            ))
+            .Select((chunk, i) => new VectorStoreBatchItem(
+                chunk,
+                denseVectors[i],
+                sparseVectors[i],
+                existingResumenStates.GetValueOrDefault(chunk.Id)))
             .ToList();
 
         try
         {
             // waitForCommit: false — el WAL de Qdrant garantiza durabilidad; diferir
             // la aplicación de los índices saca ~300 ms/lote de la ruta crítica.
-            await _vectorStore.UpsertBatchAsync(
+            await _vectorStoreWriter.UpsertBatchAsync(
                 collectionName, triples, waitForCommit: false, markResumenPending: markResumenPending, tenant: tenant, ct: ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
             RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
@@ -472,7 +471,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     {
         var stats = new ResumenPhaseStats();
         var phaseSw = Stopwatch.StartNew();
-        var totalPending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, cancellationToken);
+        var totalPending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, cancellationToken);
 
         if (totalPending == 0)
         {
@@ -498,7 +497,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var consecutiveConnectionFailures = 0;
         var failureLock = new object();
 
-        var channel = Channel.CreateBounded<QdrantVectorStore.PendingResumenPoint>(new BoundedChannelOptions(256)
+        var channel = Channel.CreateBounded<PendingResumenPoint>(new BoundedChannelOptions(256)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = false,
@@ -509,17 +508,11 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             try
             {
-                PointId? offset = null;
-                do
+                await foreach (var point in _vectorStoreWriter.StreamPendingResumenAsync(
+                    collectionName, pageSize: 100, breakerCts.Token))
                 {
-                    var (points, next) = await _vectorStore.ScrollPendingResumenAsync(
-                        collectionName, offset, limit: 100, breakerCts.Token);
-
-                    foreach (var point in points)
-                        await channel.Writer.WriteAsync(point, breakerCts.Token);
-
-                    offset = next;
-                } while (offset is not null);
+                    await channel.Writer.WriteAsync(point, breakerCts.Token);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -588,7 +581,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         await Task.WhenAll(consumerTasks.Append(producerTask));
 
-        stats.Pending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        stats.Pending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, CancellationToken.None);
         _logger.LogInformation(
             "Fase 2 (resumen de negocio, modo PerChunk) terminada en {WallMs} ms: {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
             phaseSw.ElapsedMilliseconds, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);
@@ -597,7 +590,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
     private async Task ProcessResumenPointAsync(
         string collectionName,
-        QdrantVectorStore.PendingResumenPoint point,
+        PendingResumenPoint point,
         ResumenPhaseStats stats,
         CancellationToken ct)
     {
@@ -633,15 +626,15 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         if (sinNegocio)
         {
             // Sin significado de negocio: no recibe vector, pero deja de estar "pendiente".
-            await _vectorStore.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
+            await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
             Interlocked.Increment(ref stats.SinNegocio);
             Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
             return;
         }
 
         var vector = await _brain.GenerateEmbeddingAsync(summaryText!, ct);
-        await _vectorStore.UpdateSummaryVectorAsync(collectionName, point.PointId, vector, ct);
-        await _vectorStore.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
+        await _vectorStoreWriter.UpdateSummaryVectorAsync(collectionName, point.PointId, vector, ct);
+        await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
         Interlocked.Increment(ref stats.Completed);
         Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
     }
@@ -665,14 +658,12 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         // Carga completa: la agrupación por archivo/tipo no es expresable como streaming
         // puro sobre el scroll (un grupo puede completarse en cualquier punto del corpus).
-        var allPoints = new List<QdrantVectorStore.PendingResumenPoint>(totalPending);
-        PointId? offset = null;
-        do
+        var allPoints = new List<PendingResumenPoint>(totalPending);
+        await foreach (var point in _vectorStoreWriter.StreamPendingResumenAsync(
+            collectionName, pageSize: 200, cancellationToken))
         {
-            var (points, next) = await _vectorStore.ScrollPendingResumenAsync(collectionName, offset, limit: 200, cancellationToken);
-            allPoints.AddRange(points);
-            offset = next;
-        } while (offset is not null);
+            allPoints.Add(point);
+        }
 
         var groups = allPoints
             .GroupBy(p => (p.Chunk.Metadata.RelativeFilePath, Type: p.Chunk.Metadata.ClassName ?? string.Empty))
@@ -722,15 +713,15 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             var pointIds = group.Select(p => p.PointId).ToList();
             if (sinNegocio)
             {
-                await _vectorStore.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
                 stats.SinNegocio += pointIds.Count;
             }
             else
             {
                 var vector = await _brain.GenerateEmbeddingAsync(summaryText!, cancellationToken);
                 foreach (var pointId in pointIds)
-                    await _vectorStore.UpdateSummaryVectorAsync(collectionName, pointId, vector, cancellationToken);
-                await _vectorStore.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                    await _vectorStoreWriter.UpdateSummaryVectorAsync(collectionName, pointId, vector, cancellationToken);
+                await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
                 stats.Completed += pointIds.Count;
             }
 
@@ -747,7 +738,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
 
         stats.ElapsedMs = sw.ElapsedMilliseconds;
-        stats.Pending = (int)await _vectorStore.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        stats.Pending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, CancellationToken.None);
         _logger.LogInformation(
             "Fase 2 (resumen de negocio, modo PerFile) terminada en {WallMs} ms: {Groups} grupos, {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
             sw.ElapsedMilliseconds, stats.Groups, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);

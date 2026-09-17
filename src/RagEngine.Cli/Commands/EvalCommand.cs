@@ -292,6 +292,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     {
         var options = new RetrievalOptions
         {
+            Context = RetrievalContext.Local,
             CollectionName = settings.Collection,
             TopK = settings.TopK,
             MinimumSimilarityScore = settings.MinScore,

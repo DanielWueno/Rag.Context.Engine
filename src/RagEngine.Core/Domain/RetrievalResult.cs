@@ -31,6 +31,12 @@ public sealed record RetrievalResult(
 /// </summary>
 public sealed record RetrievalOptions
 {
+    /// <summary>
+    /// Contexto de autorización ya resuelto por el adaptador llamador. Local y empresa
+    /// se expresan explícitamente; null nunca significa "todo".
+    /// </summary>
+    public required RetrievalContext Context { get; init; }
+
     /// <summary>Maximum number of results to return. Default: 10.</summary>
     public int TopK { get; init; } = 10;
 
@@ -57,6 +63,13 @@ public sealed record RetrievalOptions
     /// que <c>CollectionManifest.Tenants</c> exige coincidencia exacta cuando no está vacío.
     /// </summary>
     public string? FilterByTenant { get; init; }
+
+    /// <summary>
+    /// Filtra por módulo lógico derivado del namespace/ruta relativa ya guardados en
+    /// payload. Igual que tenant: null/vacío no restringe; con valor exige coincidencia
+    /// del módulo dentro del puerto de retrieval.
+    /// </summary>
+    public string? FilterByModule { get; init; }
 
     /// <summary>The Qdrant collection to search.</summary>
     public required string CollectionName { get; init; }

@@ -81,9 +81,9 @@ public sealed class TenantPayloadFilterTests : IAsyncLifetime
     {
         var chunk = MakeChunk(relativePath, content);
         var (dense, sparse) = DummyVectors();
-        var batch = new List<(CodeChunk, float[], IReadOnlyList<SparseEntry>, QdrantVectorStore.ExistingResumenState?)>
+        var batch = new List<VectorStoreBatchItem>
         {
-            (chunk, dense, sparse, null)
+            new(chunk, dense, sparse, null)
         };
         await _store.UpsertBatchAsync(_collectionName, batch, waitForCommit: true, tenant: tenant);
     }

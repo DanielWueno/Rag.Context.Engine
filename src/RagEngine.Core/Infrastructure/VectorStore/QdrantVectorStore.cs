@@ -12,7 +12,7 @@ namespace RagEngine.Core.Infrastructure.VectorStore;
 /// Uses the gRPC client for lower latency on bulk operations.
 /// All upsert operations are idempotent (Upsert, not Insert).
 /// </summary>
-public sealed class QdrantVectorStore
+public sealed class QdrantVectorStore : IVectorStoreAdmin, IVectorStoreWriter
 {
     public const string DenseVectorName = "dense";
     public const string SparseVectorName = "sparse-code";
@@ -209,6 +209,12 @@ public sealed class QdrantVectorStore
         return has;
     }
 
+    public async Task<bool> HasDefinedSymbolsIndexAsync(string collectionName, CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        return info.PayloadSchema.ContainsKey(DefinedSymbolsPayloadKey);
+    }
+
     private void InvalidateSchemaCache(string collectionName) => _schemaCache.TryRemove(collectionName, out _);
 
     /// <summary>
@@ -298,8 +304,6 @@ public sealed class QdrantVectorStore
     /// vectores y payload (verificado empíricamente), así que un re-upsert que solo incluya
     /// dense+sparse borraría el vector dense-resumen si no se reincluye explícitamente aquí.
     /// </summary>
-    public sealed record ExistingResumenState(bool ResumenPending, float[]? SummaryVector);
-
     /// <summary>
     /// Busca, para un lote de IDs, el estado de resumen que ya tenían antes de este upsert
     /// (si existían). Un solo round-trip por lote — se llama antes de <see cref="UpsertBatchAsync"/>
@@ -365,7 +369,7 @@ public sealed class QdrantVectorStore
     /// </param>
     public async Task<int> UpsertBatchAsync(
         string collectionName,
-        IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector, ExistingResumenState? ExistingResumen)> batch,
+        IReadOnlyList<VectorStoreBatchItem> batch,
         bool waitForCommit = true,
         bool markResumenPending = false,
         string? tenant = null,
@@ -452,6 +456,30 @@ public sealed class QdrantVectorStore
 
         return batch.Count;
     }
+
+    /// <summary>
+    /// Sobrecarga de compatibilidad local: conserva la forma histórica del lote mientras
+    /// el refactor de puertos migra a <see cref="VectorStoreBatchItem"/> sin relajar la
+    /// preservación explícita de <see cref="SummaryVectorName"/>.
+    /// </summary>
+    public Task<int> UpsertBatchAsync(
+        string collectionName,
+        IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector, ExistingResumenState? ExistingResumen)> batch,
+        bool waitForCommit = true,
+        bool markResumenPending = false,
+        string? tenant = null,
+        CancellationToken ct = default) =>
+        UpsertBatchAsync(
+            collectionName,
+            batch.Select(item => new VectorStoreBatchItem(
+                item.Chunk,
+                item.DenseVector,
+                item.SparseVector,
+                item.ExistingResumen)).ToList(),
+            waitForCommit,
+            markResumenPending,
+            tenant,
+            ct);
 
     /// <summary>Serializa una lista de nombres de símbolos como un ListValue de keywords de Qdrant.</summary>
     private static Value ToKeywordListValue(IReadOnlyList<string> symbols)
@@ -582,8 +610,6 @@ public sealed class QdrantVectorStore
     }
 
     /// <summary>Un punto reconstruido desde el payload de Qdrant, listo para volver a pasar por el generador de resumen.</summary>
-    public sealed record PendingResumenPoint(Guid PointId, CodeChunk Chunk);
-
     /// <summary>
     /// Decisión 3a: reanudación de la Fase 2 sin reprocesar Fase 1. Escanea (scroll)
     /// los puntos con resumen_pending=true, reconstruyendo el <see cref="CodeChunk"/>
@@ -614,6 +640,22 @@ public sealed class QdrantVectorStore
         var hasNext = next is not null && next.PointIdOptionsCase != PointId.PointIdOptionsOneofCase.None;
 
         return (points, hasNext ? next : null);
+    }
+
+    public async IAsyncEnumerable<PendingResumenPoint> StreamPendingResumenAsync(
+        string collectionName,
+        uint pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        PointId? offset = null;
+        do
+        {
+            var (points, next) = await ScrollPendingResumenAsync(collectionName, offset, pageSize, ct);
+            foreach (var point in points)
+                yield return point;
+
+            offset = next;
+        } while (offset is not null);
     }
 
     private static PendingResumenPoint MapToPendingResumenPoint(RetrievedPoint point)

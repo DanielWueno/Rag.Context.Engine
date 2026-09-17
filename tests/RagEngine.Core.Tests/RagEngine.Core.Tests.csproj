@@ -33,4 +33,9 @@
     <Content Include="GoldenMaster\**\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="CompileFixtures\**\*.cs" />
+    <None Include="CompileFixtures\**\*" />
+  </ItemGroup>
+
 </Project>

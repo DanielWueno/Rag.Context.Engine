@@ -121,7 +121,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             var firstToken  = true;
 
             await foreach (var fragment in _generation
-                .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
+                .AskStreamingAsync(settings.Query, settings.Collection, RetrievalContext.Local, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                 .ConfigureAwait(false))
             {
                 if (firstToken)
@@ -190,7 +190,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
                 .StartAsync("[cyan]Generando respuesta completa...[/]", async _ =>
                 {
                     await foreach (var fragment in _generation
-                        .AskStreamingAsync(settings.Query, settings.Collection, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
+                        .AskStreamingAsync(settings.Query, settings.Collection, RetrievalContext.Local, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                         .ConfigureAwait(false))
                     {
                         buffer.Append(fragment);

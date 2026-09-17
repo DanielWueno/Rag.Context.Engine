@@ -109,6 +109,7 @@ public sealed class RagGenerationService : IRagGenerationService
     public async IAsyncEnumerable<string> AskStreamingAsync(
         string query,
         string collectionName,
+        RetrievalContext retrievalContext,
         int topK = 5,
         float minimumScore = 0.10f,
         bool useReRanking = false,
@@ -142,7 +143,7 @@ public sealed class RagGenerationService : IRagGenerationService
             topK, collectionName, query);
 
         var (retrievalOk, chunks, retrievalError) = await RetrieveChunksAsync(
-            query, collectionName, topK, minimumScore, useReRanking, cancellationToken);
+            query, collectionName, retrievalContext, topK, minimumScore, useReRanking, cancellationToken);
 
         if (!retrievalOk)
         {
@@ -225,6 +226,7 @@ public sealed class RagGenerationService : IRagGenerationService
         RetrieveChunksAsync(
             string query,
             string collectionName,
+            RetrievalContext retrievalContext,
             int topK,
             float minimumScore,
             bool useReRanking,
@@ -234,6 +236,7 @@ public sealed class RagGenerationService : IRagGenerationService
         {
             var options = new RetrievalOptions
             {
+                Context                = retrievalContext,
                 CollectionName         = collectionName,
                 TopK                   = topK,
                 MinimumSimilarityScore = minimumScore,

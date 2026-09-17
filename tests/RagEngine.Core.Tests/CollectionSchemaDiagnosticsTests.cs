@@ -1,3 +1,4 @@
+using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.VectorStore;
 using Xunit;
 

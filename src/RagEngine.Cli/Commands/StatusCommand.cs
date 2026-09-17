@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
+using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
-using RagEngine.Core.Infrastructure.VectorStore;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -27,12 +27,14 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
     }
 
     private readonly QdrantClient _qdrant;
-    private readonly QdrantVectorStore _vectorStore;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
+    private readonly IVectorStoreWriter _vectorStoreWriter;
 
-    public StatusCommand(QdrantClient qdrant, QdrantVectorStore vectorStore)
+    public StatusCommand(QdrantClient qdrant, IVectorStoreAdmin vectorStoreAdmin, IVectorStoreWriter vectorStoreWriter)
     {
         _qdrant = qdrant;
-        _vectorStore = vectorStore;
+        _vectorStoreAdmin = vectorStoreAdmin;
+        _vectorStoreWriter = vectorStoreWriter;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -114,10 +116,10 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
 
         // Decisión 7: observabilidad por-punto, no solo por-colección — saber que el
         // schema tiene el tercer vector no dice si ya está poblado en todos los puntos.
-        var hasSummaryVector = await _vectorStore.HasSummaryVectorAsync(collectionName);
+        var hasSummaryVector = await _vectorStoreAdmin.HasSummaryVectorAsync(collectionName);
         if (hasSummaryVector)
         {
-            var pending = await _vectorStore.CountResumenPendingAsync(collectionName);
+            var pending = await _vectorStoreWriter.CountResumenPendingAsync(collectionName);
             var completedCount = pointCount >= pending ? pointCount - pending : 0;
             var resumenColor = pending == 0 ? "green" : "yellow";
             table.AddRow("[dim]Resumen de negocio[/]",
@@ -126,7 +128,7 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
 
         // Ítem 5.d: observabilidad del índice de payload que habilita el filtro por
         // símbolo del segundo salto (6.a) sin escanear la colección entera.
-        var hasSymbolIndex = info.PayloadSchema.ContainsKey(QdrantVectorStore.DefinedSymbolsPayloadKey);
+        var hasSymbolIndex = await _vectorStoreAdmin.HasDefinedSymbolsIndexAsync(collectionName);
         table.AddRow("[dim]Índice símbolos[/]",
             hasSymbolIndex ? "[green]creado (defined_symbols)[/]" : "[dim]no creado[/]");
 

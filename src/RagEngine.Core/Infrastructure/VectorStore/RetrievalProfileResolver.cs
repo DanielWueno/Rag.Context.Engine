@@ -1,3 +1,4 @@
+using RagEngine.Core.Abstractions;
 using Microsoft.Extensions.Options;
 using RagEngine.Core.Domain;
 
@@ -26,10 +27,10 @@ public interface IRetrievalProfileResolver
 /// <inheritdoc cref="IRetrievalProfileResolver"/>
 public sealed class RetrievalProfileResolver : IRetrievalProfileResolver
 {
-    private readonly QdrantVectorStore _store;
+    private readonly IVectorStoreAdmin _store;
     private readonly RetrievalProfileCatalogOptions _catalog;
 
-    public RetrievalProfileResolver(QdrantVectorStore store, IOptions<RetrievalProfileCatalogOptions> catalog)
+    public RetrievalProfileResolver(IVectorStoreAdmin store, IOptions<RetrievalProfileCatalogOptions> catalog)
     {
         _store = store;
         _catalog = catalog.Value;

@@ -126,6 +126,8 @@ public static class ServiceCollectionExtensions
 
         // ──── 4. Vector Store: Singleton (wraps the Singleton QdrantClient) ──────────
         services.AddSingleton<QdrantVectorStore>();
+        services.AddSingleton<IVectorStoreAdmin>(sp => sp.GetRequiredService<QdrantVectorStore>());
+        services.AddSingleton<IVectorStoreWriter>(sp => sp.GetRequiredService<QdrantVectorStore>());
 
         // ──── Add Polly Resilience ──────────────────────────────────────────
         services.AddResiliencePipeline("qdrant", builder =>

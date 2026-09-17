@@ -100,7 +100,7 @@ public sealed class RetrievalProfileHttpHarnessTests : IAsyncLifetime
 
     private async Task SeedPointsAsync(string collectionName, float[] queryVector)
     {
-        var batch = new List<(CodeChunk, float[], IReadOnlyList<SparseEntry>, QdrantVectorStore.ExistingResumenState?)>();
+        var batch = new List<VectorStoreBatchItem>();
         for (int i = 0; i < SeedPointCount; i++)
         {
             var chunk = new CodeChunk
@@ -122,7 +122,7 @@ public sealed class RetrievalProfileHttpHarnessTests : IAsyncLifetime
                 Type = ChunkType.Method,
                 ContentHash = $"hash-{i}"
             };
-            batch.Add((chunk, queryVector, Array.Empty<SparseEntry>(), null));
+            batch.Add(new VectorStoreBatchItem(chunk, queryVector, Array.Empty<SparseEntry>(), null));
         }
         await _store.UpsertBatchAsync(collectionName, batch, waitForCommit: true);
     }

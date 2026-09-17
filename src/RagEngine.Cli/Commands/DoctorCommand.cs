@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.VectorStore;
@@ -19,7 +18,7 @@ namespace RagEngine.Cli.Commands;
 /// </summary>
 public sealed class DoctorCommand : AsyncCommand
 {
-    private readonly QdrantClient _qdrant;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
     private readonly IConfiguration _config;
 
     // El brain se resuelve de forma perezosa, NO por constructor. Inyectarlo hacía
@@ -29,9 +28,9 @@ public sealed class DoctorCommand : AsyncCommand
     // justo en el caso que el doctor existe para diagnosticar.
     private readonly IServiceProvider _services;
 
-    public DoctorCommand(QdrantClient qdrant, IConfiguration config, IServiceProvider services)
+    public DoctorCommand(IVectorStoreAdmin vectorStoreAdmin, IConfiguration config, IServiceProvider services)
     {
-        _qdrant = qdrant;
+        _vectorStoreAdmin = vectorStoreAdmin;
         _config = config;
         _services = services;
     }
@@ -83,7 +82,7 @@ public sealed class DoctorCommand : AsyncCommand
         try
         {
             // Simple ping to verify connection
-            await _qdrant.ListCollectionsAsync(); 
+            await _vectorStoreAdmin.ListCollectionsAsync();
             AnsiConsole.MarkupLine($"[green]✅ Qdrant[/]         {host}:{port}   [dim](Connected)[/]");
             return true;
         }
@@ -221,8 +220,7 @@ public sealed class DoctorCommand : AsyncCommand
         IReadOnlyList<CollectionSchemaReport> reports;
         try
         {
-            var store = _services.GetRequiredService<IVectorStoreAdmin>();
-            reports = await store.InspectCollectionSchemasAsync(embeddingDimensions);
+            reports = await _vectorStoreAdmin.InspectCollectionSchemasAsync(embeddingDimensions);
         }
         catch (Exception ex)
         {

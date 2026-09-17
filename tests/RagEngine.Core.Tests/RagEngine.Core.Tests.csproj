@@ -25,6 +25,12 @@
          (Qwen2.5-Coder vía Ollama, sin tokenizador .NET disponible), por eso se
          documenta como estimación conservadora distinta, no como sustitución de 11.3. -->
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.2" />
+    <!-- Ítem 9.2: RagEngine.Core.csproj marcó Qdrant.Client como PrivateAssets="all"
+         para que los hosts (Api/Cli) no puedan resolver QdrantClient directamente.
+         Los tests SÍ necesitan el tipo concreto para construir fixtures/harnesses
+         reales contra Qdrant (no son un adaptador primario de producción), así que
+         referencian el paquete explícitamente en vez de heredarlo por transitividad. -->
+    <PackageReference Include="Qdrant.Client" Version="1.14.0" />
   </ItemGroup>
 
 

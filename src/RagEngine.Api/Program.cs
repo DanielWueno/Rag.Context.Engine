@@ -342,7 +342,7 @@ try
     // EmbeddingDimensions de la que ya vive en el contenedor. Si el modelo faltara,
     // ese GetRequiredService fallaría aquí (dentro del try), no en el arranque del host.
     app.MapGet("/api/health", async (
-        Qdrant.Client.QdrantClient qdrant,
+        IVectorStoreAdmin store,
         IHttpClientFactory httpClientFactory,
         IOptions<OllamaOptions> ollamaOptions,
         IServiceProvider services,
@@ -353,7 +353,7 @@ try
 
         try
         {
-            await qdrant.ListCollectionsAsync(cancellationToken);
+            await store.ListCollectionsAsync(cancellationToken);
             checks["qdrant"] = "ok";
         }
         catch (Exception ex)
@@ -428,14 +428,13 @@ try
     // el actor puede leer. En modo Local (todo actor es administrador implícito),
     // el comportamiento no cambia — sigue siendo el listado completo de siempre.
     app.MapGet("/api/collections", async (
-        Qdrant.Client.QdrantClient qdrant,
         IVectorStoreAdmin store,
         HttpContext http,
         ICollectionActorResolver actorResolver,
         ICollectionAuthorizationService authorization,
         CancellationToken cancellationToken) =>
     {
-        var allCollections = await qdrant.ListCollectionsAsync(cancellationToken);
+        var allCollections = await store.ListCollectionsAsync(cancellationToken);
         var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
 
         var visibleCollections = new List<string>();

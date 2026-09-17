@@ -24,7 +24,15 @@
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.78.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.78.0" />
     <PackageReference Include="Polly.Core" Version="8.7.0" />
-    <PackageReference Include="Qdrant.Client" Version="1.14.0" />
+    <!-- Ítem 9.2: PrivateAssets="compile" corta SOLO la referencia de compilación
+         transitiva — RagEngine.Api y RagEngine.Cli ya no pueden escribir código que
+         nombre Qdrant.Client.QdrantClient (CS0246 si lo intentan), así que cualquier
+         resolución directa del tipo desde un host vuelve a romper el build, en vez de
+         depender de una disciplina de code review. El asset "runtime" (Qdrant.Client.dll)
+         SIGUE fluyendo a los hosts porque QdrantVectorStore lo necesita cargado en su
+         proceso: "all" en vez de "compile" rompería el arranque en tiempo de ejecución
+         (FileNotFoundException) sin aportar nada al objetivo de este ítem. -->
+    <PackageReference Include="Qdrant.Client" Version="1.14.0" PrivateAssets="compile" />
     <PackageReference Include="Serilog" Version="4.4.0" />
   </ItemGroup>
 

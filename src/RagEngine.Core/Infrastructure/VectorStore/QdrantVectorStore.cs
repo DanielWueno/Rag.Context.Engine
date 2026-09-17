@@ -94,6 +94,37 @@ public sealed class QdrantVectorStore : IVectorStoreAdmin, IVectorStoreWriter
         return collections.Contains(collectionName);
     }
 
+    /// <summary>Ítem 9.2: único punto de este adaptador que expone la lista cruda de colecciones a los hosts.</summary>
+    public async Task<IReadOnlyList<string>> ListCollectionsAsync(CancellationToken ct = default)
+        => await _client.ListCollectionsAsync(ct);
+
+    /// <summary>
+    /// Ítem 9.2: traduce <c>GetCollectionInfoAsync</c> a hechos de dominio para que
+    /// `rag status` (y cualquier otro host) no necesite conocer los tipos gRPC de
+    /// Qdrant. La condición de dimensión reproduce exactamente la que usaba
+    /// `StatusCommand` antes del refactor: solo se resuelve cuando el vector denso NO
+    /// está nombrado (ConfigCase == Params); las colecciones reales de este motor usan
+    /// vectores nombrados (ParamsMap), así que ese campo sigue siendo null para ellas,
+    /// igual que antes.
+    /// </summary>
+    public async Task<CollectionHealthReport> GetCollectionHealthAsync(string collectionName, CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        var status = info.Status switch
+        {
+            CollectionStatus.Green => CollectionHealthStatus.Green,
+            CollectionStatus.Yellow => CollectionHealthStatus.Yellow,
+            CollectionStatus.Red => CollectionHealthStatus.Red,
+            _ => CollectionHealthStatus.Unknown
+        };
+
+        ulong? denseDimension = info.Config?.Params?.VectorsConfig?.ConfigCase == VectorsConfig.ConfigOneofCase.Params
+            ? info.Config.Params.VectorsConfig.Params.Size
+            : null;
+
+        return new CollectionHealthReport(collectionName, status, info.PointsCount, denseDimension);
+    }
+
     /// <summary>
     /// Creates the Qdrant collection if it does not already exist.
     /// Configures dense (cosine), sparse (TF), and — opt-in — un tercer vector denso

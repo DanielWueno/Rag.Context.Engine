@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using RagEngine.Api;
 using RagEngine.Core.Abstractions;
@@ -124,6 +126,96 @@ try
 
     var app = builder.Build();
 
+    // Ítem 12.1: rate limiting + cota de concurrencia por actor sobre las tres rutas de
+    // recuperación/generación. Se lee de app.Configuration (no builder.Configuration):
+    // los overrides de configuración que WebApplicationFactory<Program> inyecta para
+    // tests (ConfigureAppConfiguration) solo se aplican dentro de builder.Build() — leer
+    // antes de esa llamada vería siempre los defaults de appsettings.json e ignoraría
+    // cualquier override de test. RagEnginePaths.InsertSharedConfigSource ya insertó
+    // config/shared.appsettings.json con precedencia menor, así que esta sección puede
+    // recalibrarse sin recompilar. Ver RateLimitingOptions para el porqué de cada default.
+    //
+    // Se implementa como PartitionedRateLimiter + EndpointFilter (no
+    // AddRateLimiter/RequireRateLimiting) porque el middleware de rate limiting solo
+    // admite UNA política nombrada activa por endpoint — [EnableRateLimiting]/
+    // RequireRateLimiting REEMPLAZAN la política anterior en vez de sumarse. /api/ask y
+    // /api/ask/stream necesitan DOS cotas independientes (tasa por ventana + concurrencia
+    // en vuelo) sobre el mismo endpoint, así que cada filtro adquiere de la lista de
+    // limiters que le toque, en orden, y libera todo lo adquirido al terminar.
+    var rateLimitingOptions = app.Configuration
+        .GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>() ?? new RateLimitingOptions();
+
+    // "Actor local/autenticado": mismo criterio que ResolveRetrievalContext — un tenant/
+    // módulo autenticado obtiene su propia partición; sin identidad autenticada (modo
+    // Local, o modo Empresarial sin credenciales) la partición cae en la IP remota, así
+    // que sigue habiendo AL MENOS una cota por origen, no una cota global compartida por
+    // todo el mundo sin distinción.
+    static string ResolveRateLimitKey(HttpContext http)
+    {
+        var identity = ReadCollectionIdentity(http);
+        if (identity is { IsAuthenticated: true })
+        {
+            var tenant = identity.Actor.Tenant;
+            var name = http.User.Identity?.Name;
+            return $"actor:{tenant ?? name ?? "sin-tenant"}";
+        }
+        return $"origen:{http.Connection.RemoteIpAddress}";
+    }
+
+    var requestRateLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+        RateLimitPartition.GetFixedWindowLimiter(ResolveRateLimitKey(http), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = rateLimitingOptions.PermitLimit,
+            Window = TimeSpan.FromSeconds(rateLimitingOptions.WindowSeconds),
+            QueueLimit = rateLimitingOptions.QueueLimit,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            AutoReplenishment = true
+        }));
+
+    // Cota de concurrencia distinta de la de tasa: /api/ask y /api/ask/stream abren una
+    // generación completa contra Ollama (segundos, no milisegundos) — un actor podría
+    // quedar dentro de su cupo de PermitLimit y aun así mantener N generaciones
+    // simultáneas abiertas. Esta cota limita cuántas puede tener EN VUELO a la vez, no
+    // cuántas puede empezar por ventana. No se aplica a /api/search (no invoca a Ollama).
+    var generationConcurrencyLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+        RateLimitPartition.GetConcurrencyLimiter(ResolveRateLimitKey(http), _ => new ConcurrencyLimiterOptions
+        {
+            PermitLimit = rateLimitingOptions.MaxConcurrentGenerationsPerActor,
+            QueueLimit = rateLimitingOptions.ConcurrencyQueueLimit,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+
+    // Adquiere de cada limiter EN ORDEN antes de invocar el handler real — si cualquiera
+    // rechaza, el handler (y por tanto retrieval/generación) nunca se ejecuta: cero
+    // invocaciones extra de retrieval, tal como exige el criterio de este ítem. Todas las
+    // adquisiciones exitosas se liberan al terminar, hayan o no seguido hasta el handler.
+    static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RateLimitFilter(
+        params PartitionedRateLimiter<HttpContext>[] limiters) => async (context, next) =>
+    {
+        var http = context.HttpContext;
+        var leases = new List<RateLimitLease>(limiters.Length);
+        try
+        {
+            foreach (var limiter in limiters)
+            {
+                var lease = await limiter.AcquireAsync(http, 1, http.RequestAborted);
+                leases.Add(lease);
+                if (!lease.IsAcquired)
+                {
+                    return Results.Problem(
+                        title: "Demasiadas solicitudes; reintente más tarde.",
+                        statusCode: StatusCodes.Status429TooManyRequests);
+                }
+            }
+            return await next(context);
+        }
+        finally
+        {
+            foreach (var lease in leases)
+                lease.Dispose();
+        }
+    };
+
     // Fase 1 del modo Simple (docs/analisis-futuro/modo-respuesta-simple-codigo.md)
     // agrega un filtro determinístico + buffer para ResponseMode.Simple, con una
     // válvula de escape de rollback sin rebuild. Si alguien la apaga vía config/env
@@ -216,6 +308,33 @@ try
         options.Mode == AuthorizationMode.Local
             ? RetrievalContext.Local
             : RetrievalContext.ForAuthorized(actor.Tenant, actor.Module);
+
+    // Ítem 12.1: cotas literales sobre TopK/MinScore. RECHAZA (400 ProblemDetails), no
+    // recorta silenciosamente — un TopK=100000 o un MinScore=2.5 aceptado en silencio
+    // dispararía retrieval/rerank con un costo o un resultado que el cliente nunca pidió
+    // y no podría explicar. null conserva el default (perfil de colección o literal),
+    // así que un cliente que nunca manda el campo no se ve afectado.
+    const int MinTopK = 1;
+    const int MaxTopK = 100;
+
+    static IResult? ValidateRetrievalParameters(RagQueryRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        if (request.TopK is { } topK && (topK < MinTopK || topK > MaxTopK))
+        {
+            errors["topK"] = [$"Debe estar entre {MinTopK} y {MaxTopK} (recibido {topK})."];
+        }
+
+        if (request.MinScore is { } minScore && (!float.IsFinite(minScore) || minScore < 0f || minScore > 1f))
+        {
+            errors["minScore"] = [$"Debe ser un número finito entre 0 y 1 (recibido {minScore})."];
+        }
+
+        return errors.Count == 0
+            ? null
+            : Results.ValidationProblem(errors, title: "Parámetros de recuperación fuera de rango.");
+    }
 
     /// <summary>
     /// Autoriza la colección y devuelve el manifiesto ya leído (o null si nunca se
@@ -403,19 +522,6 @@ try
         return Results.Ok(new { collections = visibleCollections, @default = defaultCollection });
     });
 
-    // Endpoint de prueba para verificar que los instrumentos de métricas están activos
-    // Registra valores en los 4 contadores del Meter: ChunksIndexedTotal, IngestionErrorsTotal,
-    // SearchLatencyMs, SearchErrorsTotal
-    app.MapGet("/api/test-metrics", () =>
-    {
-        RagEngineMetrics.ChunksIndexedTotal.Add(10, new KeyValuePair<string, object?>("collection", "test"));
-        RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "test"));
-        RagEngineMetrics.SearchLatencyMs.Record(42.5, new KeyValuePair<string, object?>("collection", "test"));
-        RagEngineMetrics.SearchErrorsTotal.Add(1, new KeyValuePair<string, object?>("collection", "test"));
-
-        return Results.Ok(new { message = "Metrics recorded. Check with: dotnet-counters monitor -p <PID> --counters 'Rag.Context.Engine'" });
-    });
-
     // Retrieval/generación/caché se resuelven después de autorizar: el binding de
     // parámetros DI los construiría antes del handler, incluso para devolver 403.
     app.MapPost("/api/search", async (
@@ -431,6 +537,8 @@ try
     {
         if (string.IsNullOrWhiteSpace(request.Query))
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+            return invalidParameters;
 
         var collection = request.Collection ?? defaultCollection;
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
@@ -478,7 +586,8 @@ try
             });
 
         return Results.Ok(sources);
-    });
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter));
 
     app.MapPost("/api/ask", async (
         RagQueryRequest request,
@@ -493,6 +602,8 @@ try
     {
         if (string.IsNullOrWhiteSpace(request.Query))
             return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+            return invalidParameters;
 
         var collection = request.Collection ?? defaultCollection;
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
@@ -556,7 +667,8 @@ try
             });
 
         return Results.Ok(new RagAskResponse(answerText, sources));
-    });
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter, generationConcurrencyLimiter));
 
     // Variante SSE de /api/ask para la página web: en vez de bloquear hasta
     // tener la respuesta completa, va emitiendo eventos según avanza el
@@ -578,6 +690,11 @@ try
         {
             http.Response.StatusCode = StatusCodes.Status400BadRequest;
             await http.Response.WriteAsJsonAsync(new { error = "El campo 'query' es obligatorio." }, cancellationToken);
+            return;
+        }
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+        {
+            await invalidParameters.ExecuteAsync(http);
             return;
         }
 
@@ -692,7 +809,8 @@ try
             });
 
         await SendAsync("done", new { });
-    });
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter, generationConcurrencyLimiter));
 
     app.Run();
 }

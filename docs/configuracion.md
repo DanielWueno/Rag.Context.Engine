@@ -92,6 +92,83 @@ vectores/manifiestos. Este control cubre las tres rutas HTTP, no convierte el CL
 el acceso directo a Qdrant ni los endpoints de diagnóstico/listado en una frontera
 empresarial. IDP real, auditoría y endurecimiento de despliegue quedan fuera de alcance.
 
+## Cotas y cierre de la superficie HTTP (ítem `12.1-cotas-y-cierre-inmediato`)
+
+### Validación de `TopK`/`MinScore`
+
+`/api/search`, `/api/ask` y `/api/ask/stream` rechazan con **400 ProblemDetails**
+antes de tocar Qdrant o el generador:
+
+- `TopK` fuera de `[1, 100]` (incluye `0`, negativos y valores absurdos como `100000`).
+- `MinScore` fuera de `[0, 1]` o no finito (`NaN`/`Infinity`).
+
+Los límites son constantes (`MinTopK`/`MaxTopK`) en `Program.cs`, no configurables por
+`appsettings` — endurecer el rango es un cambio de código, no de despliegue. Verificado
+en `RetrievalParameterValidationHttpHarnessTests` (matriz completa de rechazo/aceptación
+en los tres endpoints).
+
+### Rate limiting y cota de concurrencia (`RateLimiting`)
+
+```json
+"RateLimiting": {
+  "PermitLimit": 30,
+  "WindowSeconds": 60,
+  "QueueLimit": 0,
+  "MaxConcurrentGenerationsPerActor": 2,
+  "ConcurrencyQueueLimit": 1
+}
+```
+
+- **Tasa por ventana** (`PermitLimit`/`WindowSeconds`/`QueueLimit`): se aplica a
+  `/api/search`, `/api/ask` y `/api/ask/stream`. La partición es por actor autenticado
+  (tenant/nombre) cuando hay identidad, o por IP remota si no la hay — nunca una cota
+  global compartida por todos los clientes sin distinción.
+- **Concurrencia en vuelo** (`MaxConcurrentGenerationsPerActor`/`ConcurrencyQueueLimit`):
+  cota adicional, solo en `/api/ask` y `/api/ask/stream` (invocan a Ollama, que tarda
+  segundos). Un actor puede estar dentro de su cupo de tasa y aun así tener demasiadas
+  generaciones abiertas al mismo tiempo; esta cota lo evita.
+- Al rechazar, la respuesta es **429** y el handler nunca se invoca: cero llamadas a
+  retrieval/generación de más. Se implementa con `PartitionedRateLimiter` +
+  `AddEndpointFilter` en vez de `AddRateLimiter`/`[EnableRateLimiting]`, porque ese
+  middleware solo admite una política nombrada activa por endpoint y reemplaza en vez
+  de sumar — no alcanza para aplicar tasa y concurrencia a la vez sobre la misma ruta.
+
+Verificado en `RateLimitingHttpHarnessTests`: 3ª solicitud del mismo actor → 429 con
+exactamente 2 invocaciones de retrieval (no 3); dos actores distintos no comparten cuota.
+
+### Qdrant con API key (`Qdrant:ApiKey`)
+
+```json
+"Qdrant": { "Host": "localhost", "Port": 6334, "ApiKey": "" }
+```
+
+Vacío (default) preserva el comportamiento anterior sin autenticación — para desarrollo
+local con Qdrant sin `QDRANT__SERVICE__API_KEY`. Con la clave configurada en ambos lados
+(servidor Qdrant y `Qdrant__ApiKey` del host), toda llamada gRPC sin la clave correcta
+recibe `Unauthenticated`. No hay revocación ni rotación automática: cambiar la clave
+exige reiniciar Qdrant y el host con el nuevo valor en ambos.
+
+### Binding a loopback y rutas en `infra/docker-compose.yml`
+
+El puerto de la API se publica como `127.0.0.1:5080:5080` (antes `5080:5080`, alcanzable
+desde cualquier interfaz). Acceder desde otra máquina de la LAN requiere un proxy
+explícito o cambiar el binding, no es el default.
+
+Las rutas de host antes fijas a `/Users/...` ahora son variables de entorno con
+defaults relativos al repo, documentadas en `infra/.env.example`:
+
+| Variable | Default si no se define | Uso |
+|---|---|---|
+| `RAG_MODELS_DIR` | `../models` | Modelos ONNX montados en el contenedor |
+| `RAG_LOGS_DIR` | `../logs` | Logs de la API |
+| `RAG_SUMMARY_CACHE_DIR` | volumen nombrado `rag-summary-cache` | Caché SQLite de resúmenes |
+| `RAG_QDRANT_API_KEY` | vacío (sin auth) | Clave de `Qdrant:ApiKey` propagada al contenedor |
+
+Copiar `infra/.env.example` a `infra/.env` (git-ignorado) y ajustar los valores reales
+de cada máquina; sin ese archivo, `docker compose config` resuelve a rutas relativas al
+repo y no falla. Verificado con `docker compose config`: ningún `/Users/` literal en
+`docker-compose.yml`, y `host_ip: 127.0.0.1` en el binding del puerto.
+
 ## Declaraciones cortas (`Ingestion:IndexShortTypeDeclarations`)
 
 Experimento local de 5.h, **desactivado por defecto**. Con `true`, una declaración

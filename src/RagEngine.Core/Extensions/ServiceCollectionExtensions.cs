@@ -121,7 +121,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var opts = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
-            return new QdrantClient(opts.Host, opts.GrpcPort);
+            // Ítem 12.1: apiKey vacío/null preserva exactamente el comportamiento previo
+            // (new QdrantClient(host, port)) — https queda en false porque Qdrant local
+            // no termina TLS; el perfil de despliegue empresarial con TLS es un ítem
+            // aparte (ver docs/configuracion.md).
+            return string.IsNullOrEmpty(opts.ApiKey)
+                ? new QdrantClient(opts.Host, opts.GrpcPort)
+                : new QdrantClient(opts.Host, opts.GrpcPort, https: false, apiKey: opts.ApiKey);
         });
 
         // ──── 4. Vector Store: Singleton (wraps the Singleton QdrantClient) ──────────

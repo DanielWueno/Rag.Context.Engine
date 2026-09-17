@@ -35,7 +35,7 @@ flowchart LR
 |---|---|
 | `RagEngine.Core` | Toda la lógica de negocio. Sin dependencias de UI. |
 | `RagEngine.Cli` | Capa delgada de presentación: comandos Spectre.Console + configuración del host. |
-| `RagEngine.Api` | Capa delgada de presentación HTTP: endpoints mínimos (`/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`, `/api/test-metrics`) y la página de `wwwroot/`. |
+| `RagEngine.Api` | Capa delgada de presentación HTTP: endpoints mínimos (`/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`) y la página de `wwwroot/`. |
 
 Dentro de `RagEngine.Core`:
 

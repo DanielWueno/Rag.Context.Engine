@@ -64,7 +64,7 @@ flowchart TD
 |---|---|
 | `RagEngine.Core` | Todo el trabajo real. No sabe si lo llaman desde una terminal o desde HTTP. |
 | `RagEngine.Cli` | Comandos de terminal con Spectre.Console: `ingest`, `search`, `status`, `ask`, `doctor`, `eval` (`Cli/Program.cs:74-101`). |
-| `RagEngine.Api` | Endpoints `/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`, `/api/test-metrics`, y una página en `wwwroot/index.html`. |
+| `RagEngine.Api` | Endpoints `/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`, y una página en `wwwroot/index.html`. |
 
 Los dos hosts arrancan igual: llaman a `AddRagEngineCore` y `AddRagEngineGeneration`
 (`Extensions/ServiceCollectionExtensions.cs`, `Extensions/GenerationServiceExtensions.cs`). Ahí se

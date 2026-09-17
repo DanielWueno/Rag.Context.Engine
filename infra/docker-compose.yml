@@ -6,22 +6,34 @@ services:
     container_name: rag-api
     restart: unless-stopped
     ports:
-      - "5080:5080"
+      # Ítem 12.1: solo loopback del host, no todas las interfaces (antes "5080:5080",
+      # equivalente a 0.0.0.0:5080, alcanzable desde cualquier interfaz de red del host).
+      # Este servicio sigue pensado para LAN/VPN interna vía un proxy/túnel explícito, no
+      # para escuchar directo en todas las interfaces del host que lo corre.
+      - "127.0.0.1:5080:5080"
     volumes:
       # Modelos ONNX ya descargados en el host (ver download-model.sh); montados
       # de solo lectura para no reconstruir la imagen si cambias de modelo.
-      - /Users/DevStudio/models:/models:ro
+      #
+      # Ítem 12.1: la ruta absoluta es configurable vía RAG_MODELS_DIR (env var del
+      # host, no de este compose) — sin ella, cae en infra/../models relativo al repo,
+      # no en la ruta de un usuario/máquina concretos.
+      - "${RAG_MODELS_DIR:-../models}:/models:ro"
       # Log de consultas (pregunta + respuesta + fuentes) en el mismo logs/ del
       # repo que ya usa el CLI — sobrevive a recrear el contenedor y se puede
       # analizar directo desde el host sin `docker logs`.
-      - ../logs:/app/logs
+      - "${RAG_LOGS_DIR:-../logs}:/app/logs"
       # Caché SQLite de resúmenes de negocio (Reto A), generada por `rag ingest
       # --con-resumen` corriendo nativo en el host — sin este mount, SummaryCache
       # abriría un sqlite3 vacío dentro del contenedor y Sources[].Resumen (Reto D)
       # sería siempre null aunque la colección sí tenga resumen. Montado read-write
       # (no :ro): el modo WAL de SQLite necesita escribir *-wal/*-shm incluso para
       # lecturas; la API igual nunca llama a SummaryCache.SetAsync.
-      - "/Users/DevStudio/Library/Application Support/rag-engine:/data/rag-engine"
+      #
+      # Ítem 12.1: ruta configurable vía RAG_SUMMARY_CACHE_DIR — sin ella, cae en un
+      # volumen nombrado de Docker (persistente entre recreaciones del contenedor,
+      # pero sin depender de la ruta de perfil de ningún usuario concreto del host).
+      - "${RAG_SUMMARY_CACHE_DIR:-rag-summary-cache}:/data/rag-engine"
     environment:
       Ingestion__ResumenCachePath: /data/rag-engine/summary-cache.sqlite3
       # NOTA: en esta máquina Qdrant corre como un contenedor standalone
@@ -30,6 +42,11 @@ services:
       # Si alguna vez migras a que el servicio "qdrant" de este archivo sea
       # el real, cambia esto a "qdrant" y restaura el depends_on.
       Qdrant__Host: host.docker.internal
+      # Ítem 12.1: opcional — si el Qdrant de destino exige autenticación
+      # (QDRANT__SERVICE__API_KEY en su propia configuración), fijar aquí la misma
+      # key vía variable de entorno del host (nunca hardcodeada en este archivo).
+      # Vacío conserva el comportamiento previo (sin autenticación).
+      Qdrant__ApiKey: "${RAG_QDRANT_API_KEY:-}"
       # Ollama se deja NATIVO en el host (no en Docker) para conservar la
       # aceleración Metal de Apple Silicon — un Ollama en el contenedor Linux
       # caería a CPU-only. host.docker.internal expone el host desde el contenedor.
@@ -43,4 +60,6 @@ services:
       # esta línea solo es necesaria si esto se corre alguna vez en Docker Engine/Linux.
       - "host.docker.internal:host-gateway"
 
-volumes: {}
+volumes:
+  rag-summary-cache: {}
+

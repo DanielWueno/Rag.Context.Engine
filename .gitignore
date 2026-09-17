@@ -30,3 +30,8 @@ nohup.out
 # El arnés vive fuera de este repo: github.com/DanielWueno/arnes-plan
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Ítem 12.1: rutas locales de docker-compose (RAG_MODELS_DIR, RAG_LOGS_DIR,
+# RAG_SUMMARY_CACHE_DIR, RAG_QDRANT_API_KEY) — específicas de esta máquina, nunca
+# hardcodeadas en infra/docker-compose.yml. Ver infra/.env.example para el contrato.
+infra/.env

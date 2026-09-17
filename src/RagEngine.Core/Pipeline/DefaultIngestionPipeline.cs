@@ -66,7 +66,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly IVectorStoreAdmin _vectorStoreAdmin;
     private readonly IVectorStoreWriter _vectorStoreWriter;
     private readonly IBusinessSummaryGenerator _summaryGenerator;
-    private readonly SummaryCache _summaryCache;
+    private readonly ISummaryCache _summaryCache;
     private readonly IOptions<IngestionOptions> _ingestionOptions;
     private readonly string _groupPromptVersion;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
@@ -79,7 +79,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         IVectorStoreAdmin vectorStoreAdmin,
         IVectorStoreWriter vectorStoreWriter,
         IBusinessSummaryGenerator summaryGenerator,
-        SummaryCache summaryCache,
+        ISummaryCache summaryCache,
         IOptions<IngestionOptions> ingestionOptions,
         IOptions<OllamaOptions> ollamaOptions,
         ILogger<DefaultIngestionPipeline> logger)

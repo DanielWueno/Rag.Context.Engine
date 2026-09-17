@@ -170,7 +170,7 @@ public static class ServiceCollectionExtensions
         // que la ingesta no dependa de que el host habilite generación conversacional.
         services.AddSingleton<IBusinessSummaryGenerator, OllamaBusinessSummaryGenerator>();
 
-        services.AddSingleton(sp =>
+        services.AddSingleton<ISummaryCache>(sp =>
         {
             var ingestionOpts = sp.GetRequiredService<IOptions<IngestionOptions>>().Value;
             var ollamaOpts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;

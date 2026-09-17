@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using RagEngine.Core.Abstractions;
 
 namespace RagEngine.Core.Services.Summary;
 
@@ -13,7 +14,7 @@ namespace RagEngine.Core.Services.Summary;
 /// el mismo connection string) — evita compartir un único SqliteConnection entre
 /// los workers concurrentes de la Fase 2 de ingesta, que no es thread-safe.
 /// </summary>
-public sealed class SummaryCache
+public sealed class SummaryCache : ISummaryCache
 {
     /// <summary>
     /// Cuánto espera una conexión a que se libere el lock de escritura antes de

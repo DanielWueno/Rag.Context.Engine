@@ -14,7 +14,6 @@ using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Services.Generation;
-using RagEngine.Core.Services.Summary;
 using RagEngine.Core.Utilities;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -276,7 +275,7 @@ try
     // pasa por acá con Simple — solo /api/ask y /api/ask/stream respetan el toggle.
     static async Task<List<SourceDto>> BuildSourcesAsync(
         IReadOnlyList<RetrievalResult> results,
-        SummaryCache summaryCache,
+        ISummaryCache summaryCache,
         ResponseMode responseMode,
         CancellationToken cancellationToken)
     {
@@ -441,7 +440,7 @@ try
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
-        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
         var (topK, minScore, rerank, _) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
 
@@ -503,7 +502,7 @@ try
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
-        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
@@ -593,7 +592,7 @@ try
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
-        var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();

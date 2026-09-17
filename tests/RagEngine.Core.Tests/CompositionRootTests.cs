@@ -71,4 +71,53 @@ public class CompositionRootTests
 
         Assert.NotNull(generacion);
     }
+
+    /// <summary>
+    /// Ítem 9.4: al extraer <c>ISummaryCache</c>, el camino de generación ya estaba
+    /// cubierto (<see cref="LaGeneracionSeResuelveDesdeUnScope"/>) pero el de ingesta no
+    /// — <c>DefaultIngestionPipeline</c> es <c>AddScoped&lt;IIngestionPipeline, ...&gt;</c>,
+    /// así que un registro roto de <c>ISummaryCache</c> ahí también pasaría <c>ValidateOnBuild</c>
+    /// sin invocar el constructor real. Sobrescribe <c>Ingestion:ResumenCachePath</c> a un
+    /// archivo temporal: el default apunta a la caché SQLite real compartida entre
+    /// colecciones, y este test no debe abrirla ni tocar su WAL.
+    /// </summary>
+    [Fact]
+    public void LaIngestionSeResuelveDesdeUnScope()
+    {
+        var rutaTemporal = Path.Combine(
+            Path.GetTempPath(), $"ragengine-composition-root-test-{Guid.NewGuid():N}.sqlite3");
+        try
+        {
+            var configuracion = new ConfigurationBuilder()
+                .AddConfiguration(Configuracion())
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Ingestion:ResumenCachePath"] = rutaTemporal,
+                })
+                .Build();
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddRagEngineCore(configuracion);
+
+            using var proveedor = services.BuildServiceProvider(new ServiceProviderOptions
+            {
+                ValidateOnBuild = true,
+                ValidateScopes = true,
+            });
+            using var scope = proveedor.CreateScope();
+
+            var pipeline = scope.ServiceProvider.GetRequiredService<IIngestionPipeline>();
+
+            Assert.NotNull(pipeline);
+        }
+        finally
+        {
+            foreach (var sufijo in new[] { "", "-wal", "-shm" })
+            {
+                var archivo = rutaTemporal + sufijo;
+                if (File.Exists(archivo)) File.Delete(archivo);
+            }
+        }
+    }
 }

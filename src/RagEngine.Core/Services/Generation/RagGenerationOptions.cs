@@ -76,7 +76,7 @@ public sealed record RagGenerationOptions
     /// Fase 2 de docs/analisis-futuro/modo-respuesta-simple-codigo.md: swap de contexto
     /// a <c>Resumen</c> cacheado para <see cref="RagEngine.Core.Domain.ResponseMode.Simple"/>.
     /// En <c>true</c> (default), cada chunk recuperado busca su resumen de negocio cacheado
-    /// (<c>SummaryCache</c>, por <see cref="RagEngine.Core.Domain.RetrievalResult.ContentHash"/>)
+    /// (<c>ISummaryCache</c>, por <see cref="RagEngine.Core.Domain.RetrievalResult.ContentHash"/>)
     /// y lo usa como contenido de contexto en vez del chunk crudo cuando existe — mejora de
     /// calidad además del filtro de Fase 1, no un reemplazo. Poner en <c>false</c> revierte a
     /// usar siempre el contenido crudo del chunk (comportamiento previo a Fase 2), sin rebuild.

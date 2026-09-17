@@ -4,7 +4,7 @@ namespace RagEngine.Core.Utilities;
 
 /// <summary>
 /// Shared post-processing for business summaries produced by
-/// <c>OllamaBusinessSummaryGenerator</c> and cached in <c>SummaryCache</c>.
+/// <c>OllamaBusinessSummaryGenerator</c> and cached in <c>ISummaryCache</c>.
 /// Used both by the API's <c>SourceDto.Redacted</c> (summary shown to the user)
 /// and by <c>RagGenerationService</c> (summary fed back into the LLM as context
 /// for <see cref="RagEngine.Core.Domain.ResponseMode.Simple"/> — see

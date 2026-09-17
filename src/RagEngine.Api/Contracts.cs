@@ -63,7 +63,7 @@ public sealed record SourceDto(
     /// <summary>
     /// Full technical citation — file path, line range, and the raw chunk content —
     /// used for <see cref="ResponseMode.Technical"/>.
-    /// <paramref name="resumen"/> viene de una consulta aparte a <c>SummaryCache</c> por
+    /// <paramref name="resumen"/> viene de una consulta aparte a <c>ISummaryCache</c> por
     /// <see cref="RetrievalResult.ContentHash"/> — null si la colección no generó resumen para
     /// este chunk (sin <c>--con-resumen</c>, o cayó en el sentinel SIN_CONTENIDO_DE_NEGOCIO).
     /// </summary>

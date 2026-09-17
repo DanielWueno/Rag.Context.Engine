@@ -2,8 +2,8 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
-using RagEngine.Core.Services.Summary;
 using RagEngine.Core.Utilities;
 
 namespace RagEngine.Core.Services.Generation;
@@ -14,13 +14,13 @@ namespace RagEngine.Core.Services.Generation;
 /// y CÓMO se serializa (cabecera estructural + presupuesto de caracteres).
 ///
 /// Separado de <see cref="RagGenerationService"/> por el ítem 2.2 del plan. La razón
-/// concreta: esta es la pieza que consulta <see cref="SummaryCache"/> y la única que
+/// concreta: esta es la pieza que consulta <see cref="ISummaryCache"/> y la única que
 /// conoce el presupuesto de contexto, y estaba enredada con la orquestación del
 /// streaming, que no comparte ninguna de las dos cosas.
 /// </summary>
 internal sealed class GenerationContextAssembler
 {
-    private readonly SummaryCache _summaryCache;
+    private readonly ISummaryCache _summaryCache;
     private readonly IOptionsMonitor<RagGenerationOptions> _optionsMonitor;
     private readonly ILogger<GenerationContextAssembler> _logger;
 
@@ -39,7 +39,7 @@ internal sealed class GenerationContextAssembler
     private const string ChunkSeparator = "\n\n---\n\n";
 
     public GenerationContextAssembler(
-        SummaryCache summaryCache,
+        ISummaryCache summaryCache,
         IOptionsMonitor<RagGenerationOptions> optionsMonitor,
         ILogger<GenerationContextAssembler> logger)
     {
@@ -83,7 +83,7 @@ internal sealed class GenerationContextAssembler
     }
 
     /// <summary>
-    /// Looks up each chunk's cached business summary (<see cref="SummaryCache"/>, keyed by
+    /// Looks up each chunk's cached business summary (<see cref="ISummaryCache"/>, keyed by
     /// <see cref="RetrievalResult.ContentHash"/>) and, when found, substitutes it for the
     /// chunk's raw <see cref="RetrievalResult.Content"/> — the LLM never sees the source
     /// code for that chunk, only its business-language description (structural guarantee,

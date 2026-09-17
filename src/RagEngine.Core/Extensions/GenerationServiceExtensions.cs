@@ -138,7 +138,7 @@ public static class GenerationServiceExtensions
 
         // ── 3. Colaboradores de generación (ítem 2.2: un rol, una clase) ─────
         //
-        //  Singleton porque todas sus dependencias lo son (Kernel, SummaryCache,
+        //  Singleton porque todas sus dependencias lo son (Kernel, ISummaryCache,
         //  IOptionsMonitor, ILogger) y ninguno guarda estado entre turnos. Registrarlos
         //  Scoped sería igual de correcto pero pagaría una construcción por petición
         //  sin ganar nada; registrarlos aquí y no dentro de RagGenerationService es lo
@@ -149,7 +149,7 @@ public static class GenerationServiceExtensions
             sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
             sp.GetRequiredService<ILogger<ConfidenceGate>>()));
         services.AddSingleton(sp => new GenerationContextAssembler(
-            sp.GetRequiredService<SummaryCache>(),
+            sp.GetRequiredService<ISummaryCache>(),
             sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
             sp.GetRequiredService<ILogger<GenerationContextAssembler>>()));
         services.AddSingleton(sp => new ChatAnswerStreamer(

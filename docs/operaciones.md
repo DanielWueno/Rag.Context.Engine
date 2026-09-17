@@ -37,6 +37,78 @@ grep -h "Search completed"  logs/rag-engine-*.json | tail -10
 - **Métricas** (`System.Diagnostics.Metrics`, medidor `RagEngine`): `chunks_indexed_total`, `ingestion_errors_total` (etiquetadas por etapa), `search_latency_ms`, `search_errors_total`. Verificables con `dotnet-counters monitor -p <PID> --counters RagEngine` (requiere [dotnet-counters](https://github.com/dotnet/diagnostics)). El endpoint de depuración `/api/test-metrics` se retiró (ítem `12.1-cotas-y-cierre-inmediato`): exponía contadores internos sin autenticación en la superficie pública.
 - **Resiliencia:** las llamadas a Qdrant pasan por Polly (3 reintentos exponenciales + circuit breaker 50%/30s). Los reintentos se loguean con `Execution attempt`.
 
+## Auditoría local (ítem `12.11-auditoria-local-con-actor`)
+
+Registro **durable e inmutable** de consultas (`rag search`, `rag ask`, `/api/search`, `/api/ask`,
+`/api/ask/stream`) e ingestas (`rag ingest`), independiente de los logs de Serilog: los logs son
+para diagnóstico y se rotan/purgan, la auditoría es el histórico de "quién hizo qué" que no se
+reescribe. Un evento se emite exactamente una vez por operación, sea cual sea su desenlace.
+
+### Dónde vive y cómo se configura
+
+```
+~/Library/Application Support/rag-engine/audit.sqlite3   # default (SectionName "Audit")
+```
+
+| Clave (`appsettings.json` / env `Audit__X`) | Efecto |
+|---|---|
+| `Audit:DbPath` | Ruta del archivo SQLite. Cambiarla no migra eventos previos. |
+| `Audit:ActorId` | Id explícito del operador. Sin configurar, cae en `Environment.UserName` del proceso — **nunca** en un claim de identidad corporativa. |
+
+### Esquema del evento (tabla `audit_events`)
+
+| Campo | Contenido |
+|---|---|
+| `event_id` (PK) | Único por escritura; reintentar con el mismo id no duplica (`INSERT OR IGNORE`). |
+| `correlation_id` | Id de la operación causal (una consulta, una corrida de ingesta). |
+| `operation` | `query.search` / `query.ask` / `ingest.repository`. |
+| `actor_type` | Siempre `local_operator` (ver más abajo). |
+| `actor_id` | Resuelto de `Audit:ActorId` o del usuario del SO. |
+| `collection` | Colección afectada; `null` si no aplica. |
+| `outcome` | `Success` / `Denied` / `Failed` / `Cancelled`. |
+| `detail` | Mensaje corto de diagnóstico (p. ej. `Exception.Message` en `Failed`). **Nunca** contenido de fuentes ni tokens/embeddings. |
+| `timestamp`, `version` | ISO-8601 UTC y versión de esquema (1 al cerrar este ítem). |
+
+Consulta directa (no hay comando de CLI todavía — es un registro de auditoría, no una feature de
+producto en esta ficha):
+
+```bash
+sqlite3 ~/Library/Application\ Support/rag-engine/audit.sqlite3 \
+  "SELECT timestamp, operation, outcome, collection, actor_id FROM audit_events ORDER BY timestamp DESC LIMIT 20;"
+```
+
+### El actor es siempre `local_operator` — por diseño
+
+Ningún camino de código (API, CLI, ingesta) infiere un `actor_type` distinto a partir del
+`RetrievalContext` empresarial del ítem `9.1` (tenant/módulo/scopes). Mientras no exista un IDP
+corporativo real y verificable, tratar ese contexto como identidad auditable sería fabricar una
+identidad que el sistema nunca autenticó. Un registro anterior a este ítem (o cualquier fila sin
+`actor_id`) queda como actor desconocido para siempre — no se rellena retroactivamente.
+
+### Qué NO se audita hoy
+
+- **Ingesta no tiene desenlace `Denied`**: `DefaultIngestionPipeline` no tiene una puerta de
+  autorización (el ítem `9.1` es solo de lectura/retrieval); sus eventos son `Success`/`Failed`/`Cancelled`.
+- **`rag search` (CLI) no tiene `Cancelled`**: el comando no acepta cancelación hoy; solo emite
+  `Success`/`Failed`. Limitación preexistente, no introducida por este ítem.
+- Un fallo al **escribir** el evento de auditoría (disco lleno, archivo corrupto) se loguea vía
+  Serilog pero **nunca** convierte una operación exitosa en un error de cara al usuario, ni
+  viceversa — la escritura de auditoría es best-effort respecto al resultado reportado.
+
+### Rollback
+
+Antes de revertir el escritor de auditoría (código o config), respaldar el archivo completo —
+es la única copia del histórico:
+
+```bash
+cp ~/Library/Application\ Support/rag-engine/audit.sqlite3 /tmp/audit.sqlite3.bak-$(date +%Y%m%d)
+```
+
+Revertir el código (`git revert`) o apagar la escritura no borra eventos ya persistidos; el
+archivo sigue siendo legible con `sqlite3` aunque el escritor deje de usarse. Si en el futuro se
+habilita un acceso empresarial real y no hay forma de auditarlo con un actor verificado,
+**rechazar la operación o aplicar una política explícita — nunca continuar en silencio**.
+
 ## Troubleshooting
 
 ### "I cannot find enough information…" en `rag ask`

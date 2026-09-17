@@ -5,6 +5,7 @@ using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.Audit;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
@@ -22,6 +23,7 @@ public sealed class VectorStoreResumeTests : IAsyncLifetime
     private QdrantVectorStore _store = null!;
     private string SourcePath => Path.Combine(_directory, "Fixture.cs");
     private string CachePath => Path.Combine(_directory, "summary.sqlite3");
+    private string AuditDbPath => Path.Combine(_directory, "audit.sqlite3");
 
     public async Task InitializeAsync()
     {
@@ -218,7 +220,10 @@ public sealed class VectorStoreResumeTests : IAsyncLifetime
         _brain, new FixtureSparseTokenizer(), _store, _store, generator,
         SummaryCache.Open(CachePath, "9.1-resume-fixture"),
         Options.Create(new IngestionOptions { MaxConcurrentResumenCalls = 1 }),
-        Options.Create(new OllamaOptions()), NullLogger<DefaultIngestionPipeline>.Instance);
+        Options.Create(new OllamaOptions()),
+        SqliteAuditEventStore.Open(AuditDbPath),
+        Options.Create(new AuditOptions { DbPath = AuditDbPath }),
+        NullLogger<DefaultIngestionPipeline>.Instance);
 
     private sealed class InlineProgress(Action<IngestionProgress> report) : IProgress<IngestionProgress>
     {

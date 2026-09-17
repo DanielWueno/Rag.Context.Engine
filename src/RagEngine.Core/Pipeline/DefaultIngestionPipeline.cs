@@ -67,6 +67,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly IBusinessSummaryGenerator _summaryGenerator;
     private readonly ISummaryCache _summaryCache;
     private readonly IOptions<IngestionOptions> _ingestionOptions;
+    private readonly IAuditEventStore _auditStore;
+    private readonly IOptions<AuditOptions> _auditOptions;
     private readonly string _groupPromptVersion;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
 
@@ -81,6 +83,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ISummaryCache summaryCache,
         IOptions<IngestionOptions> ingestionOptions,
         IOptions<OllamaOptions> ollamaOptions,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
         ILogger<DefaultIngestionPipeline> logger)
     {
         _scanner = scanner;
@@ -92,6 +96,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         _summaryGenerator = summaryGenerator;
         _summaryCache = summaryCache;
         _ingestionOptions = ingestionOptions;
+        _auditStore = auditStore;
+        _auditOptions = auditOptions;
         // Ítem 5.b: namespace de caché propio del modo por archivo/tipo, calculado una
         // sola vez aquí (no en DI) porque sólo se usa cuando SummaryGranularity=PerFile.
         _groupPromptVersion = OllamaBusinessSummaryGenerator.ComputeGroupPromptVersion(ollamaOptions.Value.ModelId);
@@ -107,10 +113,20 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var sw = Stopwatch.StartNew();
         var stats = new PipelineStats();
 
+        // Ítem 12.11: correlation_id agrupa el único evento de auditoría que emite esta
+        // corrida (Success/Failed/Cancelled — no hay Denied porque la ingesta todavía no
+        // tiene una puerta de autorización de escritura, a diferencia del retrieval del
+        // ítem 9.1). actorId se resuelve una sola vez, no en cada rama del try/catch.
+        var auditCorrelationId = Guid.NewGuid().ToString();
+        var auditActorId = AuditActor.ResolveId(_auditOptions.Value);
+
         _logger.LogInformation(
             "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force} | ConResumen: {Resumen} | IndexShortTypeDeclarations: {ShortTypes}",
             request.RepositoryPath, request.CollectionName, request.ForceReindex, request.EnableResumenLlm,
             _ingestionOptions.Value.IndexShortTypeDeclarations);
+
+        try
+        {
 
         // ── Decisión 1: si se pide --con-resumen sin --force sobre una colección que ya
         // existe SIN el tercer vector, hace falta --force para recrearla con 3 vectores
@@ -227,7 +243,58 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Obsoletos borrados: {Deleted}, Duration: {Elapsed}",
             summary.FilesScanned, summary.ChunksGenerated, summary.ChunksIndexed, stats.PointsDeleted, summary.TotalDuration);
 
+        await RecordIngestionAuditAsync(
+            auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Success, detail: null);
+
         return summary;
+        }
+        catch (OperationCanceledException)
+        {
+            // CancellationToken.None: la escritura de auditoría no debe abortarse sólo
+            // porque el token de la operación cancelada ya está señalado.
+            await RecordIngestionAuditAsync(
+                auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordIngestionAuditAsync(
+                auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Failed, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Escribe el evento final de auditoría de esta corrida. Nunca deja que un fallo en
+    /// la escritura de auditoría oculte el resultado real de la ingesta: se registra en
+    /// el log y no se relanza — perder un evento de auditoría es peor que arriesgar
+    /// consistencia perfecta entre ambos, pero no debe convertir una ingesta exitosa en
+    /// un fallo reportado al operador.
+    /// </summary>
+    private async Task RecordIngestionAuditAsync(
+        string correlationId, string actorId, string collection, AuditOutcome outcome, string? detail)
+    {
+        try
+        {
+            await _auditStore.RecordAsync(new AuditEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationId,
+                Operation = AuditOperations.IngestRepository,
+                ActorType = AuditActor.TypeLocalOperator,
+                ActorId = actorId,
+                Collection = collection,
+                Outcome = outcome,
+                Detail = detail,
+                Timestamp = DateTimeOffset.UtcNow,
+                Version = AuditEvent.CurrentVersion
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo persistir el evento de auditoría de ingesta ({Outcome}) para '{Collection}'.",
+                outcome, collection);
+        }
     }
 
     // ── Producer: Scan → Read → Chunk → Write to Channel ───────────────────────

@@ -7,6 +7,7 @@ using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.Audit;
 using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
@@ -182,6 +183,17 @@ public static class ServiceCollectionExtensions
             var ollamaOpts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
             var promptVersion = OllamaBusinessSummaryGenerator.ComputePromptVersion(ollamaOpts.ModelId);
             return SummaryCache.Open(ingestionOpts.ResumenCachePath, promptVersion);
+        });
+
+        // ── Auditoría local (ítem 12.11): base SQLite propia, separada de la caché de
+        // resúmenes — un evento de auditoría es historia inmutable, no algo que se
+        // regenere al cambiar de prompt_version.
+        services.Configure<AuditOptions>(
+            configuration.GetSection(AuditOptions.SectionName));
+        services.AddSingleton<IAuditEventStore>(sp =>
+        {
+            var auditOpts = sp.GetRequiredService<IOptions<AuditOptions>>().Value;
+            return SqliteAuditEventStore.Open(auditOpts.DbPath);
         });
 
         // ── 5. Chunking Strategies: Auto-Discovery ────────────────────────────

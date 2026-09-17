@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using Spectre.Console;
@@ -58,10 +59,14 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
     // ─────────────────────────────────────────────────────────────────────────
 
     private readonly IRagGenerationService _generation;
+    private readonly IAuditEventStore _auditStore;
+    private readonly IOptions<AuditOptions> _auditOptions;
 
-    public AskCommand(IRagGenerationService generation)
+    public AskCommand(IRagGenerationService generation, IAuditEventStore auditStore, IOptions<AuditOptions> auditOptions)
     {
         _generation = generation;
+        _auditStore = auditStore;
+        _auditOptions = auditOptions;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -93,6 +98,8 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
 
     private async Task<int> RunStreamingAsync(Settings settings, CancellationToken ct)
     {
+        var auditCorrelationId = Guid.NewGuid().ToString();
+
         // Phase 1 — Retrieval phase: show a spinner while Qdrant + ONNX run.
         // We cannot start streaming yet because we don't know if retrieval will
         // succeed. The spinner stops the moment the first LLM token arrives.
@@ -150,6 +157,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             AnsiConsole.WriteLine();
 
             PrintFooter(tokenCount, settings);
+            await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Success, detail: null);
             return 0;
         }
         catch (OperationCanceledException)
@@ -157,6 +165,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             retrievalDone = true;
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("\n[yellow]⚡ Generación cancelada por el usuario.[/]");
+            await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Cancelled, detail: null);
             return 0;
         }
         catch (Exception ex)
@@ -165,6 +174,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine($"[red bold]✗ Error:[/] {Markup.Escape(ex.Message)}");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+            await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Failed, ex.Message);
             return 1;
         }
         finally
@@ -183,6 +193,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
 
     private async Task<int> RunBufferedAsync(Settings settings, CancellationToken ct)
     {
+        var auditCorrelationId = Guid.NewGuid().ToString();
         var buffer = new System.Text.StringBuilder();
 
         try
@@ -204,14 +215,18 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
         catch (OperationCanceledException)
         {
             AnsiConsole.MarkupLine("[yellow]⚡ Cancelado.[/]");
+            await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Cancelled, detail: null);
             return 0;
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red bold]✗ Error:[/] {Markup.Escape(ex.Message)}");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+            await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Failed, ex.Message);
             return 1;
         }
+
+        await RecordQueryAuditAsync(settings, auditCorrelationId, AuditOutcome.Success, detail: null);
 
         var fullResponse = buffer.ToString();
 
@@ -230,6 +245,37 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
 
         PrintFooter(fullResponse.Length, settings);
         return 0;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Auditoría (ítem 12.11): un evento por invocación de `rag ask`, con
+    //  CancellationToken.None a propósito — no debe abortarse por la misma
+    //  cancelación que está registrando, y un fallo al persistir se avisa por
+    //  consola pero nunca convierte una respuesta ya entregada en un error.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private async Task RecordQueryAuditAsync(Settings settings, string correlationId, AuditOutcome outcome, string? detail)
+    {
+        try
+        {
+            await _auditStore.RecordAsync(new AuditEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationId,
+                Operation = AuditOperations.QueryAsk,
+                ActorType = AuditActor.TypeLocalOperator,
+                ActorId = AuditActor.ResolveId(_auditOptions.Value),
+                Collection = settings.Collection,
+                Outcome = outcome,
+                Detail = detail,
+                Timestamp = DateTimeOffset.UtcNow,
+                Version = AuditEvent.CurrentVersion
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[grey](auditoría no persistida: {Markup.Escape(ex.Message)})[/]");
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

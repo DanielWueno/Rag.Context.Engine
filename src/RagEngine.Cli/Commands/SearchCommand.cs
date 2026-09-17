@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Pipeline;
@@ -59,10 +60,14 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
     }
 
     private readonly ISemanticRetriever _retriever;
+    private readonly IAuditEventStore _auditStore;
+    private readonly IOptions<AuditOptions> _auditOptions;
 
-    public SearchCommand(ISemanticRetriever retriever)
+    public SearchCommand(ISemanticRetriever retriever, IAuditEventStore auditStore, IOptions<AuditOptions> auditOptions)
     {
         _retriever = retriever;
+        _auditStore = auditStore;
+        _auditOptions = auditOptions;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -90,6 +95,7 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         };
 
         IReadOnlyList<RetrievalResult> results = [];
+        var auditCorrelationId = Guid.NewGuid().ToString();
 
         try
         {
@@ -104,10 +110,13 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         }
         catch (Exception ex)
         {
+            await RecordQueryAuditAsync(settings.Collection, AuditOutcome.Failed, ex.Message);
             AnsiConsole.MarkupLine($"[red]✗ Error durante la búsqueda:[/] {Markup.Escape(ex.Message)}");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
             return 1;
         }
+
+        await RecordQueryAuditAsync(settings.Collection, AuditOutcome.Success, detail: null);
 
         if (results.Count == 0)
         {
@@ -115,6 +124,30 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
             AnsiConsole.MarkupLine($"[dim]Intenta reducir [bold]--min-score[/] (actual: {settings.MinScore:F2}) " +
                                    "o ampliar la consulta.[/]");
             return 0;
+        }
+
+        async Task RecordQueryAuditAsync(string collection, AuditOutcome outcome, string? detail)
+        {
+            try
+            {
+                await _auditStore.RecordAsync(new AuditEvent
+                {
+                    EventId = Guid.NewGuid().ToString(),
+                    CorrelationId = auditCorrelationId,
+                    Operation = AuditOperations.QuerySearch,
+                    ActorType = AuditActor.TypeLocalOperator,
+                    ActorId = AuditActor.ResolveId(_auditOptions.Value),
+                    Collection = collection,
+                    Outcome = outcome,
+                    Detail = detail,
+                    Timestamp = DateTimeOffset.UtcNow,
+                    Version = AuditEvent.CurrentVersion
+                });
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[grey](auditoría no persistida: {Markup.Escape(ex.Message)})[/]");
+            }
         }
 
         switch (settings.Output)

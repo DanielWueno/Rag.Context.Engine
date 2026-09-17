@@ -361,6 +361,47 @@ try
         return (denied, manifest, actor);
     }
 
+    // Ítem 12.11: un evento por consulta (search/ask, ambos transportes de ask), con
+    // ActorType SIEMPRE local_operator — el modo Empresarial de retrieval (ítem 9.1)
+    // decide autorización de colección, no identidad auditable; no existe todavía un
+    // IDP corporativo real, así que auditar como si lo hubiera sería inventar una
+    // identidad que nadie verificó. CancellationToken.None a propósito: la escritura de
+    // auditoría no debe abortarse por la cancelación de la request que está registrando,
+    // y un fallo al persistir se loguea pero NUNCA convierte una respuesta exitosa en un
+    // error de cara al cliente.
+    static async Task RecordQueryAuditAsync(
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        ILogger<Program> logger,
+        string operation,
+        string correlationId,
+        string collection,
+        AuditOutcome outcome,
+        string? detail)
+    {
+        try
+        {
+            await auditStore.RecordAsync(new AuditEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationId,
+                Operation = operation,
+                ActorType = AuditActor.TypeLocalOperator,
+                ActorId = AuditActor.ResolveId(auditOptions.Value),
+                Collection = collection,
+                Outcome = outcome,
+                Detail = detail,
+                Timestamp = DateTimeOffset.UtcNow,
+                Version = AuditEvent.CurrentVersion
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "No se pudo persistir el evento de auditoría de consulta ({Operation}/{Outcome}) para '{Collection}'.",
+                operation, outcome, collection);
+        }
+    }
+
     /// <summary>
     /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore para una request.
     /// El valor explícito del cliente SIEMPRE gana; en su ausencia, el perfil de la
@@ -532,6 +573,8 @@ try
         ICollectionAuthorizationService authorization,
         IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -541,10 +584,15 @@ try
             return invalidParameters;
 
         var collection = request.Collection ?? defaultCollection;
+        var auditCorrelationId = Guid.NewGuid().ToString();
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
             return denied;
+        }
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
@@ -553,17 +601,33 @@ try
             request, profileResolver.Resolve(manifest));
 
         var stopwatch = Stopwatch.StartNew();
-        var results = await retriever.SearchAsync(
-            request.Query,
-            new RetrievalOptions
-            {
-                Context = retrievalContext,
-                CollectionName = collection,
-                TopK = topK,
-                MinimumSimilarityScore = minScore,
-                UseReRanking = rerank
-            },
-            cancellationToken);
+        IReadOnlyList<RetrievalResult> results;
+        try
+        {
+            results = await retriever.SearchAsync(
+                request.Query,
+                new RetrievalOptions
+                {
+                    Context = retrievalContext,
+                    CollectionName = collection,
+                    TopK = topK,
+                    MinimumSimilarityScore = minScore,
+                    UseReRanking = rerank
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
+            throw;
+        }
         stopwatch.Stop();
 
         // /api/search es la herramienta "Buscar" del power-user — siempre trae el fragmento
@@ -585,6 +649,9 @@ try
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });
 
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
+
         return Results.Ok(sources);
     })
     .AddEndpointFilter(RateLimitFilter(requestRateLimiter));
@@ -597,6 +664,8 @@ try
         ICollectionAuthorizationService authorization,
         IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -606,10 +675,15 @@ try
             return invalidParameters;
 
         var collection = request.Collection ?? defaultCollection;
+        var auditCorrelationId = Guid.NewGuid().ToString();
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
             return denied;
+        }
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
@@ -625,22 +699,37 @@ try
         var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
         IReadOnlyList<RetrievalResult> retrievedSources = [];
-        await foreach (var update in generation.AskStreamingAsync(
-            request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
-            promptFamily, onStatus: null, cancellationToken: cancellationToken))
+        try
         {
-            switch (update)
+            await foreach (var update in generation.AskStreamingAsync(
+                request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
+                promptFamily, onStatus: null, cancellationToken: cancellationToken))
             {
-                case GenerationEvent.ContextReady context:
-                    retrievedSources = context.Sources;
-                    break;
-                case GenerationEvent.TextDelta fragment:
-                    answer.Append(fragment.Text);
-                    break;
-                case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined }:
-                    retrievedSources = [];
-                    break;
+                switch (update)
+                {
+                    case GenerationEvent.ContextReady context:
+                        retrievedSources = context.Sources;
+                        break;
+                    case GenerationEvent.TextDelta fragment:
+                        answer.Append(fragment.Text);
+                        break;
+                    case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined }:
+                        retrievedSources = [];
+                        break;
+                }
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
+            throw;
         }
         generationStopwatch.Stop();
 
@@ -666,6 +755,9 @@ try
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });
 
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
+
         return Results.Ok(new RagAskResponse(answerText, sources));
     })
     .AddEndpointFilter(RateLimitFilter(requestRateLimiter, generationConcurrencyLimiter));
@@ -683,6 +775,8 @@ try
         ICollectionAuthorizationService authorization,
         IOptions<CollectionAuthorizationOptions> authorizationOptions,
         IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
         ILogger<Program> queryLogger,
         CancellationToken cancellationToken) =>
     {
@@ -699,10 +793,13 @@ try
         }
 
         var collection = request.Collection ?? defaultCollection;
+        var auditCorrelationId = Guid.NewGuid().ToString();
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
         {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
             await denied.ExecuteAsync(http);
             return;
         }
@@ -768,6 +865,8 @@ try
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // El cliente cortó la conexión — no hay a quién mandarle un evento de error.
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
             throw;
         }
         catch (Exception ex)
@@ -782,6 +881,8 @@ try
             // misma razón). Se cierra limpio con un evento "error" y se corta acá, sin
             // "done" ni el log de QueryEvent de abajo, que asume una respuesta completa.
             queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
             await SendAsync("error", new { message = "Ocurrió un error generando la respuesta." });
             return;
         }
@@ -807,6 +908,9 @@ try
                 Answer = answer.ToString(),
                 Sources = sources.Select(s => new { s.File, s.Section, s.StartLine, s.EndLine, s.Score })
             });
+
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
 
         await SendAsync("done", new { });
     })

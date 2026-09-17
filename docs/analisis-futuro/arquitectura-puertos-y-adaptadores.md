@@ -269,6 +269,15 @@ Dos secuelas del mismo contrato insuficiente:
   defaults que repiten el `0.10` de `Domain/RetrievalResult.cs:30` y de `Api/Program.cs:333-336,480-483`.
   Cuatro sitios con la misma constante.
 
+> **Actualización de 3.5, ítem 9.3 (2026-09-17):** el puerto de generación devuelve
+> eventos tipados de contexto/fuentes/veredicto, fragmentos y resultado final.
+> API y CLI consumen el mismo flujo; desaparecen la búsqueda y la decisión de
+> meta-intención duplicadas, la reevaluación del gate en API y la comparación con
+> una constante de la clase concreta. Se retira `InternalsVisibleTo` hacia API.
+> El JSON/SSE exitoso se conserva mediante controles pre-refactor, incluidos
+> rechazo del modelo, bandas y redacción Simple. Los errores ya no se disfrazan
+> de respuestas válidas. Evidencia y límites: `../eval/quality/9.3/`.
+
 ### 3.6 Tres adaptadores archivados como servicios de aplicación — y dos sin puerto
 
 | Archivo | Dependencia externa | ¿Tiene puerto? |

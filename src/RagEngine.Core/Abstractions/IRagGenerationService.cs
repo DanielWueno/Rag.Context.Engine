@@ -10,7 +10,8 @@ public interface IRagGenerationService
 {
     /// <summary>
     /// Runs the end-to-end RAG pipeline for the given <paramref name="query"/> and
-    /// yields each token/chunk of the LLM response as it is generated.
+    /// yields the grounding decision and sources, each text fragment as it is
+    /// generated, and the final outcome. Retrieval runs once (zero for meta-intent).
     /// </summary>
     /// <param name="query">
     ///   The natural-language question or code description submitted by the user.
@@ -18,6 +19,7 @@ public interface IRagGenerationService
     /// <param name="collectionName">
     ///   The Qdrant collection that holds the indexed chunks for the target codebase.
     /// </param>
+    /// <param name="retrievalContext">Explicit authorization context for this turn.</param>
     /// <param name="topK">
     ///   Maximum number of semantic neighbours to retrieve and inject into the LLM context.
     ///   Higher values produce richer context at the cost of a larger prompt.
@@ -58,10 +60,11 @@ public interface IRagGenerationService
     /// </param>
     /// <param name="cancellationToken">Token to cancel the streaming operation.</param>
     /// <returns>
-    ///   An async stream of text fragments produced by the LLM, suitable for
-    ///   real-time display in a terminal or UI.
+    ///   An ordered stream of <see cref="GenerationEvent"/>. Hosts display TextDelta
+    ///   without buffering and use the supplied sources/verdict, never a second
+    ///   retrieval or gate evaluation. Completed is absent on error/cancellation.
     /// </returns>
-    IAsyncEnumerable<string> AskStreamingAsync(
+    IAsyncEnumerable<GenerationEvent> AskStreamingAsync(
         string query,
         string collectionName,
         RetrievalContext retrievalContext,

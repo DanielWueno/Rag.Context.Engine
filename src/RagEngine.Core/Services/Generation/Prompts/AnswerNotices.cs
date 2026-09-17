@@ -8,8 +8,8 @@ namespace RagEngine.Core.Services.Generation.Prompts;
 /// El texto vive aquí y no en RagGenerationService por la Fase 1 de
 /// docs/analisis-futuro/centralizacion-prompts-vault.md: consolidar los prompts
 /// en un solo sitio antes de decidir si hace falta un vault externo. El servicio
-/// conserva un alias de una línea, así que ningún call-site cambió y el refactor
-/// es verificablemente byte-idéntico (ver PromptHashesTests).
+/// interpreta el rechazo y lo publica como GenerationOutcome.ModelDeclined, sin
+/// exigir que los hosts conozcan este texto (ver PromptHashesTests).
 /// </summary>
 internal static class AnswerNotices
 {
@@ -21,9 +21,8 @@ internal static class AnswerNotices
     /// no-grounding path (<see cref="NoGroundingSystemPromptTemplate"/>), which
     /// answers in its own words instead of a fixed sentence — see
     /// docs/analisis-futuro/guardrail-banda-baja-conversacional.md.
-    /// Public so callers (e.g. the API host) can detect when the LLM itself chose
-    /// this exact sentence, so they can avoid showing retrieved sources next to an
-    /// answer that says none were useful.
+    /// The generation service recognizes this sentence and returns a typed outcome;
+    /// hosts do not compare answer text or depend on this prompt implementation.
     /// </summary>
     internal const string NoContextFallback =
         "I cannot find enough information in the indexed content to answer this question.";

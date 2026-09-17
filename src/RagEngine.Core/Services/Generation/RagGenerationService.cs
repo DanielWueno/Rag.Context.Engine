@@ -49,14 +49,6 @@ public sealed class RagGenerationService : IRagGenerationService
     /// </summary>
     private RagGenerationOptions Options => _optionsMonitor.CurrentValue;
 
-    /// <summary>
-    /// Alias de <see cref="Prompts.AnswerNotices.NoContextFallback"/>. Sigue siendo
-    /// público en esta clase porque es parte del contrato hacia los hosts: la API lo
-    /// compara contra la respuesta para no mostrar fuentes junto a un "no encontré
-    /// nada" que eligió el propio modelo (ver <c>RagEngine.Api/Program.cs</c>).
-    /// </summary>
-    public const string NoContextFallbackMessage = Prompts.AnswerNotices.NoContextFallback;
-
     // ──────────────────────────────────────────────────────────────
     //  Constructor
     // ──────────────────────────────────────────────────────────────
@@ -106,7 +98,7 @@ public sealed class RagGenerationService : IRagGenerationService
     // ──────────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> AskStreamingAsync(
+    public async IAsyncEnumerable<GenerationEvent> AskStreamingAsync(
         string query,
         string collectionName,
         RetrievalContext retrievalContext,
@@ -121,6 +113,8 @@ public sealed class RagGenerationService : IRagGenerationService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionName);
+        ArgumentNullException.ThrowIfNull(retrievalContext);
+        cancellationToken.ThrowIfCancellationRequested();
 
         // ── Step 0: Meta-intent pre-filter ────────────────────────
         // Questions about the assistant itself ("who are you?", "what tech are
@@ -130,33 +124,52 @@ public sealed class RagGenerationService : IRagGenerationService
         if (await _metaIntentDetector.IsMetaIntentAsync(query, cancellationToken))
         {
             _logger.LogInformation("[RAG] Meta-intent match for query: {Query}. Skipping retrieval.", query);
-            yield return SystemPromptComposer.SelfDescriptionBlock;
+            yield return new GenerationEvent.ContextReady([], GroundingVerdict.NotEvaluated);
+            yield return new GenerationEvent.TextDelta(SystemPromptComposer.SelfDescriptionBlock);
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new GenerationEvent.Completed(GenerationOutcome.Answered);
             yield break;
         }
 
         // ── Step 1: Semantic Retrieval ────────────────────────────
-        // NOTE: yield return is not allowed inside try/catch blocks in C# iterator
-        // methods. RetrieveChunksAsync owns all exception handling and returns a
-        // (success, chunks, errorMessage) tuple so the iterator body stays clean.
         _logger.LogInformation(
             "[RAG] Retrieving top-{TopK} chunks from '{Collection}' for query: {Query}",
             topK, collectionName, query);
 
-        var (retrievalOk, chunks, retrievalError) = await RetrieveChunksAsync(
+        var chunks = await RetrieveChunksAsync(
             query, collectionName, retrievalContext, topK, minimumScore, useReRanking, cancellationToken);
-
-        if (!retrievalOk)
-        {
-            yield return retrievalError!;
-            yield break;
-        }
 
         // ── Step 2: confidence gate ───────────────────────────────
         // Sin anclaje se conversa sin contexto y, por la garantía estructural de
         // docs/analisis-futuro/guardrail-banda-baja-conversacional.md, los chunks
         // recuperados (si los hay) no se vuelven a tocar por debajo de esta rama.
-        var assessment = _confidenceGate.Assess(chunks!, minimumScore, query);
+        var assessment = _confidenceGate.Assess(chunks, minimumScore, query);
+        yield return new GenerationEvent.ContextReady(
+            assessment.HasGrounding ? chunks : [], assessment.Verdict);
 
+        var answer = new StringBuilder();
+        await foreach (var fragment in StreamAnswerAsync(
+            query, chunks, assessment, responseMode, history, promptFamily, onStatus, cancellationToken))
+        {
+            answer.Append(fragment);
+            yield return new GenerationEvent.TextDelta(fragment);
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return new GenerationEvent.Completed(
+            answer.ToString().Trim() == Prompts.AnswerNotices.NoContextFallback
+                ? GenerationOutcome.ModelDeclined : GenerationOutcome.Answered);
+    }
+
+    private async IAsyncEnumerable<string> StreamAnswerAsync(
+        string query,
+        IReadOnlyList<RetrievalResult> chunks,
+        GroundingAssessment assessment,
+        ResponseMode responseMode,
+        IReadOnlyList<ChatTurn>? history,
+        PromptFamily? promptFamily,
+        Func<string, CancellationToken, Task>? onStatus,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
         if (!assessment.HasGrounding)
         {
             await foreach (var fragment in _answerStreamer.StreamAsync(
@@ -168,7 +181,7 @@ public sealed class RagGenerationService : IRagGenerationService
             yield break;
         }
 
-        _logger.LogInformation("[RAG] Retrieved {Count} chunks. Building context block.", chunks!.Count);
+        _logger.LogInformation("[RAG] Retrieved {Count} chunks. Building context block.", chunks.Count);
 
         // ── Step 3: Context Assembly ──────────────────────────────
         // For ResponseMode.Simple, the assembler swaps each chunk's raw content for its
@@ -219,10 +232,9 @@ public sealed class RagGenerationService : IRagGenerationService
     }
 
     /// <summary>
-    /// Non-iterator helper that wraps the retrieval call in a try/catch.
-    /// Returns a tuple so the caller (an async iterator) never needs a catch block.
+    /// Logs retrieval failures without converting them into successful answers.
     /// </summary>
-    private async Task<(bool Ok, IReadOnlyList<RetrievalResult>? Chunks, string? Error)>
+    private async Task<IReadOnlyList<RetrievalResult>>
         RetrieveChunksAsync(
             string query,
             string collectionName,
@@ -243,8 +255,7 @@ public sealed class RagGenerationService : IRagGenerationService
                 UseReRanking           = useReRanking
             };
 
-            var chunks = await _retriever.SearchAsync(query, options, cancellationToken);
-            return (true, chunks, null);
+            return await _retriever.SearchAsync(query, options, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -254,7 +265,7 @@ public sealed class RagGenerationService : IRagGenerationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "[RAG] Retrieval failed for query: {Query}", query);
-            return (false, null, "⚠️ An error occurred while searching the codebase. Please ensure Qdrant is running.");
+            throw;
         }
     }
 }

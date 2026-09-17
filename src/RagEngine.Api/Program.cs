@@ -263,50 +263,6 @@ try
         request.Rerank ?? profile?.UseReRanking ?? false,
         profile?.PromptFamily);
 
-    // /api/ask and /api/ask/stream retrieve sources independently from the
-    // RagGenerationService call that actually answers the question, so the two
-    // can disagree: a meta-question skips retrieval entirely inside the service,
-    // and a low-confidence top score makes it cut before generating — in both
-    // cases the retrieved chunks played no role in the answer shown to the user,
-    // so attaching them as "sources" would be misleading.
-    //
-    // Ítem 4.7: esto solía RECALCULAR la banda a mano
-    // (`results[0].SimilarityScore < ragOptions.LowConfidenceThreshold`), una copia
-    // que se quedaba atrás en silencio cada vez que 4.2/4.3 recalibraban esos
-    // umbrales o encendían CrossEncoder:StableGateScore. Ahora delega en el mismo
-    // ConfidenceGate que usa RagGenerationService.AskStreamingAsync internamente
-    // (ver el comentario de esa clase) — un solo sitio decide la banda, la API
-    // sólo lee el veredicto. isMetaIntent se pasa ya calculado: requiere una
-    // llamada al embedder, así que los llamadores lo calculan una vez por request
-    // en vez de repetirlo aquí; el gate no cubre meta-intención, así que esa parte
-    // se queda en la API (fuera de alcance del ítem).
-    //
-    // Ítem 4.9: el parámetro `rerank` desapareció de esta firma. Era el proxy con el que
-    // el gate adivinaba en qué escala venía el score; ahora eso lo declara el propio
-    // resultado (RetrievalResult.ScoreScale), así que la API ya no tiene que reenviar una
-    // bandera de la petición para que la banda se calcule bien.
-    //
-    // Nota sobre lista vacía (asimetría que señala el ítem 4.7): antes, con
-    // `results.Count == 0` la expresión `rerank && results.Count > 0 && ...`
-    // daba false siempre — NUNCA suprimía, sin importar rerank.
-    // ConfidenceGate.Assess trata 0 chunks como sin-grounding incondicionalmente
-    // (ver su comentario: "zero chunks retrieved at all" es uno de los dos casos
-    // que unifica), así que delegar en el gate SÍ cambia el booleano de
-    // ShouldSuppressSources para lista vacía (pasa a ser "suprimir"). Se decide
-    // seguir al gate (single source of truth) en vez de preservar la asimetría,
-    // porque no hay JSON observable que cambie: con `results` vacío,
-    // BuildSourcesAsync(results, ...) ya devuelve una lista vacía sin importar el
-    // valor de este booleano — Zip no tiene elementos que producir. Es decir, el
-    // único caso con diferencia observable real es results.Count > 0, y ahí la
-    // fórmula del gate es idéntica a la que había aquí.
-    static bool ShouldSuppressSources(
-        bool isMetaIntent,
-        ConfidenceGate confidenceGate,
-        IReadOnlyList<RetrievalResult> results,
-        float minScore,
-        string query) =>
-        isMetaIntent || !confidenceGate.Assess(results, minScore, query).HasGrounding;
-
     // El resumen de negocio ya se generó y cacheó en ingesta (Fase 2, opt-in por colección
     // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
     // fuente, sin generar nada nuevo. Miss de caché (colección sin resumen, o chunk que cayó
@@ -546,60 +502,40 @@ try
             return denied;
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
-        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
-        var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
-        var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
-        var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
-
         var stopwatch = Stopwatch.StartNew();
-
-        // Dos llamadas de retrieval independientes (una aquí para citar fuentes, otra
-        // dentro de AskStreamingAsync para armar el contexto del LLM): es la forma más
-        // simple de exponer "sources" sin tocar el contrato público de
-        // IRagGenerationService. El costo extra es insignificante en una colección de
-        // documentación de este tamaño. Se omite por completo para meta-preguntas: la
-        // respuesta ni siquiera va a usar el contexto recuperado.
-        var sourcesTask = isMetaIntent
-            ? Task.FromResult<IReadOnlyList<RetrievalResult>>([])
-            : retriever.SearchAsync(
-                request.Query,
-                new RetrievalOptions
-                {
-                    Context = retrievalContext,
-                    CollectionName = collection,
-                    TopK = topK,
-                    MinimumSimilarityScore = minScore,
-                    UseReRanking = rerank
-                },
-                cancellationToken);
 
         var history = request.History?.Select(t => t.ToDomain()).ToList();
 
-        // Medido por separado del stopwatch total del request (que también cubre el
-        // retrieval de "sources" en paralelo) para poder comparar la latencia real de
-        // Simple (buferea toda la respuesta) contra Technical (streaming) — ver Fase 1
-        // punto 4 de docs/analisis-futuro/modo-respuesta-simple-codigo.md.
+        // Incluye la unica recuperacion del turno; el total incluye ademas los DTOs.
         var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
-        await foreach (var fragment in generation.AskStreamingAsync(
+        IReadOnlyList<RetrievalResult> retrievedSources = [];
+        await foreach (var update in generation.AskStreamingAsync(
             request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
             promptFamily, onStatus: null, cancellationToken: cancellationToken))
         {
-            answer.Append(fragment);
+            switch (update)
+            {
+                case GenerationEvent.ContextReady context:
+                    retrievedSources = context.Sources;
+                    break;
+                case GenerationEvent.TextDelta fragment:
+                    answer.Append(fragment.Text);
+                    break;
+                case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined }:
+                    retrievedSources = [];
+                    break;
+            }
         }
         generationStopwatch.Stop();
 
-        var retrievedSources = await sourcesTask;
         var answerText = answer.ToString();
-        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, retrievedSources, minScore, request.Query)
-                || answerText.Trim() == RagGenerationService.NoContextFallbackMessage
-            ? []
-            : await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
+        var sources = await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
         stopwatch.Stop();
 
         queryLogger.LogInformation(
@@ -656,16 +592,11 @@ try
         }
         var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
 
-        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
         var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
-        var confidenceGate = http.RequestServices.GetRequiredService<ConfidenceGate>();
-        var metaIntentDetector = http.RequestServices.GetRequiredService<IMetaIntentDetector>();
         var summaryCache = http.RequestServices.GetRequiredService<SummaryCache>();
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
-        var isMetaIntent = await metaIntentDetector.IsMetaIntentAsync(request.Query, cancellationToken);
-
         http.Response.Headers.CacheControl = "no-cache";
         http.Response.ContentType = "text/event-stream";
 
@@ -684,61 +615,38 @@ try
 
         await SendAsync("status", new { message = "Buscando en la documentación..." });
 
-        // Meta-preguntas se saltan retrieval por completo: la respuesta de
-        // AskStreamingAsync ni siquiera va a mirar el contexto recuperado.
-        var results = isMetaIntent
-            ? (IReadOnlyList<RetrievalResult>)[]
-            : await retriever.SearchAsync(
-                request.Query,
-                new RetrievalOptions
-                {
-                    Context = retrievalContext,
-                    CollectionName = collection,
-                    TopK = topK,
-                    MinimumSimilarityScore = minScore,
-                    UseReRanking = rerank
-                },
-                cancellationToken);
-
-        // Si el score del top-1 va a hacer que AskStreamingAsync corte antes de
-        // generar (banda baja) o responda con el bloque fijo de meta-pregunta, los
-        // chunks recuperados no jugaron ningún papel en la respuesta — mostrarlos
-        // como "fuentes" confundiría al usuario. Mismo criterio que usa el gate
-        // interno del servicio de generación.
-        var sources = ShouldSuppressSources(isMetaIntent, confidenceGate, results, minScore, request.Query)
-            ? []
-            : await BuildSourcesAsync(results, summaryCache, responseMode, cancellationToken);
-
-        // El front pinta estas tarjetas de inmediato (con su fragmento) y usa
-        // los primeros títulos como el "extracto de contexto" del status —
-        // esto ya es lo que se recuperó, no una simulación.
-        await SendAsync("sources", new { sources });
-        await SendAsync("status", new { message = sources.Count > 0
-            ? $"Generando respuesta a partir de {sources.Count} fragmentos..."
-            : "Generando respuesta..." });
-
-        // Sin estado de sesión en el servidor: el cliente reenvía la transcripción
-        // completa en cada request. El retrieval de arriba solo usa `request.Query`
-        // (el turno actual) — el historial se inyecta al LLM para dar continuidad
-        // conversacional, no se vuelve a buscar en Qdrant.
+        List<SourceDto> sources = [];
         var history = request.History?.Select(t => t.ToDomain()).ToList();
 
-        // Medido por separado del stopwatch total del request, igual que en /api/ask,
-        // para poder comparar la latencia real de Simple (buferea toda la respuesta,
-        // un solo evento "token" al final) contra Technical (streaming token-a-token)
-        // — ver Fase 1 punto 4 de docs/analisis-futuro/modo-respuesta-simple-codigo.md.
+        // Ambos transportes miden ahora el mismo tramo: retrieval + generacion.
         var generationStopwatch = Stopwatch.StartNew();
         var answer = new StringBuilder();
         try
         {
-            await foreach (var fragment in generation.AskStreamingAsync(
+            await foreach (var update in generation.AskStreamingAsync(
                 request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
                 promptFamily,
                 onStatus: async (message, ct) => await SendAsync("status", new { message }),
                 cancellationToken: cancellationToken))
             {
-                answer.Append(fragment);
-                await SendAsync("token", new { text = fragment });
+                switch (update)
+                {
+                    case GenerationEvent.ContextReady context:
+                        sources = await BuildSourcesAsync(context.Sources, summaryCache, responseMode, cancellationToken);
+                        await SendAsync("sources", new { sources });
+                        await SendAsync("status", new { message = sources.Count > 0
+                            ? $"Generando respuesta a partir de {sources.Count} fragmentos..."
+                            : "Generando respuesta..." });
+                        break;
+                    case GenerationEvent.TextDelta fragment:
+                        answer.Append(fragment.Text);
+                        await SendAsync("token", new { text = fragment.Text });
+                        break;
+                    case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined } when sources.Count > 0:
+                        sources = [];
+                        await SendAsync("sources", new { sources });
+                        break;
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -762,17 +670,6 @@ try
             return;
         }
         generationStopwatch.Stop();
-
-        // El gate no cortó (banda media/alta), pero el LLM decidió por su cuenta,
-        // siguiendo la regla 2 del prompt, que ninguno de los chunks recuperados
-        // servía — mismo criterio de "no mostrar fuentes que no se usaron", pero
-        // solo se sabe hasta después de generar. El "sources" ya enviado antes
-        // (para dar progreso temprano) se corrige con un segundo evento vacío.
-        if (sources.Count > 0 && answer.ToString().Trim() == RagGenerationService.NoContextFallbackMessage)
-        {
-            sources = [];
-            await SendAsync("sources", new { sources });
-        }
 
         stopwatch.Stop();
 

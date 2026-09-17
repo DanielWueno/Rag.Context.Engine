@@ -153,6 +153,29 @@ de contexto byte a byte y la plantilla elegida contra un golden capturado ejecut
 **previo** a la descomposición (`tests/RagEngine.Core.Tests/GoldenMaster/generacion-contexto.json`).
 Los textos de prompt los cubre aparte `PromptHashesTests`.
 
+**Contrato hacia API y CLI (9.3):** `IRagGenerationService.AskStreamingAsync` devuelve
+`IAsyncEnumerable<GenerationEvent>`, no sólo texto. El orden es `ContextReady`
+(fuentes en orden de retrieval y veredicto `NotEvaluated/Ungrounded/Medium/High`),
+`TextDelta` por fragmento y `Completed` con el resultado final. La generación hace
+una única búsqueda; meta-intención no busca. Sin anclaje no expone chunks como
+fuentes. Si el modelo emite el rechazo exacto del prompt, `ModelDeclined` permite
+retirar las fuentes sin que el host conozca esa frase. El gate sigue siendo interno
+y la API ya no tiene acceso privilegiado a los tipos internos de Core.
+
+El JSON de `/api/ask` y los eventos SSE (`status`, `sources`, `token`, `done`)
+se conservan, incluida la corrección final de fuentes vacías tras un rechazo.
+Technical y Simple con el sanitizador apagado siguen emitiendo cada fragmento sin
+esperar el siguiente. Los errores se propagan sin `Completed`: HTTP devuelve
+ProblemDetails 500, SSE emite `error` sin `done`, y CLI usa su salida de error
+habitual (ya no imprime un fallo de retrieval como respuesta exitosa).
+`GenerationDurationMs` incluye ahora la única búsqueda en ambos transportes;
+sus duraciones no son directamente comparables con el tramo SSE anterior.
+
+Evidencia pre/post: `docs/eval/quality/9.3/`. Se compara respuesta, fuentes, secuencia
+SSE y entrada completa del proveedor determinista, además de contar llamadas y
+mediciones reales de retrieval. Esto acredita equivalencia del contrato y de las
+entradas de generación, no una mejora de recall ni calidad de un LLM real.
+
 ## Decisiones de diseño clave
 
 | Decisión | Racional |

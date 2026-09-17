@@ -18,7 +18,11 @@ namespace RagEngine.Core.Services.Generation;
 ///   Texto a añadir al prompt cuando el score cae en la banda media, o null.
 ///   Sólo tiene sentido si <paramref name="HasGrounding"/> es true.
 /// </param>
-internal readonly record struct GroundingAssessment(bool HasGrounding, string? ConfidenceAddendum);
+internal readonly record struct GroundingAssessment(bool HasGrounding, string? ConfidenceAddendum)
+{
+    public GroundingVerdict Verdict => !HasGrounding ? GroundingVerdict.Ungrounded
+        : ConfidenceAddendum is not null ? GroundingVerdict.Medium : GroundingVerdict.High;
+}
 
 /// <summary>
 /// Decide, a partir del score del mejor chunk, en qué banda de confianza cae el turno.

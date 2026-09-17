@@ -1,0 +1,13 @@
+{
+  "control_commit": "ad91fceb8fc52391e5ac5b5e5ce6314496178e08",
+  "captures_sha256": {
+    "fixtures.json": "3f1b3f0abf243f31d09e1bb2ea169b8aa0cc8f59b219400db5094147aba97b7b",
+    "quality.json": "55a1a28f1dc8ed50e8eaa9be22d810df0ecb15e74af1e0a173a4a69e7800951d"
+  },
+  "instrument_sha256": {
+    "tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs": "5ca5b652e188933ef1957cd5b7766052593d4fb6a7cbc5b45fc376a722fca549",
+    "tests/RagEngine.Core.Tests/GenerationQualityTests.cs": "b3b464b8aa34dfa9f08c40796e091334e0194c43a867088ca28ab47bdca20cde"
+  },
+  "cli_sha256": "19330c5383c09264af3fb62a2e40f0fee3832b7f19d26e1b0a0ffaf803981e50",
+  "instrument_delta": "Listener filtered by request collection; spy records forwarded query/options; disposal models client disconnect. Neither prompts, provider text nor request corpus changed. Re-ran control with identical final harness: all captures, counts and full prompts are byte-identical to the initial pre-product captures."
+}

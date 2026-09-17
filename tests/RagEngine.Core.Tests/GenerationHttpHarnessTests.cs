@@ -1,0 +1,385 @@
+using System.Diagnostics.Metrics;
+using System.Net;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure.VectorStore;
+using RagEngine.Core.Services.Generation.Prompts;
+using RagEngine.Core.Services.Summary;
+using RagEngine.Core.Utilities;
+using Xunit;
+
+namespace RagEngine.Core.Tests;
+
+public sealed class GenerationHttpHarnessTests
+{
+    internal static readonly string Root = RagEnginePaths.FindRepositoryRoot(AppContext.BaseDirectory)
+        ?? throw new InvalidOperationException("Repository root required.");
+    internal static readonly string Evidence = Path.Combine(Root, "docs/eval/quality/9.3");
+    internal static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
+
+    internal sealed record Capture(
+        string Request, int Status, string Body, string[] Prompts,
+        int SearchCalls, int SearchMeasurements, int MetaCalls);
+
+    [Fact]
+    public async Task Responses_sources_prompts_and_sse_match_pre_refactor_control()
+    {
+        var captures = new List<Capture>();
+        foreach (var sanitizer in new[] { true, false })
+        {
+            await using var factory = new GenerationFactory(sanitizer: sanitizer);
+            using var http = factory.CreateClient();
+            foreach (var scenario in new[] { "high", "mid", "low", "empty", "rrf", "nonmonotonic", "meta", "fallback", "fallback-near" })
+            foreach (var mode in new[] { "technical", "simple" })
+            foreach (var endpoint in new[] { "/api/ask", "/api/ask/stream" })
+            {
+                var request = new
+                {
+                    query = scenario, collection = "fixture", responseMode = mode,
+                    topK = 3, minScore = 0.1f, rerank = true,
+                    history = new[] { new { role = "user", content = "pregunta anterior" },
+                        new { role = "assistant", content = "respuesta anterior" } }
+                };
+                captures.Add(await CaptureAsync(factory, http, endpoint, request));
+            }
+        }
+        CompareOrCapture("fixtures.json", captures);
+    }
+
+    [Theory]
+    [InlineData("/api/ask", "high", 1)]
+    [InlineData("/api/ask/stream", "high", 1)]
+    [InlineData("/api/ask", "empty", 1)]
+    [InlineData("/api/ask/stream", "low", 1)]
+    [InlineData("/api/ask", "meta", 0)]
+    [InlineData("/api/ask/stream", "meta", 0)]
+    public async Task One_search_and_one_meta_decision_per_request(string endpoint, string query, int calls)
+    {
+        await using var factory = new GenerationFactory();
+        using var http = factory.CreateClient();
+        var capture = await CaptureAsync(factory, http, endpoint, new { query, collection = "fixture" });
+        Assert.Equal(200, capture.Status);
+        Assert.Equal(calls, capture.SearchCalls);
+        Assert.Equal(1, capture.MetaCalls);
+    }
+
+    [Theory]
+    [InlineData("/api/ask")]
+    [InlineData("/api/ask/stream")]
+    public async Task Retrieval_error_is_not_a_successful_answer(string endpoint)
+    {
+        await using var factory = new GenerationFactory();
+        factory.Retriever.Failure = new InvalidOperationException("retrieval fixture failure");
+        using var http = factory.CreateClient();
+        using var response = await http.PostAsJsonAsync(endpoint, new { query = "high", collection = "fixture" });
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(1, factory.Retriever.Calls);
+        Assert.Empty(factory.Chat.Prompts);
+        if (endpoint == "/api/ask")
+        {
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        }
+        else
+        {
+            Assert.Contains("event: error\n", body);
+            Assert.DoesNotContain("event: done\n", body);
+            Assert.DoesNotContain("event: token\n", body);
+        }
+    }
+
+    [Theory]
+    [InlineData("/api/ask")]
+    [InlineData("/api/ask/stream")]
+    public async Task Generation_error_after_first_fragment_does_not_report_completion(string endpoint)
+    {
+        await using var factory = new GenerationFactory();
+        factory.Chat.FailAfterFirst = true;
+        using var http = factory.CreateClient();
+        using var response = await http.PostAsJsonAsync(endpoint,
+            new { query = "high", collection = "fixture", responseMode = "technical" });
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Single(factory.Chat.Prompts);
+        if (endpoint == "/api/ask")
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        else
+        {
+            Assert.Contains("event: token\n", body);
+            Assert.Contains("event: error\n", body);
+            Assert.DoesNotContain("event: done\n", body);
+        }
+    }
+
+    [Fact]
+    public async Task Sse_delivers_first_token_before_second_and_propagates_cancellation()
+    {
+        await using var factory = new GenerationFactory();
+        factory.Chat.ReleaseSecond = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var http = factory.CreateClient();
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/ask/stream")
+        {
+            Content = JsonContent.Create(new { query = "high", collection = "fixture", responseMode = "technical" })
+        };
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation.Token);
+        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync(cancellation.Token));
+        var lines = new List<string>();
+        while (await reader.ReadLineAsync(cancellation.Token) is { } line)
+        {
+            lines.Add(line);
+            if (line == "event: token")
+                break;
+        }
+        Assert.Contains("event: sources", lines);
+        Assert.Contains("event: token", lines);
+        Assert.False(factory.Chat.ReleaseSecond.Task.IsCompleted);
+        cancellation.Cancel();
+        reader.Dispose();
+        response.Dispose();
+        await factory.Chat.Cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(1, factory.Retriever.Calls);
+    }
+
+    internal static async Task<Capture> CaptureAsync(
+        GenerationFactory factory, HttpClient http, string endpoint, object request)
+    {
+        factory.Retriever.Calls = 0;
+        factory.MetaCalls = 0;
+        factory.Chat.Prompts.Clear();
+        var serializedRequest = JsonSerializer.Serialize(request);
+        var collection = JsonSerializer.Deserialize<JsonElement>(serializedRequest).GetProperty("collection").GetString();
+        var measurements = 0;
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, owner) =>
+            {
+                if (instrument.Meter.Name == "Rag.Context.Engine" && instrument.Name == "rag_search_latency_ms")
+                    owner.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<double>((_, _, tags, _) =>
+        {
+            foreach (var tag in tags)
+                if (tag.Key == "collection" && Equals(tag.Value, collection))
+                    Interlocked.Increment(ref measurements);
+        });
+        listener.Start();
+        using var response = await http.PostAsJsonAsync(endpoint, request);
+        var body = await response.Content.ReadAsStringAsync();
+        if (response.StatusCode == HttpStatusCode.InternalServerError)
+        {
+            var problem = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body)!;
+            problem.Remove("traceId");
+            body = JsonSerializer.Serialize(problem);
+        }
+        return new Capture(endpoint + "\n" + serializedRequest, (int)response.StatusCode,
+            body, factory.Chat.Prompts.ToArray(), factory.Retriever.Calls, measurements, factory.MetaCalls);
+    }
+
+    internal static void CompareOrCapture(string name, List<Capture> actual)
+    {
+        var path = Path.Combine(Evidence, name);
+        Assert.NotEmpty(actual);
+        if (Environment.GetEnvironmentVariable("RAG_93_CAPTURE_CONTROL") == "1")
+        {
+            Directory.CreateDirectory(Evidence);
+            using var file = new FileStream(path, FileMode.CreateNew);
+            JsonSerializer.Serialize(file, actual, Json);
+            return;
+        }
+        var expected = JsonSerializer.Deserialize<List<Capture>>(File.ReadAllText(path), Json)!;
+        AssertEquivalent(expected, actual);
+        if (Environment.GetEnvironmentVariable("RAG_93_CANDIDATE_DIR") is { Length: > 0 } directory)
+            File.WriteAllText(Path.Combine(directory, name), JsonSerializer.Serialize(actual, Json));
+    }
+
+    internal static void AssertEquivalent(List<Capture> expected, List<Capture> actual)
+    {
+        Assert.NotEmpty(expected);
+        Assert.Equal(expected.Count, actual.Count);
+        for (var i = 0; i < expected.Count; i++)
+        {
+            Assert.Equal(expected[i].Request, actual[i].Request);
+            Assert.Equal(expected[i].Status, actual[i].Status);
+            Assert.Equal(expected[i].Body, actual[i].Body);
+            Assert.Equal(expected[i].Prompts, actual[i].Prompts);
+            Assert.InRange(expected[i].SearchCalls, 0, 2);
+            Assert.Equal(expected[i].SearchCalls == 0 ? 0 : 1, actual[i].SearchCalls);
+            Assert.Equal(expected[i].SearchMeasurements == 0 ? 0 : 1, actual[i].SearchMeasurements);
+            Assert.Equal(1, actual[i].MetaCalls);
+        }
+    }
+
+    internal sealed class GenerationFactory(bool realRetrieval = false, bool sanitizer = true)
+        : WebApplicationFactory<Program>
+    {
+        private readonly string _cachePath = Path.Combine(Path.GetTempPath(), $"rag-93-{Guid.NewGuid():N}.sqlite");
+        internal readonly RecordingRetriever Retriever = new();
+        internal readonly DeterministicChat Chat = new();
+        internal int MetaCalls;
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("GenerationHarness");
+            builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Authorization:Mode"] = "Local",
+                ["RagGeneration:EnableSimpleModeSanitizer"] = sanitizer.ToString(),
+                ["Ingestion:ResumenCachePath"] = _cachePath
+            }));
+            builder.ConfigureTestServices(services =>
+            {
+                var kernel = Kernel.CreateBuilder();
+                kernel.Services.AddSingleton<IChatCompletionService>(Chat);
+                services.Replace(ServiceDescriptor.Singleton(kernel.Build()));
+                services.Replace(ServiceDescriptor.Singleton(_ =>
+                {
+                    var cache = SummaryCache.Open(_cachePath, "9.3-fixture");
+                    cache.SetAsync("hash-code", "Resumen cacheado del codigo.").GetAwaiter().GetResult();
+                    cache.SetAsync("hash-sentinel", null).GetAwaiter().GetResult();
+                    return cache;
+                }));
+                if (realRetrieval)
+                {
+                    services.Replace(ServiceDescriptor.Scoped<ISemanticRetriever>(sp =>
+                    {
+                        Retriever.Inner = ActivatorUtilities.CreateInstance<QdrantSemanticRetriever>(sp);
+                        return Retriever;
+                    }));
+                    var meta = services.Single(s => s.ServiceType == typeof(IMetaIntentDetector));
+                    services.Replace(ServiceDescriptor.Singleton<IMetaIntentDetector>(sp =>
+                        new RecordingMeta(this, (IMetaIntentDetector)(meta.ImplementationFactory?.Invoke(sp)
+                            ?? ActivatorUtilities.CreateInstance(sp, meta.ImplementationType!)))));
+                }
+                else
+                {
+                    services.Replace(ServiceDescriptor.Singleton<ISemanticRetriever>(Retriever));
+                    services.Replace(ServiceDescriptor.Singleton<IMetaIntentDetector>(new RecordingMeta(this, null)));
+                    services.Replace(ServiceDescriptor.Singleton<IVectorStoreAdmin>(new FixtureStore()));
+                }
+            });
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await base.DisposeAsync();
+            foreach (var suffix in new[] { "", "-wal", "-shm" })
+                File.Delete(_cachePath + suffix);
+        }
+    }
+
+    private sealed class RecordingMeta(GenerationFactory factory, IMetaIntentDetector? inner) : IMetaIntentDetector
+    {
+        public async Task<bool> IsMetaIntentAsync(string query, CancellationToken cancellationToken = default)
+        {
+            Interlocked.Increment(ref factory.MetaCalls);
+            return inner is null ? query == "meta" : await inner.IsMetaIntentAsync(query, cancellationToken);
+        }
+    }
+
+    internal sealed class RecordingRetriever : ISemanticRetriever
+    {
+        internal ISemanticRetriever? Inner;
+        internal Exception? Failure;
+        internal int Calls;
+        internal RetrievalOptions? LastOptions;
+        internal string? LastQuery;
+
+        public Task<IReadOnlyList<RetrievalResult>> SearchAsync(
+            string query, RetrievalOptions options, CancellationToken cancellationToken = default)
+        {
+            Interlocked.Increment(ref Calls);
+            LastOptions = options;
+            LastQuery = query;
+            if (Failure is not null)
+                throw Failure;
+            return Inner is not null
+                ? Inner.SearchAsync(query, options, cancellationToken)
+                : Task.FromResult(Chunks(query));
+        }
+
+        internal static IReadOnlyList<RetrievalResult> Chunks(string query)
+        {
+            if (query == "empty")
+                return [];
+            var score = query switch { "low" => 0.01f, "mid" => 0.3f, "nonmonotonic" => 0.3f, "rrf" => 0.001f, _ => 0.9f };
+            var scale = query == "rrf" ? RetrievalScoreScale.RankFusionNative : RetrievalScoreScale.CrossEncoderStable;
+            return [
+                Chunk("code", "public void Guardar() { }", SourceLanguage.CSharp, score, scale),
+                Chunk("docs", "La auditoria requiere firma.", SourceLanguage.Markdown, 0.95f, scale),
+                Chunk("sentinel", "Nota sin resumen.", SourceLanguage.PlainText, 0.6f, scale)
+            ];
+        }
+
+        private static RetrievalResult Chunk(string id, string content, SourceLanguage language, float score, RetrievalScoreScale scale) =>
+            new(id, content, score, scale, new CodeChunkMetadata(
+                "/repo/" + id, id, language, "Fixture", "Auditoria", "Guardar", 1, 5,
+                DateTimeOffset.UnixEpoch, "fixture"), "hash-" + id);
+    }
+
+    internal sealed class DeterministicChat : IChatCompletionService
+    {
+        internal readonly List<string> Prompts = [];
+        internal bool FailAfterFirst;
+        internal TaskCompletionSource? ReleaseSecond;
+        internal readonly TaskCompletionSource Cancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+            ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("Streaming only.");
+
+        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+            ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Prompts.Add(JsonSerializer.Serialize(new
+            {
+                messages = chatHistory.Select(m => new { role = m.Role.ToString(), content = m.Content }),
+                settings = executionSettings?.ExtensionData
+            }));
+            var query = chatHistory[^1].Content;
+            var text = query is "fallback" or "fallback-near"
+                ? " \n" + AnswerNotices.NoContextFallback + (query == "fallback-near" ? " Extra." : "\n ")
+                : "Respuesta determinista. ```csharp\nvar x = 1;\n``` Revisar `AuditoriaService.Guardar`.";
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, text[..12]);
+            if (FailAfterFirst)
+                throw new InvalidOperationException("generation fixture failure");
+            if (ReleaseSecond is not null)
+            {
+                try { await ReleaseSecond.Task.WaitAsync(cancellationToken); }
+                catch (OperationCanceledException) { Cancelled.TrySetResult(); throw; }
+            }
+            await Task.Yield();
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, text[12..]);
+        }
+    }
+
+    private sealed class FixtureStore : IVectorStoreAdmin
+    {
+        public Task<CollectionManifest?> GetManifestAsync(string collectionName, CancellationToken ct = default) => Task.FromResult<CollectionManifest?>(null);
+        public Task<IReadOnlyList<string>> ListCollectionsAsync(CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<CollectionHealthReport> GetCollectionHealthAsync(string collectionName, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> CollectionExistsAsync(string collectionName, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task EnsureCollectionAsync(string collectionName, int dimension, bool includeSummaryVector = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task RecreateCollectionAsync(string collectionName, int dimension, bool includeSummaryVector = false, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> HasSummaryVectorAsync(string collectionName, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> HasDefinedSymbolsIndexAsync(string collectionName, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<CollectionSchemaReport>> InspectCollectionSchemasAsync(int? expectedDimension, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpsertManifestAsync(string collectionName, CollectionManifest manifest, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task EnsureModelCompatibleAsync(string collectionName, string expectedModelOnnxSha256, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+}

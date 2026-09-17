@@ -59,7 +59,7 @@ try
             // Core services: ONNX brain, Qdrant store, chunking pipeline
             services.AddRagEngineCore(ctx.Configuration);
 
-            // Generation pipeline: Semantic Kernel + Ollama connector + RagGenerationService
+            // Generation pipeline exposed through IRagGenerationService.
             services.AddRagEngineGeneration(ctx.Configuration);
 
             // CLI commands registered for DI

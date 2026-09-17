@@ -120,10 +120,13 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
             var tokenCount  = 0;
             var firstToken  = true;
 
-            await foreach (var fragment in _generation
+            await foreach (var update in _generation
                 .AskStreamingAsync(settings.Query, settings.Collection, RetrievalContext.Local, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                 .ConfigureAwait(false))
             {
+                if (update is not GenerationEvent.TextDelta fragment)
+                    continue;
+
                 if (firstToken)
                 {
                     // Signal spinner to stop and transition to streaming output.
@@ -138,7 +141,7 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
 
                 // Write raw to stdout — no Markup escaping — so Markdown code fences
                 // and formatting characters pass through untouched.
-                Console.Write(fragment);
+                Console.Write(fragment.Text);
                 tokenCount++;
             }
 
@@ -189,11 +192,12 @@ public sealed class AskCommand : AsyncCommand<AskCommand.Settings>
                 .SpinnerStyle(Style.Parse("cyan bold"))
                 .StartAsync("[cyan]Generando respuesta completa...[/]", async _ =>
                 {
-                    await foreach (var fragment in _generation
+                    await foreach (var update in _generation
                         .AskStreamingAsync(settings.Query, settings.Collection, RetrievalContext.Local, settings.TopK, settings.MinScore, settings.Rerank, responseMode: settings.ResponseMode, cancellationToken: ct)
                         .ConfigureAwait(false))
                     {
-                        buffer.Append(fragment);
+                        if (update is GenerationEvent.TextDelta fragment)
+                            buffer.Append(fragment.Text);
                     }
                 });
         }

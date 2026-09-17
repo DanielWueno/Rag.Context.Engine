@@ -197,6 +197,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             {
                 results = await _reRanker.ReRankAsync(
                     query, results, options.TopK, cancellationToken);
+                results = GateCalibration.Apply(results, profile?.GateCalibration);
             }
             else if (results.Count > options.TopK)
             {

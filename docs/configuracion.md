@@ -297,6 +297,65 @@ apagarla, quitar la clave del `appsettings.json`: el default del tipo es `false`
 recompilar. Medición completa en
 [gate-de-confianza-score-inestable-y-fuga-de-prompt.md](analisis-futuro/gate-de-confianza-score-inestable-y-fuga-de-prompt.md).
 
+### Calibración ligada al binario (`RetrievalProfiles:Profiles:<nombre>:GateCalibration`)
+
+El perfil que referencia `CollectionManifest.Profile` puede declarar un bloque
+**indivisible** de identidad y umbrales. Ejemplo de estructura, **no calibración
+válida**: sustituye los marcadores por SHA-256 completos y los valores por el
+resultado de un barrido y un A/B de respuestas aprobados.
+
+```json
+{
+  "RetrievalProfiles": {
+    "Profiles": {
+      "gate-local-medido": {
+        "GateCalibration": {
+          "CrossEncoder": {
+            "ModelSha256": "<sha256 ONNX: 64 caracteres hexadecimales minusculos>",
+            "TokenizerSha256": "<sha256 tokenizer: 64 caracteres hexadecimales minusculos>",
+            "Binary": "model_qint8_arm64.onnx",
+            "Architecture": "arm64",
+            "StableGateScore": true,
+            "MaxSequenceLength": 512,
+            "BatchSize": 8
+          },
+          "LowConfidenceThreshold": 0.05,
+          "HighConfidenceThreshold": 0.60
+        }
+      }
+    }
+  }
+}
+```
+
+El reranker obtiene identidad de los **mismos bytes** que carga en ONNX y en el
+tokenizador, después de resolver la ruta y la selección por arquitectura. Guarda
+el nombre efectivo, la arquitectura **del proceso**, el flag y los parámetros
+de inferencia; no compara únicamente nombres de archivo. La lectura y el hash
+son perezosos, una vez por instancia. Cargar desde bytes añade un buffer transitorio
+del tamaño del ONNX durante el arranque del reranker.
+
+Al usar rerank con un perfil calibrado, cualquier diferencia o dato incompleto
+rechaza la búsqueda; no utiliza umbrales globales como sustituto. El ganador lleva
+el perfil validado hasta el único gate de generación, compartido por HTTP, SSE y
+CLI. La validación se repite antes de generar. No cambia el orden ni los scores.
+Los umbrales exigen valores finitos `0 <= bajo < alto <= 1`; la igualdad con el
+umbral entra en la banda superior.
+
+**Compatibilidad local:** no se activa ningún perfil con este cambio. Sin
+`GateCalibration`, se conservan los umbrales globales y no se afirma que estén
+vinculados al hash actual. Sin rerank no se aplican umbrales del cross-encoder ni
+se carga su modelo; sin resultados no se consume una calibración. Un perfil
+desconocido conserva la resolución histórica sin perfil.
+
+Cambiar `StableGateScore`, tokenizer, ventana, lote, arquitectura o binario exige
+revalidar la calibración declarada. Restaurar **binario, configuración de
+inferencia y perfil juntos**, reiniciando el proceso: reemplazar un archivo no
+reemplaza la sesión ONNX ya cargada. No se necesita re-ingesta para este cambio.
+El [protocolo A/B](eval/quality/README.md#calibración-por-binario-ítem-1210)
+separa barrido de scores y juicio de respuestas; fixtures locales no autorizan
+activar otro binario, y x64 real sigue condicionado por el ítem 3.5.
+
 ## Rutas y portabilidad
 
 `appsettings.json` está versionado, así que no puede llevar rutas absolutas de una máquina

@@ -7,7 +7,6 @@ using RagEngine.Core.Diagnostics;
 using Microsoft.Extensions.Options;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Infrastructure.Chunking;
-using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.Summary;
@@ -61,7 +60,6 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
 
     private readonly ISemanticRetriever _retriever;
     private readonly OnnxBrainOptions _brainOptions;
-    private readonly CrossEncoderOptions _crossEncoderOptions;
     private readonly RetrievalFusionOptions _fusionOptions;
     private readonly OllamaOptions _ollamaOptions;
     private readonly IngestionOptions _ingestionOptions;
@@ -69,14 +67,12 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     public EvalCommand(
         ISemanticRetriever retriever,
         IOptions<OnnxBrainOptions> brainOptions,
-        IOptions<CrossEncoderOptions> crossEncoderOptions,
         IOptions<RetrievalFusionOptions> fusionOptions,
         IOptions<OllamaOptions> ollamaOptions,
         IOptions<IngestionOptions> ingestionOptions)
     {
         _retriever = retriever;
         _brainOptions = brainOptions.Value;
-        _crossEncoderOptions = crossEncoderOptions.Value;
         _fusionOptions = fusionOptions.Value;
         _ollamaOptions = ollamaOptions.Value;
         _ingestionOptions = ingestionOptions.Value;
@@ -85,9 +81,14 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     /// <summary>
     /// Reune todo lo que determina si este numero de recall es comparable con otro.
     /// </summary>
-    private EvalProvenance BuildProvenance(Settings settings)
+    private EvalProvenance BuildProvenance(Settings settings, List<EvalItemResult> results)
     {
         var (commit, dirty) = EvalProvenance.ReadGitState();
+        var identities = results.Where(r => r.CrossEncoder is not null).Select(r => r.CrossEncoder).Distinct().ToArray();
+        var calibrations = results.Where(r => r.CrossEncoder is not null).Select(r => r.GateCalibration).Distinct().ToArray();
+        if (identities.Length > 1 || calibrations.Length > 1)
+            throw new InvalidOperationException("Cross-encoder or gate calibration changed within the eval run.");
+        var identity = identities.SingleOrDefault();
 
         return new EvalProvenance
         {
@@ -99,8 +100,10 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             EmbeddingDimensions = _brainOptions.EmbeddingDimensions,
             EmbeddingMaxSequenceLength = _brainOptions.MaxSequenceLength,
             CrossEncoderModel = settings.Rerank
-                ? Path.GetFileName(_crossEncoderOptions.ModelPath)
+                ? identity?.Binary ?? "(sin resultados rerankeados)"
                 : null,
+            CrossEncoder = identity,
+            GateCalibration = calibrations.SingleOrDefault(),
             WeightCodigo = _fusionOptions.WeightCodigo,
             WeightSparse = _fusionOptions.WeightSparse,
             WeightResumen = _fusionOptions.WeightResumen,
@@ -178,7 +181,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
                 settings.Rerank,
                 settings.MinScore,
                 GeneratedAt = DateTimeOffset.UtcNow,
-                Provenance = BuildProvenance(settings),
+                Provenance = BuildProvenance(settings, results),
                 Results = results
             }, jsonOpts));
             return 0;
@@ -188,7 +191,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
 
         if (!string.IsNullOrWhiteSpace(settings.BaselinePath))
         {
-            RenderComparabilidad(settings, settings.BaselinePath);
+            RenderComparabilidad(settings, settings.BaselinePath, results);
         }
 
         return 0;
@@ -201,7 +204,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
     /// procedencia, o con procedencia distinta, no sirve para afirmar "mejoro" ni
     /// "empeoro", y eso tiene que verse sin discutirlo.
     /// </summary>
-    private void RenderComparabilidad(Settings settings, string baselinePath)
+    private void RenderComparabilidad(Settings settings, string baselinePath, List<EvalItemResult> results)
     {
         AnsiConsole.WriteLine();
 
@@ -211,7 +214,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             return;
         }
 
-        var actual = BuildProvenance(settings).ComparabilityKeys();
+        var actual = BuildProvenance(settings, results).ComparabilityKeys();
 
         Dictionary<string, string>? previo = null;
         try
@@ -252,7 +255,7 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         // El commit y el estado del arbol se reportan como CONTEXTO, no como motivo de
         // incomparabilidad: no invalidan la comparacion, pero un baseline generado con
         // cambios sin commitear no es reproducible y hay que decirlo.
-        var actualProv = BuildProvenance(settings);
+        var actualProv = BuildProvenance(settings, results);
         if (actualProv.GitDirty)
         {
             AnsiConsole.MarkupLine(
@@ -311,10 +314,15 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
             Console.Error.WriteLine($"Falló la búsqueda para \"{item.Question}\": {ex.Message}");
             throw;
         }
+        if (settings.Rerank && hits.Count > 0 && hits[0].CrossEncoder is null)
+            throw new InvalidOperationException("Reranked eval results are missing the loaded cross-encoder identity.");
 
         return Evaluate(item, hits, cutoffs, settings.DumpHits) with
         {
             RetrievalSucceeded = true,
+            CrossEncoder = hits.FirstOrDefault()?.CrossEncoder,
+            GateCalibration = hits.FirstOrDefault()?.GateCalibration,
+            ScoreScale = hits.FirstOrDefault()?.ScoreScale.ToString(),
             ElapsedMs = sw.Elapsed.TotalMilliseconds,
             VectorQueries = diagnostics.Queries,
             CandidatesReturned = diagnostics.CandidatesReturned
@@ -469,6 +477,9 @@ public sealed class EvalCommand : Command<EvalCommand.Settings>
         [property: JsonPropertyName("hits")] List<HitDetail>? Hits = null)
     {
         public bool RetrievalSucceeded { get; init; }
+        public CrossEncoderIdentity? CrossEncoder { get; init; }
+        public GateCalibration? GateCalibration { get; init; }
+        public string? ScoreScale { get; init; }
         public double ElapsedMs { get; init; }
         public long VectorQueries { get; init; }
         public long CandidatesReturned { get; init; }

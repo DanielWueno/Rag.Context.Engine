@@ -3,8 +3,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
+using System.Runtime.InteropServices;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Utilities;
 
 using RagEngine.Core.Infrastructure.Vectorization;
 
@@ -41,7 +43,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
 
     private readonly CrossEncoderOptions _options;
     private readonly ILogger<OnnxCrossEncoderReRanker> _logger;
-    private readonly Lazy<(InferenceSession Session, Tokenizer Tokenizer)> _model;
+    private readonly Lazy<(InferenceSession Session, Tokenizer Tokenizer, CrossEncoderIdentity Identity)> _model;
     private bool _disposed;
 
     public OnnxCrossEncoderReRanker(
@@ -50,7 +52,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
     {
         _options = options.Value;
         _logger = logger;
-        _model = new Lazy<(InferenceSession, Tokenizer)>(
+        _model = new Lazy<(InferenceSession, Tokenizer, CrossEncoderIdentity)>(
             LoadModel, LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -84,6 +86,8 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             cancellationToken);
 
         var reranked = RankScoredCandidates(orderedCandidates, scores, topK);
+        for (var i = 0; i < reranked.Count; i++)
+            reranked[i] = reranked[i] with { CrossEncoder = _model.Value.Identity };
 
         long stableGateMs = 0;
         if (_options.StableGateScore && reranked.Count > 0)
@@ -141,12 +145,14 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             SimilarityScore = score,
             ScoreScale = RetrievalScoreScale.CrossEncoderBatched,
             RankingScore = score,
-            RankingScoreScale = RetrievalScoreScale.CrossEncoderBatched
+            RankingScoreScale = RetrievalScoreScale.CrossEncoderBatched,
+            CrossEncoder = null,
+            GateCalibration = null
         });
         return RankingOrder.Descending(scored, r => r.RankingScore, r => r.ChunkId).Take(topK).ToList();
     }
 
-    private (InferenceSession, Tokenizer) LoadModel()
+    private (InferenceSession, Tokenizer, CrossEncoderIdentity) LoadModel()
     {
         if (!File.Exists(_options.ModelPath))
             throw new FileNotFoundException(
@@ -168,20 +174,31 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL
         };
 
-        OnnxRuntimeLifetime.MarkRuntimeTouched();
-        var session = new InferenceSession(_options.ModelPath, sessionOptions);
-
-        using var spmStream = File.OpenRead(_options.VocabPath);
+        // Hash the same bytes passed to ONNX, never a path re-read after loading.
+        var modelBytes = File.ReadAllBytes(_options.ModelPath);
+        var tokenizerBytes = File.ReadAllBytes(_options.VocabPath);
+        var identity = new CrossEncoderIdentity
+        {
+            ModelSha256 = ContentHasher.Compute(modelBytes),
+            TokenizerSha256 = ContentHasher.Compute(tokenizerBytes),
+            Binary = Path.GetFileName(_options.ModelPath),
+            Architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
+            StableGateScore = _options.StableGateScore,
+            MaxSequenceLength = _options.MaxSequenceLength,
+            BatchSize = _options.BatchSize
+        };
+        using var spmStream = new MemoryStream(tokenizerBytes, writable: false);
         var tokenizer = SentencePieceTokenizer.Create(
             spmStream,
             addBeginningOfSentence: false,
             addEndOfSentence: false);
 
+        OnnxRuntimeLifetime.MarkRuntimeTouched();
+        var session = new InferenceSession(modelBytes, sessionOptions);
         _logger.LogInformation(
-            "Cross-encoder loaded. MaxSeqLen: {Seq}, BatchSize: {Batch}",
-            _options.MaxSequenceLength, _options.BatchSize);
+            "Cross-encoder loaded: {CrossEncoderIdentity}", identity);
 
-        return (session, tokenizer);
+        return (session, tokenizer, identity);
     }
 
     private float[] ScorePairs(
@@ -189,7 +206,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
         IReadOnlyList<RetrievalResult> candidates,
         CancellationToken cancellationToken)
     {
-        var (session, tokenizer) = _model.Value;
+        var (session, tokenizer, _) = _model.Value;
 
         // La query se tokeniza una sola vez y se le reserva como máximo la mitad
         // de la ventana; el resto queda para el chunk, que se trunca a lo que quepa.

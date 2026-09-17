@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using RagEngine.Core.Domain;
 
 namespace RagEngine.Cli.Infrastructure;
 
@@ -31,6 +33,8 @@ public sealed record EvalProvenance
     public required int EmbeddingDimensions { get; init; }
     public required int EmbeddingMaxSequenceLength { get; init; }
     public required string? CrossEncoderModel { get; init; }
+    public CrossEncoderIdentity? CrossEncoder { get; init; }
+    public GateCalibration? GateCalibration { get; init; }
     public required double WeightCodigo { get; init; }
     public required double WeightSparse { get; init; }
     public required double WeightResumen { get; init; }
@@ -67,6 +71,10 @@ public sealed record EvalProvenance
             ["embedding_dimensions"] = EmbeddingDimensions.ToString(),
             ["embedding_max_sequence_length"] = EmbeddingMaxSequenceLength.ToString(),
             ["cross_encoder_model"] = CrossEncoderModel ?? "(sin rerank)",
+            ["cross_encoder_identity"] = CrossEncoder is null
+                ? CrossEncoderModel is null ? "(sin rerank)" : "(no declarado)"
+                : JsonSerializer.Serialize(CrossEncoder),
+            ["gate_calibration"] = GateCalibration is null ? "(global, sin vinculo)" : JsonSerializer.Serialize(GateCalibration),
             ["weight_codigo"] = WeightCodigo.ToString("0.###"),
             ["weight_sparse"] = WeightSparse.ToString("0.###"),
             ["weight_resumen"] = WeightResumen.ToString("0.###"),

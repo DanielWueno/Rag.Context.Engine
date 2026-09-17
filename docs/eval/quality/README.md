@@ -93,3 +93,88 @@ en el detalle del artefacto.
 - Una pregunta empeoró (372 → 524 palabras) y sigue fabricando.
 - Los saludos "Hola" y "Continua" mantienen 93 palabras con identificadores
   PascalCase: van por un camino de código que estos prompts no tocan.
+
+## Calibración por binario (ítem 12.10)
+
+El contrato local vincula los umbrales opcionales del perfil al cross-encoder
+efectivo. **No se cambió el binario ni se recalibraron umbrales en este ítem.**
+`12.10/verification.json` conserva evidencia de contrato sobre ONNX local,
+Qdrant aislado, gate compartido, CLI y comparador con **respuestas sintéticas**.
+No es evidencia de calidad de un candidato.
+
+Aceptación local (requiere .NET, Qdrant local y ONNX/tokenizer; falla también si
+hay cero tests, omitidos o falta infraestructura):
+
+```bash
+python3 infra/verify-gate-calibration.py
+```
+
+El comando ejecuta las pruebas y contrasta código, identidad y fixture con la
+evidencia guardada, sin reescribirla. `--record` registra la primera aceptación
+y rechaza sobrescribir un archivo existente; cualquier actualización posterior
+exige preservar el informe anterior y documentar el cambio de instrumento.
+
+Antes de proponer otro binario, congelar ambos brazos, índices, configuración de
+retrieval, prompts, configuración/modelo de generación y el labeled-set completo.
+Referencia congelada en esta ejecución: **65 preguntas, 38 presentes y 27
+ausentes**, SHA-256
+`8f5b03af69d0b2c5ec0c90b175aa49df908718851d6ba6c7397684f19b266912`.
+No reemplazarlo por las 47 preguntas históricas de recall. Si se actualiza
+justificadamente el instrumento, registrar el cambio y medir ambos brazos sobre
+la misma versión; no bajar umbrales de aceptación ni omitir preguntas fallidas.
+
+El barrido usa el CLI Release construido con ese código. Ejecutarlo sólo contra
+colecciones experimentales y con cachés/auditoría separadas. Sus overrides
+`StableGateScore=true/false` también respetan el rechazo de perfiles incompatibles:
+preparar los manifiestos de prueba, no quitar la protección en colecciones servidas.
+
+```bash
+dotnet build src/RagEngine.Cli -c Release
+python3 infra/gate-bandas-barrido.py --medir --salida control.scores.json
+python3 infra/gate-bandas-barrido.py --scores control.scores.json
+```
+
+Las mediciones nuevas son `kind: "scores_only"`, con hash del labeled-set y
+`rows[].estable/lotes.cross_encoder` observados. Fallos del CLI o JSON ausente
+son errores, no scores cero; cero resultados exitosos se registra explícitamente.
+La relectura del histórico sigue disponible. Los contadores de fabricación y
+entrega del **barrido de scores** son proxies históricos; no juzgan la respuesta.
+
+Después del barrido, generar y adjudicar **cada respuesta** de ambos brazos.
+El comparador exige archivos con este contrato (snake_case):
+
+| Campo | Evidencia obligatoria |
+|---|---|
+| `schema_version`, `kind` | `1`, `"measured"`; `"fixture"` sólo con `--fixtures`, nunca para aprobar activación |
+| `labeled_set_sha256` | SHA-256 completo de los bytes del labeled-set |
+| `cross_encoder` | Identidad efectiva: `model_sha256`, `tokenizer_sha256`, `binary`, `architecture`, `stable_gate_score`, `max_sequence_length`, `batch_size` |
+| `calibration` | `cross_encoder` idéntico al observado, `low_confidence_threshold`, `high_confidence_threshold` |
+| `controls` | SHA-256 completos: `corpus_sha256`, `retrieval_config_sha256`, `prompts_sha256`, `generation_config_sha256`; iguales entre brazos, incluyen índice/vectorización y versión/pesos del modelo de generación, excluyen sólo la intervención cross-encoder/umbrales |
+| `rows` | Una fila por `(coleccion, pregunta)` exacta del labeled-set; conserva `etiqueta` y `categoria`, sin duplicados ni ausentes |
+| Cada fila de `rows` | `retrieval_succeeded: true`, `score` finito en [0,1], `result_count` (cero exige score cero), `cross_encoder` observado si hay resultados; `answer`, `answer_label`, `reviewed_answer_sha256` (UTF-8 de la respuesta revisada), `judgement` no vacío |
+
+Las etiquetas admitidas son `correcta`, `fabricacion`, `abstencion`, `incorrecta`.
+`correcta` exige respuesta sustentada y correcta a una pregunta presente;
+`fabricacion` incluye afirmaciones no sustentadas aunque el score sea alto;
+`abstencion` registra que no entrega la respuesta solicitada. `judgement`
+documenta la adjudicación y su evidencia; ni recall ni la banda asignan esa
+etiqueta automáticamente. Los hashes detectan cambios, no prueban por sí solos
+que la adjudicación humana sea acertada. Conservar respuestas y revisiones bajo
+los permisos adecuados, sin secretos ni tokens.
+
+```bash
+python3 infra/gate-bandas-barrido.py \
+  --comparar control.answers.json candidato.answers.json --salida comparacion.json
+```
+
+Exit 0 exige cobertura completa, controles iguales, **ninguna fabricación nueva
+por pregunta** y total de correctas no inferior al control. Exit 1 señala
+regresión o evidencia inválida/ausente; un total de fabricaciones igual no oculta
+una fabricación nueva compensada por otra corregida. El informe conserva todas
+las parejas, cruces de banda, pérdidas individuales y abstenciones. Un cambio de
+banda no implica por sí solo respuesta correcta/incorrecta.
+
+Activar el nuevo perfil sólo después de esa aprobación. Conservar ambos barridos,
+respuestas e informe. Rollback: restaurar binario, tokenizer, parámetros y perfil
+como una unidad, reiniciar el host y mantener el control; no mezclar umbrales int8
+con fp32. Ningún resultado de este contrato local habilita un despliegue x64.

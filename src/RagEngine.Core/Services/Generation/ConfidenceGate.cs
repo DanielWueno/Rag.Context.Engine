@@ -81,7 +81,20 @@ internal sealed class ConfidenceGate
     {
         var topScore = chunks.Count > 0 ? chunks[0].SimilarityScore : 0f;
         var scoreIsAbsolute = chunks.Count > 0 && chunks[0].ScoreScale.IsComparableAcrossQueries();
-        var noGrounding = chunks.Count == 0 || (scoreIsAbsolute && topScore < Options.LowConfidenceThreshold);
+        var calibration = scoreIsAbsolute ? chunks[0].GateCalibration : null;
+        try
+        {
+            calibration?.ValidateFor(chunks[0]);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Incompatible gate calibration; generation rejected.");
+            throw;
+        }
+        var options = Options;
+        var low = calibration?.LowConfidenceThreshold ?? options.LowConfidenceThreshold;
+        var high = calibration?.HighConfidenceThreshold ?? options.HighConfidenceThreshold;
+        var noGrounding = chunks.Count == 0 || (scoreIsAbsolute && topScore < low);
 
         if (noGrounding)
         {
@@ -93,7 +106,7 @@ internal sealed class ConfidenceGate
             {
                 _logger.LogWarning(
                     "[RAG] Low confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Falling back to no-grounding conversation.",
-                    topScore, Options.LowConfidenceThreshold, query);
+                    topScore, low, query);
             }
 
             return new GroundingAssessment(HasGrounding: false, ConfidenceAddendum: null);
@@ -101,11 +114,11 @@ internal sealed class ConfidenceGate
 
         // ── Mid-band hedge ────────────────────────────────────────
         string? confidenceAddendum = null;
-        if (scoreIsAbsolute && topScore < Options.HighConfidenceThreshold)
+        if (scoreIsAbsolute && topScore < high)
         {
             _logger.LogInformation(
                 "[RAG] Mid confidence ({Score:F3} < {Threshold:F3}) for query: {Query}. Answering with a low-confidence hedge.",
-                topScore, Options.HighConfidenceThreshold, query);
+                topScore, high, query);
             confidenceAddendum = SystemPromptComposer.LowConfidenceAddendum;
         }
 

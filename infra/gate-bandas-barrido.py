@@ -21,12 +21,18 @@ Definiciones del barrido, que son las del criterio del ítem:
       no contiene.
 
 Uso:
-    python3 infra/gate-bandas-barrido.py --medir      # corre el CLI, ~5 min
+    python3 infra/gate-bandas-barrido.py --medir --salida NUEVA.json
     python3 infra/gate-bandas-barrido.py              # sólo re-analiza lo ya medido
+    python3 infra/gate-bandas-barrido.py --comparar CONTROL.json CANDIDATO.json
+
+El análisis histórico usa proxies de score, NO etiquetas reales de respuesta.
+--comparar exige respuestas adjudicadas y procedencia completa; ver docs/eval/quality/README.md.
 """
 from __future__ import annotations
 
 import argparse, itertools, json, os, statistics, subprocess, sys, time
+from pathlib import Path
+from gate_calibration import compare_files, sha256, validate_identity
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLI = os.path.join(REPO, "src/RagEngine.Cli/bin/Release/net10.0/RagEngine.Cli.dll")
@@ -35,29 +41,39 @@ MEDICIONES = os.path.join(REPO, "docs/eval/gate-bandas.scores.json")
 
 
 # ── Medición ────────────────────────────────────────────────────────────────
-def buscar(pregunta: str, coleccion: str, estable: bool, k: int = 10) -> dict | None:
+def buscar(pregunta: str, coleccion: str, estable: bool, k: int = 10) -> dict:
     env = dict(os.environ, CrossEncoder__StableGateScore="true" if estable else "false")
     p = subprocess.run(
         ["dotnet", CLI, "search", pregunta, "-c", coleccion, "-k", str(k),
          "-s", "0.10", "-r", "-o", "json"],
         capture_output=True, text=True, cwd=REPO, env=env, timeout=180)
     # El CLI imprime un banner antes del JSON; el array empieza en el primer "[\n".
+    if p.returncode != 0:
+        raise ValueError(f"CLI failed ({p.returncode}) for {coleccion}: {p.stderr}\n{p.stdout}")
     i = p.stdout.find("[\n")
+    if i < 0 and p.stdout.rstrip().endswith("[]"):
+        return {"score": 0.0, "resultados": 0, "retrieval_succeeded": True}
     if i < 0:
-        return None
+        raise ValueError(f"Missing CLI JSON for {coleccion}: {p.stdout}")
     datos = json.loads(p.stdout[i:])
     if not datos:
-        return None
+        return {"score": 0.0, "resultados": 0, "retrieval_succeeded": True}
+    identity = datos[0].get("cross_encoder")
+    validate_identity(identity)
+    if identity["stable_gate_score"] != estable:
+        raise ValueError("CLI ignored CrossEncoder__StableGateScore")
     md = datos[0].get("metadata") or {}
-    return {"score": datos[0]["similarity_score"],
+    return {"score": datos[0]["similarity_score"], "cross_encoder": identity,
+            "retrieval_succeeded": True,
             "chunk": datos[0]["content_hash"][:12],
             "seccion": md.get("method_name"),
             "archivo": md.get("relative_file_path"),
             "resultados": len(datos)}
 
 
-def medir() -> list[dict]:
-    filas = json.load(open(ETIQUETADO, encoding="utf-8"))
+def medir(labeled_path: str, output: str) -> list[dict]:
+    labeled_bytes = Path(labeled_path).read_bytes()
+    filas = json.loads(labeled_bytes)
     salida, t0 = [], time.monotonic()
     for i, f in enumerate(filas, 1):
         fila = dict(f)
@@ -68,8 +84,12 @@ def medir() -> list[dict]:
               f"estable={e if e is None else round(e, 4):<8} {f['pregunta'][:52]}",
               file=sys.stderr, flush=True)
         salida.append(fila)
-    json.dump(salida, open(MEDICIONES, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"\n{len(salida)} consultas en {time.monotonic() - t0:.0f}s → {MEDICIONES}",
+    # Never overwrite the historical control or pretend scores adjudicate answers.
+    with open(output, "x", encoding="utf-8") as stream:
+        json.dump({"schema_version": 1, "kind": "scores_only",
+                   "labeled_set_sha256": sha256(labeled_bytes), "rows": salida},
+                  stream, ensure_ascii=False, indent=1)
+    print(f"\n{len(salida)} consultas en {time.monotonic() - t0:.0f}s → {output}",
           file=sys.stderr)
     return salida
 
@@ -152,17 +172,43 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--medir", action="store_true",
                     help="vuelve a correr el CLI en vez de leer la medición guardada")
+    ap.add_argument("--labeled-set", default=ETIQUETADO)
+    ap.add_argument("--scores", default=MEDICIONES, help="mediciones a reanalizar")
+    ap.add_argument("--salida", help="archivo NUEVO para --medir o informe A/B")
+    ap.add_argument("--comparar", nargs=2, metavar=("CONTROL", "CANDIDATO"),
+                    help="compara scores y respuestas adjudicadas; falla ante regresion/evidencia incompleta")
+    ap.add_argument("--fixtures", action="store_true", help="solo probar contrato, NO calibrar un binario")
     args = ap.parse_args()
+    if args.comparar:
+        if args.medir:
+            ap.error("--comparar no admite --medir")
+        report = compare_files(args.labeled_set, *args.comparar, allow_fixtures=args.fixtures)
+        text = json.dumps(report, ensure_ascii=False, indent=2)
+        if args.salida:
+            with open(args.salida, "x", encoding="utf-8") as output:
+                output.write(text + "\n")
+        print(text)
+        return 0 if report["accepted"] else 1
     if args.medir:
-        filas = medir()
+        if not args.salida or os.path.exists(args.salida):
+            ap.error("--medir exige --salida con una ruta nueva; conservar ambos barridos")
+        filas = medir(args.labeled_set, args.salida)
     else:
-        if not os.path.exists(MEDICIONES):
-            print(f"no existe {MEDICIONES}; corre con --medir", file=sys.stderr)
+        if not os.path.exists(args.scores):
+            print(f"no existe {args.scores}; corre con --medir --salida NUEVA", file=sys.stderr)
             return 1
-        filas = json.load(open(MEDICIONES, encoding="utf-8"))
+        filas = json.load(open(args.scores, encoding="utf-8"))
+        if isinstance(filas, dict):
+            if filas.get("labeled_set_sha256") != sha256(Path(args.labeled_set).read_bytes()):
+                raise ValueError("Labeled-set changed since measurement")
+            filas = filas["rows"]
     analizar(filas)
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        raise SystemExit(1)

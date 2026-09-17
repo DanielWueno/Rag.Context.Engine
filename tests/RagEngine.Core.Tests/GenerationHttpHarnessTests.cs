@@ -236,7 +236,8 @@ public sealed class GenerationHttpHarnessTests
             {
                 ["Authorization:Mode"] = "Local",
                 ["RagGeneration:EnableSimpleModeSanitizer"] = sanitizer.ToString(),
-                ["Ingestion:ResumenCachePath"] = _cachePath
+                ["Ingestion:ResumenCachePath"] = _cachePath,
+                ["Audit:DbPath"] = _cachePath + ".audit"
             }));
             builder.ConfigureTestServices(services =>
             {
@@ -275,7 +276,10 @@ public sealed class GenerationHttpHarnessTests
         {
             await base.DisposeAsync();
             foreach (var suffix in new[] { "", "-wal", "-shm" })
+            {
                 File.Delete(_cachePath + suffix);
+                File.Delete(_cachePath + ".audit" + suffix);
+            }
         }
     }
 
@@ -295,6 +299,7 @@ public sealed class GenerationHttpHarnessTests
         internal int Calls;
         internal RetrievalOptions? LastOptions;
         internal string? LastQuery;
+        internal IReadOnlyList<RetrievalResult>? Results;
 
         public Task<IReadOnlyList<RetrievalResult>> SearchAsync(
             string query, RetrievalOptions options, CancellationToken cancellationToken = default)
@@ -306,7 +311,7 @@ public sealed class GenerationHttpHarnessTests
                 throw Failure;
             return Inner is not null
                 ? Inner.SearchAsync(query, options, cancellationToken)
-                : Task.FromResult(Chunks(query));
+                : Task.FromResult(Results ?? Chunks(query));
         }
 
         internal static IReadOnlyList<RetrievalResult> Chunks(string query)

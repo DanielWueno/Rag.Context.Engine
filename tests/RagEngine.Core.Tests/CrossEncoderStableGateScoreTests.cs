@@ -177,6 +177,52 @@ public class CrossEncoderStableGateScoreTests
           + "re-scoring en lote de tamaño 1 de OnnxCrossEncoderReRanker.ReRankAsync.");
     }
 
+    [OnnxModeloDisponibleFact]
+    public async Task GateCalibration_identity_describes_loaded_bytes_not_a_replaced_file()
+    {
+        var options = OpcionesModeloReal(stableGateScore: true);
+        var directory = Path.Combine(Path.GetTempPath(), $"rag-gate-identity-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var copy = Path.Combine(directory, Path.GetFileName(options.ModelPath));
+        try
+        {
+            File.Copy(options.ModelPath, copy);
+            using var reranker = new OnnxCrossEncoderReRanker(
+                Options.Create(options with { ModelPath = copy }),
+                NullLogger<OnnxCrossEncoderReRanker>.Instance);
+            var result = await reranker.ReRankAsync(Query, ConstruirPool(5), 5);
+            var identity = Assert.IsType<CrossEncoderIdentity>(result[0].CrossEncoder);
+            Assert.Equal(await ContentHasher.ComputeFileAsync(copy), identity.ModelSha256);
+            Assert.Equal(await ContentHasher.ComputeFileAsync(options.VocabPath), identity.TokenizerSha256);
+            Assert.Equal(Path.GetFileName(copy), identity.Binary);
+            Assert.Equal(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
+                identity.Architecture);
+            Assert.True(identity.StableGateScore);
+            Assert.All(result, r => Assert.Equal(identity, r.CrossEncoder));
+            if (Environment.GetEnvironmentVariable("RAG_GATE_IDENTITY_REPORT") is { Length: > 0 } reportPath)
+                await File.WriteAllTextAsync(reportPath, System.Text.Json.JsonSerializer.Serialize(identity,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower }));
+
+            // Replacing this disposable file must not relabel the already-loaded session.
+            await File.WriteAllTextAsync(copy, "different binary under the same name");
+            var repeated = await reranker.ReRankAsync(Query, ConstruirPool(5), 5);
+            Assert.Equal(identity, repeated[0].CrossEncoder);
+            Assert.Equal(result[0].SimilarityScore, repeated[0].SimilarityScore);
+            var calibration = GateCalibrationTests.Calibration with { CrossEncoder = identity };
+            calibration.ValidateFor(repeated[0]);
+            var replaced = calibration with
+            {
+                CrossEncoder = identity with { ModelSha256 = await ContentHasher.ComputeFileAsync(copy) }
+            };
+            Assert.Throws<InvalidOperationException>(() => replaced.ValidateFor(repeated[0]));
+        }
+        finally
+        {
+            File.Delete(copy);
+            Directory.Delete(directory);
+        }
+    }
+
     /// <summary>
     /// <see cref="FactAttribute"/> que se salta a sí mismo (con motivo explícito, visible
     /// como "Skipped" en el runner) cuando el modelo ONNX del cross-encoder no está en

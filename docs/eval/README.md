@@ -16,8 +16,9 @@
   confirma contra el contenido indexado. Es ground-truth de **abstención**, no de
   recall: aquí no importa qué chunk sale, sino si el motor debe responder.
 - `gate-bandas.scores.json` — score del resultado #1 de cada una de esas consultas, con
-  `CrossEncoder:StableGateScore` encendida y apagada. Lo produce y lo analiza
-  `infra/gate-bandas-barrido.py`.
+  `CrossEncoder:StableGateScore` encendida y apagada. Es el control histórico;
+  `infra/gate-bandas-barrido.py` lo reanaliza sin sobrescribirlo. Las mediciones nuevas
+  exigen `--medir --salida NUEVA.json` y guardan identidad efectiva y hash del conjunto.
 - `quality/*.json` — corridas de `infra/quality-baseline.py`: respuestas completas de la
   API más métricas mecánicas de calidad. No miden recall; miden lo que ve el usuario.
 - `quality/5.h-filtro-*.json` — excepción al punto anterior: A/B de recall del filtro
@@ -49,7 +50,7 @@ chunker. Los pesos se recalibraron después de generarlo (sparse 1.0→1.3, resu
 1.0→2.5, +16 puntos de recall@10), así que ese archivo dejó de ser comparable con
 cualquier corrida nueva — y no había forma de saberlo mirándolo.
 
-Ahora cada baseline lleva un bloque `provenance` con los 12 campos que determinan si
+Ahora cada baseline lleva un bloque `provenance` con los campos que determinan si
 dos números son comparables:
 
 | Campo | Por qué invalida la comparación |
@@ -58,10 +59,19 @@ dos números son comparables:
 | `eval_set_hash` | Detecta el re-etiquetado: corregir el ground-truth cambia el recall sin que cambie el motor. |
 | `embedding_model`, `embedding_dimensions`, `embedding_max_sequence_length` | Otro modelo son otros vectores; exige re-ingesta. |
 | `cross_encoder_model` | El rerank cambia el orden final. |
+| `cross_encoder` | Identidad de los bytes cargados: SHA-256 de ONNX/tokenizer, binario, arquitectura, StableGateScore, ventana y lote. Un baseline antiguo con sólo nombre no declara esta evidencia. |
+| `gate_calibration` | Perfil efectivo de umbrales vinculado a esa identidad, o null para el gate global sin vínculo. No acredita calidad de respuesta ni recalibración. |
 | `weight_codigo`, `weight_sparse`, `weight_resumen`, `rrf_k` | Los pesos de la fusión RRF a 3 bandas mueven el recall varios puntos. |
 | `chunking_contract_version` | Si los chunks del índice se generaron con otro criterio de corte, nada es comparable. |
 | `index_short_type_declarations` | Declara el experimento de admisión de tipos cortos; un baseline antiguo sin este campo lo reporta como no declarado. |
 | `resumen_prompt_version` | El tercer vector de la fusión se genera con ese prompt; cambiarlo cambia lo indexado. |
+
+`rag eval` registra además `cross_encoder`, `gate_calibration` y `score_scale` por
+pregunta. Obtiene la identidad del resultado, no releyendo un archivo que podría
+haber cambiado después de cargar ONNX; una corrida con identidades/perfiles
+mezclados falla. Sin resultados rerankeados no inventa una identidad observada.
+El contrato y el comparador de respuestas están documentados en
+[calidad](quality/README.md#calibración-por-binario-ítem-1210).
 
 ## Verificar que un eval-set siga siendo medible
 

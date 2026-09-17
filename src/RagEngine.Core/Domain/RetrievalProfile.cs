@@ -60,6 +60,9 @@ public sealed record RetrievalProfile
 
     /// <summary>Overrides de pesos de fusión ponderada, solo aplican a colecciones con vector "dense-resumen".</summary>
     public RetrievalProfileFusionWeights? Fusion { get; init; }
+
+    /// <summary>Measured gate thresholds bound to a specific cross-encoder; null preserves the global gate.</summary>
+    public GateCalibration? GateCalibration { get; init; }
 }
 
 /// <summary>

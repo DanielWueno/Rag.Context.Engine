@@ -29,6 +29,12 @@ public sealed record RetrievalResult(
     /// <summary>Score used for ordering, before any stable-gate replacement.</summary>
     public double RankingScore { get; init; } = SimilarityScore;
     public RetrievalScoreScale RankingScoreScale { get; init; } = ScoreScale;
+
+    /// <summary>Actual loaded cross-encoder identity, absent on non-reranked results.</summary>
+    public CrossEncoderIdentity? CrossEncoder { get; init; }
+
+    /// <summary>Validated per-request profile snapshot for the winner, not stored in the index.</summary>
+    public GateCalibration? GateCalibration { get; init; }
 }
 
 /// <summary>

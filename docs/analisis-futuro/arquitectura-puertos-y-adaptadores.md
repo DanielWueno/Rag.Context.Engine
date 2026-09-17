@@ -159,6 +159,26 @@ lecturas las consumen `StatusCommand` y `DoctorCommand`. Meterlo todo en una int
 puerto de doce métodos que sólo Qdrant puede implementar: la abstracción que no abstrae. Van dos
 puertos separados — escritura de ingesta, y diagnóstico/administración — o ninguno.
 
+**Evidencia de ejecución, 2026-09-17 (9.1):** los commits `45bdbce` y `9690c49`
+introdujeron `IVectorStoreWriter`/`IVectorStoreAdmin`. En lugar de exponer otro tipo
+de cursor, el puerto ofrece `IAsyncEnumerable<PendingResumenPoint>` con IDs `Guid`;
+el offset gRPC queda dentro del adaptador. Una nueva invocación vuelve a enumerar
+`resumen_pending`, sin guardar un offset que pueda saltarse fallos anteriores.
+`VectorStoreResumeTests` verifica en Qdrant real 207 puntos, interrupción tras 103
+resúmenes, reanudación con instancias nuevas y conservación exacta de vectores tras
+otro upsert; incluye el control adversarial que sí pierde el vector al omitir el
+estado anterior. Esta alternativa satisface el objetivo de separar dependencias,
+sin añadir un cursor que el consumidor no necesita.
+
+La ficha **sigue `en_curso`**, no cerrada: dos parejas A/B sobre cuatro eval-sets
+conservan hit@10, pero los empates del ranking nativo cambian hit@1/hit@5 entre
+corridas. También se observa variación al repetir el control pre-9.1; no se atribuye
+automáticamente al refactor. Se conservan ambas parejas y el fallo del criterio
+estricto, sin cambiar anclas ni normalizar empates para forzar un PASS.
+Evidencia y comparador: `docs/eval/quality/9.1/`. Aceptación completa:
+`python3 docs/eval/quality/9.1/verify.py --run-tests`; devuelve error mientras
+la equivalencia literal no esté demostrada, aunque los contratos pasen.
+
 ### 3.5 `IRagGenerationService` no abstrae: obliga al host a duplicar el paso anterior
 
 `Api/Program.cs:397-410` y `:506-517` hacen **dos llamadas independientes a `ISemanticRetriever` por

@@ -34,7 +34,48 @@ grep -h "Ingestion complete" logs/rag-engine-*.json | tail -3
 grep -h "Search completed"  logs/rag-engine-*.json | tail -10
 ```
 
-- **Métricas** (`System.Diagnostics.Metrics`, medidor `RagEngine`): `chunks_indexed_total`, `ingestion_errors_total` (etiquetadas por etapa), `search_latency_ms`, `search_errors_total`. Verificables con `dotnet-counters monitor -p <PID> --counters RagEngine` (requiere [dotnet-counters](https://github.com/dotnet/diagnostics)). El endpoint de depuración `/api/test-metrics` se retiró (ítem `12.1-cotas-y-cierre-inmediato`): exponía contadores internos sin autenticación en la superficie pública.
+- **Métricas** (`System.Diagnostics.Metrics`, medidor `Rag.Context.Engine`): `rag_chunks_indexed_total`, `rag_ingestion_errors_total` (etiquetadas por `stage`), `rag_search_latency_ms`, `rag_search_errors_total`, `rag_chunks_truncated_total`, `rag_tokens_discarded_total` — todos con tag `collection` (o `stage`), acotado al conjunto real de colecciones/etapas, nunca a datos de consulta. Exportación configurable vía OpenTelemetry (ítem `13.3-opentelemetry`), ver más abajo. También verificables directo con `dotnet-counters monitor -p <PID> --counters Rag.Context.Engine` ([dotnet-counters](https://github.com/dotnet/diagnostics)), sin depender del exportador.
+
+### Exportador OpenTelemetry (ítem `13.3-opentelemetry`)
+
+Apagado por defecto (`Metrics:Enabled=false`): el `Meter` sigue emitiendo, pero nada lo
+recoge — cero endpoints nuevos, cero overhead. Reemplaza el listener/exportador de
+solo-log de `3.3-exportador-otel` (`MetricsListener`/`SimpleMetricsExporter`, retirados);
+nunca corren los dos a la vez, para no duplicar conteos.
+
+```json
+{
+  "Metrics": {
+    "Enabled": false,
+    "Exporter": "Prometheus",
+    "OtlpEndpoint": null
+  }
+}
+```
+
+| Clave | Efecto |
+|---|---|
+| `Metrics:Enabled` | `false` (default): sin exportador. `true`: habilita exactamente UNO de los siguientes. |
+| `Metrics:Exporter` | `"Prometheus"` (default): expone `GET /metrics` (scrape) en este mismo host. `"Otlp"`: empuja al colector de `Metrics:OtlpEndpoint`. |
+| `Metrics:OtlpEndpoint` | Solo con `Exporter="Otlp"`. Requerido, URI absoluta (p. ej. `http://localhost:4317`); sin él, el host **falla al arrancar** con un mensaje accionable en vez de exportar en silencio a ningún lado. |
+
+`GET /metrics` sigue la misma política de exposición de red que el resto del host — no
+es una superficie autenticada aparte, es scrape local: sin `Transport:Published=true`
+(ver más abajo) solo se alcanza en loopback, igual que `/api/*`.
+
+Verificado empíricamente al cerrar este ítem: con `Metrics:Enabled=false`, `GET /metrics`
+da 404 y el resto del servicio no cambia. Con `Metrics:Enabled=true` y
+`Exporter=Prometheus`, tras una búsqueda real el scrape muestra
+`rag_search_errors_total{...,collection="..."} 1` con `# TYPE ... counter` correcto, sin
+duplicar el conteo del listener retirado. Cubierto por
+`MetricsExporterHttpHarnessTests` (fixture: graba directamente sobre el `Meter` estático
+compartido con producción y scrapea `/metrics` a través de un host HTTP real —
+sin `/api/test-metrics`).
+
+**Rollback**: fijar `Metrics:Enabled=false` (o revertir el commit) restaura el listener
+de solo-log anterior (`MetricsListener`/`SimpleMetricsExporter`) sin tocar índices ni
+datos — el `Meter` en sí no cambia, solo quién lo escucha.
+
 - **Resiliencia:** las llamadas a Qdrant pasan por Polly (3 reintentos exponenciales + circuit breaker 50%/30s). Los reintentos se loguean con `Execution attempt`.
 
 ## Auditoría local (ítem `12.11-auditoria-local-con-actor`)

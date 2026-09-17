@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using RagEngine.Api;
+using RagEngine.Api.Observability;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Domain;
@@ -69,12 +71,50 @@ try
     builder.Services.AddRagEngineCore(builder.Configuration);
     builder.Services.AddRagEngineGeneration(builder.Configuration);
 
-    // Listener de métricas para detectar los instrumentos del Meter Rag.Context.Engine
-    builder.Services.AddHostedService<MetricsListener>();
+    // Ítem 13.3: exportación configurable (OFF por defecto) de los 6 instrumentos ya
+    // definidos en RagEngineMetrics. Reemplaza el listener/exportador de solo-log de
+    // 3.3-exportador-otel (nunca corren ambos a la vez: eso duplicaría conteos). Con
+    // Metrics:Enabled=false (default) no se registra NINGÚN exportador — el Meter sigue
+    // emitiendo al vacío, exactamente el comportamiento previo a este ítem.
+    //
+    // La decisión de exportador se difiere con IDeferredMeterProviderBuilder.Configure
+    // en vez de leerse aquí de builder.Configuration: OpenTelemetry construye el
+    // MeterProvider real durante IHost.StartAsync() (TelemetryHostedService), momento en
+    // el que YA está resuelta la configuración final del host — incluida la que un
+    // WebApplicationFactory de test agrega vía ConfigureAppConfiguration, invisible en
+    // un snapshot leído aquí antes de builder.Build(). Resolver IOptions<MetricsOptions>
+    // en ese punto también dispara MetricsOptionsValidator automáticamente: sin
+    // Metrics:OtlpEndpoint válido, falla con OptionsValidationException accionable en
+    // vez de un ArgumentNullException crudo de System.Uri.
+    builder.Services.Configure<MetricsOptions>(builder.Configuration.GetSection(MetricsOptions.SectionName));
+    builder.Services.AddSingleton<IValidateOptions<MetricsOptions>, MetricsOptionsValidator>();
+    builder.Services.AddOptions<MetricsOptions>().ValidateOnStart();
 
-    // Exportador simple de métricas para verificar que los instrumentos funcionan
-    builder.Services.AddSingleton(sp =>
-        new SimpleMetricsExporter(sp.GetRequiredService<ILogger<SimpleMetricsExporter>>()));
+    builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
+    {
+        metrics.AddMeter(RagEngineMetrics.Meter.Name);
+
+        if (metrics is not IDeferredMeterProviderBuilder deferred)
+            return;
+
+        deferred.Configure((sp, meterProviderBuilder) =>
+        {
+            var opts = sp.GetRequiredService<IOptions<MetricsOptions>>().Value;
+            if (!opts.Enabled)
+                return;
+
+            if (string.Equals(opts.Exporter, "Prometheus", StringComparison.OrdinalIgnoreCase))
+            {
+                meterProviderBuilder.AddPrometheusExporter();
+            }
+            else if (string.Equals(opts.Exporter, "Otlp", StringComparison.OrdinalIgnoreCase))
+            {
+                meterProviderBuilder.AddOtlpExporter((otlpOptions, _) =>
+                    otlpOptions.Endpoint = new Uri(opts.OtlpEndpoint!));
+            }
+        });
+    });
+
 
     // AddProblemDetails() habilita el relleno automático de ProblemDetails que ya
     // hace el propio binding de minimal API cuando el body no parsea como JSON
@@ -281,6 +321,18 @@ try
 
     app.UseDefaultFiles();
     app.UseStaticFiles();
+
+    // Ítem 13.3: /metrics solo se mapea con Metrics:Enabled=true y Exporter="Prometheus".
+    // Igual que el resto del host, no publica más allá de lo que ya permite
+    // Transport:Published — no es una superficie autenticada aparte, es scrape local.
+    // Se lee de app.Services (config final, ya con validación disparada), no del
+    // snapshot de builder.Configuration de más arriba.
+    var metricsOptions = app.Services.GetRequiredService<IOptions<MetricsOptions>>().Value;
+    if (metricsOptions.Enabled &&
+        string.Equals(metricsOptions.Exporter, "Prometheus", StringComparison.OrdinalIgnoreCase))
+    {
+        app.MapPrometheusScrapingEndpoint("/metrics");
+    }
 
     var defaultCollection = builder.Configuration["Qdrant:DefaultCollection"] ?? "default";
 

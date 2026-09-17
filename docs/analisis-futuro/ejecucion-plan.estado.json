@@ -1873,14 +1873,17 @@
           "esfuerzo": "medium",
           "multiagente": false,
           "horas_maquina": 0.1,
-          "estado": "pendiente",
+          "estado": "hecho",
           "_preparacion_de_verificacion": "Falta colector de prueba local/en memoria y fixture que produzca los cuatro instrumentos sin /api/test-metrics. Preparar nombres/unidades/tipos esperados desde el contrato actual, casos exportador OFF/ON y deteccion de doble conteo. Un scrape HTTP 200 no prueba esas mediciones.",
           "por_que_este_modelo": "Wiring de exportacion sin reabrir el listener historico ya cerrado.",
           "origen": "LightRAG 13.3 y §3; continua 3.3-exportador-otel conservando su estado hecho.",
           "archivos": "src/RagEngine.Api/MetricsListener.cs, src/RagEngine.Api/SimpleMetricsExporter.cs, src/RagEngine.Api/Program.cs, src/RagEngine.Core/Diagnostics/RagEngineMetrics.cs, docs/operaciones.md (a crear)",
           "verificacion": "Exportador desactivado no cambia servicio; activado muestra en Prometheus/OTLP los cuatro instrumentos existentes con unidades/tipos correctos tras ingesta y busqueda de prueba. Sin duplicar mediciones con el listener viejo ni usar /api/test-metrics. Scrape/exportador local restringido, sin datos de consulta ni tenant como etiquetas de cardinalidad ilimitada.",
           "rollback": "Desactivar exportador y restaurar listener anterior sin reintroducir endpoint de depuracion publico; no toca indices.",
-          "bloqueado_por": "12.1-cotas-y-cierre-inmediato"
+          "bloqueado_por": "12.1-cotas-y-cierre-inmediato",
+          "_ejecucion": "Copilot CLI; modelo solicitado sonnet; modelo efectivo claude-sonnet-5 (esta sesion); esfuerzo medium; motivo: implementacion acotada con criterio ya definido en la ficha.",
+          "fecha": "2026-09-17",
+          "resultado": "Se agrego OpenTelemetry.Extensions.Hosting/Prometheus.AspNetCore/OpenTelemetryProtocol a RagEngine.Api y se reemplazo el listener de solo-log de 3.3-exportador-otel (MetricsListener/SimpleMetricsExporter, retirados) por MetricsOptions (Metrics:Enabled=false por defecto, Metrics:Exporter=Prometheus|Otlp, Metrics:OtlpEndpoint) + MetricsOptionsValidator. La decision de exportador se difiere con IDeferredMeterProviderBuilder.Configure para resolverse con la config final del host en IHost.StartAsync, evitando duplicar conteos y permitiendo fail-fast (OptionsValidationException) si Otlp no trae endpoint valido. GET /metrics solo se mapea con Enabled=true+Prometheus, y hereda la misma politica de exposicion de red del resto del host (Transport:Published). Verificado: build Release sin advertencias; smoke manual con Enabled=false (-> /metrics 404, /api/health 200) y Enabled=true+Prometheus tras una busqueda real (-> rag_search_errors_total{...,collection=...} 1 con tipo counter correcto); Enabled=true+Otlp sin OtlpEndpoint falla al arrancar con mensaje accionable. Cubierto por tests/RagEngine.Core.Tests/MetricsExporterHttpHarnessTests.cs (4 tests, WebApplicationFactory<Program> real): exportador OFF no expone /metrics ni cambia el servicio; exportador Prometheus ON expone los 4 instrumentos base (chunks_indexed_total, ingestion_errors_total, search_latency_ms, search_errors_total) con nombre/tipo/valor correctos grabando directamente sobre el Meter estatico compartido con produccion (sin /api/test-metrics); una sola medicion produce un solo valor expuesto (sin doble conteo); Otlp sin endpoint no deja arrancar el host. dotnet test tests/RagEngine.Core.Tests (excluyendo Responses_sources_prompts_and_sse_match_pre_refactor_control, fallo preexistente en esta maquina por estado de cache de resumenes, confirmado identico en baseline via git stash): 137/137 en verde. docs/operaciones.md actualizado con la seccion del exportador y su rollback."
         },
         {
           "id": "13.4-trazas-del-turno",

@@ -40,6 +40,15 @@ try
 
     var host = Host.CreateDefaultBuilder(args)
         .UseContentRoot(AppContext.BaseDirectory)
+        .ConfigureAppConfiguration(config =>
+        {
+            // Fuente compartida con RagEngine.Api para RetrievalFusion y los
+            // umbrales del gate de confianza (ítem 8.g) — evita que un host quede
+            // con defaults silenciosos mientras el otro se recalibra. Precedencia
+            // menor que este appsettings.json, así que un override local sigue
+            // funcionando.
+            RagEnginePaths.InsertSharedConfigSource(config);
+        })
         .ConfigureLogging(logging => 
         {
             logging.ClearProviders();

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 
 namespace RagEngine.Core.Utilities;
 
@@ -26,6 +27,17 @@ public static class RagEnginePaths
 
     /// <summary>Variable que define dónde se escriben los logs.</summary>
     public const string LogsDirVariable = "RAG_LOGS_DIR";
+
+    /// <summary>
+    /// Variable que define dónde vive <c>shared.appsettings.json</c> (ítem 8.g),
+    /// la única fuente de <c>RetrievalFusion</c> y de los umbrales del gate de
+    /// confianza (<c>RagGeneration:LowConfidenceThreshold</c>/<c>HighConfidenceThreshold</c>)
+    /// compartida entre Api y Cli.
+    /// </summary>
+    public const string SharedConfigDirVariable = "RAG_SHARED_CONFIG_DIR";
+
+    /// <summary>Nombre del archivo de configuración compartida entre hosts.</summary>
+    private const string SharedConfigFileName = "shared.appsettings.json";
 
     /// <summary>
     /// Archivo que marca la raíz del repositorio. Se busca hacia arriba desde el
@@ -182,6 +194,51 @@ public static class RagEnginePaths
         return repoRoot is not null
             ? Path.Combine(repoRoot, "logs")
             : Path.Combine(AppContext.BaseDirectory, "logs");
+    }
+
+    /// <summary>
+    /// Ruta de <c>shared.appsettings.json</c> (ítem 8.g): en orden,
+    /// <c>RAG_SHARED_CONFIG_DIR</c>, luego <c>&lt;raíz del repo&gt;/config</c> si se
+    /// encuentra el marcador de solución. Devuelve null si ninguno aplica (publish
+    /// fuera del repo sin la variable seteada) — el llamador decide si eso es
+    /// tolerable (arranque sin el archivo, valores por defecto del código) o un error.
+    /// </summary>
+    public static string? ResolveSharedConfigPath()
+    {
+        if (Environment.GetEnvironmentVariable(SharedConfigDirVariable) is { Length: > 0 } configured)
+        {
+            return Path.Combine(Expand(configured), SharedConfigFileName);
+        }
+
+        string? repoRoot = FindRepositoryRoot(AppContext.BaseDirectory);
+
+        return repoRoot is not null
+            ? Path.Combine(repoRoot, "config", SharedConfigFileName)
+            : null;
+    }
+
+    /// <summary>
+    /// Inserta <c>shared.appsettings.json</c> (ítem 8.g) como la fuente de
+    /// configuración de MENOR precedencia — antes que <c>appsettings.json</c> del
+    /// host, variables de entorno y argumentos de línea de comandos, que pueden
+    /// seguir sobreescribiéndolo si hace falta. Es la única fuente de
+    /// <c>RetrievalFusion</c> y de <c>RagGeneration:Low/HighConfidenceThreshold</c>
+    /// compartida entre Api y Cli: cambiar un valor ahí lo toman ambos hosts. No
+    /// hace nada (arranca con los defaults del código) si el archivo no aparece —
+    /// caso de un publish fuera del repo sin <see cref="SharedConfigDirVariable"/>.
+    /// </summary>
+    public static void InsertSharedConfigSource(IConfigurationBuilder config)
+    {
+        string? sharedConfigPath = ResolveSharedConfigPath();
+        if (sharedConfigPath is null || !File.Exists(sharedConfigPath))
+        {
+            return;
+        }
+
+        config.AddJsonFile(sharedConfigPath, optional: false, reloadOnChange: false);
+        IConfigurationSource sharedSource = config.Sources[^1];
+        config.Sources.RemoveAt(config.Sources.Count - 1);
+        config.Sources.Insert(0, sharedSource);
     }
 
     /// <summary>

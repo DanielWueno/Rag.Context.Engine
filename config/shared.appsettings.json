@@ -1,0 +1,13 @@
+{
+  "_leeme": "Fuente unica de RetrievalFusion y de los umbrales del gate de confianza (RagGeneration:Low/HighConfidenceThreshold), compartida entre RagEngine.Api y RagEngine.Cli (item 8.g del plan). Cargado por ambos hosts con precedencia mas baja que su propio appsettings.json: cambiar un valor aqui lo toman los dos; un appsettings de host puede seguir sobreescribiendolo si hace falta un experimento local.",
+  "RetrievalFusion": {
+    "WeightCodigo": 1.0,
+    "WeightSparse": 1.3,
+    "WeightResumen": 2.5,
+    "RrfK": 60
+  },
+  "RagGeneration": {
+    "LowConfidenceThreshold": 0.05,
+    "HighConfidenceThreshold": 0.60
+  }
+}

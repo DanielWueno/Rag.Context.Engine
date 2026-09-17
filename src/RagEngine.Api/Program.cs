@@ -55,6 +55,12 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // Fuente compartida con RagEngine.Cli para RetrievalFusion y los umbrales del
+    // gate de confianza (ítem 8.g) — evita que un host quede con defaults
+    // silenciosos mientras el otro se recalibra. Precedencia menor que este
+    // appsettings.json, así que un override local sigue funcionando.
+    RagEnginePaths.InsertSharedConfigSource(builder.Configuration);
+
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog(dispose: true);
 

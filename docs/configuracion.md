@@ -22,10 +22,37 @@
     "StableGateScore": true             // score del #1 recalculado en lote de 1 (ver abajo)
   },
   "Qdrant":   { "Host": "localhost", "GrpcPort": 6334, "HttpPort": 6333 },
-  "Ingestion":{ "DefaultCollection": "rag-engine", "RepositoryName": "my-repo", "BatchSize": 32 },
+  "Ingestion":{ "MaxConcurrentResumenCalls": 2 },
   "Ollama":   { "Endpoint": "http://localhost:11434/v1", "ModelId": "qwen2.5-coder", "TimeoutSeconds": 120 }
 }
 ```
+
+> `Ingestion:DefaultCollection`/`RepositoryName`/`BatchSize` no existen aquí: son
+> `--collection`/`--repo-name`/`--batch-size` de `rag ingest` (`IngestCommand.Settings`),
+> no claves que enlace `IngestionOptions`. Ver [ítem 8.g](analisis-futuro/ejecucion-plan.estado.json).
+
+## `config/shared.appsettings.json` — fuente única de `RetrievalFusion` y el gate
+
+Ítem 8.g. `RetrievalFusion` (pesos de fusión de las tres bandas) y los umbrales del
+gate de confianza (`RagGeneration:LowConfidenceThreshold`/`HighConfidenceThreshold`)
+viven en **un solo archivo**, `config/shared.appsettings.json` en la raíz del repo,
+no copiados literalmente en `RagEngine.Api/appsettings.json` y `RagEngine.Cli/appsettings.json`.
+Ambos `Program.cs` lo cargan (`RagEnginePaths.InsertSharedConfigSource`) con
+precedencia **menor** que su propio `appsettings.json`: recalibrar un peso o un
+umbral ahí lo toman los dos hosts sin tocar nada más; un `appsettings.json` de host
+puede seguir sobreescribiéndolo puntualmente si hace falta un experimento local.
+
+```jsonc
+{
+  "RetrievalFusion": { "WeightCodigo": 1.0, "WeightSparse": 1.3, "WeightResumen": 2.5, "RrfK": 60 },
+  "RagGeneration": { "LowConfidenceThreshold": 0.05, "HighConfidenceThreshold": 0.60 }
+}
+```
+
+Ruta resuelta en orden: `RAG_SHARED_CONFIG_DIR` (variable de entorno), luego
+`<raíz del repo>/config/shared.appsettings.json` si aparece `RagEngine.slnx` subiendo
+desde el binario. Si ninguno aplica (publish fuera del repo sin la variable), el host
+arranca igual con los defaults de código en `RetrievalFusionOptions`/`RagGenerationOptions`.
 
 ### Campos críticos
 
@@ -121,6 +148,7 @@ concreta. Las rutas de modelo admiten `~` y tokens `${VARIABLE}`, y las resuelve
 |---|---|---|
 | `RAG_MODELS_DIR` | `~/models` | Raíz donde viven los modelos ONNX descargados. Una ruta relativa en `ModelPath`/`VocabPath` se ancla aquí, **nunca al directorio de trabajo**. |
 | `RAG_LOGS_DIR` | `<raíz del repo>/logs` | Dónde escriben los sinks de Serilog. La raíz se localiza buscando `RagEngine.slnx` hacia arriba desde el binario; si no aparece (publish fuera del repo), cae a `logs/` junto al ejecutable. |
+| `RAG_SHARED_CONFIG_DIR` | `<raíz del repo>/config` | Dónde vive `shared.appsettings.json` (`RetrievalFusion` y el gate — ítem 8.g). Si `RagEngine.slnx` no aparece y la variable no está fijada, el host arranca con los defaults de código. |
 
 Un token sin definir se deja literal a propósito: así el error de "modelo no encontrado" muestra
 `${RAG_MODELS_DIR}/...` tal cual, en vez de una ruta a medio construir.

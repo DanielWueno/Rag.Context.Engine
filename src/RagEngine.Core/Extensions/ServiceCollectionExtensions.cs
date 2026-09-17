@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.CircuitBreaker;
@@ -12,6 +13,7 @@ using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Scanning;
+using RagEngine.Core.Infrastructure.Transport;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Pipeline;
@@ -41,6 +43,14 @@ public static class ServiceCollectionExtensions
         services.Configure<OnnxBrainOptions>(
             configuration.GetSection(OnnxBrainOptions.SectionName));
 
+        // TryAddSingleton: WebApplicationBuilder/generic Host ya registran IConfiguration
+        // por su cuenta (este services.TryAdd no lo reemplaza, sólo cubre el caso de un
+        // ServiceCollection "pelado" como el de los tests unitarios de este proyecto, que
+        // le pasan `configuration` a este método pero no lo registran ellos mismos en DI).
+        // TransportOptionsValidator (ítem 12.8) lo necesita para leer Qdrant:ApiKey y
+        // Kestrel:Certificates:Default:Path, que no son parte de su propia sección.
+        services.TryAddSingleton(configuration);
+
         services.Configure<QdrantOptions>(
             configuration.GetSection(QdrantOptions.SectionName));
 
@@ -52,6 +62,16 @@ public static class ServiceCollectionExtensions
             .ValidateOnStart();
         services.AddSingleton<ICollectionAuthorizationService, CollectionAuthorizationService>();
         services.AddSingleton<ICollectionActorResolver, CollectionActorResolver>();
+
+        // Ítem 12.8: perfil de transporte. Sin sección "Transport" (el caso de hoy),
+        // Published cae en false y no exige nada — comportamiento idéntico al de antes
+        // de este ítem. Con Transport:Published=true, TransportOptionsValidator exige
+        // credencial de Qdrant y TLS resuelto (en el proceso o corriente arriba) antes
+        // de que el host arranque.
+        services.Configure<TransportOptions>(
+            configuration.GetSection(TransportOptions.SectionName));
+        services.AddSingleton<IValidateOptions<TransportOptions>, TransportOptionsValidator>();
+        services.AddOptions<TransportOptions>().ValidateOnStart();
 
         services.Configure<CrossEncoderOptions>(
             configuration.GetSection(CrossEncoderOptions.SectionName));

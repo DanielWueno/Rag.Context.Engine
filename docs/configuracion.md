@@ -169,6 +169,62 @@ de cada máquina; sin ese archivo, `docker compose config` resuelve a rutas rela
 repo y no falla. Verificado con `docker compose config`: ningún `/Users/` literal en
 `docker-compose.yml`, y `host_ip: 127.0.0.1` en el binding del puerto.
 
+## Perfil de transporte y secretos (ítem `12.8-secretos-y-tls`)
+
+Ningún archivo versionado (`appsettings.json` de `RagEngine.Api`/`RagEngine.Cli`,
+`infra/docker-compose.yml`) contiene valores de secretos: `Qdrant:ApiKey` queda vacío
+por default (sin auth, comportamiento previo) y se propaga solo vía `RAG_QDRANT_API_KEY`
+en el host o `Qdrant__ApiKey` como variable de entorno del proceso — ver [Qdrant con API
+key](#qdrant-con-api-key-qdrantapikey) arriba. Rotar la clave es cambiar esa variable y
+reiniciar el proceso; no exige recompilar ni tocar el archivo versionado.
+
+### `Transport:Published` — perfil local vs. perfil publicado
+
+```json
+"Transport": { "Published": false, "TlsTerminatedUpstream": false }
+```
+
+- **`Published: false`** (default): perfil **local**. El proceso asume que solo lo
+  alcanza tráfico HTTP en loopback de una máquina de confianza (el binding
+  `127.0.0.1:5080` de `infra/docker-compose.yml`, ítem `12.1`) o un túnel/VPN ya cerrado
+  corriente arriba. No exige credencial de Qdrant ni TLS — igual que siempre.
+- **`Published: true`**: perfil **publicado** (para exponer el host más allá de ese
+  loopback de confianza — LAN/VPN interna, nunca internet público sin más capas). Falla
+  el arranque (`OptionsValidationException`, mismo mecanismo que `Authorization:Mode`)
+  si falta cualquiera de estas dos cosas:
+  1. `Qdrant:ApiKey` configurado — sin credencial, cualquiera que alcance el host
+     alcanza también Qdrant sin autenticar.
+  2. TLS resuelto, por una de dos vías: `Kestrel:Certificates:Default:Path` (Kestrel
+     termina TLS en el propio proceso con un certificado) **o**
+     `Transport:TlsTerminatedUpstream: true` (un proxy/Ingress externo hace la
+     terminación TLS y reenvía HTTP simple a este proceso — la variable es solo un
+     reconocimiento explícito; seguir siendo responsabilidad de quien despliega
+     configurar ese proxy con un certificado válido).
+
+Este ítem **no** instala un proxy ni un Ingress: documenta el contrato y lo hace fallar
+rápido si no se cumple, para que publicar sin TLS/credencial sea un error de arranque,
+no un descubrimiento en producción. `RagEngine.Cli` no expone red, así que
+`Transport`/`Kestrel` no le aplican.
+
+**Probado empíricamente** con un certificado de desarrollo local (`dotnet dev-certs
+https -ep cert.pfx -p <password>`, self-signed, nunca comiteado):
+
+```bash
+Transport__Published=true dotnet run --project src/RagEngine.Api   # sin credencial ni TLS → falla el arranque, mensaje accionable
+
+ASPNETCORE_URLS=https://127.0.0.1:5443 \
+Kestrel__Certificates__Default__Path=cert.pfx \
+Kestrel__Certificates__Default__Password=<password> \
+Transport__Published=true \
+Qdrant__ApiKey=<clave-real> \
+dotnet run --project src/RagEngine.Api   # con ambos configurados → arranca
+
+curl -sk https://127.0.0.1:5443/api/health   # handshake TLS + 200 sobre el certificado de prueba
+```
+
+Sin nada de esto (perfil local, default), el arranque no cambia. Ver el runbook con el
+ejemplo de proxy con TLS externo en [docs/operaciones.md](operaciones.md#perfil-publicado-y-tls-ítem-128-secretos-y-tls).
+
 ## Declaraciones cortas (`Ingestion:IndexShortTypeDeclarations`)
 
 Experimento local de 5.h, **desactivado por defecto**. Con `true`, una declaración

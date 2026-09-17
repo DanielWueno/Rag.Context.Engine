@@ -47,6 +47,12 @@ services:
       # key vía variable de entorno del host (nunca hardcodeada en este archivo).
       # Vacío conserva el comportamiento previo (sin autenticación).
       Qdrant__ApiKey: "${RAG_QDRANT_API_KEY:-}"
+      # Ítem 12.8: este compose sigue en el perfil LOCAL de siempre (Transport:Published
+      # no se fija, cae en false) — el binding 127.0.0.1:5080 de arriba ya es el
+      # loopback esperado para ese perfil. Publicar más allá de eso (LAN/VPN interna)
+      # exige fijar Transport__Published=true (y con ello RAG_QDRANT_API_KEY no vacío +
+      # TLS resuelto): ver docs/configuracion.md y docs/operaciones.md, sección de
+      # perfil publicado. No se activa aquí por defecto.
       # Ollama se deja NATIVO en el host (no en Docker) para conservar la
       # aceleración Metal de Apple Silicon — un Ollama en el contenedor Linux
       # caería a CPU-only. host.docker.internal expone el host desde el contenedor.

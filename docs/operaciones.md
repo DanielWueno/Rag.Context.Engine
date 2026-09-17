@@ -109,6 +109,62 @@ archivo sigue siendo legible con `sqlite3` aunque el escritor deje de usarse. Si
 habilita un acceso empresarial real y no hay forma de auditarlo con un actor verificado,
 **rechazar la operación o aplicar una política explícita — nunca continuar en silencio**.
 
+## Perfil publicado y TLS (ítem `12.8-secretos-y-tls`)
+
+Por default (`Transport:Published=false`) este host es **HTTP puro, loopback**: el
+compose de `12.1` publica `127.0.0.1:5080`, no todas las interfaces. Publicarlo más
+allá de eso (LAN/VPN interna, nunca internet público directo) exige
+`Transport:Published=true`, que a su vez exige credencial de Qdrant y TLS resuelto —
+ver [docs/configuracion.md](configuracion.md#transportpublished--perfil-local-vs-perfil-publicado).
+El arranque falla con un mensaje accionable si falta cualquiera de las dos.
+
+### Opción A — TLS en el proceso (Kestrel), probado con un certificado local
+
+```bash
+# Certificado de desarrollo self-signed, NUNCA comiteado (fuera del repo)
+dotnet dev-certs https -ep /tmp/rag-cert.pfx -p <password-local>
+
+ASPNETCORE_URLS=https://127.0.0.1:5443 \
+Kestrel__Certificates__Default__Path=/tmp/rag-cert.pfx \
+Kestrel__Certificates__Default__Password=<password-local> \
+Transport__Published=true \
+Qdrant__ApiKey=<clave-real> \
+dotnet run --project src/RagEngine.Api
+
+curl -sk https://127.0.0.1:5443/api/health   # -k porque el cert es self-signed y no está confiado por el sistema
+```
+
+Verificado empíricamente al cerrar este ítem: sin `Qdrant:ApiKey` ni certificado, el
+arranque falla (`OptionsValidationException`); con ambos, arranca y `/api/health`
+responde 200 sobre el handshake TLS del certificado de prueba.
+
+### Opción B — TLS en un proxy/Ingress externo (`Transport:TlsTerminatedUpstream=true`)
+
+Si un reverse proxy (nginx, Caddy, el Ingress de un clúster) ya termina TLS y reenvía
+HTTP simple a este proceso por loopback o una red interna de confianza, fijar
+`Transport:TlsTerminatedUpstream=true` reconoce esa topología explícitamente sin
+exigir un certificado dentro de este proceso. Sigue exigiendo `Qdrant:ApiKey`. Ejemplo
+mínimo de terminación TLS con Caddy (no incluido en `infra/docker-compose.yml`, es
+responsabilidad del entorno que publique):
+
+```
+# Caddyfile
+rag.ejemplo.interno {
+    reverse_proxy 127.0.0.1:5080
+}
+```
+
+Caddy obtiene/renueva el certificado por su cuenta (o se le apunta uno propio); este
+proceso no necesita saber nada de TLS, solo que `Transport:TlsTerminatedUpstream=true`
+está reconocido.
+
+### Rotación de `Qdrant:ApiKey`
+
+Cambiar la variable de entorno (`RAG_QDRANT_API_KEY` en `infra/docker-compose.yml`, o
+`Qdrant__ApiKey` del proceso) y reiniciar — no exige recompilar. No hay revocación
+automática de la clave anterior: coordinar el cambio en Qdrant y en todos los clientes
+antes de dar por cerrada la rotación.
+
 ## Troubleshooting
 
 ### "I cannot find enough information…" en `rag ask`

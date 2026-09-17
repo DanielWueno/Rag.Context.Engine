@@ -170,14 +170,34 @@ otro upsert; incluye el control adversarial que sí pierde el vector al omitir e
 estado anterior. Esta alternativa satisface el objetivo de separar dependencias,
 sin añadir un cursor que el consumidor no necesita.
 
-La ficha **sigue `en_curso`**, no cerrada: dos parejas A/B sobre cuatro eval-sets
+En la verificación guardada en `94c8755`, la ficha quedó **`en_curso`**, no cerrada:
+dos parejas A/B sobre cuatro eval-sets
 conservan hit@10, pero los empates del ranking nativo cambian hit@1/hit@5 entre
 corridas. También se observa variación al repetir el control pre-9.1; no se atribuye
 automáticamente al refactor. Se conservan ambas parejas y el fallo del criterio
 estricto, sin cambiar anclas ni normalizar empates para forzar un PASS.
-Evidencia y comparador: `docs/eval/quality/9.1/`. Aceptación completa:
+Evidencia y comparador históricos: `docs/eval/quality/9.1/`. Comando de aquella aceptación:
 `python3 docs/eval/quality/9.1/verify.py --run-tests`; devuelve error mientras
-la equivalencia literal no esté demostrada, aunque los contratos pasen.
+se evalúan esas capturas, aunque los contratos pasen. Está ligado a sus hashes;
+no sirve para certificar automáticamente otra versión del producto.
+
+**Relevo autorizado, 2026-09-17:** se registra
+`9.1.1-desempate-determinista` como una ficha plana previa al padre, con criterio,
+rollback y protocolo A/A + B/B + A/B en el ledger. La preparación no ejecuta la
+corrección. `9.1` pasa a **`bloqueado` por ese ID** para permitir trabajar el hijo
+en una conversación nueva sin que la regla de retomar `en_curso` seleccione antes
+al padre. La cadena real es `7.b` → `9.1.1` → `9.1` → `9.2`, sin dependencia
+del hijo hacia el cierre de su padre. Usar IDs completos, no el prefijo `9.1`.
+
+El subítem debe resolver los empates antes de los cortes relevantes, no ordenar
+solo un TopK ya truncado; preservará la precedencia de scores distintos y el
+aislamiento por autorización. Las nuevas mediciones aplicarán la misma política
+al control pre-refactor y al candidato, con tres réplicas por brazo y los cuatro
+sets congelados. Se conservarán las capturas fallidas anteriores sin normalizarlas
+para hacerlas pasar; la evidencia nueva tendrá su propio directorio.
+Cerrar el hijo **no cierra 9.1 automáticamente**: después, en otra conversación,
+se revalidarán sus contratos y se enlazará un comando de aceptación real a la
+nueva evidencia. No se ejecuta `9.2` durante este relevo.
 
 ### 3.5 `IRagGenerationService` no abstrae: obliga al host a duplicar el paso anterior
 

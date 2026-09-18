@@ -55,3 +55,25 @@ jobs:
       # desde pull_request, ni usar un runner self-hosted para este workflow.
       - name: Contratos del gate de eval nocturno (sin servicios)
         run: python3 -m unittest discover -s infra/eval-nocturno -p 'test_runner.py'
+
+      - name: Ejecutar verificación de advertencias (14.2)
+        run: |
+          set -euo pipefail
+          ./infra/ci/verify_warning.sh 2>&1 | tee /tmp/ci_build_output.txt || true
+          # Emitir anotaciones de GitHub Actions para cada warning reconocido
+          grep -i "warning" /tmp/ci_build_output.txt || true
+          # Parse typical 'file(line,column): warning CODE: message' or dotnet style
+          awk 'BEGIN{IGNORECASE=1}
+            /warning/ {
+              # attempt to extract file and line
+              match($0, /([^ ]+\.cs)\(([0-9]+),([0-9]+)\):[[:space:]]warning[[:space:]]([^:]+):[[:space:]](.*)/, a);
+              if (a[1]!="") {
+                printf("::warning file=%s,line=%s::%s: %s\n", a[1], a[2], a[4], a[5])
+              } else {
+                # fallback: print as generic warning
+                msg=$0;
+                gsub(/%/,"%%",msg);
+                print "::warning ::" msg
+              }
+            }' /tmp/ci_build_output.txt || true
+

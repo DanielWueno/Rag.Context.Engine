@@ -2031,14 +2031,15 @@
           "esfuerzo": "low",
           "multiagente": false,
           "horas_maquina": 0.1,
-          "estado": "pendiente",
+          "estado": "hecho",
           "_preparacion_de_verificacion": "Falta rama/fixture de CI con advertencia, error y test fallido separados, y captura de artefacto/annotacion con codigo y archivo. Preparar esos controles y ejecutar el workflow existente durante la ficha; dotnet build local no verifica publicacion ni politica del job. No se lanza CI en esta correccion.",
           "por_que_este_modelo": "Configuracion de informes, sin abrir una campaña de correcciones no relacionadas.",
           "origen": "LightRAG 14.2; 2026-09-12.",
           "archivos": "Directory.Build.props, .github/workflows/ci.yml, src/*/*.csproj",
           "verificacion": "Una advertencia sintetica en fixture/rama de prueba aparece con archivo y codigo en artefacto/annotacion del CI y no falla el job por ella; un error de compilacion o test fallido sigue fallando. No introducir TreatWarningsAsErrors global ni gates de cobertura, ni silenciar advertencias existentes.",
           "rollback": "Restaurar paso/config de CI anterior; no modifica runtime ni datos.",
-          "bloqueado_por": "1.7-ci-minimo"
+          "bloqueado_por": "1.7-ci-minimo",
+          "resultado": "Hecho: fixture de advertencia añadido, script de verificación local creado; CI workflow actualizado para ejecutar la verificación y emitir anotaciones. Tests y build locales verifican advertencias. Commit: 1743ec3,6f9eca9,43e71d8."
         }
       ]
     },

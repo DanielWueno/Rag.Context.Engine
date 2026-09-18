@@ -2057,14 +2057,17 @@
           "esfuerzo": "medium",
           "multiagente": false,
           "horas_maquina": 0.2,
-          "estado": "pendiente",
+          "estado": "hecho",
           "_preparacion_de_verificacion": "Falta inventariador reproducible y fixtures que distingan admitido/fallback/omitido, duplicados y exclusiones. Prepararlos en esta ficha sobre raices autorizadas; la utilidad de documentos y preguntas prioritarias exige evidencia/etiquetado, no inferirla de extension. No hay comando actual que decida toda esa aceptacion.",
           "por_que_este_modelo": "Medir el denominador y la relevancia sin confundir extensiones soportadas con contenido realmente indexado.",
           "origen": "LightRAG §5.3 y §9; plan-refinamiento-arquitectonico-produccion.md §7 D-1 y §8, incorporado 2026-09-12.",
           "archivos": "src/RagEngine.Core/Domain/ScanProfile.cs, src/RagEngine.Core/Infrastructure/ (scanner), infra/ (inventario local), docs/eval/quality/",
           "verificacion": "Inventario de solo lectura de raices autorizadas, con revision/hash de corpus, exclusiones y n total. Tabla por extension/MIME: archivos, bytes, admitidos/omitidos, duplicados y fraccion sobre documentos utiles, sin contar bin/obj/dependencias como negocio. Incluir PDF/Office/imagenes/tablas/ecuaciones/audio/video, XAML y SQL; distinguir formato no admitido de admitido por fallback. Reejecucion sobre mismo corpus da mismos conteos. Fijar casos de negocio con anclas verificables aun fuera del indice. Entrada propuesta para parseo: >=10 archivos utiles no ingeribles y >=10% del corpus util, O >=5 preguntas de negocio prioritarias verificadas que solo esos formatos pueden responder. Declarar denominadores; si no cumple, conservar capacidad bloqueada y reevaluar cuando se añada corpus.",
           "rollback": "No modifica corpus ni indices. Retirar solo informe derivado si contiene rutas sensibles; conservar el protocolo sin publicar contenido privado.",
-          "bloqueado_por": "11.2-experimento-3-brazos"
+          "bloqueado_por": "11.2-experimento-3-brazos",
+          "_ejecucion": "Copilot CLI; modelo solicitado sonnet; modelo efectivo claude-sonnet-5; esfuerzo medium; motivo: implementacion acotada con criterio ya definido en el campo verificacion.",
+          "verificacion_comando": "python3 infra/inventario-formatos/test_inventariar_corpus.py -v && python3 infra/inventario-formatos/inventariar_corpus.py --config infra/inventario-formatos/raices_autorizadas.json --markdown",
+          "resultado": "Construido infra/inventario-formatos/ (inventariar_corpus.py + raices_autorizadas.json + fixtures/ + 13 tests unittest, todos verdes). Reglas de admision leidas en runtime de ScanProfile.cs, no copiadas a mano. Corrida real 2026-09-18 sobre las 4 raices que 04-ingest-collections.sh realmente ingesta (bsuite-repo, innovapp-docs, micro-repo, wiki-solis; rag-engine y Reyma.InnovApp excluidos deliberadamente, ver informe): corpus util = 3979 archivos unicos; no admitidos = 1474 (37.04%). CUMPLE el criterio de entrada por volumen (>=10 archivos y >=10%). Lectura honesta: ~89% del volumen no admitido es .png/.razor/.resx (recursos/lenguajes estructurales .NET-Blazor-XAF), no PDF/Office (solo 3 PDF, 0 Office detectados) — el hueco de LightRAG §5.3 (PDF/Office real) NO alcanza el umbral en este corpus con evidencia fuerte; el numero agregado no reclasifica 15.4/15.5 como desbloqueadas por si solo. Informe completo, tabla por extension/MIME y veredicto en docs/eval/quality/15.3/inventario-corpus-negocio.md e inventario-agregado.json. No modifica corpus ni indices (solo lectura). Sin commit todavia en esta invocacion."
         },
         {
           "id": "15.1-descripciones-de-relaciones",

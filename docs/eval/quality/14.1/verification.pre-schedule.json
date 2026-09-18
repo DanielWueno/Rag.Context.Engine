@@ -3,17 +3,16 @@
   "accepted": true,
   "tests_passed": 19,
   "source": {
-    "git_commit": "4245a22616a316790c646b418e36c2e689c40c58",
+    "git_commit": "f27ed4ce1c48b1f0c8a7fa19d5d0cf41a998bd6f",
     "git_dirty": true
   },
-  "schedule_evidence_sha256": "cdbd0802eccebce6022fbe4b7855d242f9f8db698d4ed4dc614254b12c47b5a4",
   "source_sha256": {
-    "runner.py": "170e6ccbf24907b9e5608b9ac77fc6a86f49ffaa63efbc1d9e7e415cde8917a2",
-    "test_runner.py": "0a0247a6b753183df4e451866a636e26be003e6b0e6d027a4574e182369db34c",
-    "accept.py": "1453e3aebab784a94fc385a922f3ee7042c4adeabcb7fe283046d50538d5e38b",
+    "runner.py": "5498de91a2351e21bd30c897b2c91c8cb2b1cfde0da219651b7edc954d8ef0f8",
+    "test_runner.py": "61265e2d292567f93eeda03a9e4bdf4aacbd56c0df1d671254ab23353e02eaa5",
+    "accept.py": "e6943854bfaec19dd2d474ecc991f0518f5d4b735657a16a776bfee54d629593",
     "inventory.json": "b919bacd677e32bacc0ea43c51f974a1d9c659c3ce616e467a81a006ca519c12"
   },
-  "elapsed_seconds": 47.41,
+  "elapsed_seconds": 47.21,
   "model_sha256": {
     "OnnxBrain__ModelPath": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672",
     "OnnxBrain__VocabPath": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
@@ -21,8 +20,8 @@
     "CrossEncoder__VocabPath": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
   },
   "binary_sha256": {
-    "RagEngine.Core.dll": "12604ee695dd5575b3bebb39260dd82ae2bf6573c2099d1378f8960affeed2b4",
-    "RagEngine.Cli.dll": "ba1be63d1fe864d8fbb2d0b990323268a724ffe81f007df8a4c0881f086daa94"
+    "RagEngine.Core.dll": "cb02f414ecb109f41d10f7d9ed719ba1dded818e34e5435a6ae4cdf12f2e52a0",
+    "RagEngine.Cli.dll": "dc35c0b7685d3ff1b7370666b396ba6098feb0c6c37f05c18607819900bff8f2"
   },
   "collections": {
     "bsuite-auditorias-test": {
@@ -113,7 +112,7 @@
     {
       "id": "bsuite-auditorias.norerank",
       "dataset_sha256": "ec6ff169d1a63b65cddcd799eacea0ab17770edf42fb2ed8e58ead621cd563ba",
-      "result_sha256": "a9c312cd591cb46edb8fb0c36ffd01f2d7a31d1bab73370a86358e73af48bba8",
+      "result_sha256": "a2294d663361b7532b5381b277ad5aefe5c5b76c8d6b3311f32e0a48aaaabef0",
       "historical_status": "incomparable",
       "answerable": 16,
       "negative": 0,
@@ -140,7 +139,7 @@
         "candidate_hits": 7
       },
       "provenance": {
-        "git_commit": "4245a22",
+        "git_commit": "f27ed4c",
         "git_dirty": true,
         "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/bsuite-auditorias.eval-set.json",
         "eval_set_hash": "ec6ff169d1a6",
@@ -162,7 +161,7 @@
     {
       "id": "innovapp-docs.norerank",
       "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
-      "result_sha256": "883ddde3eed8925601fb6a15a6778874e8a7e5723c0e3b6102da6cb34ca1c828",
+      "result_sha256": "906df116a73119cdc64aa1d14953f16185211d624a51f63c5fc7cb8e510fdba1",
       "historical_status": "incomparable",
       "answerable": 22,
       "negative": 4,
@@ -189,7 +188,7 @@
         "candidate_hits": 6
       },
       "provenance": {
-        "git_commit": "4245a22",
+        "git_commit": "f27ed4c",
         "git_dirty": true,
         "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/innovapp-docs.eval-set.json",
         "eval_set_hash": "1f9571b91552",
@@ -211,7 +210,7 @@
     {
       "id": "innovapp-docs.rerank",
       "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
-      "result_sha256": "780e7eb17374cc4e073b52e5bf226f0d4e7fa0ed7ccd9e7c8ca87095a1c71cb3",
+      "result_sha256": "3e4f7ad5443e9f2e7cabf38d5038f89ca57c8b35c27427645222eefc66b98826",
       "historical_status": "incomparable",
       "answerable": 22,
       "negative": 4,
@@ -238,7 +237,7 @@
         "candidate_hits": 10
       },
       "provenance": {
-        "git_commit": "4245a22",
+        "git_commit": "f27ed4c",
         "git_dirty": true,
         "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/innovapp-docs.eval-set.json",
         "eval_set_hash": "1f9571b91552",
@@ -268,7 +267,7 @@
     {
       "id": "tickets-microservice.norerank",
       "dataset_sha256": "2ae380bb02df6c0fb28aaa3cb3101973a126ba3c1c8b970d0802ad104709bf0c",
-      "result_sha256": "c5b5ba42cb6f13c7e7271af61148dcf43bd12c136d788f1a5e40a5070c618288",
+      "result_sha256": "bff37c0f78ac56b6fa9f759afd56bd18ca4f955242b2de9f839d3f97713f3e72",
       "historical_status": "incomparable",
       "answerable": 19,
       "negative": 0,
@@ -295,7 +294,7 @@
         "candidate_hits": 3
       },
       "provenance": {
-        "git_commit": "4245a22",
+        "git_commit": "f27ed4c",
         "git_dirty": true,
         "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/tickets-microservice.eval-set.json",
         "eval_set_hash": "2ae380bb02df",
@@ -317,7 +316,7 @@
     {
       "id": "bsuite-repo.norerank",
       "dataset_sha256": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
-      "result_sha256": "59378d3af96aca5b4496dacbe773b9b9f1938b4b69805b367d0edb56c4a54aa4",
+      "result_sha256": "fea9d459a362593795ea0dff17e74734d4b0786da3107af2159061fed9f95b42",
       "historical_status": "incomparable",
       "answerable": 76,
       "negative": 8,
@@ -344,7 +343,7 @@
         "candidate_hits": 32
       },
       "provenance": {
-        "git_commit": "4245a22",
+        "git_commit": "f27ed4c",
         "git_dirty": true,
         "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/bsuite-repo.eval-set.json",
         "eval_set_hash": "cdb39feef4ee",

@@ -91,6 +91,8 @@ de PR; el CI público sólo ejecuta fixtures sin modelos, corpus ni secretos.
 Después de un commit nuevo el job alarma hasta que el operador lo revise y
 reinstale. Una máquina dormida no ejecuta a las 03:00; launchd puede ejecutar el
 evento al despertar. No se configura wake ni `KeepAlive`.
+Se usa `ProcessType=Standard`: el modo `Background` de launchd degradó el
+reranker ONNX hasta agotar su timeout durante la prueba real del scheduler.
 
 **Rollback/reinstalación**, sin borrar runner, resultados ni baselines:
 

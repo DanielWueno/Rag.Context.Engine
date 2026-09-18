@@ -250,6 +250,7 @@ class OperationalTests(unittest.TestCase):
         self.assertEqual(str(directory / "runner.py"), arguments[1])
         self.assertEqual("frozen", arguments[arguments.index("--expected-commit") + 1])
         self.assertEqual({"Hour": 3, "Minute": 0}, value["StartCalendarInterval"])
+        self.assertEqual("Standard", value["ProcessType"])
         self.assertNotIn("KeepAlive", value)
         self.assertNotIn("RunAtLoad", value)
 

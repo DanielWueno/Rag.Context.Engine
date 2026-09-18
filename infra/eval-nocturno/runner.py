@@ -417,7 +417,7 @@ def schedule(root, directory, python, dotnet, commit, models_dir, hour, minute):
         "StandardOutPath": str(directory / "schedule.stdout"),
         "StandardErrorPath": str(directory / "schedule.stderr"),
         "EnvironmentVariables": {"PATH": os.environ.get("PATH", os.defpath)},
-        "ProcessType": "Background",
+        "ProcessType": "Standard",
     }
 
 

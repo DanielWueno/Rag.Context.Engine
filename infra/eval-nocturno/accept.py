@@ -22,6 +22,15 @@ def main():
     args = parser.parse_args()
     runner.require(not args.record or not EVIDENCE.exists(), "Conservar evidencia previa; no sobrescribir")
     runner.require(args.record or EVIDENCE.exists(), "Falta evidencia persistente: ejecutar --record")
+    schedule_path = EVIDENCE.with_name("schedule.json")
+    scheduling = runner.load(schedule_path)
+    scheduled = scheduling["corrected_launchd_probe"]
+    runner.require(scheduling["runner_sha256"] == runner.file_hash(Path(__file__).with_name("runner.py"))
+                   and scheduled["process_type"] == "Standard" and scheduled["collections_unchanged"]
+                   and scheduled["status"] == "incomparable"
+                   and {p["id"] for p in scheduled["profiles"]} == {p["id"] for p in runner.inventory(ROOT)}
+                   and all(p["executed"] for p in scheduled["profiles"]),
+                   "Falta evidencia completa del runner actual ejecutado por launchd")
     suite = unittest.defaultTestLoader.discover(str(Path(__file__).parent), pattern="test_runner.py")
     tests = unittest.TextTestRunner(verbosity=1).run(suite)
     runner.require(tests.wasSuccessful() and tests.testsRun >= 18 and not tests.skipped,
@@ -67,6 +76,7 @@ def main():
     evidence = {
         "item": "14.1-eval-nocturno", "accepted": True,
         "tests_passed": tests.testsRun, "source": report["source"],
+        "schedule_evidence_sha256": runner.file_hash(schedule_path),
         "source_sha256": {name: runner.file_hash(Path(__file__).parent / name) for name in files},
         "elapsed_seconds": report["elapsed_seconds"], "model_sha256": report["model_sha256"],
         "binary_sha256": report["binary_sha256"], "collections": report["collections"],
@@ -82,7 +92,8 @@ def main():
         runner.save(EVIDENCE, evidence)
     else:
         recorded = runner.load(EVIDENCE)
-        runner.require(recorded.get("accepted") and recorded.get("source_sha256") == evidence["source_sha256"],
+        runner.require(recorded.get("accepted") and recorded.get("source_sha256") == evidence["source_sha256"]
+                       and recorded.get("schedule_evidence_sha256") == evidence["schedule_evidence_sha256"],
                        "Evidencia persistente no corresponde al gate actual")
     print(f"14.1 aceptado: {tests.testsRun} controles, cinco evals reales y mutaciones. "
           f"Status historico: {report['status']}. Evidencia: {EVIDENCE.relative_to(ROOT)}")

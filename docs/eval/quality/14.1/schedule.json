@@ -1,0 +1,89 @@
+{
+  "item": "14.1-eval-nocturno",
+  "runner_sha256": "170e6ccbf24907b9e5608b9ac77fc6a86f49ffaa63efbc1d9e7e415cde8917a2",
+  "initial_launchd": {
+    "process_type": "Background",
+    "source": {
+      "git_commit": "4245a22616a316790c646b418e36c2e689c40c58",
+      "git_dirty": false
+    },
+    "status": "infrastructure",
+    "elapsed_seconds": 284.07,
+    "collections_unchanged": true,
+    "profiles": [
+      {
+        "id": "bsuite-auditorias.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "innovapp-docs.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "innovapp-docs.rerank",
+        "status": "infrastructure",
+        "executed": false,
+        "reason": "innovapp-docs.rerank: TimeoutExpired; ver stderr local"
+      },
+      {
+        "id": "tickets-microservice.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "bsuite-repo.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration"
+      }
+    ]
+  },
+  "corrected_launchd_probe": {
+    "process_type": "Standard",
+    "source": {
+      "git_commit": "4245a22616a316790c646b418e36c2e689c40c58",
+      "git_dirty": true
+    },
+    "status": "incomparable",
+    "elapsed_seconds": 51.79,
+    "collections_unchanged": true,
+    "profiles": [
+      {
+        "id": "bsuite-auditorias.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "innovapp-docs.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "innovapp-docs.rerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "tickets-microservice.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations"
+      },
+      {
+        "id": "bsuite-repo.norerank",
+        "status": "incomparable",
+        "executed": true,
+        "reason": "Procedencia incompleta: cross_encoder, gate_calibration"
+      }
+    ]
+  },
+  "procedure": "One-shot launchd job, copied runner outside checkout, explicit kickstart. Corrected probe authorized the current dirty worktree manually; production install pins the subsequent clean commit. No timeouts or acceptance thresholds increased. Temporary job booted out after completion."
+}

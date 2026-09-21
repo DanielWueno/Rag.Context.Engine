@@ -178,3 +178,45 @@ Activar el nuevo perfil sólo después de esa aprobación. Conservar ambos barri
 respuestas e informe. Rollback: restaurar binario, tokenizer, parámetros y perfil
 como una unidad, reiniciar el host y mantener el control; no mezclar umbrales int8
 con fp32. Ningún resultado de este contrato local habilita un despliegue x64.
+
+## Preflight de relaciones (ítem 15.1, parcial)
+
+`15.1/preflight.py` cuenta candidatos del join sintáctico sobre colecciones
+locales existentes, sin generar descripciones, consultar LLM, abrir cachés ni
+escribir en Qdrant. Lee únicamente metadatos, dos veces por colección, y falla
+si cambian entre lecturas, falta infraestructura o los datos son inválidos.
+No es un snapshot atómico ni comprueba vectores.
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+  -s docs/eval/quality/15.1 -p 'test_preflight.py' -v
+python3 docs/eval/quality/15.1/preflight.py \
+  bsuite-repo bsuite-auditorias-test innovapp-docs micro-repo
+```
+
+Un candidato es un par dirigido de **chunks distintos** dentro de la misma
+colección y `tenant_id`, con intersección entre `consumed_symbols` del origen
+y `defined_symbols` del destino. Varios nombres compartidos cuentan una sola
+vez por par; los homónimos siguen siendo candidatos, **no relaciones probadas**.
+Los campos ausentes se contabilizan: cero candidatos sin símbolos no demuestra
+ausencia de relaciones. Los tenant ausentes/vacíos solo se agrupan entre sí.
+
+`15.1/preflight-2026-09-21.json` conserva el censo, sus hashes y procedencia:
+3.341.841 candidatos en `bsuite-repo`, 19.134 en `bsuite-auditorias-test`,
+0 en `innovapp-docs` (sin campos de símbolos) y 13.542 en `micro-repo`.
+**Estos números no son pares de entidades, misses ni llamadas LLM previstas**;
+esos valores quedan sin medir. No se deduce un presupuesto a partir del join.
+
+La ejecución experimental quedó bloqueada por autorización de coste pendiente
+(2 h provisionales, no autorizadas). Al retomarla, preparar las ≥20 preguntas
+de relación y ≥10 negativos con evidencia origen/destino, calibración separada,
+hash/n congelados y comparador del criterio literal del ledger. Congelar también
+la política de extracción y versiones, contar pares reales y misses en caché
+aislada, reestimar y confirmar el presupuesto **antes de generar**. No seleccionar
+pares solo porque responden las preguntas de evaluación.
+
+Este preflight **no es la aceptación de 15.1**: no mide A/B, ganancia @10,
+no-regresión, fabricación, latencia de retrieval ni invalidación de descripciones.
+No hay banda nueva ni promoción de pesos. El control permanece intacto; los
+futuros vectores/descripciones deben usar espacio y caché separados, con
+rollback por bandera OFF/peso cero sin borrar las bandas existentes.

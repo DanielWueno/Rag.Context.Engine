@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Qdrant.Client;
@@ -59,10 +60,21 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         CancellationToken cancellationToken = default)
     {
         var correlationId = Guid.NewGuid().ToString("N");
-        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var sw = Stopwatch.StartNew();
 
         using var _logContext1 = Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId);
         using var _logContext2 = Serilog.Context.LogContext.PushProperty("Collection", options.CollectionName);
+
+        // Ítem 13.4: span "retrieval" del turno. Se anida bajo el "rag.turn" del host
+        // (Program.cs) por propagación automática de Activity.Current — este método no
+        // conoce ni necesita conocer a su llamador. Sin listener registrado,
+        // StartActivity devuelve null y el resto del método no cambia (los `?.` de abajo
+        // son no-ops).
+        using var activity = RagEngineTracing.ActivitySource.StartActivity(
+            RagEngineTracing.Steps.Retrieval, ActivityKind.Internal);
+        activity?.SetTag("rag.collection", options.CollectionName);
+        activity?.SetTag("rag.top_k", options.TopK);
+        activity?.SetTag("rag.use_reranking", options.UseReRanking);
 
         try
         {
@@ -195,18 +207,31 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             // scores resultantes son sigmoides del cross-encoder [0..1], no RRF.
             if (options.UseReRanking && results.Count > 0)
             {
+                // Ítem 13.4: span propio del paso de rerank, anidado bajo "retrieval".
+                using var rerankActivity = RagEngineTracing.ActivitySource.StartActivity(
+                    RagEngineTracing.Steps.Rerank, ActivityKind.Internal);
+                rerankActivity?.SetTag("rag.candidates", results.Count);
                 results = await _reRanker.ReRankAsync(
                     query, results, options.TopK, cancellationToken);
                 results = GateCalibration.Apply(results, profile?.GateCalibration);
+                rerankActivity?.SetTag("rag.results", results.Count);
             }
-            else if (results.Count > options.TopK)
+            else
             {
-                // Sin re-ranking, el corte al contrato de TopK se hace aquí y no antes:
-                // el pool que llega a este punto pudo ensancharse (finalLimit, arriba)
-                // para darle espacio real al salto por símbolo de 6.a a competir en la
-                // re-fusión de ExpandBySymbolAsync. Con TwoHop apagado, results.Count ya
-                // es exactamente TopK y este Take() es un no-op.
-                results = results.Take(options.TopK).ToList();
+                // Paso declarado, no inventado: sin candidatos o con el flag apagado, el
+                // rerank no corrió — nunca se crea un span de duración cero para simularlo.
+                activity.DeclareSkipped(RagEngineTracing.Steps.Rerank,
+                    options.UseReRanking ? "no_candidates" : "disabled");
+
+                if (results.Count > options.TopK)
+                {
+                    // Sin re-ranking, el corte al contrato de TopK se hace aquí y no antes:
+                    // el pool que llega a este punto pudo ensancharse (finalLimit, arriba)
+                    // para darle espacio real al salto por símbolo de 6.a a competir en la
+                    // re-fusión de ExpandBySymbolAsync. Con TwoHop apagado, results.Count ya
+                    // es exactamente TopK y este Take() es un no-op.
+                    results = results.Take(options.TopK).ToList();
+                }
             }
 
             sw.Stop();
@@ -219,6 +244,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
 
             _logger.LogInformation("Search completed in {ElapsedMs}ms. Results: {Count}. Best {ScoreKind} score: {BestScore}",
                 sw.ElapsedMilliseconds, results.Count, bestScale.ToDisplayName(), bestScore);
+            activity?.SetTag("rag.result_count", results.Count);
             return results;
         }
         catch (Exception ex)
@@ -226,6 +252,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             RagEngineMetrics.SearchErrorsTotal.Add(1, 
                 new KeyValuePair<string, object?>("collection", options.CollectionName));
             _logger.LogError(ex, "Critical failure during hybrid search for query: {Query}", query);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             throw;
         }
     }

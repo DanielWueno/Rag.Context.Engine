@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Diagnostics;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Generation;
 
@@ -125,6 +127,13 @@ public sealed class RagGenerationService : IRagGenerationService
         if (await _metaIntentDetector.IsMetaIntentAsync(query, cancellationToken))
         {
             _logger.LogInformation("[RAG] Meta-intent match for query: {Query}. Skipping retrieval.", query);
+            // Ítem 13.4: los cinco pasos del turno no corren para una meta-pregunta —
+            // se declara explícitamente en el span raíz (si el host abrió uno), en vez
+            // de dejarlos ausentes sin explicación.
+            Activity.Current.DeclareSkipped(RagEngineTracing.Steps.Retrieval, "meta_intent");
+            Activity.Current.DeclareSkipped(RagEngineTracing.Steps.Gate, "meta_intent");
+            Activity.Current.DeclareSkipped(RagEngineTracing.Steps.Context, "meta_intent");
+            Activity.Current.DeclareSkipped(RagEngineTracing.Steps.Generation, "meta_intent");
             yield return new GenerationEvent.ContextReady([], GroundingVerdict.NotEvaluated);
             yield return new GenerationEvent.TextDelta(SystemPromptComposer.SelfDescriptionBlock);
             cancellationToken.ThrowIfCancellationRequested();
@@ -144,7 +153,13 @@ public sealed class RagGenerationService : IRagGenerationService
         // Sin anclaje se conversa sin contexto y, por la garantía estructural de
         // docs/analisis-futuro/guardrail-banda-baja-conversacional.md, los chunks
         // recuperados (si los hay) no se vuelven a tocar por debajo de esta rama.
-        var assessment = _confidenceGate.Assess(chunks, minimumScore, query);
+        GroundingAssessment assessment;
+        using (var gateActivity = RagEngineTracing.ActivitySource.StartActivity(RagEngineTracing.Steps.Gate))
+        {
+            assessment = _confidenceGate.Assess(chunks, minimumScore, query);
+            gateActivity?.SetTag("rag.has_grounding", assessment.HasGrounding);
+            gateActivity?.SetTag("rag.verdict", assessment.Verdict.ToString());
+        }
         yield return new GenerationEvent.ContextReady(
             assessment.HasGrounding ? chunks : [], assessment.Verdict);
 
@@ -173,8 +188,12 @@ public sealed class RagGenerationService : IRagGenerationService
     {
         if (!assessment.HasGrounding)
         {
-            await foreach (var fragment in _answerStreamer.StreamAsync(
-                SystemPromptComposer.ComposeNoGrounding(), query, history, cancellationToken))
+            // Ítem 13.4: sin anclaje, el ensamblado de contexto (paso 3) nunca corre —
+            // declarado explícitamente, no un span ausente sin explicación.
+            Activity.Current.DeclareSkipped(RagEngineTracing.Steps.Context, "no_grounding");
+            await foreach (var fragment in TraceGenerationAsync(
+                _answerStreamer.StreamAsync(SystemPromptComposer.ComposeNoGrounding(), query, history, cancellationToken),
+                hasGrounding: false, cancellationToken))
             {
                 yield return fragment;
             }
@@ -190,7 +209,26 @@ public sealed class RagGenerationService : IRagGenerationService
         // docs/analisis-futuro/modo-respuesta-simple-codigo.md. SelectTemplate below
         // still inspects the ORIGINAL `chunks` (language metadata is unaffected by that
         // swap), only the context block itself uses the resolved set.
-        var contextBlock = await _contextAssembler.BuildAsync(chunks, responseMode, cancellationToken);
+        string contextBlock;
+        using (var contextActivity = RagEngineTracing.ActivitySource.StartActivity(RagEngineTracing.Steps.Context))
+        {
+            contextActivity?.SetTag("rag.chunk_count", chunks.Count);
+            contextActivity?.SetTag("rag.response_mode", responseMode.ToString());
+            try
+            {
+                contextBlock = await _contextAssembler.BuildAsync(chunks, responseMode, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                contextActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                contextActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                throw;
+            }
+        }
 
         // ── Step 4: Prompt Construction ───────────────────────────
         // The retrieved chunks decide which persona/rules fit the content: a repo
@@ -211,10 +249,28 @@ public sealed class RagGenerationService : IRagGenerationService
         if (responseMode == ResponseMode.Simple && Options.EnableSimpleModeSanitizer)
         {
             var buffered = new StringBuilder();
-            await foreach (var fragment in _answerStreamer.StreamAsync(
-                systemPrompt, query, history, cancellationToken))
+            using (var genActivity = RagEngineTracing.ActivitySource.StartActivity(RagEngineTracing.Steps.Generation))
             {
-                buffered.Append(fragment);
+                genActivity?.SetTag("rag.has_grounding", true);
+                genActivity?.SetTag("rag.buffered", true);
+                try
+                {
+                    await foreach (var fragment in _answerStreamer.StreamAsync(
+                        systemPrompt, query, history, cancellationToken))
+                    {
+                        buffered.Append(fragment);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    genActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    genActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    throw;
+                }
             }
 
             if (onStatus is not null)
@@ -224,11 +280,58 @@ public sealed class RagGenerationService : IRagGenerationService
         }
         else
         {
-            await foreach (var fragment in _answerStreamer.StreamAsync(
-                systemPrompt, query, history, cancellationToken))
+            await foreach (var fragment in TraceGenerationAsync(
+                _answerStreamer.StreamAsync(systemPrompt, query, history, cancellationToken),
+                hasGrounding: true, cancellationToken))
             {
                 yield return fragment;
             }
+        }
+    }
+
+    /// <summary>
+    /// Envuelve un stream de fragmentos con el span "rag.generation" (ítem 13.4). Un
+    /// método aparte porque un <c>yield return</c> no puede vivir dentro de un
+    /// try-catch (sólo dentro de un try-finally) — aquí el catch que marca el span
+    /// como fallido/cancelado envuelve solo <c>MoveNextAsync</c>, nunca el yield.
+    /// </summary>
+    private async IAsyncEnumerable<string> TraceGenerationAsync(
+        IAsyncEnumerable<string> source,
+        bool hasGrounding,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        using var activity = RagEngineTracing.ActivitySource.StartActivity(RagEngineTracing.Steps.Generation);
+        activity?.SetTag("rag.has_grounding", hasGrounding);
+        var enumerator = source.GetAsyncEnumerator(cancellationToken);
+        try
+        {
+            while (true)
+            {
+                bool moved;
+                try
+                {
+                    moved = await enumerator.MoveNextAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    activity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    throw;
+                }
+
+                if (!moved)
+                    break;
+
+                yield return enumerator.Current;
+            }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync();
         }
     }
 

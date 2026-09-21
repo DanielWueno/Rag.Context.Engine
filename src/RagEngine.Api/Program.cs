@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using RagEngine.Api;
 using RagEngine.Api.Observability;
 using RagEngine.Core.Abstractions;
@@ -112,6 +113,35 @@ try
                 meterProviderBuilder.AddOtlpExporter((otlpOptions, _) =>
                     otlpOptions.Endpoint = new Uri(opts.OtlpEndpoint!));
             }
+        });
+    });
+
+    // Ítem 13.4: trazas del turno (RagEngineTracing.ActivitySource, "rag.turn" +
+    // spans de retrieval/rerank/gate/contexto/generación). AddSource se registra
+    // SIEMPRE — sin él, ActivitySource.StartActivity no tiene listener y devuelve
+    // null en TODOS los niveles, y ni el turno ni sus pasos tendrían trace_id para
+    // correlacionar con auditoría/logs. El exportador (Tracing:Enabled, apagado por
+    // defecto) es lo único condicional: sin él, los spans se crean y se descartan sin
+    // salir del proceso — mismo patrón de costo que el Meter de RagEngineMetrics.
+    builder.Services.Configure<TracingOptions>(builder.Configuration.GetSection(TracingOptions.SectionName));
+    builder.Services.AddSingleton<IValidateOptions<TracingOptions>, TracingOptionsValidator>();
+    builder.Services.AddOptions<TracingOptions>().ValidateOnStart();
+
+    builder.Services.AddOpenTelemetry().WithTracing(tracing =>
+    {
+        tracing.AddSource(RagEngineTracing.SourceName);
+
+        if (tracing is not IDeferredTracerProviderBuilder deferred)
+            return;
+
+        deferred.Configure((sp, tracerProviderBuilder) =>
+        {
+            var opts = sp.GetRequiredService<IOptions<TracingOptions>>().Value;
+            if (!opts.Enabled)
+                return;
+
+            tracerProviderBuilder.AddOtlpExporter(otlpOptions =>
+                otlpOptions.Endpoint = new Uri(opts.OtlpEndpoint!));
         });
     });
 
@@ -772,7 +802,17 @@ try
             return invalidParameters;
 
         var collection = request.Collection ?? defaultCollection;
-        var auditCorrelationId = Guid.NewGuid().ToString();
+        // Ítem 13.4: span raíz del turno. Su TraceId se reusa como auditCorrelationId
+        // (mismo campo CorrelationId que ya escribe RecordQueryAuditAsync) para que
+        // auditoría, el QueryEvent de abajo y los spans de retrieval/gate/contexto/
+        // generación (creados más abajo en la misma cadena async, ver
+        // RagEngineTracing) compartan un único identificador — sin exportador
+        // configurado, StartActivity devuelve null y el Guid de siempre sigue siendo
+        // el fallback.
+        using var turnActivity = RagEngineTracing.ActivitySource.StartActivity(
+            RagEngineTracing.Steps.Turn, ActivityKind.Server);
+        turnActivity?.SetTag("rag.collection", collection);
+        var auditCorrelationId = turnActivity?.TraceId.ToString() ?? Guid.NewGuid().ToString();
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
@@ -788,6 +828,8 @@ try
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
+        turnActivity?.SetTag("rag.response_mode", responseMode.ToString());
+        turnActivity?.SetTag("rag.top_k", topK);
         var stopwatch = Stopwatch.StartNew();
 
         var history = request.History?.Select(t => t.ToDomain()).ToList();
@@ -818,12 +860,14 @@ try
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            turnActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
             await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
                 AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
             throw;
         }
         catch (Exception ex)
         {
+            turnActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
                 AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
             throw;
@@ -839,6 +883,7 @@ try
             new
             {
                 Type = "ask",
+                TraceId = auditCorrelationId,
                 Collection = collection,
                 TopK = topK,
                 MinScore = minScore,
@@ -891,7 +936,10 @@ try
         }
 
         var collection = request.Collection ?? defaultCollection;
-        var auditCorrelationId = Guid.NewGuid().ToString();
+        using var turnActivity = RagEngineTracing.ActivitySource.StartActivity(
+            RagEngineTracing.Steps.Turn, ActivityKind.Server);
+        turnActivity?.SetTag("rag.collection", collection);
+        var auditCorrelationId = turnActivity?.TraceId.ToString() ?? Guid.NewGuid().ToString();
         var (denied, manifest, actor) = await AuthorizeCollectionAsync(
             collection, http, store, actorResolver, authorization, cancellationToken);
         if (denied is not null)
@@ -908,6 +956,8 @@ try
         var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
             request, profileResolver.Resolve(manifest));
         var responseMode = request.ResponseMode.ParseResponseMode();
+        turnActivity?.SetTag("rag.response_mode", responseMode.ToString());
+        turnActivity?.SetTag("rag.top_k", topK);
         http.Response.Headers.CacheControl = "no-cache";
         http.Response.ContentType = "text/event-stream";
 
@@ -963,6 +1013,7 @@ try
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // El cliente cortó la conexión — no hay a quién mandarle un evento de error.
+            turnActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
             await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
                 AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
             throw;
@@ -980,6 +1031,7 @@ try
             // "done" ni el log de QueryEvent de abajo, que asume una respuesta completa.
             // Ítem 12.9: el mensaje de error NO incluye la pregunta por defecto — mismo
             // criterio de minimización que el QueryEvent de abajo.
+            turnActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             if (QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow))
                 queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
             else
@@ -999,6 +1051,7 @@ try
             {
                 Type = "ask",
                 Transport = "sse",
+                TraceId = auditCorrelationId,
                 Collection = collection,
                 TopK = topK,
                 MinScore = minScore,

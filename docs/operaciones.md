@@ -156,6 +156,57 @@ sin `/api/test-metrics`).
 de solo-log anterior (`MetricsListener`/`SimpleMetricsExporter`) sin tocar índices ni
 datos — el `Meter` en sí no cambia, solo quién lo escucha.
 
+### Trazas del turno (ítem `13.4-trazas-del-turno`)
+
+Cada turno de `/api/ask`/`/api/ask/stream` abre un span raíz `rag.turn`
+(`System.Diagnostics.ActivitySource("Rag.Context.Engine")`, mismo nombre de fuente que
+las métricas de 13.3) y sus cinco pasos anidan automáticamente por propagación de
+`Activity.Current`, sin plumbing explícito entre capas: `rag.retrieval`/`rag.rerank`
+(`QdrantSemanticRetriever`), `rag.gate`/`rag.context`/`rag.generation`
+(`RagGenerationService`). Un paso que no corre (p. ej. rerank apagado, meta-pregunta sin
+retrieval, o generación sin anclaje que se salta el ensamblado de contexto) se declara
+con un `ActivityEvent` (`"<paso>.skipped"` + `reason`) — nunca un span inventado de
+duración cero.
+
+El `TraceId` del span raíz se reusa como `CorrelationId` de auditoría
+(`AuditOperations.QueryAsk`, ítem `12.11-auditoria-local-con-actor`) y como campo
+`TraceId` del `QueryEvent` de Serilog: los tres (span, auditoría, log) comparten el
+mismo identificador para un turno, sin guardar pregunta, fuentes ni credenciales en los
+tags de los spans (solo `rag.collection`, `rag.top_k`, `rag.response_mode`,
+`rag.use_reranking`, `rag.has_grounding`, `rag.verdict`, `rag.chunk_count`, etc.). Sin
+exportador (`Tracing:Enabled=false`, default), `StartActivity` sigue devolviendo `null`
+sin asignar memoria y el `CorrelationId` cae de vuelta a `Guid.NewGuid()` — comportamiento
+idéntico al de antes de este ítem.
+
+```json
+{
+  "Tracing": {
+    "Enabled": false,
+    "OtlpEndpoint": null
+  }
+}
+```
+
+| Clave | Efecto |
+|---|---|
+| `Tracing:Enabled` | `false` (default): la fuente de trazas sigue activa (para que trace_id siempre exista en auditoría/logs) pero sin exportador OTLP. `true`: agrega el exportador OTLP. |
+| `Tracing:OtlpEndpoint` | Solo con `Enabled=true`. Requerido, URI absoluta (p. ej. `http://localhost:4317`); sin él, el host **falla al arrancar** con un mensaje accionable, igual que `Metrics:OtlpEndpoint`. |
+
+Cancelación (Ctrl+C local o desconexión del cliente en streaming) y fallo de generación
+cierran `rag.generation`/`rag.turn` con `ActivityStatusCode.Error` (descripción
+`"cancelled"` o el mensaje de la excepción), nunca con estado `Unset` — cubierto por
+`TracingRetrievalTests` (rerank anidado bajo un padre externo, paso omitido declarado,
+fallo de retrieval con span en error, contra un Qdrant real y una colección efímera por
+test) y `TracingGenerationTests` (gate/contexto/generación bajo el mismo `TraceId` que la
+fila de auditoría, meta-pregunta con los cinco pasos declarados omitidos, respuesta sin
+anclaje con contexto omitido, fallo tras el primer fragmento y cancelación a mitad del
+streaming, ambos con `rag.generation`/`rag.turn` en `Error`/`"cancelled"`), vía
+`ActivityListener` directo sobre la fuente (el "exportador en memoria" de la ficha) — sin
+tocar el CLI, fuera del alcance de este ítem.
+
+**Rollback**: fijar `Tracing:Enabled=false` (o revertir el commit) deja de exportar sin
+tocar índices ni datos — igual que en el exportador de métricas.
+
 - **Resiliencia:** las llamadas a Qdrant pasan por Polly (3 reintentos exponenciales + circuit breaker 50%/30s). Los reintentos se loguean con `Execution attempt`.
 
 ## Auditoría local (ítem `12.11-auditoria-local-con-actor`)

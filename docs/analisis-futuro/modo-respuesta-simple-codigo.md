@@ -68,9 +68,52 @@ seguridad estructural que funciona sin importar la causa real.
 |---|---|---|---|---|---|
 | A | Filtro determinístico post-generación (regex que detecta y quita/reemplaza fences ``` ``` ``` e identificadores tipo código antes de mostrar la respuesta) | Sí, siempre | 100% de colecciones | Bajo-medio | Pierde streaming token-a-token en modo Simple (hay que bufferear para poder filtrar); puede dejar prosa cortada si el bloque de código era el contenido central de la respuesta; riesgo de falsos positivos sobre prosa legítima (nombres propios en PascalCase, términos compuestos) — no solo falsos negativos |
 | B | Segunda pasada de reescritura (generar respuesta técnica completa, luego una llamada aparte que la reescribe en lenguaje simple, sin chunks de código en el contexto de esa segunda llamada) | Probablemente alto (el input ya es prosa, sin código que tiente al modelo) | 100% | Medio | 2x latencia (ya hay respuestas de 10-20s); pierde streaming igual que A; la segunda pasada podría fabricar de nuevo si no se acota bien |
-| C | Modelo no-coder (`qwen2.5:7b-instruct`) solo para modo Simple | Incierto | 100% (no depende de resumen) | Medio (plumbing de 2 modelos) | Hay un precedente en memoria de que "ningún modelo gana limpio" comparando estos dos en vault de docs, pero esa medición era sobre *precisión leyendo código*, no sobre *suprimir sintaxis en la salida* — son tareas distintas; no es evidencia fuerte para descartar C, solo una razón para no priorizarla mientras haya rutas más baratas y ciertas (A, D) |
+| C | Modelo no-coder (`qwen2.5:7b-instruct`) solo para modo Simple | Incierto | 100% (no depende de resumen) | Medio (plumbing de 2 modelos) | Hay un precedente en memoria de que "ningún modelo gana limpio" comparando estos dos en vault de docs, pero esa medición era sobre *precisión leyendo código*, no sobre *suprimir sintaxis en la salida* — son tareas distintas; no es evidencia fuerte para descartar C, solo una razón para no priorizarla mientras haya rutas más baratas y ciertas (A, D). **Actualización 2026-09-21:** medida una variante concreta de esta opción con un modelo no-coder distinto (`gemma4:26b`, general-purpose) — ver sección "Medición 2026-09-21" más abajo. Resultado: peor, no mejor, que `qwen2.5-coder`; la opción C queda descartada para esa variante con evidencia, no solo despriorizada por costo |
 | D | Cambiar el contexto: para modo Simple, alimentar al LLM con el `Resumen` cacheado en vez del contenido crudo del chunk (garantía estructural — si el LLM nunca ve código, no puede filtrarlo) | Alto para chunks con resumen | Parcial (2/7 colecciones probadas) | Medio (nueva dependencia `SummaryCache` en `RagGenerationService`, lookup por chunk, fallback para chunks sin resumen) | No resuelve el problema para colecciones sin `--con-resumen`; la estrategia de fallback (excluir vs. degradar a contenido crudo) importa — ver Fase 2 |
 | E | Corregir la regresión de la regla anti-evasión (revertir/acotar la parte de la regla 5 que causó la fabricación del método inventado) | N/A — es un fix de calidad, no de fuga de código | 100% | Muy bajo | Ninguno; es una corrección directa de un error introducido esta sesión |
+
+## Medición 2026-09-21 — Opción C con `gemma4:26b`, descartada con evidencia
+
+Petición explícita del usuario tras instalar `gemma4:26b` en Ollama y notar que corría a
+velocidad aceptable: ¿es un mejor candidato que `qwen2.5-coder` para generar, específicamente
+para `ResponseMode.Simple`, dado que no está afinado a código y en teoría tendría menos sesgo
+hacia sintaxis? Esto es exactamente la Opción C de la tabla de arriba, nunca antes medida con
+esta variante concreta de modelo no-coder.
+
+**Metodología.** Único cambio entre brazos: `Ollama:ModelId` del contenedor (`qwen2.5-coder`
+actual vs `gemma4:26b`, recién descargado con `ollama pull`). Retrieval (Qdrant, embeddings
+ONNX, cross-encoder) y el resto de la config quedaron idénticos. Ambos brazos con
+`RagGeneration:EnableSimpleModeSanitizer=false` — se mide el sesgo crudo del modelo hacia código
+*antes* del filtro de Fase 1, que es la pregunta real detrás de la Opción C (si el filtro ya
+limpia lo que encuentra, la pregunta es cuánto hay que limpiar). Corpus: las 94 preguntas
+históricas únicas (dedupe exacto por texto) logueadas con `Collection=bsuite-repo` y
+`ResponseMode=Simple` en `logs/rag-api-*.json` — el mismo corpus ya usado para aceptar Fase 1,
+sin recorte manual. Script: `infra/experiment-qwen-vs-gemma-simple-mode.py` (reutiliza por
+import, no por copia, los patrones de violación y el cargador de preguntas de
+`infra/verify-simple-mode.py`, para no duplicar el instrumento de medición).
+
+**Resultado:**
+
+| Métrica | `qwen2.5-coder` (7B, actual) | `gemma4:26b` |
+|---|---|---|
+| Respuestas con ≥1 violación | 55/94 (58.5%) | 49/94 (52.1%) |
+| Violaciones totales | 260 | **938** |
+| Violaciones promedio por respuesta | 2.77 | **9.98** |
+| Latencia promedio | 10.9 s | 36.9 s |
+| Tiempo total (94 preguntas) | ~17 min | ~58 min |
+
+Gemma tiene una tasa de "al menos una violación" apenas menor, pero cuando falla lo hace
+~3.6x peor (más identificadores/bloques de código por respuesta) y es ~3.4x más lento. No
+soporta la hipótesis de que un modelo no-coder evite código en modo Simple — al menos para esta
+variante de Gemma, ser general-purpose lo hizo más verboso, no más disciplinado con la
+instrucción de no mostrar sintaxis. Detalle completo de las 94 respuestas por brazo (pregunta,
+respuesta, violaciones encontradas) no se conserva en el repo por ser artefacto temporal de
+`/tmp`; reproducible re-ejecutando el script con los mismos parámetros.
+
+**Decisión:** la Opción C queda descartada con evidencia para esta variante concreta (no se
+prueba en general para *todo* modelo no-coder — sería sobregeneralizar de n=1 modelo). No cambia
+el enfoque recomendado por fases (A/D) de abajo, que sigue siendo la ruta activa. `qwen2.5-coder`
+se mantiene como el modelo de generación para ambos `ResponseMode`.
 
 ## Enfoque recomendado (por fases)
 

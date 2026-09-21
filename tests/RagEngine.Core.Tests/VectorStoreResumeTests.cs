@@ -24,6 +24,7 @@ public sealed class VectorStoreResumeTests : IAsyncLifetime
     private string SourcePath => Path.Combine(_directory, "Fixture.cs");
     private string CachePath => Path.Combine(_directory, "summary.sqlite3");
     private string AuditDbPath => Path.Combine(_directory, "audit.sqlite3");
+    private string StateDbPath => Path.Combine(_directory, "ingestion-state.sqlite3");
 
     public async Task InitializeAsync()
     {
@@ -223,6 +224,7 @@ public sealed class VectorStoreResumeTests : IAsyncLifetime
         Options.Create(new OllamaOptions()),
         SqliteAuditEventStore.Open(AuditDbPath),
         Options.Create(new AuditOptions { DbPath = AuditDbPath }),
+        RagEngine.Core.Infrastructure.State.SqliteIngestionStateStore.Open(StateDbPath),
         NullLogger<DefaultIngestionPipeline>.Instance);
 
     private sealed class InlineProgress(Action<IngestionProgress> report) : IProgress<IngestionProgress>

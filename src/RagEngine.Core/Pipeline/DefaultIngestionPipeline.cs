@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
@@ -69,6 +70,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private readonly IOptions<IngestionOptions> _ingestionOptions;
     private readonly IAuditEventStore _auditStore;
     private readonly IOptions<AuditOptions> _auditOptions;
+    private readonly IIngestionStateStore _stateStore;
     private readonly string _groupPromptVersion;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
 
@@ -85,6 +87,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         IOptions<OllamaOptions> ollamaOptions,
         IAuditEventStore auditStore,
         IOptions<AuditOptions> auditOptions,
+        IIngestionStateStore stateStore,
         ILogger<DefaultIngestionPipeline> logger)
     {
         _scanner = scanner;
@@ -98,6 +101,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         _ingestionOptions = ingestionOptions;
         _auditStore = auditStore;
         _auditOptions = auditOptions;
+        _stateStore = stateStore;
         // Ítem 5.b: namespace de caché propio del modo por archivo/tipo, calculado una
         // sola vez aquí (no en DI) porque sólo se usa cuando SummaryGranularity=PerFile.
         _groupPromptVersion = OllamaBusinessSummaryGenerator.ComputeGroupPromptVersion(ollamaOptions.Value.ModelId);
@@ -119,6 +123,28 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         // ítem 9.1). actorId se resuelve una sola vez, no en cada rama del try/catch.
         var auditCorrelationId = Guid.NewGuid().ToString();
         var auditActorId = AuditActor.ResolveId(_auditOptions.Value);
+
+        // Ítem 13.1: run_id propio (distinto de auditCorrelationId — la auditoría es
+        // el registro inmutable de "qué pasó al final"; el run_id agrupa el estado
+        // mutable por-documento de ESTA corrida, consultable mientras corre). El actor
+        // reutiliza AuditOptions: no se justifica una segunda fuente de identidad local.
+        var runId = Guid.NewGuid().ToString();
+        var runStartedAt = DateTimeOffset.UtcNow;
+        var stateCtx = new IngestionStateContext
+        {
+            RunId = runId,
+            ActorId = auditActorId,
+            Contract = ComputeContractFingerprint(request, _ingestionOptions.Value.IndexShortTypeDeclarations)
+        };
+        await _stateStore.StartRunAsync(new IngestionRunRecord
+        {
+            RunId = runId,
+            Collection = request.CollectionName,
+            RepositoryPath = request.RepositoryPath,
+            ActorId = auditActorId,
+            Status = IngestionRunStatus.Running,
+            StartedAt = runStartedAt
+        }, cancellationToken);
 
         _logger.LogInformation(
             "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force} | ConResumen: {Resumen} | IndexShortTypeDeclarations: {ShortTypes}",
@@ -170,14 +196,14 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             });
 
             var producerTask = ProduceChunksAsync(
-                request, channel.Writer, progress, stats, generatedIds, processedFiles, cancellationToken);
+                request, channel.Writer, progress, stats, generatedIds, processedFiles, stateCtx, cancellationToken);
 
             // Varios consumidores compiten por el mismo Channel (SingleReader = false):
             // mientras uno espera el upsert de Qdrant, otro vectoriza el siguiente lote.
             var consumerTasks = Enumerable.Range(0, ConsumerCount)
                 .Select(_ => ConsumeAndIndexAsync(
                     request.CollectionName, channel.Reader,
-                    request.Options.BatchSize, request.EnableResumenLlm, request.Tenant, progress, stats, cancellationToken))
+                    request.Options.BatchSize, request.EnableResumenLlm, request.Tenant, progress, stats, stateCtx, cancellationToken))
                 .ToArray();
 
             // Run producer and consumers concurrently; propagate any exception
@@ -245,6 +271,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
         await RecordIngestionAuditAsync(
             auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Success, detail: null);
+        await FinishRunStateAsync(runId, IngestionRunStatus.Succeeded);
 
         return summary;
         }
@@ -254,13 +281,33 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             // porque el token de la operación cancelada ya está señalado.
             await RecordIngestionAuditAsync(
                 auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Cancelled, detail: null);
+            await FinishRunStateAsync(runId, IngestionRunStatus.Cancelled);
             throw;
         }
         catch (Exception ex)
         {
             await RecordIngestionAuditAsync(
                 auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Failed, ex.Message);
+            await FinishRunStateAsync(runId, IngestionRunStatus.Failed);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Cierra el encabezado de corrida (ítem 13.1). Igual criterio que
+    /// <see cref="RecordIngestionAuditAsync"/>: un fallo al persistir el cierre nunca
+    /// debe ocultar el resultado real de la ingesta ni impedir relanzar la excepción
+    /// original — se registra en el log y sigue.
+    /// </summary>
+    private async Task FinishRunStateAsync(string runId, IngestionRunStatus status)
+    {
+        try
+        {
+            await _stateStore.FinishRunAsync(runId, status, DateTimeOffset.UtcNow, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo cerrar el estado de la corrida de ingesta {RunId} ({Status}).", runId, status);
         }
     }
 
@@ -305,6 +352,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         PipelineStats stats,
         HashSet<Guid> generatedIds,
         HashSet<string> processedFiles,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         try
@@ -320,6 +368,16 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     CurrentFile: artifact.RelativePath,
                     Stage: IngestionStage.Scanning));
 
+                // Ítem 13.1: mismo docKey que el payload de Qdrant (ChunkBuilder.BuildIdentityKey,
+                // 8.f). Se registra Pending ANTES de leer el archivo — si el proceso muere
+                // aquí, el documento queda visible como "descubierto pero no procesado",
+                // nunca desaparecido ni falsamente marcado como éxito.
+                var docKey = ChunkBuilder.BuildIdentityKey(request.Options.RepositoryName, artifact.RelativePath);
+                var tracker = new DocumentTracker { StartedAt = DateTimeOffset.UtcNow };
+                stateCtx.Trackers[docKey] = tracker;
+                await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                    stateCtx, docKey, tracker, DocumentIngestionStatus.Pending, detail: null), ct);
+
                 string content;
                 try
                 {
@@ -330,12 +388,18 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "read_file"));
                     _logger.LogWarning(ex, "Failed to read {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
+                    await MarkDocumentFailedAsync(stateCtx, docKey, tracker, ex.Message, ct);
                     continue;
                 }
 
                 Interlocked.Increment(ref stats.FilesScanned);
 
+                tracker.ContentHash = Utilities.ContentHasher.Compute(content);
+                await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                    stateCtx, docKey, tracker, DocumentIngestionStatus.Running, detail: null), ct);
+
                 var strategy = _chunkRouter.GetStrategy(artifact);
+                var chunksForDoc = 0;
 
                 try
                 {
@@ -351,6 +415,8 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                         }
 
                         generatedIds.Add(chunk.Id);
+                        stateCtx.ChunkOwners[chunk.Id] = docKey;
+                        chunksForDoc++;
                         await writer.WriteAsync(chunk, ct);
                         Interlocked.Increment(ref stats.ChunksGenerated);
 
@@ -368,14 +434,31 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "chunking"));
                     _logger.LogWarning(ex, "Failed to chunk {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
+                    await MarkDocumentFailedAsync(stateCtx, docKey, tracker, ex.Message, ct);
                     continue;
+                }
+
+                // El chunking de este documento terminó sin excepción: fija el total
+                // esperado y, si ya está satisfecho (0 chunks admitidos, o el consumidor
+                // ya confirmó todos antes de que el productor llegara aquí), cierra el
+                // documento como Succeeded ahora mismo — nunca lo deja "Running" para siempre.
+                bool readyNow;
+                lock (tracker)
+                {
+                    tracker.ExpectedChunks = chunksForDoc;
+                    readyNow = !tracker.Finalized && tracker.ConfirmedChunks >= chunksForDoc;
+                    if (readyNow) tracker.Finalized = true;
+                }
+                if (readyNow)
+                {
+                    await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                        stateCtx, docKey, tracker, DocumentIngestionStatus.Succeeded, detail: null), ct);
                 }
 
                 // Misma clave que ChunkBuilder.BuildIdentityKey (ítem 8.f): el barrido
                 // de obsoletos compara contra "file_path" en el payload, que ya no es
                 // la ruta absoluta, así que la comparación debe usar la misma clave.
-                processedFiles.Add(ChunkBuilder.BuildIdentityKey(
-                    request.Options.RepositoryName, artifact.RelativePath));
+                processedFiles.Add(docKey);
 
                 // Explicit GC hint after processing large C# files with Roslyn
                 if (artifact.SizeBytes > 100_000)
@@ -388,6 +471,134 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
     }
 
+    /// <summary>Fingerprint del contrato de chunking efectivo de esta corrida (ítem 13.1).</summary>
+    private static string ComputeContractFingerprint(IngestionRequest request, bool indexShortTypeDeclarations)
+    {
+        var extensions = string.Join(',', request.Profile.AllowedExtensions.OrderBy(e => e, StringComparer.Ordinal));
+        return string.Join(';',
+            $"repo={request.Options.RepositoryName}",
+            $"maxTokens={request.Options.MaxTokensPerChunk}",
+            $"overlap={request.Options.OverlapTokens}",
+            $"oversized={request.Options.OversizedBehavior}",
+            $"parentCtx={request.Options.ParentContextLines}",
+            $"resumen={request.EnableResumenLlm}",
+            $"shortTypes={indexShortTypeDeclarations}",
+            $"ext={extensions}");
+    }
+
+    private static DocumentIngestionState BuildDocumentState(
+        IngestionStateContext ctx, string docKey, DocumentTracker tracker,
+        DocumentIngestionStatus status, string? detail) => new()
+    {
+        RunId = ctx.RunId,
+        DocumentKey = docKey,
+        ContentHash = tracker.ContentHash,
+        Contract = ctx.Contract,
+        ActorId = ctx.ActorId,
+        Status = status,
+        ChunksExpected = tracker.ExpectedChunks,
+        ChunksIndexed = tracker.ConfirmedChunks,
+        StartedAt = tracker.StartedAt,
+        UpdatedAt = DateTimeOffset.UtcNow,
+        Detail = detail
+    };
+
+    /// <summary>
+    /// Marca un documento Failed si todavía no llegó a un estado terminal en esta
+    /// corrida. Nunca pisa un Succeeded ya finalizado por el consumidor — evita la
+    /// carrera donde el productor sigue reportando un fallo tardío (p. ej. cancelación)
+    /// sobre un documento cuyos chunks ya se confirmaron todos.
+    /// </summary>
+    private async Task MarkDocumentFailedAsync(
+        IngestionStateContext ctx, string docKey, DocumentTracker tracker, string detail, CancellationToken ct)
+    {
+        bool shouldMark;
+        lock (tracker)
+        {
+            shouldMark = !tracker.Finalized;
+            if (shouldMark) tracker.Finalized = true;
+        }
+        if (!shouldMark) return;
+
+        try
+        {
+            await _stateStore.UpsertDocumentStateAsync(
+                BuildDocumentState(ctx, docKey, tracker, DocumentIngestionStatus.Failed, detail), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo persistir el estado Failed del documento '{DocKey}'.", docKey);
+        }
+    }
+
+    /// <summary>
+    /// Se llama tras cada upsert exitoso de un lote (ítem 13.1): por cada documento
+    /// dueño de algún chunk del lote, suma los chunks confirmados y cierra el
+    /// documento como Succeeded si ya alcanzó su total esperado. El productor puede
+    /// terminar de trocear un archivo DESPUÉS de que el consumidor ya confirmó todos
+    /// sus chunks (lotes chicos, archivo grande) — por eso la finalización se intenta
+    /// en ambos lados y sólo se persiste la primera vez que se cumple la condición.
+    /// </summary>
+    private async Task ConfirmChunksIndexedAsync(
+        IngestionStateContext ctx, IEnumerable<CodeChunk> confirmedChunks, CancellationToken ct)
+    {
+        var byDoc = confirmedChunks
+            .GroupBy(c => ctx.ChunkOwners.TryGetValue(c.Id, out var key) ? key : null)
+            .Where(g => g.Key is not null);
+
+        foreach (var group in byDoc)
+        {
+            var docKey = group.Key!;
+            if (!ctx.Trackers.TryGetValue(docKey, out var tracker))
+                continue;
+
+            bool readyNow;
+            lock (tracker)
+            {
+                tracker.ConfirmedChunks += group.Count();
+                readyNow = !tracker.Finalized
+                    && tracker.ExpectedChunks is int expected
+                    && tracker.ConfirmedChunks >= expected;
+                if (readyNow) tracker.Finalized = true;
+            }
+            if (!readyNow) continue;
+
+            try
+            {
+                await _stateStore.UpsertDocumentStateAsync(
+                    BuildDocumentState(ctx, docKey, tracker, DocumentIngestionStatus.Succeeded, detail: null),
+                    CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "No se pudo persistir el estado Succeeded del documento '{DocKey}'.", docKey);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Se llama cuando el upsert de un lote falla (ítem 13.1): marca Failed cada
+    /// documento dueño de algún chunk del lote, salvo que ya haya llegado a un
+    /// estado terminal (no pisa un Succeeded previo de otro lote del mismo documento).
+    /// </summary>
+    private async Task MarkChunksFailedAsync(
+        IngestionStateContext ctx, IEnumerable<CodeChunk> failedChunks, string detail, CancellationToken ct)
+    {
+        var docKeys = failedChunks
+            .Select(c => ctx.ChunkOwners.TryGetValue(c.Id, out var key) ? key : null)
+            .Where(k => k is not null)
+            .Distinct()
+            .Cast<string>();
+
+        foreach (var docKey in docKeys)
+        {
+            if (!ctx.Trackers.TryGetValue(docKey, out var tracker))
+                continue;
+
+            await MarkDocumentFailedAsync(ctx, docKey, tracker, detail, ct);
+        }
+    }
+
     // ── Consumer: Read from Channel → Batch → ONNX → Qdrant Upsert ────────────
     private async Task ConsumeAndIndexAsync(
         string collectionName,
@@ -397,6 +608,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         var batch = new List<CodeChunk>(batchSize);
@@ -407,14 +619,14 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
             if (batch.Count >= batchSize)
             {
-                await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, ct);
+                await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, stateCtx, ct);
                 batch.Clear();
             }
         }
 
         // Flush remaining chunks
         if (batch.Count > 0)
-            await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, ct);
+            await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, stateCtx, ct);
     }
 
     private async Task ProcessBatchAsync(
@@ -424,6 +636,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         var texts = batch.Select(c => c.EnrichedContent).ToList();
@@ -482,6 +695,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 _logger.LogError(existingResumenTask.Exception?.InnerException ?? existingResumenTask.Exception,
                     "Fallo consultando el estado de resumen previo para {Count} chunks.", batch.Count);
             }
+            // Ítem 13.1: un lote que nunca llegó a vectorizarse tampoco llega a
+            // upsert — sus documentos quedan Failed en vez de Running para siempre.
+            await MarkChunksFailedAsync(stateCtx, batch, "Fallo vectorizando/tokenizando el lote.", CancellationToken.None);
             return;
         }
 
@@ -503,6 +719,15 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
             RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
 
+            // Ítem 13.1: reconciliación idempotente entre upsert y persistencia — si el
+            // proceso muere justo después de este await pero antes de que termine de
+            // escribir el estado, la próxima corrida vuelve a leer y re-trocear el
+            // archivo (mismos Ids deterministas, Qdrant no duplica) y esta vez sí deja
+            // el estado consistente. Se usa CancellationToken.None: un upsert ya
+            // confirmado en Qdrant no debe quedar sin reflejar por una cancelación
+            // que llegó un instante después.
+            await ConfirmChunksIndexedAsync(stateCtx, batch, CancellationToken.None);
+
             progress?.Report(new IngestionProgress(
                 FilesProcessed: stats.FilesScanned,
                 TotalFilesDiscovered: 0,
@@ -515,6 +740,7 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "qdrant_upsert"));
             _logger.LogError(ex, "Qdrant upsert failed for batch of {Count} chunks.", batch.Count);
+            await MarkChunksFailedAsync(stateCtx, batch, ex.Message, CancellationToken.None);
         }
     }
 
@@ -882,5 +1108,38 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 return Diagnostics.TokenPercentileCalculator.Compute(_tokenCounts);
             }
         }
+    }
+
+    /// <summary>
+    /// Contexto de estado (ítem 13.1) compartido entre el productor y todos los
+    /// consumidores de UNA corrida. <see cref="ChunkOwners"/> mapea cada chunk admitido
+    /// a su documento dueño — se llena en el productor apenas se genera el chunk, se
+    /// lee en el consumidor para saber a qué documento atribuir un upsert confirmado
+    /// o fallido, sin tener que repropagar RepositoryName/RelativePath por cada firma
+    /// de método de la ruta caliente.
+    /// </summary>
+    private sealed class IngestionStateContext
+    {
+        public required string RunId { get; init; }
+        public required string ActorId { get; init; }
+        public required string Contract { get; init; }
+        public ConcurrentDictionary<string, DocumentTracker> Trackers { get; } = new(StringComparer.Ordinal);
+        public ConcurrentDictionary<Guid, string> ChunkOwners { get; } = new();
+    }
+
+    /// <summary>
+    /// Progreso en memoria de UN documento dentro de la corrida actual (ítem 13.1).
+    /// <see cref="Finalized"/> es la guarda que impide que dos rutas concurrentes
+    /// (el productor terminando de trocear vs. un consumidor confirmando el último
+    /// lote) persistan el desenlace terminal dos veces o que una se pise con la otra
+    /// — se accede siempre bajo <c>lock (tracker)</c>.
+    /// </summary>
+    private sealed class DocumentTracker
+    {
+        public string? ContentHash;
+        public DateTimeOffset StartedAt;
+        public int? ExpectedChunks;
+        public int ConfirmedChunks;
+        public bool Finalized;
     }
 }

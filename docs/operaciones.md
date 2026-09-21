@@ -230,6 +230,58 @@ archivo sigue siendo legible con `sqlite3` aunque el escritor deje de usarse. Si
 habilita un acceso empresarial real y no hay forma de auditarlo con un actor verificado,
 **rechazar la operación o aplicar una política explícita — nunca continuar en silencio**.
 
+## Estado por corrida y documento de ingesta (ítem `13.1-estado-por-documento`)
+
+Cada `IngestRepositoryAsync` genera un `run_id` propio y persiste, en un backend SQLite
+independiente del vector store, el estado de la corrida completa y de cada documento tocado
+(actor, contrato de chunking, content hash, tiempos y transición
+`pending`→`running`→`succeeded`/`failed`).
+
+### Dónde vive y cómo se configura
+
+- Archivo: `IngestionOptions:IngestionStateDbPath` (por defecto
+  `%LocalAppData%/rag-engine/ingestion-state.sqlite3` — independiente de `audit.sqlite3`).
+- Tablas: `ingestion_runs` (una fila por `run_id`) e `ingestion_documents`
+  (clave `(run_id, document_key)`, `document_key` = identidad de chunk sin ruta absoluta del
+  ítem `8.f`). WAL habilitado; un único escritor por proceso, como el resto de estado local.
+
+### Consultarlo
+
+```bash
+# Últimas corridas de una colección
+dotnet run --project src/RagEngine.Cli -- ingest-status --collection mi-proyecto
+
+# Detalle por documento de una corrida específica
+dotnet run --project src/RagEngine.Cli -- ingest-status --collection mi-proyecto --run-id <run-id>
+
+# Solo lo que no terminó Succeeded (pendientes/en curso/fallidos) tras matar el proceso
+dotnet run --project src/RagEngine.Cli -- ingest-status --collection mi-proyecto --run-id <run-id> --failed-only
+```
+
+### Qué garantiza y qué NO
+
+- Un documento **descubierto** por el escáner antes de morir el proceso siempre queda con una
+  fila (`pending` como mínimo). Un documento que el escáner nunca alcanzó a leer **no tiene
+  fila** — no es un bug, es el límite documentado de "descubrimiento" vs. "planificación previa".
+- El estado se confirma `succeeded` solo tras el upsert real en Qdrant, nunca antes (ver
+  `ConfirmChunksIndexedAsync` en `DefaultIngestionPipeline`); una cancelación que llega después
+  de un upsert confirmado no revierte esa confirmación.
+- **No hay salto automático de documentos ya exitosos** en una re-ingesta: cada corrida nueva
+  vuelve a procesar y a registrar su propia fila con su propio `run_id`. La idempotencia frente a
+  duplicados la da el ID de chunk determinístico (hash de ruta+línea+contenido, ítem `8.f`), no
+  una lógica de "skip" en el estado. El histórico de corridas anteriores nunca se borra ni se
+  reescribe.
+
+### Rollback
+
+Apagar el wiring (constructor de `DefaultIngestionPipeline`) o revertir el código no borra
+`ingestion-state.sqlite3`; el archivo sigue siendo legible con `sqlite3` y conserva el histórico
+de corridas anteriores. Respaldar antes de tocar el esquema:
+
+```bash
+cp ~/Library/Application\ Support/rag-engine/ingestion-state.sqlite3 /tmp/ingestion-state.sqlite3.bak-$(date +%Y%m%d)
+```
+
 ## Retención y minimización de logs (ítem `12.9-retencion-del-log`)
 
 Dos mecanismos independientes, uno por tipo de registro. Ninguno se activa ni purga nada por sí

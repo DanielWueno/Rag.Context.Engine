@@ -37,6 +37,16 @@ public sealed class IngestionOptions
     public string ResumenCachePath { get; init; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "rag-engine", "summary-cache.sqlite3");
+
+    /// <summary>
+    /// Ruta de la base SQLite de estado de ingesta por corrida/documento (ítem 13.1).
+    /// Base propia, separada de la caché de resúmenes y de audit.sqlite3: mezclar
+    /// estado mutable de ingesta con historia inmutable de auditoría complicaría el
+    /// razonamiento sobre qué se puede purgar/reconstruir y qué nunca se toca.
+    /// </summary>
+    public string IngestionStateDbPath { get; init; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "rag-engine", "ingestion-state.sqlite3");
 }
 
 /// <summary>Unidad de agrupación para la Fase 2 de resumen de negocio (ítem 5.b).</summary>

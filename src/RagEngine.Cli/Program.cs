@@ -66,6 +66,7 @@ try
             services.AddTransient<IngestCommand>();
             services.AddTransient<SearchCommand>();
             services.AddTransient<StatusCommand>();
+            services.AddTransient<IngestStatusCommand>();
             services.AddTransient<AskCommand>();
             services.AddTransient<DoctorCommand>();
             services.AddTransient<EvalCommand>();
@@ -98,6 +99,12 @@ app.Configure(config =>
         .WithExample(["status"])
         .WithExample(["status", "--collection", "mi-proyecto"])
         .WithExample(["status", "--all"]);
+
+    config.AddCommand<IngestStatusCommand>("ingest-status")
+        .WithDescription("Consulta el estado de ingesta por corrida/documento (ítem 13.1): quién, qué y en qué estado quedó cada archivo.")
+        .WithExample(["ingest-status", "--collection", "mi-proyecto"])
+        .WithExample(["ingest-status", "--collection", "mi-proyecto", "--run-id", "3f9c..."])
+        .WithExample(["ingest-status", "--collection", "mi-proyecto", "--run-id", "3f9c...", "--failed-only"]);
 
     config.AddCommand<AskCommand>("ask")
         .WithDescription("Realiza una pregunta en lenguaje natural y obtiene una respuesta generada por el LLM local (Ollama).")

@@ -13,6 +13,7 @@ using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Chunking;
 using RagEngine.Core.Infrastructure.Reranking;
 using RagEngine.Core.Infrastructure.Scanning;
+using RagEngine.Core.Infrastructure.State;
 using RagEngine.Core.Infrastructure.Transport;
 using RagEngine.Core.Infrastructure.Vectorization;
 using RagEngine.Core.Infrastructure.VectorStore;
@@ -214,6 +215,15 @@ public static class ServiceCollectionExtensions
         {
             var auditOpts = sp.GetRequiredService<IOptions<AuditOptions>>().Value;
             return SqliteAuditEventStore.Open(auditOpts.DbPath);
+        });
+
+        // ── Estado de ingesta por corrida/documento (ítem 13.1): base SQLite propia,
+        // separada de auditoría (append-only) y de la caché de resúmenes — este
+        // estado SÍ se actualiza en el tiempo (pending → running → succeeded/failed).
+        services.AddSingleton<IIngestionStateStore>(sp =>
+        {
+            var ingestionOpts = sp.GetRequiredService<IOptions<IngestionOptions>>().Value;
+            return SqliteIngestionStateStore.Open(ingestionOpts.IngestionStateDbPath);
         });
 
         // ── Minimización/retención de logs operativos (ítem 12.9): por defecto no

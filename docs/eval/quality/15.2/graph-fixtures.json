@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "node_columns": ["id", "version", "collection", "tenant", "module"],
+  "edge_columns": ["source", "source_version", "target", "target_version", "edge_version"],
+  "semantics": "Each scenario starts with empty isolated durable storage. replace_document is atomic, updates endpoint versions and removes superseded edges. event_id replay is idempotent across restarts and deletions. Observations are read from persisted storage after each operation; sorted by node ID / edge tuple. query returns only expanded nodes (not seed), with traversed edges per hop, filtering collection + tenant + exact module boundary before admission at EVERY hop. Missing context is an explicit error. Local mode is explicit and still collection-scoped. These are contract fixtures, not a graph implementation.",
+  "scenarios": [
+    {
+      "id": "lifecycle",
+      "input": [
+        {"op": "replace_document", "event_id": "add-1", "nodes": [["a",1,"fixture","A","alpha"],["b",1,"fixture","A","alpha"]], "edges": [["a",1,"b",1,1]]},
+        {"op": "replace_document", "event_id": "update-2", "nodes": [["b",2,"fixture","A","alpha"]], "edges": [["a",1,"b",2,2]]},
+        {"op": "replace_document", "event_id": "update-3", "nodes": [["b",3,"fixture","A","alpha"]], "edges": [["a",1,"b",3,3]], "crash": "before_commit"},
+        {"op": "restart"},
+        {"op": "replace_document", "event_id": "update-3", "nodes": [["b",3,"fixture","A","alpha"]], "edges": [["a",1,"b",3,3]]},
+        {"op": "restart_and_replay", "event_id": "update-3"},
+        {"op": "delete_document", "event_id": "delete-4", "node_ids": ["b"]},
+        {"op": "restart_and_replay", "event_id": "update-3"}
+      ],
+      "expected": [
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"],["b",1,"fixture","A","alpha"]],"edges":[["a",1,"b",1,1]]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"],["b",2,"fixture","A","alpha"]],"edges":[["a",1,"b",2,2]]},
+        {"status":"interrupted","nodes":[["a",1,"fixture","A","alpha"],["b",2,"fixture","A","alpha"]],"edges":[["a",1,"b",2,2]]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"],["b",2,"fixture","A","alpha"]],"edges":[["a",1,"b",2,2]]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"],["b",3,"fixture","A","alpha"]],"edges":[["a",1,"b",3,3]]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"],["b",3,"fixture","A","alpha"]],"edges":[["a",1,"b",3,3]]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"]],"edges":[]},
+        {"status":"ok","nodes":[["a",1,"fixture","A","alpha"]],"edges":[]}
+      ]
+    },
+    {
+      "id": "authorization",
+      "setup": {
+        "nodes": [["a",1,"fixture","A","alpha"],["b",1,"fixture","A","beta"],["c",1,"other","A","alpha"],["d",1,"fixture","A","alpha.child"],["e",1,"fixture","A","alpha.child"],["f",1,"fixture","A","alpha-private"],["n",1,"fixture",null,"alpha"],["t",1,"fixture","B","alpha"],["z",1,"fixture","A","alpha"]],
+        "edges": [["a",1,"b",1,1],["a",1,"c",1,1],["a",1,"d",1,1],["a",1,"f",1,1],["a",1,"n",1,1],["a",1,"t",1,1],["b",1,"z",1,1],["d",1,"e",1,1]]
+      },
+      "input": [
+        {"op":"query","seed":"a","collection":"fixture","context":{"mode":"authorized","tenant":"A","module":"alpha"},"hops":2},
+        {"op":"restart_and_query","seed":"a","collection":"fixture","context":{"mode":"authorized","tenant":"A","module":"alpha"},"hops":2},
+        {"op":"query","seed":"a","collection":"fixture","context":{"mode":"authorized","tenant":"B","module":"alpha"},"hops":2},
+        {"op":"query","seed":"a","collection":"fixture","context":null,"hops":2},
+        {"op":"query","seed":"a","collection":"fixture","context":{"mode":"local"},"hops":2},
+        {"op":"query","seed":"d","collection":"fixture","context":{"mode":"authorized","tenant":"A","module":"alpha"},"filter_module":"alpha.child","hops":2},
+        {"op":"query","seed":"d","collection":"fixture","context":{"mode":"authorized","tenant":"A","module":"beta"},"filter_module":"alpha.child","hops":2}
+      ],
+      "expected": [
+        {"status":"ok","hits":["d","e"],"traversed":[[["a","d"]],[["d","e"]]]},
+        {"status":"ok","hits":["d","e"],"traversed":[[["a","d"]],[["d","e"]]]},
+        {"status":"denied_seed","hits":[],"traversed":[[],[]]},
+        {"status":"invalid_context","hits":[],"traversed":[]},
+        {"status":"ok","hits":["b","d","e","f","n","t","z"],"traversed":[[["a","b"],["a","d"],["a","f"],["a","n"],["a","t"]],[["b","z"],["d","e"]]]},
+        {"status":"ok","hits":["e"],"traversed":[[["d","e"]],[]]},
+        {"status":"denied_seed","hits":[],"traversed":[[],[]]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "captured_at": "2026-09-21T23:53:10.698007+00:00",
+  "prepared_at": "2026-09-21T23:53:17.456231+00:00",
+  "engine_commit": "c7d6173106a9d32e12f5bfb4a9b6cabcec0db102",
+  "index_sha256": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+  "index_manifest_digest": "3b5683ae4b750842878b6232bc1b2204e5015629083cd663786f24a7d1439c2a",
+  "collection_config": {
+    "hnsw_config": {
+      "ef_construct": 100,
+      "full_scan_threshold": 10000,
+      "m": 16,
+      "max_indexing_threads": 0,
+      "on_disk": false
+    },
+    "optimizer_config": {
+      "default_segment_number": 0,
+      "deleted_threshold": 0.2,
+      "flush_interval_sec": 5,
+      "indexing_threshold": 10000,
+      "max_optimization_threads": null,
+      "max_segment_size": null,
+      "memmap_threshold": null,
+      "prevent_unoptimized": null,
+      "vacuum_min_vector_number": 1000
+    },
+    "params": {
+      "on_disk_payload": false,
+      "replication_factor": 1,
+      "shard_number": 1,
+      "sparse_vectors": {
+        "sparse-code": {
+          "index": {
+            "full_scan_threshold": 5000
+          }
+        }
+      },
+      "vectors": {
+        "dense": {
+          "distance": "Cosine",
+          "on_disk": false,
+          "size": 384
+        },
+        "dense-resumen": {
+          "distance": "Cosine",
+          "on_disk": false,
+          "size": 384
+        }
+      },
+      "write_consistency_factor": 1
+    },
+    "quantization_config": null,
+    "wal_config": {
+      "wal_capacity_mb": 32,
+      "wal_retain_closed": 1,
+      "wal_segments_ahead": 0
+    }
+  },
+  "models": {
+    "model_qint8_arm64.onnx": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672",
+    "sentencepiece.bpe.model": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+  },
+  "corpus_revision": "8b6a06b4dd81ccf922eadd8b7b7b24df22af81ae",
+  "corpus_manifest_sha256": "f89c61743ef96a59a807fd84037df1fcbede70ad4283536bbdb9270e8cdd29fc",
+  "points": 23058,
+  "source_files": 3688,
+  "categories": {
+    "literal": 12,
+    "parafraseada": 18,
+    "simbolo": 12,
+    "ambigua": 5,
+    "fuera-de-dominio": 8,
+    "salto": 20,
+    "salto-negativo": 9
+  },
+  "capture_seconds": 10.603002042,
+  "prepare_seconds": 4.886689666,
+  "payload_line_drift": [
+    "22f9e1c1-17d9-596b-8bf9-96d4730f9c71",
+    "cd26b723-6613-550c-bdd6-11a1ab6d14ca",
+    "25f6f9f4-8c1d-50e5-af9a-3084452ee8fc",
+    "043457ec-3191-5115-934b-338a1d1f2f83",
+    "962dda70-ae0c-57bd-965c-c5c004fb96ae",
+    "014f02a4-1f0a-561e-a75c-cc80c431b65f",
+    "a04fbe48-8e93-588e-9bf7-ccbd4f9fae26",
+    "c1db4ced-13e6-54d2-b433-b88911c93020",
+    "99ee6330-bdd0-57b8-aa12-53672c89e9e3",
+    "b02fc298-d6bf-5af9-bd83-50d8fc89639b",
+    "36437cbb-3dea-51f0-b0f8-98f10db731df",
+    "1376fd23-15e7-5464-b2b2-b1f660eb27b9",
+    "589548ce-65a6-580a-8d2d-96922f6f4d67",
+    "e38fcd82-dce4-5d75-9407-577e161d521e",
+    "a9bfa3cd-6172-571e-9546-7abdc8abf4cd",
+    "04f3e209-1818-5519-ad21-68d213cff67f",
+    "79b188fd-6fb9-5619-86e0-0d923b01ca48",
+    "33823b7d-c0bb-5900-a5c0-4c61022a126e",
+    "5384b747-5469-5fd3-936e-19c43f95d30a",
+    "11618407-81f9-5012-9ff2-ff784a848704",
+    "5f287910-c6ff-5d59-8dc9-aab1036e7fa7",
+    "12d39185-ead6-5e15-b6f7-9cb08ce8d7d0",
+    "9ced6c0f-1e9a-5bb0-a5b4-7d2661883927",
+    "a10c2728-7f59-50dc-85e6-044485aea7e5",
+    "3a6212be-a8f2-508d-8e39-7e06b4a0e76c",
+    "e9695ff0-ade8-5ebc-88ae-192f9c5b41e7",
+    "78518af2-792c-561c-9885-fd19bd03c183",
+    "f1bc7fc5-0a4c-5264-96e1-c0a3428cf46f",
+    "9973717b-9f9f-5d9c-9225-043a5fc785fb",
+    "63c47486-6283-578c-8444-c645e68c0e7f",
+    "b245c447-6940-5af8-900b-00a5e5686870",
+    "18297c8a-85ac-5ddf-a1a4-405174b0f9b4",
+    "703029d8-763b-5651-8b99-85e749c40f73",
+    "ebda2a66-2727-59ce-a38e-12bed548b6f5",
+    "70358b7a-433e-549d-b07c-0682cc95d84f",
+    "896554f6-e99e-5375-8be0-0e1e1605c373"
+  ],
+  "unmatched_anchors": [],
+  "llm_calls": 0,
+  "index_writes": 0,
+  "arms_executed": []
+}

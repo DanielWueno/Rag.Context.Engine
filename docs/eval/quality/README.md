@@ -94,10 +94,81 @@ en el detalle del artefacto.
 - Los saludos "Hola" y "Continua" mantienen 93 palabras con identificadores
   PascalCase: van por un camino de código que estos prompts no tocan.
 
+## Instrumento de desambiguación local (15.2.1)
+
+`15.2/protocol.json` fija el contrato anterior a los prototipos de 15.2.2.
+`freeze.json` sella instrumentos, corpus, índice, anclas y etiquetas por SHA256.
+Las 30 oportunidades de `opportunities.json` son **semillas controladas de fuente**:
+20 entradas de las consultas de salto y 10 dependencias internas. No reconstruyen
+las 30 expansiones históricas de 6.d ni representan las semillas naturales del
+retrieval. La auditoría histórica permanece intacta. Una mejora de resolución
+condicionada a estas semillas necesita además ganar el A/B de las **84 consultas**.
+
+Verificar la preparación, sin correr retrieval ni iniciar servicios:
+
+```bash
+python3 docs/eval/quality/15.2/accept.py --verify-instrument \
+  --corpus /ruta/al/checkout/BusinessSuite.Xaf
+```
+
+Exige la revisión y los hashes del corpus congelado, toda la evidencia de fuente
+y los tests adversariales; no omite comprobaciones si falta el corpus.
+`source-evidence.json` conserva el contenido indexado y extractos de fuente
+independientes: los rangos reales se localizaron por contenido porque algunos
+rangos de payload están desplazados. El hash de la revisión actual del corpus
+**no se presenta como revisión de ingesta**. El índice se capturó dos veces en
+lectura, con huellas de payloads y vectores, sin almacenar vectores nuevos.
+
+Para 15.2.2, el runner debe producir un JSON real y ejecutar:
+
+```bash
+python3 docs/eval/quality/15.2/accept.py --experiment /ruta/experimento.json \
+  --output /ruta/comparacion.json
+```
+
+Contrato del JSON (implementado en `accept.compare`, sin valores por defecto):
+
+| Campo | Evidencia requerida |
+|---|---|
+| `kind`, `freeze_sha256` | `measured_experiment` y SHA256 del archivo `freeze.json` |
+| `parameters` | Opciones **efectivas**, exactamente `protocol.json.parameters`, sin override de perfil |
+| `engine_commit`, `runner_sha256`, `command`, `runtime`, `hardware` | Revisión completa, hash del runner, argv ejecutado y entorno |
+| `arms` | Las cinco claves `no-expansion`, `name-join`, `syntax`, `semantic`, `graph` |
+| Cada brazo | `implementation_sha256`, `index_before/after`, `corpus_before/after`, `collection_config_before/after`, `models_before/after`, `build_seconds`, `update_seconds`, `machine_seconds`, `precision` |
+| Huellas | Índice y corpus según `preparation.json`; configuración de colección mediante `capture.digest(collection_config)`; modelos mediante el mapa `preparation.json.models` |
+| `precision` | Vacío solamente para `no-expansion`; para los otros, 30 filas en orden de oportunidades |
+| Cada fila de precisión | `opportunity_id`, `query_id`, `question`, `seed_ids`, `seed_version`, `succeeded`, `elapsed_ms`, `candidates` |
+| `candidates` / `hits` | Lista ordenada de objetos `{id, content_hash}` efectivamente devueltos, sin duplicados; máximo 20 / 10 |
+| `runs` | Las 2.520 llamadas en el orden exacto que entrega `accept.schedule(bundle)`: 420 calentamientos y 2.100 mediciones |
+| Cada llamada | Campos de `schedule`: `sequence`, `phase`, `replica` (base 0), `query_id`, `question`, `arm`; además `succeeded`, `elapsed_ms`, `hits` |
+| `graph_execution` | `null` si no se ejecutó; obligatorio si el grafo supera las métricas. Incluye `implementation_sha256`, `runner_sha256`, `command`, `seconds`, `observations` |
+| `observations` | Mapa escenario → observaciones reales tras cada operación de `graph-fixtures.json`, con todas las claves del esperado |
+
+El runner de precisión recibe consulta, semilla e índice, **nunca los destinos
+esperados**. Puntúa únicamente el primer candidato; rechazos no son aciertos y
+un destino no acredita dos oportunidades de la misma consulta. La medición de
+recall usa el retrieval normal, sin inyectar semillas del oráculo. Debe registrar
+las huellas antes/después desde los recursos reales, no copiarlas del protocolo.
+`capture.py` sirve para comprobar el índice local y modelos; sus dos lecturas
+iguales detectan drift, pero no son una transacción/snapshot atómico de Qdrant.
+
+Los tests construyen registros **sintéticos exclusivamente en memoria** para
+comprobar fronteras, negativos y rechazos. No son mediciones de alternativas.
+El fixture de grafo fija expectativas; todavía no implementa ni prueba un almacén
+de relaciones real. En 15.2.2 el adaptador consume los inputs del fixture, no sus
+salidas esperadas.
+
+Exit `2` significa evidencia incompleta o inválida. Exit `0` distingue
+`complete_no_promotion` (resultado nulo completo) de `complete_with_eligible`;
+ninguno despliega producto. No volver a sellar el instrumento tras observar
+resultados. Cambiarlo exige nueva procedencia y medir todos los brazos de nuevo.
+La preparación solo produce `instrument_verified_not_experiment`.
+
 ## Calibración por binario (ítem 12.10)
 
 El contrato local vincula los umbrales opcionales del perfil al cross-encoder
 efectivo. **No se cambió el binario ni se recalibraron umbrales en este ítem.**
+
 `12.10/verification.json` conserva evidencia de contrato sobre ONNX local,
 Qdrant aislado, gate compartido, CLI y comparador con **respuestas sintéticas**.
 No es evidencia de calidad de un candidato.

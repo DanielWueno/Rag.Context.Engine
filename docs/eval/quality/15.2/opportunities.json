@@ -1,0 +1,456 @@
+[
+  {
+    "id": "q55-entry",
+    "query_id": "q55",
+    "question": "¿Qué le pasa al estatus de una solicitud de cuenta de TI cuando el usuario la cancela desde el formulario?",
+    "stage": "entry",
+    "seed_ids": [
+      "22f9e1c1-17d9-596b-8bf9-96d4730f9c71"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CancelarSolicitud",
+    "valid_target_ids": [
+      "d5da5824-a555-59fe-a34d-4e5a9bc8b565"
+    ],
+    "reason": "ISolicitudCuentaTI.SolicitudCuenta esta tipado SolicitudCuentaTI; llamada de cancelacion y definicion con Estatus=Cancelado."
+  },
+  {
+    "id": "q56-entry",
+    "query_id": "q56",
+    "question": "¿A qué estatus queda un equipo de cómputo solicitado cuando se aprueba?",
+    "stage": "entry",
+    "seed_ids": [
+      "25f6f9f4-8c1d-50e5-af9a-3084452ee8fc"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "AprobarEqComputo",
+    "valid_target_ids": [
+      "cd26b723-6613-550c-bdd6-11a1ab6d14ca"
+    ],
+    "reason": "eq proviene de RecordHelper.GetCurrentObject<SolicitudServicioEquipoComputo>; metodo de ese BO cambia Estatus a Revisado."
+  },
+  {
+    "id": "q57-entry",
+    "query_id": "q57",
+    "question": "¿Quién queda registrado como responsable de la revisión cuando se aprueba una solicitud de servicio?",
+    "stage": "entry",
+    "seed_ids": [
+      "962dda70-ae0c-57bd-965c-c5c004fb96ae"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "AprobarSolicitudServicio",
+    "valid_target_ids": [
+      "043457ec-3191-5115-934b-338a1d1f2f83"
+    ],
+    "reason": "ObtenerDatoSolicitud devuelve tupla (SolicitudServicio, Empleado); Item1 invoca el metodo del BO, no el handler homonimo."
+  },
+  {
+    "id": "q58-entry",
+    "query_id": "q58",
+    "question": "¿Cómo influye la ponderación de cada grupo del checklist en la calificación final de una auditoría?",
+    "stage": "entry",
+    "seed_ids": [
+      "014f02a4-1f0a-561e-a75c-cc80c431b65f"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CalcularCalificacionAuditoria",
+    "valid_target_ids": [
+      "889d697f-4042-5075-933c-4a11e4d74d46"
+    ],
+    "reason": "auditoria es Auditorias en ImprimirResumenResultados; metodo del BO calcula contribucion usando grupo.Ponderacion."
+  },
+  {
+    "id": "q59-entry",
+    "query_id": "q59",
+    "question": "¿Qué pasa si falta la fecha de aniversario del contrato o de la programación al validar un pago?",
+    "stage": "entry",
+    "seed_ids": [
+      "99ee6330-bdd0-57b8-aa12-53672c89e9e3"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarFechaAniversarioAjustada",
+    "valid_target_ids": [
+      "a04fbe48-8e93-588e-9bf7-ccbd4f9fae26",
+      "c1db4ced-13e6-54d2-b433-b88911c93020"
+    ],
+    "reason": "Llamada estatica cualificada ProgramacionPagoHelper desde PagoContratoViewController; ambos fragmentos pertenecen a la misma definicion."
+  },
+  {
+    "id": "q60-entry",
+    "query_id": "q60",
+    "question": "¿Qué se compara para saber si la fecha de una programación de pago respeta el ciclo de aniversario del contrato?",
+    "stage": "entry",
+    "seed_ids": [
+      "b02fc298-d6bf-5af9-bd83-50d8fc89639b"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarFechaAniversarioAjustada",
+    "valid_target_ids": [
+      "a04fbe48-8e93-588e-9bf7-ccbd4f9fae26",
+      "c1db4ced-13e6-54d2-b433-b88911c93020"
+    ],
+    "reason": "Llamada estatica cualificada ProgramacionPagoHelper desde ProgramacionPago.EsFechaAniversarioValida; misma definicion, consulta independiente."
+  },
+  {
+    "id": "q61-entry",
+    "query_id": "q61",
+    "question": "¿Qué se revisa del expediente de un empleado antes de asignarle un equipo de cómputo?",
+    "stage": "entry",
+    "seed_ids": [
+      "1376fd23-15e7-5464-b2b2-b1f660eb27b9"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarExpedienteFromAsignacionComputo",
+    "valid_target_ids": [
+      "36437cbb-3dea-51f0-b0f8-98f10db731df"
+    ],
+    "reason": "AsignacionComputo.PersonalAsignado es Empleado; llamada null-conditional corresponde al metodo de Empleado."
+  },
+  {
+    "id": "q62-entry",
+    "query_id": "q62",
+    "question": "¿Qué datos de auditoría se registran cuando se cancela una salida de almacén de cómputo por un mantenimiento?",
+    "stage": "entry",
+    "seed_ids": [
+      "589548ce-65a6-580a-8d2d-96922f6f4d67"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CancelarSalidaComputo",
+    "valid_target_ids": [
+      "98514989-1641-5f6c-bba9-9b02ba1dadc2"
+    ],
+    "reason": "salidaDetalle viene de Query<AlmacenComputoSalidaDetalle>; su propiedad Salida es AlmacenComputoSalida, no cualquier Master."
+  },
+  {
+    "id": "q63-entry",
+    "query_id": "q63",
+    "question": "¿Qué fecha se registra en la salida de cómputo cuando se cancela un traspaso?",
+    "stage": "entry",
+    "seed_ids": [
+      "3327d072-d896-5cae-91bf-c7e45f6c66c3"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CancelarSalidaComputo",
+    "valid_target_ids": [
+      "98514989-1641-5f6c-bba9-9b02ba1dadc2"
+    ],
+    "reason": "salidaComputo viene de Query<AlmacenComputoSalida>; metodo escribe FechaCancelacion/EstatusFecha."
+  },
+  {
+    "id": "q64-entry",
+    "query_id": "q64",
+    "question": "¿Por qué no se puede modificar un activo de cómputo que ya está cancelado al intentar recuperarlo de un traspaso?",
+    "stage": "entry",
+    "seed_ids": [
+      "3327d072-d896-5cae-91bf-c7e45f6c66c3"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CancelaTraspaso",
+    "valid_target_ids": [
+      "e38fcd82-dce4-5d75-9407-577e161d521e"
+    ],
+    "reason": "TraspasoActivo es XPCollection<TraspasoComputoActivo>; ActivoComputo es ActivosComputo. La definicion verifica Cancelado antes de modificar."
+  },
+  {
+    "id": "q65-entry",
+    "query_id": "q65",
+    "question": "¿De dónde se toma la información al crear una devolución interna a proveedor?",
+    "stage": "entry",
+    "seed_ids": [
+      "a9bfa3cd-6172-571e-9546-7abdc8abf4cd"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CrearDevolucionInternaProveedor",
+    "valid_target_ids": [
+      "400cc5da-1c5d-5764-84b4-c8221c5c6eb9"
+    ],
+    "reason": "devolucion se construye new Devolucion; metodo recibe DevolucionInternaDetalle y copia sus datos."
+  },
+  {
+    "id": "q66-entry",
+    "query_id": "q66",
+    "question": "¿Qué debe coincidir entre la orden de compra y la cantidad de licencias de la bóveda al renovar una licencia?",
+    "stage": "entry",
+    "seed_ids": [
+      "fab1e21a-ba6f-5fdb-b7e6-4278ae364e4f"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarLicenciaRenovarIgualOrdencompraContratoActual",
+    "valid_target_ids": [
+      "04f3e209-1818-5519-ad21-68d213cff67f"
+    ],
+    "reason": "Llamada estatica BovedaLicenciaHelper en PagoContrato.ValidacionCantidadesLicencias; definicion compara cantLicOC con cantidades."
+  },
+  {
+    "id": "q67-entry",
+    "query_id": "q67",
+    "question": "¿Qué debe cuadrar entre la programación de pago y la bóveda de licencias activas del contrato al renovar?",
+    "stage": "entry",
+    "seed_ids": [
+      "33823b7d-c0bb-5900-a5c0-4c61022a126e"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarLicenciaRenovarIgualBovedaLicenciasActivas",
+    "valid_target_ids": [
+      "79b188fd-6fb9-5619-86e0-0d923b01ca48"
+    ],
+    "reason": "Llamada estatica BovedaLicenciaHelper en ProgramacionPago; definicion cuenta detalles de boveda activa."
+  },
+  {
+    "id": "q68-entry",
+    "query_id": "q68",
+    "question": "¿Qué pasa si el contrato relacionado a una programación de pago no tiene bóveda de licencias asociada?",
+    "stage": "entry",
+    "seed_ids": [
+      "fab1e21a-ba6f-5fdb-b7e6-4278ae364e4f"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidaLicenciasProgramacion",
+    "valid_target_ids": [
+      "acc84fb4-08d7-5ab6-9b19-bf8c9021b217"
+    ],
+    "reason": "Llamada estatica BovedaLicenciaHelper en PagoContrato; definicion rechaza contrato/boveda null."
+  },
+  {
+    "id": "q69-entry",
+    "query_id": "q69",
+    "question": "¿Qué otra validación de licencias y orden de compra se aplica cuando una programación de pago del módulo de licencias intenta renovar?",
+    "stage": "entry",
+    "seed_ids": [
+      "33823b7d-c0bb-5900-a5c0-4c61022a126e"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarLicenciaRenovarIgualOrdencompraContratoActual",
+    "valid_target_ids": [
+      "04f3e209-1818-5519-ad21-68d213cff67f"
+    ],
+    "reason": "Llamada estatica desde ProgramacionPago; mismo helper que query 11 pero otra consulta/entrada."
+  },
+  {
+    "id": "q70-entry",
+    "query_id": "q70",
+    "question": "¿Cómo se decide si una orden de compra se clasifica como de proyectos o como de inventario en stock?",
+    "stage": "entry",
+    "seed_ids": [
+      "11618407-81f9-5012-9ff2-ff784a848704"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ActualizarTipoInventario",
+    "valid_target_ids": [
+      "5384b747-5469-5fd3-936e-19c43f95d30a"
+    ],
+    "reason": "solSerObj es OrdenCompraSolicitudServicio, Master es OrdenCompra; metodo usa SolicitudesServicio.Count para Proyectos/Stock."
+  },
+  {
+    "id": "q71-entry",
+    "query_id": "q71",
+    "question": "¿Qué tipos de solicitudes y compras se incluyen al generar la proyección de compras?",
+    "stage": "entry",
+    "seed_ids": [
+      "12d39185-ead6-5e15-b6f7-9cb08ce8d7d0"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "GenerarConsulta",
+    "valid_target_ids": [
+      "5f287910-c6ff-5d59-8dc9-aab1036e7fa7"
+    ],
+    "reason": "Pattern matching MasterObject is ProyeccionesCompras master; definicion consulta SqlSolicitudes/SqlTickets/SqlComprasOperativas/SqlCompras."
+  },
+  {
+    "id": "q72-entry",
+    "query_id": "q72",
+    "question": "¿Cómo se determina si el correo de un ticket de origen tiene una plantilla registrada antes de crear subtickets?",
+    "stage": "entry",
+    "seed_ids": [
+      "a10c2728-7f59-50dc-85e6-044485aea7e5"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarCorreoEletronico",
+    "valid_target_ids": [
+      "9ced6c0f-1e9a-5bb0-a5b4-7d2661883927"
+    ],
+    "reason": "Llamada estatica CuentaCorreoPlantillaHelper; no confundir el typo Eletronico con otro nombre. Definicion llama ExisteCorreoPlantilla."
+  },
+  {
+    "id": "q73-entry",
+    "query_id": "q73",
+    "question": "¿Cómo se calcula cuántos periodos completos de pago han transcurrido desde el aniversario del contrato?",
+    "stage": "entry",
+    "seed_ids": [
+      "3a6212be-a8f2-508d-8e39-7e06b4a0e76c"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CalcularFechaCandidata",
+    "valid_target_ids": [
+      "2057796d-11b2-5654-9fc6-95a0fb46bca0"
+    ],
+    "reason": "Llamada estatica ProgramacionPagoHelper; definicion divide totalMeses/periodicidadMeses con Math.Floor."
+  },
+  {
+    "id": "q74-entry",
+    "query_id": "q74",
+    "question": "¿Qué se registra en la bitácora del hallazgo cuando se reabre una acción correctiva de auditoría?",
+    "stage": "entry",
+    "seed_ids": [
+      "78518af2-792c-561c-9885-fd19bd03c183"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "RegistrarBitacora",
+    "valid_target_ids": [
+      "e9695ff0-ade8-5ebc-88ae-192f9c5b41e7"
+    ],
+    "reason": "accionCorrectiva es e.CurrentObject as AuditoriaResultadoHallazgoAccionCorrectiva; metodo de esa clase delega en AuditHelper.Add, no homonimos de Computo."
+  },
+  {
+    "id": "q56-internal",
+    "query_id": "q56",
+    "question": "¿A qué estatus queda un equipo de cómputo solicitado cuando se aprueba?",
+    "stage": "internal",
+    "seed_ids": [
+      "cd26b723-6613-550c-bdd6-11a1ab6d14ca"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidaExpedienteEmpleado",
+    "valid_target_ids": [
+      "a9ee4608-5ba5-51d0-a08b-0e9304a3cf25"
+    ],
+    "reason": "Primera llamada no cualificada interna de AprobarEqComputo, definida en la misma clase."
+  },
+  {
+    "id": "q58-internal",
+    "query_id": "q58",
+    "question": "¿Cómo influye la ponderación de cada grupo del checklist en la calificación final de una auditoría?",
+    "stage": "internal",
+    "seed_ids": [
+      "889d697f-4042-5075-933c-4a11e4d74d46"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CalcularCalificacionGrupo",
+    "valid_target_ids": [
+      "f1bc7fc5-0a4c-5264-96e1-c0a3428cf46f"
+    ],
+    "reason": "Primera llamada interna de CalcularCalificacionAuditoria, calcula el subtotal que se pondera."
+  },
+  {
+    "id": "q59-internal",
+    "query_id": "q59",
+    "question": "¿Qué pasa si falta la fecha de aniversario del contrato o de la programación al validar un pago?",
+    "stage": "internal",
+    "seed_ids": [
+      "c1db4ced-13e6-54d2-b433-b88911c93020"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CalcularDiaAjustadoAniversario",
+    "valid_target_ids": [
+      "9973717b-9f9f-5d9c-9225-043a5fc785fb"
+    ],
+    "reason": "Primera llamada interna del helper de fechas, devuelve Min(diaBaseContrato,ultimoDiaDelMes)."
+  },
+  {
+    "id": "q60-internal",
+    "query_id": "q60",
+    "question": "¿Qué se compara para saber si la fecha de una programación de pago respeta el ciclo de aniversario del contrato?",
+    "stage": "internal",
+    "seed_ids": [
+      "c1db4ced-13e6-54d2-b433-b88911c93020"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "CalcularDiaAjustadoAniversario",
+    "valid_target_ids": [
+      "9973717b-9f9f-5d9c-9225-043a5fc785fb"
+    ],
+    "reason": "Misma dependencia interna del helper, otra consulta; no contar dos fragmentos como dos oportunidades."
+  },
+  {
+    "id": "q61-internal",
+    "query_id": "q61",
+    "question": "¿Qué se revisa del expediente de un empleado antes de asignarle un equipo de cómputo?",
+    "stage": "internal",
+    "seed_ids": [
+      "36437cbb-3dea-51f0-b0f8-98f10db731df"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ValidarExpedienteFromUsuario",
+    "valid_target_ids": [
+      "63c47486-6283-578c-8444-c645e68c0e7f"
+    ],
+    "reason": "Primera llamada interna de ValidarExpedienteFromAsignacionComputo; TieneUsuarioTickets es posterior, no seleccionado."
+  },
+  {
+    "id": "q64-internal",
+    "query_id": "q64",
+    "question": "¿Por qué no se puede modificar un activo de cómputo que ya está cancelado al intentar recuperarlo de un traspaso?",
+    "stage": "internal",
+    "seed_ids": [
+      "e38fcd82-dce4-5d75-9407-577e161d521e"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "EliminaAsignacionActivoComputo",
+    "valid_target_ids": [
+      "b245c447-6940-5af8-900b-00a5e5686870"
+    ],
+    "reason": "Primera llamada interna de CancelaTraspaso; RegistraTrazabilidad es posterior, no seleccionado."
+  },
+  {
+    "id": "q66-internal",
+    "query_id": "q66",
+    "question": "¿Qué debe coincidir entre la orden de compra y la cantidad de licencias de la bóveda al renovar una licencia?",
+    "stage": "internal",
+    "seed_ids": [
+      "04f3e209-1818-5519-ad21-68d213cff67f"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ObtenerDatosLicenciaDeOrdenCompraFromRenovacion",
+    "valid_target_ids": [
+      "18297c8a-85ac-5ddf-a1a4-405174b0f9b4"
+    ],
+    "reason": "Primera llamada interna del comparador de licencias/OC, expande detalle.CantidadSolicitada para productos EsLicencia."
+  },
+  {
+    "id": "q69-internal",
+    "query_id": "q69",
+    "question": "¿Qué otra validación de licencias y orden de compra se aplica cuando una programación de pago del módulo de licencias intenta renovar?",
+    "stage": "internal",
+    "seed_ids": [
+      "04f3e209-1818-5519-ad21-68d213cff67f"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ObtenerDatosLicenciaDeOrdenCompraFromRenovacion",
+    "valid_target_ids": [
+      "18297c8a-85ac-5ddf-a1a4-405174b0f9b4"
+    ],
+    "reason": "Misma dependencia, consulta independiente con entrada ProgramacionPago."
+  },
+  {
+    "id": "q71-internal",
+    "query_id": "q71",
+    "question": "¿Qué tipos de solicitudes y compras se incluyen al generar la proyección de compras?",
+    "stage": "internal",
+    "seed_ids": [
+      "5f287910-c6ff-5d59-8dc9-aab1036e7fa7"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "SqlSolicitudes",
+    "valid_target_ids": [
+      "703029d8-763b-5651-8b99-85e749c40f73",
+      "ebda2a66-2727-59ce-a38e-12bed548b6f5",
+      "70358b7a-433e-549d-b07c-0682cc95d84f"
+    ],
+    "reason": "Primera llamada interna de GenerarConsulta; tres fragmentos de la misma definicion SQL, no tres oportunidades."
+  },
+  {
+    "id": "q72-internal",
+    "query_id": "q72",
+    "question": "¿Cómo se determina si el correo de un ticket de origen tiene una plantilla registrada antes de crear subtickets?",
+    "stage": "internal",
+    "seed_ids": [
+      "9ced6c0f-1e9a-5bb0-a5b4-7d2661883927"
+    ],
+    "seed_version": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "method": "ExisteCorreoPlantilla",
+    "valid_target_ids": [
+      "896554f6-e99e-5375-8be0-0e1e1605c373"
+    ],
+    "reason": "Primera llamada interna de ValidarCorreoEletronico; definicion consulta EmpleadoCuentaCorreo activo."
+  }
+]

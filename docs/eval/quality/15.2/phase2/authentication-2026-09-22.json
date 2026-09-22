@@ -1,0 +1,65 @@
+{
+  "item": "15.2.2-comparar-alternativas-locales",
+  "date": "2026-09-22",
+  "kind": "authentication_resolution_not_measured_experiment",
+  "status": "feed_authentication_verified",
+  "supersedes_authentication_blocker_in": "preflight-2026-09-22.json",
+  "feed_name": "Gr-Azure",
+  "feed_url": "https://pkgs.dev.azure.com/GR-DefaultCollection/_packaging/Gr/nuget/v3/index.json",
+  "provider": {
+    "package": "Microsoft.Artifacts.CredentialProvider.NuGet.Tool",
+    "version": "2.0.4",
+    "installation_scope": "Isolated Copilot session directory; no global tool registration or repository dependency change.",
+    "installation_source": "https://api.nuget.org/v3/index.json",
+    "command": "nuget-plugin-microsoft-artifacts-credential-provider",
+    "login_exit_code": 0,
+    "password_output_redacted": true,
+    "token_type": "SelfDescribing",
+    "session_token_file_cache_enabled": false,
+    "msal_cache": "Provider default: macOS Keychain; no cache contents inspected or exported.",
+    "plugin_discovery": "NUGET_PLUGIN_PATHS set explicitly for the isolated restore process."
+  },
+  "restore": {
+    "package": "REYMA.CFDIValidator",
+    "version": "1.0.1",
+    "corpus_modified": false,
+    "package_cache_scope": "Isolated session directory.",
+    "source": "Only Gr-Azure.",
+    "first_authenticated_attempt": {
+      "timeout_seconds": 120,
+      "measured_seconds": 120.003138875,
+      "status": "timeout_not_success",
+      "subsequent_disk_observation": "Requested package, 12 package nuspecs and project.assets.json present. Presence alone was not accepted as successful restoration."
+    },
+    "confirmation": {
+      "command": "dotnet restore ReferenceProbe.csproj --packages <isolated-session-packages> --source https://pkgs.dev.azure.com/GR-DefaultCollection/_packaging/Gr/nuget/v3/index.json --disable-parallel --verbosity minimal -p:NuGetAudit=false",
+      "command_representation": "Display template for the session-local project/package paths, not a phase-2 acceptance command.",
+      "environment": {
+        "MSBuildEnableWorkloadResolver": "false",
+        "NUGET_PLUGIN_PATHS": "<session>/nuget-auth-tools/.store/microsoft.artifacts.credentialprovider.nuget.tool/2.0.4/microsoft.artifacts.credentialprovider.nuget.tool/2.0.4/tools/net8.0/any/CredentialProvider.Microsoft.dll",
+        "ARTIFACTS_CREDENTIALPROVIDER_TOKENTYPE": "SelfDescribing",
+        "ARTIFACTS_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED": "false"
+      },
+      "exit_code": 0,
+      "diagnostic_codes": ["NU1603"],
+      "warning": "System.Windows.Extensions 5.0.0 requests System.Drawing.Common >=5.0.0; that exact version was absent from this feed and NuGet selected 8.0.4.",
+      "meaning": "Confirms authenticated access and successful isolated package restore. Does not establish complete or exact reference resolution for the frozen corpus; the warning is not suppressed or accepted as semantic compilation evidence."
+    }
+  },
+  "budget": {
+    "shared_authorization_seconds": 7200,
+    "previous_total_charged_seconds": 192,
+    "additional_measured_seconds": 120.003138875,
+    "additional_conservative_charge_seconds": 420,
+    "total_charged_seconds": 612,
+    "remaining_authorized_seconds": 6588,
+    "remaining_authorized_hours": 1.83,
+    "accounting": "Only the timed-out restore was timed explicitly. The 420 s conservative charge covers installation, provider execution, both restore attempts and brief persistence/inspection commands; not asserted as exact measured execution time. No retrieval, ingestion or LLM generation."
+  },
+  "item_state": "pendiente",
+  "remaining_work": "Restore the actual corpus project graph in isolation, verify resolved references and their provenance, address missing/approximate versions without changing corpus inputs, then build and measure all controls and alternatives with the frozen instrument in a new execution conversation. Reinstall/discover the official provider if the session tool path is unavailable; authentication can expire.",
+  "arms_executed": [],
+  "deployment_performed": false,
+  "credentials_recorded": false,
+  "commit_created": false
+}

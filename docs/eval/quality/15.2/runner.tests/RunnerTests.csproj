@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Pruebas de los prototipos del item 15.2.2. Igual que el runner, viven fuera de
+    RagEngine.slnx: son el contrato de un experimento, no de produccion. Se ejecutan
+    explicitamente (dotnet test sobre este csproj) y su resultado se registra en la
+    evidencia del item. Si una alternativa llegara a promoverse, sus pruebas de
+    regresion se mueven a tests/RagEngine.Core.Tests, que si entra en `dotnet test`.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../runner/Runner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+  </ItemGroup>
+
+</Project>

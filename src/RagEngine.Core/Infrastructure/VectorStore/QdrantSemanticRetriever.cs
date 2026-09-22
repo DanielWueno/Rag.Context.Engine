@@ -6,6 +6,7 @@ using Qdrant.Client.Grpc;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Diagnostics;
+using RagEngine.Core.Infrastructure.VectorStore.Expansion;
 using Polly;
 using Polly.Registry;
 
@@ -28,6 +29,7 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
     private readonly IRetrievalProfileResolver _profileResolver;
     private readonly ILogger<QdrantSemanticRetriever> _logger;
     private readonly ResiliencePipeline _resiliencePipeline;
+    private readonly ISymbolExpansionQualifier? _expansionQualifier;
 
     public QdrantSemanticRetriever(
         QdrantClient client,
@@ -39,7 +41,8 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         IOptions<TwoHopOptions> twoHopOptions,
         IRetrievalProfileResolver profileResolver,
         ILogger<QdrantSemanticRetriever> logger,
-        ResiliencePipelineProvider<string> pipelineProvider)
+        ResiliencePipelineProvider<string> pipelineProvider,
+        IEnumerable<ISymbolExpansionQualifier>? expansionQualifiers = null)
     {
         _client = client;
         _brain = brain;
@@ -51,6 +54,9 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         _profileResolver = profileResolver;
         _logger = logger;
         _resiliencePipeline = pipelineProvider.GetPipeline("qdrant");
+        // Ítem 15.2.2: sin calificador registrado (el caso de producción) esto queda
+        // en null y ExpandBySymbolAsync conserva el join por nombre de 6.a intacto.
+        _expansionQualifier = expansionQualifiers?.FirstOrDefault();
     }
 
     /// <inheritdoc />
@@ -440,8 +446,34 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
         // Filter es un mensaje protobuf: Clone() copia también MinShould (repeated Must/
         // MustNot/Should no bastan si el filtro original algún día llega a usar esa
         // condición, p.ej. un futuro filtro de tenant expresado como mínimo-N-de-M).
-        var hopFilter = filter?.Clone() ?? new Filter();
-        hopFilter.Must.Add(Conditions.Match(QdrantVectorStore.DefinedSymbolsPayloadKey, symbols.ToList()));
+        Filter hopFilter;
+        if (_expansionQualifier is not null)
+        {
+            // Ítem 15.2.2: con un calificador registrado el salto se restringe a destinos
+            // CUALIFICADOS (clase+método, o aristas ya resueltas), no al join por nombre.
+            var seeds = new List<SymbolExpansionSeed>(seedCount);
+            for (int i = 0; i < seedCount; i++)
+                seeds.Add(ToExpansionSeed(primaryPoints[i]));
+
+            var plan = _expansionQualifier.Qualify(seeds, symbols);
+            if (plan.IsEmpty)
+            {
+                // Plan vacío es ABSTENCIÓN explícita del calificador. No se cae al join por
+                // nombre: atribuirle al brazo cualificado una expansión que produjo el
+                // control convertiría su abstención en un acierto prestado.
+                _logger.LogDebug(
+                    "Two-hop (15.2.2/{Arm}): sin destino cualificado para {SymbolCount} símbolos; abstención.",
+                    _expansionQualifier.Name, symbols.Count);
+                return primaryResults;
+            }
+
+            hopFilter = BuildQualifiedHopFilter(filter, plan);
+        }
+        else
+        {
+            hopFilter = filter?.Clone() ?? new Filter();
+            hopFilter.Must.Add(Conditions.Match(QdrantVectorStore.DefinedSymbolsPayloadKey, symbols.ToList()));
+        }
 
         IReadOnlyList<ScoredPoint> hopPoints;
         try
@@ -523,6 +555,74 @@ public sealed class QdrantSemanticRetriever : ISemanticRetriever
             symbols.Count, hopPoints.Count, newFromHop, merged.Count);
 
         return merged;
+    }
+
+    /// <summary>
+    /// Clave de payload del tipo declarante. Sólo la consulta el salto cualificado de
+    /// 15.2.2: no está en el índice keyword de 5.d, así que Qdrant la resuelve por
+    /// escaneo del payload — más caro que <c>defined_symbols</c>, y ese coste entra en la
+    /// latencia medida del brazo en vez de esconderse creando un índice nuevo sobre la
+    /// colección servida.
+    /// </summary>
+    private const string ClassNamePayloadKey = "class_name";
+
+    /// <summary>Proyecta un punto primario a la semilla que ve un calificador.</summary>
+    private static SymbolExpansionSeed ToExpansionSeed(ScoredPoint point)
+    {
+        static string? Text(ScoredPoint p, string key) =>
+            p.Payload.TryGetValue(key, out var v) && v.KindCase == Value.KindOneofCase.StringValue
+                ? v.StringValue
+                : null;
+
+        var consumed = new List<string>();
+        if (point.Payload.TryGetValue(QdrantVectorStore.ConsumedSymbolsPayloadKey, out var list)
+            && list.KindCase == Value.KindOneofCase.ListValue)
+        {
+            foreach (var value in list.ListValue.Values)
+                if (!string.IsNullOrWhiteSpace(value.StringValue))
+                    consumed.Add(value.StringValue);
+        }
+
+        return new SymbolExpansionSeed(
+            DeterministicVectorQuery.ChunkId(point),
+            Text(point, "relative_path"),
+            Text(point, ClassNamePayloadKey),
+            Text(point, "method_name"),
+            Text(point, "content"),
+            consumed);
+    }
+
+    /// <summary>
+    /// Traduce el plan de un calificador a un filtro de Qdrant, conservando el filtro
+    /// original de la consulta (tenant, módulo, colección) como <c>Must</c>: cualificar el
+    /// salto no puede ampliar lo que el llamador ya tenía permitido ver.
+    /// </summary>
+    private static Filter BuildQualifiedHopFilter(Filter? baseFilter, SymbolExpansionPlan plan)
+    {
+        var hopFilter = baseFilter?.Clone() ?? new Filter();
+
+        if (plan.ChunkIds.Count > 0)
+        {
+            // Aristas ya resueltas (brazo de grafo): el destino es un id concreto, no un
+            // nombre que Qdrant deba volver a emparejar.
+            hopFilter.Must.Add(Conditions.HasId(plan.ChunkIds.Select(Guid.Parse).ToList()));
+            return hopFilter;
+        }
+
+        // Pares (clase, método): un Should por par, nunca el producto cruzado de todas las
+        // clases por todos los métodos — eso reintroduciría justo las colisiones entre
+        // homónimos que el brazo cualificado existe para evitar.
+        var pairs = new Filter();
+        foreach (var target in plan.Targets)
+        {
+            var pair = new Filter();
+            pair.Must.Add(Conditions.MatchKeyword(ClassNamePayloadKey, target.ClassName));
+            pair.Must.Add(Conditions.Match(
+                QdrantVectorStore.DefinedSymbolsPayloadKey, new List<string> { target.MethodName }));
+            pairs.Should.Add(new Condition { Filter = pair });
+        }
+        hopFilter.Must.Add(new Condition { Filter = pairs });
+        return hopFilter;
     }
 
     /// <summary>

@@ -1,0 +1,130 @@
+{
+  "item": "15.2.2-comparar-alternativas-locales",
+  "date": "2026-09-22",
+  "status": "blocked_missing_authenticated_semantic_references",
+  "kind": "infrastructure_preflight_not_measured_experiment",
+  "engine_commit": "f8ef366f4451554a8a5cb549f887fa2e1d69911e",
+  "execution": {
+    "environment": "Copilot CLI/macOS",
+    "requested_profile": "opus/high",
+    "effective_model": "gpt-6-astra",
+    "effective_effort": null,
+    "agents": 0
+  },
+  "instrument": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/eval/quality/15.2/accept.py --verify-instrument --corpus ../BusinessSuite.Xaf",
+    "exit_code": 0,
+    "report": "instrument-verification-2026-09-22.json",
+    "freeze_sha256": "5237e4c014bff989e85000a99eb98d5b0e9c32e6b560f330e4d5c9d9ff58a465",
+    "tests_run": 58,
+    "skipped": 0,
+    "opportunities": 30,
+    "queries": 84,
+    "acceptance_seconds": 1.734606208,
+    "meaning": "Manual verification of the frozen instrument and source corpus, NOT acceptance of phase 2."
+  },
+  "live_index": {
+    "captured_at": "2026-09-22T15:44:29.184089+00:00",
+    "collection": "bsuite-repo",
+    "points": 23058,
+    "index_sha256": "85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be",
+    "repeated_read_equal": true,
+    "matches_frozen_index": true,
+    "matches_frozen_collection_config": true,
+    "matches_frozen_model_and_tokenizer": true,
+    "capture_seconds": 10.325073125,
+    "writes": 0,
+    "limitation": "Two consecutive equal reads, not an atomic snapshot. Full temporary capture remains a session artifact; no corpus payloads copied into this report."
+  },
+  "semantic_dependencies": {
+    "corpus_revision": "8b6a06b4dd81ccf922eadd8b7b7b24df22af81ae",
+    "corpus_manifest_sha256": "f89c61743ef96a59a807fd84037df1fcbede70ad4283536bbdb9270e8cdd29fc",
+    "tracked_projects": 16,
+    "projects_with_assets_file": 0,
+    "projects_with_bin_directory": 0,
+    "distinct_declared_direct_package_versions": 103,
+    "declared_versions_present_in_global_cache": 3,
+    "declared_versions_missing_from_global_cache": 100,
+    "required_project": "src/Modules/REYMA.XAFR1PV.Compras/REYMA.XAFR1PV.Compras.csproj",
+    "required_project_direct_package_versions": 36,
+    "required_project_missing_direct_package_versions": 36,
+    "inventory_limit": "Declaration/cache inventory only; not a transitive dependency resolution or proof that every declared package is needed for every opportunity.",
+    "sdk_version": "10.0.302",
+    "initial_msbuild_evaluation": {
+      "exit_code": 1,
+      "diagnostic": "MSB4242",
+      "reason": "Workload set 10.0.301.1 has missing manifests."
+    },
+    "workload_free_evaluation": {
+      "environment_override": "MSBuildEnableWorkloadResolver=false",
+      "target_framework": "net10.0",
+      "succeeded": true,
+      "global_sdk_changes": false,
+      "meaning": "Process-local workaround permits evaluation of this plain SDK project; it does not restore external metadata references."
+    },
+    "configured_corpus_feed_probe": {
+      "http_status": 401,
+      "seconds": 0.178804833,
+      "endpoints_and_credentials_recorded": false
+    },
+    "credential_resolution_followup": {
+      "provider_family": "Azure Artifacts",
+      "source_specific_environment_credentials_present": false,
+      "VSS_NUGET_EXTERNAL_FEED_ENDPOINTS_present": false,
+      "ARTIFACTS_CREDENTIALPROVIDER_FEED_ENDPOINTS_present": false,
+      "NUGET_PLUGIN_PATHS_present": false,
+      "NUGET_CREDENTIALPROVIDERS_PATH_present": false,
+      "default_nuget_plugins_directory_present": false,
+      "DEVEXPRESS_NUGET_KEY_present": false,
+      "credential_values_read_or_recorded": false,
+      "meaning": "After the request to continue autonomously, checked standard existing authentication mechanisms. None of the checked mechanisms is configured. This does not assert that credentials cannot exist elsewhere; unrelated secret stores were not searched."
+    },
+    "isolated_restore_probe": {
+      "package": "REYMA.CFDIValidator",
+      "version": "1.0.1",
+      "project": "Disposable net10.0 project in the Copilot session workspace, not in the corpus.",
+      "source": "Only the source read from the corpus NuGet.Config; no public-feed request for private package names.",
+      "options": ["--disable-parallel", "--verbosity", "quiet", "-p:NuGetAudit=false"],
+      "packages_directory": "Isolated session directory, not the shared global cache.",
+      "interactive": false,
+      "exit_code": 1,
+      "diagnostic_codes": ["NU1301"],
+      "unauthorized_401": true,
+      "seconds": 7.074308125,
+      "meaning": "Actual dotnet restore failed on authentication, independently of the unauthenticated HTTP probe. No bypass or global SDK repair attempted."
+    }
+  },
+  "budget": {
+    "shared_authorization_seconds": 7200,
+    "phase1_charged_seconds": 72,
+    "phase2_measured_segments_seconds": {
+      "instrument_verification": 1.734606208,
+      "live_index_capture": 10.325073125,
+      "configured_feed_probe": 0.178804833,
+      "isolated_reference_restore": 7.074308125
+    },
+    "phase2_measured_segments_total_seconds": 19.312792291,
+    "phase2_conservative_charge_seconds": 120,
+    "total_charged_seconds": 192,
+    "remaining_authorized_seconds": 7008,
+    "remaining_authorized_hours": 1.9466666666666668,
+    "accounting": "Measured durations above exclude short inspection/evaluation/validation commands. The 120 s conservative charge includes those unmeasured commands and persistence; it is not claimed as an exact stopwatch measurement. Conversation time and tokens excluded. No LLM, ingestion or retrieval experiment."
+  },
+  "harness": {
+    "version": "1.16.0 (555c688)",
+    "command": "arnes validar",
+    "exit_code": 1,
+    "preexisting_failure": "5.g-declaracion-de-tipo-en-el-indice has a narrative bloqueado_por instead of a literal item ID.",
+    "closing_gate_run": false
+  },
+  "arms_executed": [],
+  "retrieval_gain_demonstrated": false,
+  "complete_null_result": false,
+  "deployment_performed": false,
+  "product_changes": false,
+  "corpus_changes": false,
+  "index_changes": false,
+  "shared_cache_changes": false,
+  "reentry": "Provide authenticated noninteractive access to the configured private package feed, or a complete local reference/package set for the frozen corpus. Retry restore in isolation, record actual resolved reference provenance, recheck frozen corpus/index/model hashes, then implement and measure all five arms under the remaining shared budget. Missing references must not be converted into successful abstentions or a null experiment.",
+  "preserved_worktree": "Pre-existing edits to umbrella 15.2 remain outside the scope of this item; no historical results, anchors or frozen artifacts rewritten."
+}

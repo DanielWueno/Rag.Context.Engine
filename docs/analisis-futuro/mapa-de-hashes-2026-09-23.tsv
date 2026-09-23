@@ -1,0 +1,209 @@
+fecha	hash_original	hash_nuevo	corto_original	corto_nuevo	asunto
+2026-07-18	0f9caf61c5034755f6f8fd3bfd7851a0fac17323	44730c5dd48132b9e831d530de0fa60fd7dbac4f	0f9caf6	44730c5	perf(ingestion): consumidores paralelos, upsert sin espera y filtro de micro-chunks
+2026-07-18	32766fb11b68683a176c547a4eccbcb089ff03da	c8d3780c349a2bf9b971ba07b94fdfb38f82f06e	32766fb	c8d3780	feat(vectorization): cerebro denso multilingüe con estrategia dual de tokenizer
+2026-07-18	3a1e0343102d4086014fca018ff1d234e14bd11c	cc0d5577fdbd078390dd74568038c9e720858ad5	3a1e034	cc0d557	docs: nuevo README orientado a usuario y documentación formal en docs/
+2026-07-18	46999b62c92b88e3ecb5288702c7eca45705e3a2	fa857eaea5c4cc02b95996790a8e3a916943f1d7	46999b6	fa857ea	fix(retrieval): restaurar min-score como scoreThreshold denso y ampliar pool RRF
+2026-07-18	4b5c2b6e7227199e383b312739e6f790f495fa3c	3e8f1b2d8191ec9b9d55a99ed1e1789ed86e84c3	4b5c2b6	3e8f1b2	feat(vectorization): normalización léxica ES/EN y TF saturado en SparseTokenizer
+2026-07-18	4c7c40868e4d77b5da6bd76ff4619152463d4cbe	7063356af0ab3f8e2cbdcc3193a9577fb9400af4	4c7c408	7063356	fix(chunking): cabeceras de clase completas reconstruidas desde el AST
+2026-07-18	6363e69f1063e4650cd2a668451bd851939c950f	adcce296b0c4984752c8a614c8b4358ad8440e5d	6363e69	adcce29	docs(fases): actualizar plan de proyecto con hallazgos y refactors del Sprint 7
+2026-07-18	8b2170a54f0fae68a3716b9c3b49f761a6425429	b9dd824353e551c774c3692bb3d167275ff07607	8b2170a	b9dd824	fix(generation): no truncar el contexto tras un chunk sobredimensionado
+2026-07-18	ba775e38ec8bb14ff723df94ba280f6b3adff95f	71097a2f79bf0e48a164ddc3c4683cdb71d2d604	ba775e3	71097a2	fix(generation): enseñar al LLM a traducir la semántica de atributos declarativos
+2026-07-18	bfcfc4713d2bd527e9151b5cfde7771b8b0aac66	75e0865b04b10516b8e49cca4828757bcad32f89	bfcfc47	75e0865	fix(cli): apagado determinista del host y menos ruido de consola
+2026-07-18	eb01a23e20a1ff553492290046e088a5100e0a72	bc045ccd7ac9b6b3601464bddef48fd060400047	eb01a23	bc045cc	docs: patrón de preguntas verificado empíricamente y límites cross-lingües
+2026-07-20	1b9918affd38a5a2f955ca27b8cd7fdc1da280b2	75375af81249129d1cd1306398e8e86c7c767386	1b9918a	75375af	feat(poc): PoC offline de búsqueda libre (RRF con vector de resumen)
+2026-07-20	39c817bb5909927da1d05c8bf52693da30e264e3	f40282867c2ce4ce6b77070ec8b2ac559388f504	39c817b	f402828	feat(poc): comparación de tres vías con rama sparse (BM25)
+2026-07-20	a2fe2544bbc4e1efd0022b01453101e3b738cec4	b2439250d6e8226d497a11c26c5956165b047040	a2fe254	b243925	feat(retrieval): activar re-ranking Cross-Encoder tras la fusión RRF
+2026-07-20	a4bf68726d84dd0030b3773b6b59f2211f1de98d	18cfc135ae37a8f0032f89cca1b7e090198be243	a4bf687	18cfc13	docs: documentar el re-ranker Cross-Encoder y cerrar el Sprint 8
+2026-07-20	a5ca2ddaafe590cdb834d03eea756e6d2d678ce4	bffe723bad005bb721901534024fdac017738ed4	a5ca2dd	bffe723	docs(analisis-futuro): propuesta de búsqueda libre con RRF a 3 bandas
+2026-07-20	c8b12776bcf698850a09f27b8de8fce5849d7ccc	be98033fb082ac171bed6f90c9f8f72ca16e3631	c8b1277	be98033	docs: aclarar que ediciones a archivos ingestados exigen re-ingesta completa
+2026-07-21	74739ef20136e67921c2ba69d4243c2560c81a60	372e12943cad1aa85e676e7e4e53ba5d328357b0	74739ef	372e129	docs(poc): volcado de resultados + modo detalle por pregunta
+2026-07-21	8db36067ef29afbc647bcfae7f88371023c7148b	34d20a9fd9799d5131b97a8553ff6e4a603fb005	8db3606	34d20a9	feat(api): exponer el motor RAG por HTTP para uso en red del equipo
+2026-07-21	b3dd2f7614fb3d658a46b186a3f99c512c167fed	22211eba934362f8398042858a6adb951fb0688a	b3dd2f7	22211eb	feat(api): chat multi-turno stateless + rediseño de la UI al estilo chat
+2026-07-21	cee34d822856480507a41731621b74642f7dd8e8	a1aa27296f3bd41aeaec777d9569a1f26d16a6af	cee34d8	a1aa272	feat(generation): elegir system prompt de código o docs según los chunks recuperados
+2026-07-21	fafa625c2e2a91451fc02f8b40bdfc360a1a2f7e	33d19a5c56e091a64e1e7d92f4d4c45c35867cf1	fafa625	33d19a5	feat(api): selector de colección en la página en vez de valor fijo
+2026-07-22	1b08239ddd6340a9fe5619c0c7e63c1536b75d5f	bf4ab3c5f33f7ac456831956bbf636000d2951dc	1b08239	bf4ab3c	refactor(guardrail): reemplaza el regex de meta-intención por un clasificador semántico
+2026-07-22	34600625728188181be8396429cde7a9089868d5	2058f92c69c18ddd63b7bb3ec72ac37ee2574eae	3460062	2058f92	feat(guardrail): implementa el gate de confianza en 3 niveles del chat RAG
+2026-07-22	4464d4ec2680b965ce610eb3286a9e329fc649e0	b8414c4aa24731b292be421a095b645aa306af45	4464d4e	b8414c4	docs(guardrail): propuesta de gate de confianza en 3 niveles para el chat RAG
+2026-07-22	644b67449c1e8f1c9e26a37e483a1c553db74692	943d6ac56b4c55928a569228b5c79e2b6ccf876b	644b674	943d6ac	fix(api): no mostrar fuentes cuando la respuesta no las usó
+2026-07-23	c35f614dfcfc124c92aa1e84a620aa7c76314f16	ac1e5ab0ae9c03608acd431890f8c25cbcbb183d	c35f614	ac1e5ab	feat(guardrail): banda baja conversacional en vez de mensaje fijo
+2026-07-23	ca2bd64fa2daeea39c2d1172827037c3bc2a594a	7be6c99443a5fd4edc721d13d5a06623b0ea6713	ca2bd64	7be6c99	docs(guardrail): propuesta de banda baja conversacional en vez de mensaje fijo
+2026-07-29	3ae644b68513e666e67e35f8fbc31a7f9e27bc91	46f70fd9ba823f06cb9df402af96e6b6633ebcd7	3ae644b	46f70fd	feat(cli): agrega comando `rag eval` para medir recall@k contra ground-truth
+2026-07-29	55e1ebe75b3a563561ceb9eed4ee5753a353f178	49aeac0b2019a620d6461507d0f6912b1fcf823d	55e1ebe	49aeac0	docs(retrieval): consolida hueco de parafraseada + no-determinismo de Qdrant
+2026-07-29	627520d0a33fea64c63016d02771e5891353cb50	d9672ef998a7e5487c816c2cc51a61cb549165e3	627520d	d9672ef	docs(poc): asienta resultados de rerank y calibración de pesos RRF
+2026-07-29	d9ba1301a4c1ebaf5fa60b7f162477349796476e	1d5922da8b4fae76d4993050df5af0c32d718928	d9ba130	1d5922d	feat(poc): agrega rerank y barrido de pesos RRF al PoC de búsqueda libre
+2026-07-29	f9d79f0a7b59e38fc0597fcd0d13f345ea470de1	729e2bec8bba27eb8d458a1bbc9a01f074ae6af8	f9d79f0	729e2be	docs(retrieval): resuelve el bloqueo de membresía del no-determinismo de Qdrant
+2026-07-31	091c4c094720862d37ca23123ed0cc3bcb2e59b5	3cf437fae523018f672846c2f66f60698eaa03d4	091c4c0	3cf437f	docs(eval): documenta throughput medido antes de escalar a bsuite-repo
+2026-07-31	21592b6f67657c3dd22039ab48405a6070a32cc4	7144d5b97d4bd36838d3dfc60469fea6d033009e	21592b6	7144d5b	docs(eval): verifica el fix de chunk-imán re-ingestando bsuite-auditorias-test
+2026-07-31	51b298efbea2d9a16a3108a10de49ee6b99a3da6	a8a42fcac6fe4b07b7330e7e39121707edf39b0f	51b298e	a8a42fc	feat(resumen): expone el resumen de negocio en SourceDto (Reto D)
+2026-07-31	c3593a1ba0d529df93224ced5ed18cae17cf0ce1	baca71780428eac92b9ec8991a2bf38908e121b3	c3593a1	baca717	feat(resumen): agrega el 3er vector dense-resumen (RRF a 3 bandas) y fusor ponderado
+2026-07-31	d23ac24685aaf38e9d0df179a8abc0931c09944f	9616c609c1bbbeac2474803d8587341d739115f3	d23ac24	9616c60	docs(eval): re-etiqueta el eval-set bsuite-auditorias con evidencia directa
+2026-07-31	f690c63196b73fc4d95204ade0202469335fb1f5	a8ab4088d18fba782241068752de197fb681c57c	f690c63	a8ab408	fix(chunking): corrige metadata StartLine/EndLine engañosa en chunks agrupados
+2026-08-01	85efc8581faf632798882b1e48d3e4c31d4b61ec	11acc086f7968ae78d73eaf0e417be16957ba023	85efc85	11acc08	docs(eval): registra el escalado de bsuite-repo con ambos fixes
+2026-08-01	a534aa0eeb457f0bd12ab3a1c53a82d397beb6a6	483845368090adab3be4d65c68600a0586fd8275	a534aa0	4838453	fix(cli): la duración de rag ingest ya no descarta las horas
+2026-08-07	0f92a133f67026905a80069e735a9c0661687f4e	164842e9967f9ac3c363f6c6cf3d0d4a18f77561	0f92a13	164842e	chore(poc): commitea el caché de resúmenes del PoC de búsqueda libre
+2026-08-07	37a9d0c910db5958291523f738bdb13a049d3aa4	da2affecc7fbd9a3ac6ab50f162fa3096a1e21d2	37a9d0c	da2affe	docs(retrieval): registra el abandono del boost estructural (afinidad de clase)
+2026-08-07	56653ef2956fef44159d66aa4dd2a17ff81169eb	97dbfd58cc7ae2e57b18873590c96edc7fe4086c	56653ef	97dbfd5	feat(chat): swap de contexto a resumen cacheado en modo Simple (Fase 2)
+2026-08-07	7cdbbf50906ed8fac9b775d6994fcb11bb10def2	54c75b25f7ac6203ea90384cddacac3ef90c50b3	7cdbbf5	54c75b2	docs(chat): analiza por qué el modo Simple sigue mostrando código
+2026-08-07	8b171a4892cb32a10a8c77763d2dc143474cf70c	99352505799177d5842488869408e66d01b66073	8b171a4	9935250	fix(chat): corrige fabricación en modo Simple y agrega filtro anti-código
+2026-08-07	90c04cf73b2e7d2512f979cb57288ba252a562ec	b2078ba8a9212a58486cde440d23fa8ab521aea8	90c04cf	b2078ba	docs(chat): incorpora revisión al plan del modo Simple (mecanismo por-chunk)
+2026-08-07	d8db529bc3f4cf2c88f9a61ee221634e9707151b	577aa3325a79f8be64b2a23ec58562f695393470	d8db529	577aa33	feat(chat): agrega toggle de respuesta simple/técnica (ResponseMode)
+2026-08-08	002359cf8a3b3526011e786fa4e406a1550ebed6	4790b20ad0216069c8932bc2ad8ed3f4ea64539c	002359c	4790b20	docs(chat): plan para explicación semántica real en modo Simple
+2026-08-08	39e674f2edc1a32232d6ba5b087c8b509af48e0a	c0ccb3665660a76d50305ca070d5a2237895eebc	39e674f	c0ccb36	fix(chat): humaniza identificadores en modo Simple en vez de ocultarlos con placeholder
+2026-08-10	f3bd2b74fe5f2d0793b386f1bf497121ea43fb51	87eef4f8c5ac37bb7c60b15c80ecd9707e12e460	f3bd2b7	87eef4f	docs(guardrail): plan de gate de alcance para rechazar ayuda con tareas ajenas al corpus
+2026-08-11	7b9ba73ebf3f428f16eb2c1c6592e29b6757de4f	8a214a7ff1ab10033ea419a0bfbeddf664a2fe3d	7b9ba73	8a214a7	docs(prompts): plan de consolidación vs vault externo para prompts hardcodeados
+2026-08-21	00c55694a9f480b0eca3911c5f25877119a34f2e	297389fe72a4f842fc1c4b3bdfe387d4de37e69e	00c5569	297389f	docs(plan): registra el artefacto sqlite huérfano observado al verificar 1.2
+2026-08-21	0f74f642086601a45a94cf8ccab511c09790ec97	b2b14cc1221dd62c41a51a6bf8c25c07bd144108	0f74f64	b2b14cc	fix(prompts): rechaza en vez de fabricar cuando el corpus no tiene la respuesta
+2026-08-21	1baf247b9a8add2420fd99cb6423d53fe9f2e755	30fd4f6be87fa9841be3b0aa5e6616941e08436f	1baf247	30fd4f6	fix(chunking): el chunker de TypeScript ya no separa el cuerpo de su firma
+2026-08-21	1e46e5a4c674fe79c3738066bcb1e53a61c12fb2	b314c9fd162535cca4c494d1361060a42b788d18	1e46e5a	b314c9f	chore(plan): versiona el arnés de ejecución del plan de ingeniería
+2026-08-21	43177659d739d293fa2e2d624a7c1e4312184af3	2b6ef2c83e26fa2acbc0273b21fd9201628b2414	4317765	2b6ef2c	feat(eval): los baselines ahora registran con que configuracion se produjeron
+2026-08-21	4e2b972c2965fef3c21a2009226899c3be327056	2fd7f69e495c2b1d86eb11aae3a36dfda70b6573	4e2b972	2fd7f69	fix(cli): rag doctor ya puede correr cuando falta o falla el modelo ONNX
+2026-08-21	5f0ec230207ddde536a390fbc5e4eb563adf5c22	b964abb4075f8eeccf39ddc7f07fc043b5ddf8ce	5f0ec23	b964abb	feat(config): rutas de modelos y logs portables, sin depender de la máquina ni del cwd
+2026-08-21	62b5215901129c2c13d07b3a138ad45db8840278	b37e2240e3e476e4e92e9014f813a67786386c03	62b5215	b37e224	fix(eval): el commit ya no invalida la comparacion de baselines
+2026-08-21	65387b4fea8f8bd92305a84abe950111a696f928	34444a94ecd0ac9193a07a5e84bca9eb9b7d8006	65387b4	34444a9	docs(plan): cierra el item 1.7 con el run verde de CI en GitHub
+2026-08-21	6c81bd151b4576cb2d9b64683e1f6b3ef2bfb6c4	7058bb718be800500659c20c2cac945cd993bffb	6c81bd1	7058bb7	fix(deps): sube Microsoft.Data.Sqlite a 10.0.11 para salir de la SQLite vulnerable
+2026-08-21	6d09a6b6a0e7a480c1ef79fa080e4f63e3f88aaa	7cfa72f4e15c3ca9d2f40fc7eed3c757e445440e	6d09a6b	7cfa72f	docs(calidad): linea base final antes de la re-ingesta
+2026-08-21	702a3df02968107202e5ee5c22d4a2fd6c04dc88	70985c9e054295a0248205547ba0fc799d56e08a	702a3df	70985c9	refactor(chunking): comparte la agrupacion por presupuesto y el prefijo del encabezado
+2026-08-21	73a53123ee9ff32209f1241b949156388e3072fd	37369dbf97893718149c5b7f83d49a6352b49cbd	73a5312	37369db	ci: agrega workflow minimo de build y tests
+2026-08-21	a680f192ac79a8244fa4b904772804791b628a0a	17318881bd8f92fbe057759536c8df897ac46c22	a680f19	1731888	fix(cli): libera el entorno global de ONNX al salir; el CLI ya no aborta con exit 134
+2026-08-21	ba70ec1c0d6ec680a514f22be6dfd0fb6c3cc902	68ec19947f0b64abad44501c2b7f954e3222f54a	ba70ec1	68ec199	chore(logs): saca 49 MB de logs del árbol de código y endurece .gitignore
+2026-08-21	bc746bf12763039e9417544e754a12849c9cc147	a08932669d77d5524c5f0a27e5dc8375b485fbe5	bc746bf	a089326	fix(cli): la tabla de progreso de la ingesta ya avanza, y sube el contrato de chunking a 2
+2026-08-21	cd33ec4f80c4dfaa8df28ebca776fb0f9fa7eee6	aa2e65aa0631611e6d950e7a0daaa5f0a15cd495	cd33ec4	aa2e65a	refactor(prompts): consolida los prompts del sistema en Prompts/
+2026-08-21	d3305f47d311cbb28acf2f75afac1589b92ddff5	8f187da59c30b42f4ce766780f963d53b09c6382	d3305f4	8f187da	feat(cli): --yes para confirmar --force sin terminal interactiva
+2026-08-21	d762462552d7075da071e49e99913d835e6d75d2	279895a5edc0effb8f2ea1349f07832b4161f813	d762462	279895a	test: primera red de seguridad — 41 tests sobre la logica mas fragil del motor
+2026-08-21	d9649399404c1e2eeb227a02b4111f76e97a1d32	0f467315b8f55373019c0748e3aaf15c8106df34	d964939	0f46731	feat(eval): arnes de calidad de respuesta, y la API respeta ASPNETCORE_URLS
+2026-08-21	d9a95dd7ad9881648a2315fad215a9d9f72466db	5f46a360b4dd1ae5be620f09d70bea2412c32c58	d9a95dd	5f46a36	fix(cli): rag ingest ya no reporta exito cuando pierde chunks en el camino
+2026-08-21	dc17dabb4a42fce82b63decc7f455dbd2898bb38	2393012e3c33a2b4cfd42506255b9284b1c4d8cc	dc17dab	2393012	refactor(chunking): extrae la construccion de chunks y la geometria de ventana
+2026-08-21	e0baea6a1d5190e891bef4eda5de1e889c7644b1	ebd85ca14e05e02ed2898ba27fc497bd8ca30064	e0baea6	ebd85ca	docs(ops): comandos de re-ingesta manual y por que no cuesta 19 horas
+2026-08-21	e24125a846abeeaada5d907224f6217ad679de00	f98efe83c605f1aea012ccc6e9f31ff87a673062	e24125a	f98efe8	chore(repro): versiona replicate-env en el repo
+2026-08-21	f2d8674ce2452783a805427f368d1bd05cb6dd71	8764ca10a5add1d2ac6bb31a3450e471640b4c97	f2d8674	8764ca1	docs(calidad): linea base de calidad de respuesta y A/B de la Fase 2
+2026-08-21	f62c100e003f5d9a4b32db19d1289dc72e9f32f4	fb8b8e47fa94e62cc7756ab1cb90f719e6a15bd4	f62c100	fb8b8e4	fix(chunking): un mismo archivo ya no se indexa distinto por venir de Windows
+2026-08-21	feee7981ce21f45acf472178e21439fe5e852e63	3c23e7f80d3a843aae4cd4c34dd29b051b41c58e	feee798	3c23e7f	chore(cli): elimina una dependencia beta muerta y un registrador sin uso
+2026-08-22	1398b68d100d3a7850556231a39d012a6d180473	9d86e67bb75d29aa6e411d53e62f42d996d1ef3e	1398b68	9d86e67	feat(api): las fuentes de un corpus de prosa dejan de redactarse en modo Simple
+2026-08-22	243a38cd56a0ce647fed4b396631439e6042057b	921e631b6ed861b271ca5684ca5619a22266e1e9	243a38c	921e631	docs(analisis-futuro): el gate de confianza y el score de rerank inestable
+2026-08-22	3cad98e7fc5eb953ac98d503567550d687d208dd	24a376260abe7264f87a0485289d88196aa03499	3cad98e	24a3762	docs(analisis-futuro): concurrencia y la caché compartida de cara a producción
+2026-08-22	732b048e5c391c0b8f645ab8d6e8382745714270	dbd5e2d11e1f7efe94e8da872eb8f3bb448e218c	732b048	dbd5e2d	feat(ingesta): reglas de exclusión .gitignore/.ragignore en el escaneo
+2026-08-22	79ee7d6a085e3ce66ec6b38e9306d406affb4b23	e591458df31a8c980c2ad06d17471fd636505f22	79ee7d6	e591458	docs(cli): documenta --yes y --con-resumen, y corrige la nota de automatización
+2026-08-22	a341e06b2c3c32193dd28f6f5122498220b7f01c	bf922a9634659f99a2e38df4c636d10c9249cacc	a341e06	bf922a9	fix(ingesta): repara el vector de resumen vacío que tiraba lotes enteros en Qdrant
+2026-08-22	c21cf1d6bfbaaaecfd7e8106183818793be09746	79dba719a2d0be5318cfefbeae7de637d5798f7a	c21cf1d	79dba71	fix(cache): aplica busy_timeout en todas las conexiones, no sólo en la de setup
+2026-08-22	e559d80630dee08e7080421ffcfd7f4b697087d6	c2d3374e20231c171ee11725a93b3911a5bcfbac	e559d80	c2d3374	feat(ingesta): la ingesta incremental borra los puntos que dejó obsoletos
+2026-08-22	f82226819fbf29b58de7b994be8d47e961e7f1cb	60a86787e9c83afb65401bfdb5ac149b64948778	f822268	60a8678	docs: actualiza la documentación tras los arreglos de ingesta de esta sesión
+2026-08-24	04508e0a0f91adce8a29692b7575287309ee4180	bbdd15fc332664783982b3afdee145792718d2ac	04508e0	bbdd15f	docs(plan): registra la Ola 4 en el ledger de ejecución
+2026-08-24	07297ac95263a40ccd25f8b4a159113d9576af6a	743c87f3d0425a3894ae38967691e2145d2f79a7	07297ac	743c87f	feat(arnes): modos de supervisión para lanzar un ítem
+2026-08-24	15b0f32b5802914aed2838039caafd7003bea7ab	82a9ff48cb6c83d473eb3024314c7cd5a654c6c2	15b0f32	82a9ff4	docs(arnes): el arnés de ejecución, portable y con guía de uso
+2026-08-24	25ff4354fd54eaf48c20c9c6ef18b72e729ef0b3	333989c45969aadbef6f8e5e523e06403edaefa6	25ff435	333989c	docs(plan): aplica al ledger el delta del plan de refinamiento
+2026-08-24	5839529330f132c57443e6ff2e17fa8e0c4e8918	c91607d97255c774a7e627b0788fb1dd86e8ae6d	5839529	c91607d	feat(infra): la sesión nueva arranca sabiendo qué ítem del plan toca
+2026-08-24	6b5ef61be69fec5339386767eeadc73c08da1a1c	8cba0426b3bb7ee4a08a352c0786b0d458e734c9	6b5ef61	8cba042	fix(4.6): limpiar 272 chunks obsoletos de bsuite-repo
+2026-08-24	7754a1cce98d2b70ebd9d49cfdc9eff04f02a64b	070270f8f9ef89a8058c0670bf33452ae43c9a8b	7754a1c	070270f	feat(3.2): endurecer API con ProblemDetails, health real, límites y CORS
+2026-08-24	8e5b881ba32afbd57a0a141c4af4b6f135a56ab2	7318d406779fae9a644c82ebf72ba553408a8643	8e5b881	7318d40	docs(1.12): cerrar investigación de yourdatabasefile.db sin causa reproducible
+2026-08-24	a647c2641aa357f0666893ae190f07a56bf4d361	cfe4a24644ff2e6db65ac4ee686e7cec1e134d51	a647c26	cfe4a24	fix(1.15): cubrir nohup.out con .gitignore
+2026-08-24	a8e6975863ac0950705639174f869d52b6bb7903	219ea590f6747221665f17a06e44ed7b82d5af40	a8e6975	219ea59	refactor(2.2): partir RagGenerationService en cinco responsabilidades
+2026-08-24	a94e67d35b7030037b67f1e319bb5c1e33344cf0	16e59152f0b8c943fb0daa42c3c2edc17281e4c1	a94e67d	16e5915	feat(infra): un ítem del plan por sesión de contexto limpio
+2026-08-24	ba1233960d54957b4ddae3a480c1de828daa52c9	11f93ef2600884107019b3af1a7d2364f3fd5601	ba12339	11f93ef	docs(analisis-futuro): evalúa la propuesta de refinamiento y registra el plan
+2026-08-24	bb25c4d3af6f84c9b2546558f4b9c991062e3379	48ef624ec3121d4e085511f9a28cc0af118ef5a2	bb25c4d	48ef624	feat(3.1): rag doctor nombra la colección con esquema roto en vez de esperar a la consulta
+2026-08-24	f738c695fb297b7d93cb3bca92aae2821f797b09	7ffe2ca0f30906ce25137a26d2f7db8274b04520	f738c69	7ffe2ca	fix(1.13): la API sí abortaba al cerrar; devolver Shutdown() de ONNX al host
+2026-08-24	f9e0b525b17f4a99af08b9f851595db2c7527dc7	d33682bf4cca9fe2bc1367808c7779102a090f96	f9e0b52	d33682b	feat(arnes): exigir rollback escrito antes de gastar en un ítem
+2026-08-24	fab52363bd5018cdb7936cb3947facf476621b31	c612f3394333134a0be44837b999b96312e12c20	fab5236	c612f33	chore(ledger): cerrar 3.2-api-endurecida
+2026-08-25	120061e67631bff824d0ef1b33f578c0b2fdb174	b7f58c449660c6c0a1426600362dd658dc0b9dfe	120061e	b7f58c4	feat: seleccionar binario ONNX por arquitectura (arm64 vs. genérico)
+2026-08-25	250293f7fa9e77dff036ecc7dbd63e5631c7aed3	a19f3a6f8c9be332f5e6e15e7f705def4a20ca6b	250293f	a19f3a6	feat(otel): configurar exportación de métricas System.Diagnostics para 4 instrumentos del Meter
+2026-08-25	4ed8e117e0caf318214e026fee97a0d6073998fa	2847cad808ea06160e798354ce3a55806cb28a7d	4ed8e11	2847cad	chore(ledger): rastro de cierre para los 4 ítems `hecho` que no lo tenían
+2026-08-25	5b4ef953b869920f3f0e209bf7fc56e95da76e0e	808985a685c7386e023c36b468f6c5e2062324a5	5b4ef95	808985a	feat: score de gate invariante al TopK con lote de 1 (4.2)
+2026-08-25	73cd68289eb93b135002e91eed5b7256b32994e6	5d3c812f6982662ca2612327fa9bdf5fdbdddb29	73cd682	5d3c812	docs: plan de instrumentación de consultas del piloto y feedback de usuario
+2026-08-25	a18ced51629cae4b32ebb44105e2eee2132cb29f	ab41c101bb92b4f8af6ff16a961e0cfd5035b2a3	a18ced5	ab41c10	Merge branch 'feat/rag-api-selector-coleccion' of https://github.com/DanielWueno/Rag.Context.Engine into feat/rag-api-selector-coleccion
+2026-08-25	be29b604e7198764cb6021a9c7295be444e8cdb8	103559d21278a82c2db5e1fe8c4c4c6b081414f9	be29b60	103559d	feat: guardia de crecimiento para IsDocumentation() del enum SourceLanguage
+2026-08-25	c94d54dd34248b9952dd41f5a83caeaeeb6d8049	c37db5cdffe9fd472836fff688a6a077113fe61a	c94d54d	c37db5c	docs: 3.4 — mover Fase N a docs/, actualizar README, agregar LICENSE y CLAUDE.md
+2026-08-25	d61cd24ae8c3072f25d4ab29ae27b969fb1b6935	0635832c860e7b944b3bd1bf31eda3101b43109c	d61cd24	0635832	feat: medir invarianza del score de rerank al TopK (4.1)
+2026-08-25	e55279eaba26f4e213c7e025327b85cea4a6c99d	cdcbfe775048319da57d1cc34b205aca621bbd9b	e55279e	cdcbfe7	refactor(arnes): consumir el plugin en vez de la copia vendorizada
+2026-08-25	e8e4fd77c3157fa45354e155740892f998e09702	a91e9c6f7738177236c7cba2988f97e3ea031cfc	e8e4fd7	a91e9c6	infra: simplificar docker-compose para usar qdrant-local standalone
+2026-08-25	edd636c6b1ae2e37ea73fbecbdc2b05648ca87e5	2c472b05f51da4b92485f59c092a802fd44f55e0	edd636c	2c472b0	chore(ledger): cerrar 3.4-docs-fieles
+2026-08-25	ef2b451a7171a7aca3480e99c5998903c19f447a	77ece7daaa529246ec8f8806b1a415b2befa69be	ef2b451	77ece7d	fix: cultura invariante en score de cabecera de chunk
+2026-08-25	eff939ceb35b7d6e746ced3b3abc8dcb0345ee7c	3d03f4b6e9a361337c50dacf07ad768cc1fd52a4	eff939c	3d03f4b	docs: agregar instrucciones para verificar métricas OTEL con dotnet-counters
+2026-08-25	f3fe7fbd7011890dca88ca57268419555deed91e	3514171569903e94a1018e5ed0a231f8eab42368	f3fe7fb	3514171	chore(ledger): cerrar 3.3-exportador-otel
+2026-08-26	18d00b6fd8d0684aae1f574ccbcb878c9bde3695	e06718d2603182bae10fa79e60b07ba29848fb55	18d00b6	e06718d	feat: calibrar bandas del gate con datos etiquetados y activar el score estable (4.3)
+2026-08-26	886d53b7d92b7d77b4b7a0bc7d4db8efd6cda175	6764aaab4c7e0efa0649af5f8a34d8f3cbae659e	886d53b	6764aaa	chore(ledger): reabre 3.10 y registra el mismo defecto en IsProse
+2026-08-26	8c12e18437f9f8ddce249b5189ffd31f6fa467de	f9a36ba2ef22c39d31d5454391ed8ab4c2a3dd1a	8c12e18	f9a36ba	fix: guardia de crecimiento para IsDocumentation() e IsProse()
+2026-08-26	f3d94e908e795a603009934a6ed505f7494b20ba	409e99a6f89cc8beef101e72c74cc1a5fe5f6435	f3d94e9	409e99a	chore(ledger): cerrar 3.11 — guardia de crecimiento para IsProse()
+2026-08-31	04b5d0683b67769a1e421e27ac42ebc860ef5521	05b10b04437616b18c18bdcf382eecb803d55798	04b5d06	05b10b0	fix: la rama (b) del addendum de banda media describe la forma prohibida en vez de citarla (4.4)
+2026-08-31	1642bb00c11b6cb2b163548c470384c174026b3c	89f87e28f0cd911280f8f36a03fac0de442631c3	1642bb0	89f87e2	feat: extractor sintactico de simbolos (defined/consumed) para C# y TypeScript (5.c)
+2026-08-31	20c2ed34ba328aea937b73eed896ed111f683d51	05c81f29b790e52559330b624f5a07990462f184	20c2ed3	05c81f2	test: comportamiento de GenerationContextAssembler (intercambio por resumen) y ChatAnswerStreamer (4.8)
+2026-08-31	2b054ec5f207e2a6a9ec3be034f399998751a92d	2c3dc40b2de7c2af5b36124d5a8504f7a86a5ac1	2b054ec	2c3dc40	test: regresion permanente para las bandas del gate (4.4) y la invarianza de score al TopK (4.2)
+2026-08-31	2fc6b6ac9fee19ccb3529b480905fded2de194ac	87ba186442c9b546379f23a8142183c9e605c0ff	2fc6b6a	87ba186	docs: corregir la caracterizacion de 4.7 en el analisis de puertos y adaptadores
+2026-08-31	3861b9ad9d92b7589ffa1fecba209c17a093fdc2	00675b77969648e9a1638873df34a181436454eb	3861b9a	00675b7	docs: registrar los requisitos del paso de plan a ledger y normalizar 7.c
+2026-08-31	3e8a1485d4c698efe5497097df2bd4f7ca977013	8de13b43b4f1a3122a9d590a7c688763f7f451ba	3e8a148	8de13b4	fix: la API consume el veredicto de ConfidenceGate en vez de recalcular la banda (4.7)
+2026-08-31	b643edf4fad0ac4e99a8b9881bc6866d6c0d41e6	8384a48f878edeee9120628ce9f951d18a01eb94	b643edf	8384a48	docs: recorrido explicado del sistema para incorporacion
+2026-08-31	b8acfd42169823196aca46ec9969b29efbce45a8	fcc677359f3df6108cb696cb9c793fc225f3bc4e	b8acfd4	fcc6773	docs: evaluar Ports & Adapters y reconciliar el ledger (olas 9 y 10)
+2026-08-31	ccf641b812452e15be04609b87c61d21867cb0fc	e20a8c1ce4c560149b575578a6038074293a77dd	ccf641b	e20a8c1	Actualizar CLAUDE.md: referencias al plugin arnes-plan y cifras actuales
+2026-08-31	e0031c074be9f132278027090d44351229dc0509	d9c4813489809e54b5f40c01bdb7d728de82ef78	e0031c0	d9c4813	feat: eval-set y baseline de recall sobre bsuite-repo, con el umbral de decisión de las olas 5 y 6 (5.0)
+2026-08-31	ecee88c18d71b344cc9122221bbb1721565e0fec	9fa48a0714aa13d63164fc69bf7f76a5c2da9971	ecee88c	9fa48a0	docs: registrar el invariante de direccion de bloqueado_por
+2026-08-31	f574303cabbf434763f1f06872a8ff3c3fb09aa0	2e1ad5adbcbfa86b3dc228746c832f3baa428c9e	f574303	2e1ad5a	docs: documentar rag eval en la guia de la CLI
+2026-08-31	fb344249d2c17190f079491235a9928849082e22	4e1519720ccb13795fefdadddd2a3714353c9f7c	fb34424	4e15197	feat: RetrievalResult declara la escala de su score y el invariante de orden del rerank (4.9)
+2026-09-02	03db9c2ebf72b73b5f5c6d93653b9c7c7f1ca141	9c5954638bde398d6c47f8caf9a3710054d1c649	03db9c2	9c59546	fix: preserva el espacio antes de ':' en la declaracion de tipo indexada (5.g, bloqueado)
+2026-09-14	1d0def2329fbeb1077e604bac4ca1c73497043be	d06bd915e2c457ba92c964ce9e0c6fe78af1cfd0	1d0def2	d06bd91	5.f.4: harness de integracion HTTP con los 4 actores contra Api/Program.cs
+2026-09-14	1f008e5f94ed8e499c1ad41790cd2f9b40d23fcc	2d301d3eeae22fcb7d59aa5445f03fee79600d2a	1f008e5	2d301d3	5.f.2: verificar migracion de manifiestos antiguos sin publicacion por defecto
+2026-09-14	25503b76a1195df8b62ba15cd28054491ccc869f	d800129da20ae6abe1e5a0654300a0af2b5b0fe1	25503b7	d800129	11.2: experimento causal 3 brazos (256/128/512) sobre ventana del embedder — resultado nulo
+2026-09-14	378a51e72e98a59e3dd696b776968265a070bebb	69735967a7a5234ec6de5750b26d75e31fd8bd58	378a51e	6973596	11.5: calibrar chars/token por lenguaje contra tokenizador real (cl100k), sin tocar geometria de chunking
+2026-09-14	478ce6bafa4c579c13db5ef6f95ae3d663c15fa4	5858cab9d6925b81b5e089a4935bd54aedbd646d	478ce6b	5858cab	5.f.1: persistir y validar CollectionManifest (esquema, sin ACL)
+2026-09-14	5b699c85ba2277a1dd8074fae7bb9a68deb1473a	60c6d699e8224bac8a0cb6c1acd5919d4b57ab15	5b699c8	60c6d69	fix(5.h): conserva el filtro corto como opt-in al no superar el criterio de recall
+2026-09-14	64a1364f72a121ed80adf4d4967cb3bc99910def	ad95858c74c2534fa97641846f43e2c1c5099505	64a1364	ad95858	docs: unifica el flujo del ledger y el aislamiento por item entre asistentes
+2026-09-14	6b1e3ca299b4cd3402c7d56c06042e0f624a7320	c7c83b5777276c708d356ba336aadc84dc94bf23	6b1e3ca	c7c83b5	docs(plan): reconcilia propuestas y bloqueos con el contrato real de arnes-plan
+2026-09-14	8c1e978aafbde45c697fd65385c33de0fed4d353	f34c3f17c1d3b94751f4aea725ebb7a88028a4f7	8c1e978	f34c3f1	11.4: ratificar control post-5.h/pre-simbolos y umbral de salto de Ola 6
+2026-09-14	b093868e3f98185cc13476d249c194776765d07c	f07756f10930183c2e3cf5ac577fca932c12d773	b093868	f07756f	5.f.3: implementar autorizacion ACL sobre RequiredScopes/Tenants y modo local
+2026-09-14	bcf8a9f61e0b7fb8991c73017c99738e4af43b4a	4138736bef6aa182f4729fd00815fafeeb8d595d	bcf8a9f	4138736	5.b: implementa resumen por archivo/tipo (opt-in) y bloquea el A/B por drift de fuente
+2026-09-14	d7dd9cda8281883570700a251f5af19e8d7c4486	3c1d3fde03efa38c019781993904fa27c734b2a5	d7dd9cd	3c1d3fd	11.1: instrumentar tokens reales, descartados y truncamiento con tokenizador efectivo
+2026-09-14	e6d0a31f94aff26582ca51eef6ae244084b84871	0b2c9ee6d9ef1dd1893864966e25818ea40f1ae4	e6d0a31	0b2c9ee	plan: desglosar 5.f-revivir-collection-manifest en 5.f.1..5.f.4
+2026-09-15	0efed0d645ebdcc6b8040f1b03aa74d3344aee4a	f652d98d5157ccbf083a1725e70f90246a0e9fd5	0efed0d	f652d98	7.d: investigar corte adaptativo de ruido vs min_score/top_k fijo
+2026-09-15	34e360abc00a53c18c48e1592af19a734f530094	c73af4b64d52152b137d3c7c11d1ec6678a96690	34e360a	c73af4b	5.d: payload e índice de símbolos (defined_symbols/consumed_symbols)
+2026-09-15	3d33d6a23e5f2f6f38f0d02cdb62671a3942ffa5	9f585244819e1191d5726a47e9dd6678d09203a4	3d33d6a	9f58524	infra/bench: versionar el arnés de capacidad de inferencia
+2026-09-15	5a956453d32b0bc3dcab4ded02e7df0fc2e2203b	5149667ca651706a732ae2741a017d5cbfc22496	5a95645	5149667	7.a: perfil de recuperacion por coleccion (fusion, min_score, rerank, two_hop, familia de prompt, top_k)
+2026-09-15	6411a6e6e253c36bd92add82bab3fc0663fc845c	ad345410021eb5788992aba391932110b12f79cb	6411a6e	ad34541	6.a: expansión por símbolo (two-hop) implementada, evaluada y NO promovida
+2026-09-15	6ca31f983b78a81eeeff062bff411ca7f03af05c	6472bcc750bff1edb877506d4db80dc71266f8dd	6ca31f9	6472bcc	ledger: agrega item 5.i-resumen-por-archivo-selectivo (granularidad hibrida)
+2026-09-15	887f5d20cca594ca4e8738ab12d49872b53fa5dd	89e030e22315057e58957f746a8075c974aaba64	887f5d2	89e030e	6.b: presupuesto de latencia del segundo salto medido, dentro del margen
+2026-09-15	8919980d50e0313f9757d13b44e3779fa275946a	da04f1993acf561d62c8df98a0de6267e1a80324	8919980	da04f19	6.d: medir precisión del join por nombre del two-hop (24/30 colisiones por homónimo)
+2026-09-15	9a6e0050310912e55134fc020caf8841faf6de48	c5b90b5c330b3297768a04448cfeb78e42f03014	9a6e005	c5b90b5	5.h: A/B de tres bandas confirma sin regresion neta de recall; cierra decision de promocion
+2026-09-15	9aaa1e7d083dba3713a9e699ca4be4388a085c29	b15972f0d41bc7fc1d2d3f878018c4f476919057	9aaa1e7	b15972f	5.e: tenant explicito en payload + reingesta a ChunkingContract v3 + rebaseline
+2026-09-15	9c5315e718c8b3ede3188b5f1e64cdc536fa200b	9602a5cceb2a5cf216e55f359396ec620418bd46	9c5315e	9602a5c	ledger: agregar por_que_este_modelo faltante en 7.d-investigar-corte-adaptativo-de-ruido
+2026-09-15	a5222e53b56cb9b76f93da226182e7bd17f265a4	32b92d994fded3b460d1ae54eed54e4a3cc0b35e	a5222e5	32b92d9	6.c: preguntas de salto ViewController/BO->Servicio/Regla en bsuite-repo.eval-set.json
+2026-09-15	a624fff0000706b7b5fab1b68d363d8d49e8ff86	f83062a492bab516be5dd20686d0e8e968514035	a624fff	f83062a	5.b: A/B real sobre bsuite-repo — PerFile refutado (perdida neta 12 @10, umbral <=1)
+2026-09-15	af7801ba879ad0fbce8aea9d7eade6c05cdf6668	818892439b831b51ce8f765a023edc485291ce24	af7801b	8188924	7.c: quitar rerank=true como default silencioso de la API
+2026-09-15	b8efe4be8abc9e1678430a5a4e742bc87359877f	89eecbdfe9e94032022a0f8e69d633a1a7efb701	b8efe4b	89eecbd	ledger: descarta 5.i-resumen-por-archivo-selectivo antes del Gate 0
+2026-09-15	f64248338c7206e0b732b57f3870385d658788af	9ba0e14d427acf389a685f192c085871eefc6a96	f642483	9ba0e14	7.b: cerrar fuga de existencia y visibilidad en /api/collections
+2026-09-17	16a1df950175ac7c1cf14200d68289ecb16fb9d4	70cd3f5b682a50c30f533d254cee40c107628e33	16a1df9	70cd3f5	Corrige 14.1: evita throttling de launchd y exige evidencia del scheduler
+2026-09-17	2d02a517fb614d0a486076e179751397d8ac2e54	3a67bd972d011a69c3ddd0fe68853cd6081981d2	2d02a51	3a67bd9	12.1: validar TopK/MinScore, rate limiting por actor, API key en Qdrant y cierre de superficie HTTP
+2026-09-17	30ff63a65c9735edf96766a8a9c14993d7c68139	df62f2eaec80b99d64c4034a6eb88c5be4cca73c	30ff63a	df62f2e	12.9: minimizacion de logs operativos y retencion diferenciada de auditoria
+2026-09-17	36a9baacebd0eba6f96d9e5b904d93f16722ed3e	40331a0b67e5d4407e9bb2272859acc9626bf36e	36a9baa	40331a0	Documentar reentrada de portabilidad x64
+2026-09-17	4245a22616a316790c646b418e36c2e689c40c58	a468b2abae8c630511038cee7923eae689c7c323	4245a22	a468b2a	Implementa 14.1: eval nocturno local con alarmas y procedencia verificable
+2026-09-17	45bdbce42b0ca769eea6f570bb6b36f3e6ae047e	58db927424ba58c8059f64d5015094a763abfa97	45bdbce	58db927	9.1 (nucleo): contexto autorizado obligatorio + puertos escritura/admin + filtro tenant/modulo
+2026-09-17	6a459f8972097e11bc6bb9bce5040c7bffd7e160	e216d585cf63c7a7749a221b32340cbd70522aff	6a459f8	e216d58	9.5: guardia de arquitectura para direccion de dependencias
+2026-09-17	7b475117ec61f3a8a0161e55514ad735964ee5fa	4706d80fd5e8a9ef3ba07cba1faf0b44692c1a6a	7b47511	4706d80	12.11: auditoria local durable con actor local_operator explicito
+2026-09-17	819283357a56df9a6eea9d37aef8f499debd456d	3279b268387acf77ec31a2cc534e226388d7b06c	8192833	3279b26	refactor(9.3): compartir fuentes y veredicto sin duplicar retrieval
+2026-09-17	8f3abb89ea8475a4eb0aac2e6a2972e262771852	6f9473748fa9d7184dea597a154692d2f6d47427	8f3abb8	6f94737	9.8: mover OllamaOptions de Extensions a Domain, romper dependencia inversa
+2026-09-17	94c87557610748309695b3e8aded1d069fca0619	fee622a57c466d6845fa58957a09b977d985572d	94c8755	fee622a	9.1: verificar reanudacion y registrar equivalencia pendiente por empates
+2026-09-17	9690c49afbde5806e4859636623247234639efc8	66e8eba184780b71cc75752bab6e935fcfbf96ae	9690c49	66e8eba	9.1 (correccion): frontera exacta de segmento en filtro de modulo; contrato de compilacion sin falso positivo
+2026-09-17	994540b6003557078b633bcbd1a84d466f6aac5f	13a2cd03dbc07ebc48f5fe4db3046af9fad04075	994540b	13a2cd0	9.1.1: estabilizar desempates antes de los cortes y demostrar equivalencia A/B
+2026-09-17	a1d3ca71b158aaff8ca1b8b67ad25e8c082ffb2e	e08f69990c1a0c5d8aa6da153d3dbffb519f3b97	a1d3ca7	e08f699	8.e: resiliencia Polly para el camino de generacion conversacional (Ollama)
+2026-09-17	a77c41f5835f9b7cbecf0299216dee81c0f66a95	ff7c6f2ee0e06287f95006080a54ba2cf45fb26a	a77c41f	ff7c6f2	9.1: cerrar tras confirmar condicion de reentrada (9.1.1 hecho + evidencia A/B viva)
+2026-09-17	ad91fceb8fc52391e5ac5b5e5ce6314496178e08	ca39a966cf3fd5be8420b590ad0fab5b13ce9a79	ad91fce	ca39a96	9.2: reencaminar Api/Cli a puertos IVectorStoreAdmin, sin QdrantClient en los hosts
+2026-09-17	bb9b11fb4477f7a34fe4452bd7e242c26d334ada	45e90db77b0434268b18340908d4582350eb74d5	bb9b11f	45e90db	8.g: fuente unica de RetrievalFusion y gate entre Api y Cli
+2026-09-17	c5985120b37bbbf7d84c21ae9c4ba10d46f41230	6c5e8475ecacf8dc0f3555fd4b16308c70c670e9	c598512	6c5e847	plan: preparar 9.1.1 y trazar el bloqueo del cierre de 9.1
+2026-09-17	c7f9cac0859d30f3f1298db6bf10c6b735c01e25	ccc7da73712543cf16088e9298ae50404d90d00f	c7f9cac	ccc7da7	12.8: perfil de transporte publicado (credencial + TLS obligatorios al arrancar)
+2026-09-17	cdfa9812b81add34c8eae49a8bc9634a2c1ab1a5	f306f51430af880f7d818cce477bd241c37b2310	cdfa981	f306f51	refactor(9.4): extraer ISummaryCache como puerto de la capa de aplicacion
+2026-09-17	d763c6fc485ff0a0a1a3a2dda84b9fb0af4a75b4	b676b61722187dee2008e7d78760e5e1df7b4b99	d763c6f	b676b61	8.f: identidad de chunk sin ruta absoluta
+2026-09-17	e639a66ebf420ef04bc2923fa4ad189c58f6c6f5	acf855415eb4c60241d6346ddfaa18441725dec5	e639a66	acf8554	9.7: núcleo único de fusión RRF ponderada compartido entre producción y calibración
+2026-09-17	e8d0c3a0e1c2e5fe8865f3a7fd387d3e944648bc	2d68acf7e9d0c583a1f79589d3ab1163c1274b6f	e8d0c3a	2d68acf	docs(9.6): vocabulario de puertos agnostico de adaptador
+2026-09-17	f27ed4ce1c48b1f0c8a7fa19d5d0cf41a998bd6f	50ae26572f8f631505fa7e58725587dcf55168cb	f27ed4c	50ae265	Exporta las métricas existentes vía OpenTelemetry configurable (13.3)
+2026-09-17	fcf378e4078b57ae406f27b0198ba6422e94d33e	811d52309e46f3b154806d906ed6e093b5011dbf	fcf378e	811d523	8.c: bloquear formato diagnostico de 4 bloques, modelo local no lo adopta
+2026-09-17	fe26c1dd242db589b35a0522a7b2977283621056	610b930c53417d2ddcd47d4b32ac0c0023415a76	fe26c1d	610b930	Vincula el gate al binario efectivo y exige evidencia emparejada (12.10)
+2026-09-18	0a1a48ece8655f7ce8c3c5cf628825c791c16195	a84955c380c248e427502a438be9dc0f828cee31	0a1a48e	a84955c	15.3: inventariar formatos no ingeribles en el corpus de negocio autorizado
+2026-09-18	1743ec3ae6450c5db611fb52f9d894d86c93df3a	f84749fa2c65b5ff9f1f5cf301744f7ff110e52d	1743ec3	f84749f	14.2: add CI warning fixture and local verification script
+2026-09-18	262e9f231c82bed0d70c328ae29c3899b9b610e1	de41312956ba5e036205822743f9266099b80fa6	262e9f2	de41312	14.2: marcar como hecho en ledger tras agregar fixture, script y actualizar CI
+2026-09-18	43e71d81256b6b4e82569f6187b167626b2ccb78	26cdcc10e5a426671a8675f29d8c9c50fed704a3	43e71d8	26cdcc1	14.2: run warning verification and emit GitHub annotations in CI
+2026-09-18	6f9eca9537b82e58a16d597887cc8e27bc1a3b66	daaee56d59a93829d30bb73db24a271233b562ed	6f9eca9	daaee56	14.2: include CI warning fixture in RagEngine.Core.Tests
+2026-09-21	014625d4163181268d49ec2091e2ebe3d03494f6	908ab14c7a394fce8d3650417bc33d0b06b89000	014625d	908ab14	feat(13.1): persistir corridas y estado por documento de ingesta
+2026-09-21	236580d5c1f5f90b56a28d6f6855ed3ae99a7dd5	e50af3f5eea636d388d2eb2fa670567b4f7ae3ce	236580d	e50af3f	13.4: correlacionar cada turno con spans de retrieval/rerank/gate/contexto/generacion
+2026-09-21	36889d9b36af4e75b439d36bfeed43322c0bffcf	ee4522d527e54d3d7de4775683af1a6f86420575	36889d9	ee4522d	5.g: revertir a bloqueado, gap real entre decision de 5.h y ejecucion de 5.e
+2026-09-21	56b0c7a49ee1e901d96582e6c8000cd9e9b8ba47	650065235a657aad5f09fe35d6fd0890ab6c516a	56b0c7a	6500652	docs(modo-simple): medir Opción C con gemma4:26b, descartada con evidencia
+2026-09-21	c7d6173106a9d32e12f5bfb4a9b6cabcec0db102	ecdba398d0a119feb5968293b6f7503fdda9b0c4	c7d6173	ecdba39	Preparar preflight de 15.1 y registrar bloqueo por coste no autorizado
+2026-09-21	f8ef366f4451554a8a5cb549f887fa2e1d69911e	9e972a7bec79aee15b6d93566f96120f6446a874	f8ef366	9e972a7	Prepara el oraculo 15.2.1 y congela el comparador antes de los prototipos
+2026-09-22	d319a21014c688894d0227181ca64053aff3caf7	246472273a007a2604437036caf58a38d3378bea	d319a21	2464722	15.2.2: medir las tres alternativas locales de resolución y cerrar con hipótesis nula
+2026-09-23	2543a658ba02bd38b3020188dd0a2735c36cf725	dbc78badd069958cd9dafb2a6464b0d061db7d2a	2543a65	dbc78ba	Registra la Ola 19 de traslado: retirar eval-nocturno y respaldar logs, estado local, modelos y Qdrant con verificacion antes de salir de esta maquina
+2026-09-23	9889f7bfab69e00177f80bfea820490bfb1666b1	912ba181d1bc0dc4de832a48f5a2277fec2b3928	9889f7b	912ba18	Registra la decision del Mac mini como servidor de IA dedicado: el servidor pasa a Servidor.IA y aqui queda la medicion del contexto de los prompts (18.1)
+2026-09-23	e74ea47f82eeb1e518c6d9d68d1b062550d46437	b1408bf8fa6d4363fe2c233e99e034374b3ccd0b	e74ea47	b1408bf	Registra 19.6: el CI falla en cada push por tests que necesitan Qdrant y modelos en el runner, mas cinco defectos propios de los tests

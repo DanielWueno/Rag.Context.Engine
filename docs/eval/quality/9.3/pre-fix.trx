@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="1b9b1781-bc47-49c9-b6e6-448530632ea3" name="@Mac-mini-de-Reyma-3 2026-09-17 13:18:11" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-17T13:18:11.0136800-06:00" queuing="2026-09-17T13:18:11.0136810-06:00" start="2026-09-17T13:18:08.0324040-06:00" finish="2026-09-17T13:18:11.0161840-06:00" />
+  <TestSettings name="default" id="a5973245-3fda-4634-94c8-9e1a09fa083a">
+    <Deployment runDeploymentRoot="_Mac-mini-de-Reyma-3_2026-09-17_13_18_11" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="dd662973-6460-4b38-8ad1-c0e177509e5a" testId="4f387ee8-874a-13b4-dfeb-ca17cb727ab0" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;high&quot;, calls: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0445680" startTime="2026-09-17T13:18:10.8832900-06:00" endTime="2026-09-17T13:18:10.9278340-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dd662973-6460-4b38-8ad1-c0e177509e5a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 73
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fa210d2f-0d3a-4671-a278-13af762749b4" testId="2d96cd80-4833-271c-7f49-e1cf1d6e09b4" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;low&quot;, calls: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0482411" startTime="2026-09-17T13:18:10.7858030-06:00" endTime="2026-09-17T13:18:10.8337070-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa210d2f-0d3a-4671-a278-13af762749b4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 73
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3546c87b-044b-4f97-b78e-6f35fffb0f4c" testId="c0f267d4-438c-4f4c-f59c-812086929449" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;empty&quot;, calls: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:01.0286976" startTime="2026-09-17T13:18:09.6768740-06:00" endTime="2026-09-17T13:18:10.7116860-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3546c87b-044b-4f97-b78e-6f35fffb0f4c">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 73
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fb3b7edf-45a1-407b-8ed1-260ee8dc81c7" testId="b70b979b-3706-b27e-b1c4-8b5c6b9d11a1" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;high&quot;, calls: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0731439" startTime="2026-09-17T13:18:10.7163690-06:00" endTime="2026-09-17T13:18:10.7852510-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fb3b7edf-45a1-407b-8ed1-260ee8dc81c7">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 73
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="416f7c24-03b3-4f13-9afb-b4b41d5d3b1b" testId="ce3e4da0-0214-2c02-8d14-1db52091cc6f" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;meta&quot;, calls: 0)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0490837" startTime="2026-09-17T13:18:10.8381230-06:00" endTime="2026-09-17T13:18:10.8830510-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="416f7c24-03b3-4f13-9afb-b4b41d5d3b1b">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="acf92d15-f033-4a14-8d7f-9cee721457e6" testId="bb77d802-01a2-d798-bcfc-f60ec3c2ff8a" testName="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;meta&quot;, calls: 0)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.0431146" startTime="2026-09-17T13:18:10.9280610-06:00" endTime="2026-09-17T13:18:10.9711500-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="acf92d15-f033-4a14-8d7f-9cee721457e6">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   2</Message>
+          <StackTrace>   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+   at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs:line 74
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;meta&quot;, calls: 0)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="ce3e4da0-0214-2c02-8d14-1db52091cc6f">
+      <Execution id="416f7c24-03b3-4f13-9afb-b4b41d5d3b1b" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;empty&quot;, calls: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="c0f267d4-438c-4f4c-f59c-812086929449">
+      <Execution id="3546c87b-044b-4f97-b78e-6f35fffb0f4c" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;high&quot;, calls: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="4f387ee8-874a-13b4-dfeb-ca17cb727ab0">
+      <Execution id="dd662973-6460-4b38-8ad1-c0e177509e5a" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;low&quot;, calls: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="2d96cd80-4833-271c-7f49-e1cf1d6e09b4">
+      <Execution id="fa210d2f-0d3a-4671-a278-13af762749b4" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask/stream&quot;, query: &quot;high&quot;, calls: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="b70b979b-3706-b27e-b1c4-8b5c6b9d11a1">
+      <Execution id="fb3b7edf-45a1-407b-8ed1-260ee8dc81c7" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: &quot;/api/ask&quot;, query: &quot;meta&quot;, calls: 0)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="bb77d802-01a2-d798-bcfc-f60ec3c2ff8a">
+      <Execution id="acf92d15-f033-4a14-8d7f-9cee721457e6" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.GenerationHttpHarnessTests" name="One_search_and_one_meta_decision_per_request" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4f387ee8-874a-13b4-dfeb-ca17cb727ab0" executionId="dd662973-6460-4b38-8ad1-c0e177509e5a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2d96cd80-4833-271c-7f49-e1cf1d6e09b4" executionId="fa210d2f-0d3a-4671-a278-13af762749b4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c0f267d4-438c-4f4c-f59c-812086929449" executionId="3546c87b-044b-4f97-b78e-6f35fffb0f4c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b70b979b-3706-b27e-b1c4-8b5c6b9d11a1" executionId="fb3b7edf-45a1-407b-8ed1-260ee8dc81c7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce3e4da0-0214-2c02-8d14-1db52091cc6f" executionId="416f7c24-03b3-4f13-9afb-b4b41d5d3b1b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb77d802-01a2-d798-bcfc-f60ec3c2ff8a" executionId="acf92d15-f033-4a14-8d7f-9cee721457e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Resultados sin formato de lista" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Todos los resultados cargados" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="6" executed="6" passed="0" failed="6" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.0+00ab0a9ec4 (64-bit .NET 10.0.10)
+[xUnit.net 00:00:00.90]   Discovering: RagEngine.Core.Tests
+[xUnit.net 00:00:01.43]   Discovered:  RagEngine.Core.Tests
+[xUnit.net 00:00:01.44]   Starting:    RagEngine.Core.Tests
+[13:18:10 WRN] [RAG] No chunks found above score threshold 0.1.
+[13:18:10 WRN] [RAG] No chunks found above score threshold 0.1.
+[xUnit.net 00:00:02.48]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.48]       Expected: 1
+[xUnit.net 00:00:02.48]       Actual:   2
+[xUnit.net 00:00:02.48]       Stack Trace:
+[xUnit.net 00:00:02.48]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(73,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.48]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.48]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.56]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.56]       Expected: 1
+[xUnit.net 00:00:02.56]       Actual:   2
+[xUnit.net 00:00:02.56]       Stack Trace:
+[xUnit.net 00:00:02.56]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(73,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.56]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.56]         --- End of stack trace from previous location ---
+[13:18:10 WRN] [RAG] Low confidence (0.010 &lt; 0.050) for query: low. Falling back to no-grounding conversation.
+[13:18:10 WRN] [RAG] Low confidence (0.010 &lt; 0.050) for query: low. Falling back to no-grounding conversation.
+[xUnit.net 00:00:02.60]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.60]       Expected: 1
+[xUnit.net 00:00:02.60]       Actual:   2
+[xUnit.net 00:00:02.60]       Stack Trace:
+[xUnit.net 00:00:02.60]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(73,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.60]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.60]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.65]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.65]       Expected: 1
+[xUnit.net 00:00:02.65]       Actual:   2
+[xUnit.net 00:00:02.65]       Stack Trace:
+[xUnit.net 00:00:02.65]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.65]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.65]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.70]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.70]       Expected: 1
+[xUnit.net 00:00:02.70]       Actual:   2
+[xUnit.net 00:00:02.70]       Stack Trace:
+[xUnit.net 00:00:02.70]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(73,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.70]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.70]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.74]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:02.74]       Expected: 1
+[xUnit.net 00:00:02.74]       Actual:   2
+[xUnit.net 00:00:02.74]       Stack Trace:
+[xUnit.net 00:00:02.74]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.74]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/GenerationHttpHarnessTests.cs(74,0): at RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(String endpoint, String query, Int32 calls)
+[xUnit.net 00:00:02.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.74]   Finished:    RagEngine.Core.Tests
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.7128320-06:00">
+        <Text>[xUnit.net 00:00:02.48]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask", query: "empty", calls: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.7856100-06:00">
+        <Text>[xUnit.net 00:00:02.56]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask/stream", query: "high", calls: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.8339040-06:00">
+        <Text>[xUnit.net 00:00:02.60]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask/stream", query: "low", calls: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.8833520-06:00">
+        <Text>[xUnit.net 00:00:02.65]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask/stream", query: "meta", calls: 0) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.9281210-06:00">
+        <Text>[xUnit.net 00:00:02.70]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask", query: "high", calls: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T13:18:10.9713970-06:00">
+        <Text>[xUnit.net 00:00:02.74]     RagEngine.Core.Tests.GenerationHttpHarnessTests.One_search_and_one_meta_decision_per_request(endpoint: "/api/ask", query: "meta", calls: 0) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

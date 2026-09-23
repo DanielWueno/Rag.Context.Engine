@@ -6,6 +6,8 @@ using Serilog.Formatting.Compact;
 using RagEngine.Cli.Commands;
 using RagEngine.Cli.Infrastructure;
 using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Vectorization;
+using RagEngine.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -24,7 +26,10 @@ Log.Logger = new LoggerConfiguration()
         outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}")
     .WriteTo.File(
         formatter: new CompactJsonFormatter(),
-        path: "logs/rag-engine-.json",
+        // Anclada a la raíz del repo (o a RAG_LOGS_DIR). Con la ruta relativa
+        // anterior, `dotnet run --project src/RagEngine.Cli` dejaba los logs
+        // dentro de src/ — 49 MB llegaron a acumularse ahí.
+        path: Path.Combine(RagEnginePaths.ResolveLogsDirectory(), "rag-engine-.json"),
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7)
     .CreateLogger();
@@ -35,6 +40,15 @@ try
 
     var host = Host.CreateDefaultBuilder(args)
         .UseContentRoot(AppContext.BaseDirectory)
+        .ConfigureAppConfiguration(config =>
+        {
+            // Fuente compartida con RagEngine.Api para RetrievalFusion y los
+            // umbrales del gate de confianza (ítem 8.g) — evita que un host quede
+            // con defaults silenciosos mientras el otro se recalibra. Precedencia
+            // menor que este appsettings.json, así que un override local sigue
+            // funcionando.
+            RagEnginePaths.InsertSharedConfigSource(config);
+        })
         .ConfigureLogging(logging => 
         {
             logging.ClearProviders();
@@ -45,15 +59,19 @@ try
             // Core services: ONNX brain, Qdrant store, chunking pipeline
             services.AddRagEngineCore(ctx.Configuration);
 
-            // Generation pipeline: Semantic Kernel + Ollama connector + RagGenerationService
+            // Generation pipeline exposed through IRagGenerationService.
             services.AddRagEngineGeneration(ctx.Configuration);
 
             // CLI commands registered for DI
             services.AddTransient<IngestCommand>();
             services.AddTransient<SearchCommand>();
             services.AddTransient<StatusCommand>();
+            services.AddTransient<IngestStatusCommand>();
             services.AddTransient<AskCommand>();
             services.AddTransient<DoctorCommand>();
+            services.AddTransient<EvalCommand>();
+            services.AddTransient<AuditPurgeCommand>();
+            services.AddTransient<AuditHoldCommand>();
         })
         .Build();
 
@@ -82,6 +100,12 @@ app.Configure(config =>
         .WithExample(["status", "--collection", "mi-proyecto"])
         .WithExample(["status", "--all"]);
 
+    config.AddCommand<IngestStatusCommand>("ingest-status")
+        .WithDescription("Consulta el estado de ingesta por corrida/documento (ítem 13.1): quién, qué y en qué estado quedó cada archivo.")
+        .WithExample(["ingest-status", "--collection", "mi-proyecto"])
+        .WithExample(["ingest-status", "--collection", "mi-proyecto", "--run-id", "3f9c..."])
+        .WithExample(["ingest-status", "--collection", "mi-proyecto", "--run-id", "3f9c...", "--failed-only"]);
+
     config.AddCommand<AskCommand>("ask")
         .WithDescription("Realiza una pregunta en lenguaje natural y obtiene una respuesta generada por el LLM local (Ollama).")
         .WithExample(["ask", "\"¿Cómo funciona el pipeline de ingestión?\""])
@@ -91,6 +115,27 @@ app.Configure(config =>
     config.AddCommand<DoctorCommand>("doctor")
         .WithDescription("Verifica las dependencias del sistema (Qdrant, ONNX, Disco).")
         .WithExample(["doctor"]);
+
+    config.AddCommand<EvalCommand>("eval")
+        .WithDescription("Corre un eval-set de ground-truth (docs/eval/*.json) y calcula recall@K por categoría.")
+        .WithExample(["eval"])
+        .WithExample(["eval", "--collection", "innovapp-docs", "--rerank"])
+        .WithExample(["eval", "--eval-set", "docs/eval/innovapp-docs.eval-set.json", "--json"]);
+
+    config.AddBranch("audit", audit =>
+    {
+        audit.SetDescription("Retención y minimización de logs de auditoría (ítem 12.9).");
+
+        audit.AddCommand<AuditPurgeCommand>("purge")
+            .WithDescription("Purga eventos de auditoría vencidos (respeta retención legal).")
+            .WithExample(["audit", "purge", "--older-than-days", "90"])
+            .WithExample(["audit", "purge", "--dry-run"]);
+
+        audit.AddCommand<AuditHoldCommand>("hold")
+            .WithDescription("Activa o libera la retención legal de un evento de auditoría.")
+            .WithExample(["audit", "hold", "evt-1234"])
+            .WithExample(["audit", "hold", "evt-1234", "--release"]);
+    });
 
     config.SetExceptionHandler((ex, _) =>
     {
@@ -116,9 +161,13 @@ app.Configure(config =>
             host.Dispose();
         }
 
-        // 2. Mecanismo para dar tiempo a los hilos nativos de C++ a liberar sus bloqueos antes del cierre
-        // (Previene 'mutex lock failed: Invalid argument' en Apple Silicon ARM64)
-        await Task.Delay(300);
+        // 2. Liberar el entorno global de ONNX, ya sin sesiones vivas.
+        //
+        // Sustituye a un `await Task.Delay(300)` que pretendía "dar tiempo a los
+        // hilos nativos de C++": no servía. Medido el 2026-08-21, el proceso
+        // terminaba en exit 134 en 14 de 14 corridas CON el delay puesto, y en 0 de
+        // 28 liberando el entorno. El fallo era determinista, no una carrera.
+        OnnxRuntimeLifetime.Shutdown();
     }
 
     return exitCode;

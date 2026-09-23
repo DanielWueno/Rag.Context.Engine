@@ -1,0 +1,418 @@
+{
+  "bsuite-auditorias": {
+    "n_anchored": 16,
+    "estrategias": {
+      "top_k_fijo (actual, sin filtro de score)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "min_score_global_actual (>= 0.1)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 0.0,
+          "5": 0.0,
+          "10": 0.0
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 9,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 160
+      },
+      "adaptativo_relativo (score >= 0.4 * mejor)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.5 * mejor)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.6 * mejor)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 1
+      },
+      "adaptativo_relativo (score >= 0.7 * mejor)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 33
+      },
+      "adaptativo_hueco (corte en drop > 0.01)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 43.8,
+          "10": 50.0
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 44
+      },
+      "adaptativo_hueco (corte en drop > 0.02)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.03)": {
+        "recall_at_k": {
+          "1": 18.8,
+          "3": 37.5,
+          "5": 50.0,
+          "10": 56.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      }
+    }
+  },
+  "bsuite-repo": {
+    "n_anchored": 76,
+    "estrategias": {
+      "top_k_fijo (actual, sin filtro de score)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "min_score_global_actual (>= 0.1)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 0.0,
+          "5": 0.0,
+          "10": 0.0
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 34,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 760
+      },
+      "adaptativo_relativo (score >= 0.4 * mejor)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.5 * mejor)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.6 * mejor)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 14
+      },
+      "adaptativo_relativo (score >= 0.7 * mejor)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 38.2,
+          "10": 42.1
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 180
+      },
+      "adaptativo_hueco (corte en drop > 0.01)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 30.3,
+          "5": 35.5,
+          "10": 39.5
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 131
+      },
+      "adaptativo_hueco (corte en drop > 0.02)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 9
+      },
+      "adaptativo_hueco (corte en drop > 0.03)": {
+        "recall_at_k": {
+          "1": 23.7,
+          "3": 32.9,
+          "5": 39.5,
+          "10": 44.7
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      }
+    }
+  },
+  "innovapp-docs": {
+    "n_anchored": 22,
+    "estrategias": {
+      "top_k_fijo (actual, sin filtro de score)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 13.6,
+          "5": 18.2,
+          "10": 36.4
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "min_score_global_actual (>= 0.1)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 13.6,
+          "5": 18.2,
+          "10": 36.4
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.4 * mejor)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 13.6,
+          "5": 18.2,
+          "10": 31.8
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.5 * mejor)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 13.6,
+          "5": 18.2,
+          "10": 18.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.6 * mejor)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 13.6,
+          "5": 18.2,
+          "10": 18.2
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.7 * mejor)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 9.1,
+          "5": 13.6,
+          "10": 13.6
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 5,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.01)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 9.1,
+          "5": 9.1,
+          "10": 9.1
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 6,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.02)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 9.1,
+          "5": 9.1,
+          "10": 9.1
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 6,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.03)": {
+        "recall_at_k": {
+          "1": 9.1,
+          "3": 9.1,
+          "5": 9.1,
+          "10": 9.1
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 6,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      }
+    }
+  },
+  "tickets-microservice": {
+    "n_anchored": 19,
+    "estrategias": {
+      "top_k_fijo (actual, sin filtro de score)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 15.8,
+          "10": 26.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "min_score_global_actual (>= 0.1)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 15.8,
+          "10": 26.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.4 * mejor)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 15.8,
+          "10": 26.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.5 * mejor)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 15.8,
+          "10": 15.8
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.6 * mejor)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 15.8,
+          "10": 15.8
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_relativo (score >= 0.7 * mejor)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 10.5,
+          "5": 10.5,
+          "10": 10.5
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 3,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.01)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 5.3,
+          "5": 5.3,
+          "10": 5.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.02)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 5.3,
+          "5": 5.3,
+          "10": 5.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      },
+      "adaptativo_hueco (corte en drop > 0.03)": {
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 5.3,
+          "5": 5.3,
+          "10": 5.3
+        },
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos (score<0.08, no incluidos por esta politica)": 0
+      }
+    }
+  }
+}

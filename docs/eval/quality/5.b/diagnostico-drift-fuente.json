@@ -1,0 +1,92 @@
+{
+  "bsuite-repo": {
+    "total_preguntas": 55,
+    "vivas": 47,
+    "muertas": 0,
+    "sin_source_file": 8,
+    "detalle_muertas": []
+  },
+  "bsuite-auditorias": {
+    "total_preguntas": 16,
+    "vivas": 0,
+    "muertas": 15,
+    "sin_source_file": 1,
+    "detalle_muertas": [
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "AuditoriaResultadoHallazgo.cs",
+        "question": "¿Qué significa que un hallazgo de auditoría sea recurrente?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+        "question": "¿Cuándo se puede reabrir una acción correctiva ya finalizada?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+        "question": "¿Cuándo pasa un hallazgo de auditoría a estatus de validación?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "AuditoriaResultadoHallazgoValidacion.cs",
+        "question": "¿Qué información se registra al validar o rechazar un hallazgo de auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "AuditoriaReprogramacion.cs",
+        "question": "¿Qué se necesita para reprogramar la ejecución de una auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "PlanificacionAuditoriaViewController.cs",
+        "question": "¿Desde dónde reprogramo una auditoría ya planificada?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "Auditorias.cs",
+        "question": "¿Qué pasa con una auditoría si no se encontraron hallazgos activos al completarla?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "Auditorias.cs",
+        "question": "¿Cuándo puedo exportar la plantilla de hallazgos de una auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "Auditorias.cs",
+        "question": "¿Cómo se determina si un empleado es el auditado de una auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "PlanAuditoria.cs",
+        "question": "¿Qué motivo se registra cuando se reprograma un plan de auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "Auditorias.cs",
+        "question": "¿Cómo se calcula la calificación global de una auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "Auditorias.cs",
+        "question": "¿Cómo se calcula la calificación de un grupo de criterios del checklist?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "EjecucionAuditoriaViewController.cs",
+        "question": "¿Cómo registro el plan de acción de una auditoría?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "EjecucionAuditoriaViewController.cs",
+        "question": "¿Cómo importo auditorías desde un archivo Excel?"
+      },
+      {
+        "category": "bsuite-auditorias",
+        "source_file": "EjecucionAuditoriaViewController.cs",
+        "question": "¿Qué significa recibir el plan de acción PDCA de una auditoría?"
+      }
+    ]
+  }
+}

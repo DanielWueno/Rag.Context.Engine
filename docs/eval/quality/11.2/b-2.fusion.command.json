@@ -1,0 +1,18 @@
+{
+  "command": [
+    "dotnet",
+    "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/infra/experimento-11-2/bin/Release/net10.0/Experiment.dll",
+    "eval",
+    "--eval-set",
+    "docs/eval/bsuite-repo.eval-set.json",
+    "-c",
+    "11-2-exp-b-2",
+    "-k",
+    "10",
+    "--min-score",
+    "0.10",
+    "--json"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1.4941745840000067
+}

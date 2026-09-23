@@ -1,0 +1,21 @@
+Ingestion Complete ─────────────────────────────
+
+╭────────────────────┬─────────────────────╮
+│ Metric             │ Value               │
+├────────────────────┼─────────────────────┤
+│ Files Scanned      │ 2,103               │
+│ Chunks Generated   │ 22,606              │
+│ Chunks Indexed     │ 22,606              │
+│ Files Skipped      │ 0                   │
+│ Duration           │ 02:59.00            │
+│ Memory Peak        │ 217.2 MB            │
+│ Tokens medidos (n) │ 22,606              │
+│ Tokens p50/p95     │ 277 / 1,696 (L=254) │
+│ Chunks truncados   │ 12,176              │
+│ Tokens descartados │ 5,458,617           │
+╰────────────────────┴─────────────────────╯
+⚠️  p95 de tokens (1,696) supera la capacidad útil del tokenizador (L=254): una 
+porcion relevante de chunks se esta truncando.
+
+Collection 11-2-exp-a-2 is ready for semantic search.
+Run: rag search "your query"

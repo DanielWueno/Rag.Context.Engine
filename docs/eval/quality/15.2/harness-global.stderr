@@ -1,0 +1,2 @@
+✗ 1 problema(s) en /Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/analisis-futuro/ejecucion-plan.estado.json:
+  · ola 5.items[2] (5.g-declaracion-de-tipo-en-el-indice): bloqueado_por "Nota narrativa, sin ID literal: el flip de produccion de IndexShortTypeDeclarations (Ingestion:IndexShortTypeDeclarations=false por defecto en IngestionTypes.cs) sigue sin ejecutarse." no es el id de ningún ítem. Tiene que ser el id literal, no una frase: si nadie puede resolverlo, no lo comprueba nadie.

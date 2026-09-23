@@ -13,7 +13,6 @@ namespace RagEngine.Core.Infrastructure.Chunking;
 /// </summary>
 public sealed class FallbackChunkingStrategy : IChunkingStrategy
 {
-    private const int ApproxCharsPerToken = 4;
     private const int MinChunkLines = 5;
 
     // SourceLanguage.Unknown means this strategy accepts any language
@@ -26,14 +25,14 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
         ChunkingOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var lines = fileContent.Split('\n');
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
         if (lines.Length == 0) yield break;
 
-        int windowLines = Math.Max(MinChunkLines,
-            options.MaxTokensPerChunk * ApproxCharsPerToken / 80);
-        int overlapLines = Math.Max(0,
-            options.OverlapTokens * ApproxCharsPerToken / 80);
-        int step = Math.Max(1, windowLines - overlapLines);
+        var (windowLines, _, step) = ChunkBuilder.WindowGeometry(options, MinChunkLines);
 
         int fragIndex = 0;
 
@@ -50,29 +49,15 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
             int endLine = i + window.Length;
 
             var header = BuildContextHeader(artifact, options.RepositoryName, startLine, endLine, ++fragIndex);
-            var enriched = $"{header}\n\n{content}";
-            var hash = ContentHasher.Compute(content);
 
-            yield return new CodeChunk
-            {
-                Id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash),
-                Content = content,
-                EnrichedContent = enriched,
-                Type = ChunkType.PlainTextWindow,
-                ContentHash = hash,
-                Metadata = new CodeChunkMetadata(
-                    FilePath: artifact.AbsolutePath,
-                    RelativeFilePath: artifact.RelativePath,
-                    Language: artifact.Language,
-                    Namespace: null,
-                    ClassName: null,
-                    MethodName: null,
-                    StartLine: startLine,
-                    EndLine: endLine,
-                    LastModified: artifact.LastModified,
-                    RepositoryName: options.RepositoryName
-                )
-            };
+            yield return ChunkBuilder.Create(
+                artifact,
+                content: content,
+                enrichedContent: $"{header}\n\n{content}",
+                type: ChunkType.PlainTextWindow,
+                startLine: startLine,
+                endLine: endLine,
+                repositoryName: options.RepositoryName);
 
             // Stop if we've reached the end
             if (i + window.Length >= lines.Length) break;
@@ -88,6 +73,8 @@ public sealed class FallbackChunkingStrategy : IChunkingStrategy
         int endLine,
         int fragmentIndex)
     {
-        return $"// Repository: {repoName}\n// File: {artifact.RelativePath}\n// Language: {artifact.Language}\n// Lines: {startLine}-{endLine} [Fragment {fragmentIndex}]";
+        return ChunkBuilder.HeaderPrefix(repoName, artifact.RelativePath)
+             + $"\n// Language: {artifact.Language}"
+             + $"\n// Lines: {startLine}-{endLine} [Fragment {fragmentIndex}]";
     }
 }

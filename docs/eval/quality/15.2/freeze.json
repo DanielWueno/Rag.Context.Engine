@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "sealed_at": "2026-09-21T23:56:12.279594+00:00",
+  "artifacts": {
+    "protocol.json": "d6b2bedf4e892623da6f4f03a83a32d3248a53cc865aa15b650878efd51fa63c",
+    "review.json": "19239917d45a7b639233b3737ac3de906353ead63a2b413d112cab63fcfb6b6b",
+    "graph-fixtures.json": "c8f1bd9c1ec57c7be6cb8534bd17bc318bf8c7b22fc3f182e0ffe9bd93ad6db7",
+    "opportunities.json": "09599a286d83bfce55fedf57c70567958f50c26b8443a62fb2f75e9fac716211",
+    "cohort.json": "f7379f7aa0b292654c2dd3516227423468e12bacb9129cee3dc19338ec5b6cba",
+    "source-evidence.json": "977eabf898b0dda986fcb59f2a20e7f99aeb6df50e03e4eb991b35e919b569e3",
+    "preparation.json": "2145bbba013680ed95b057e11343a50790787eca6a217f4c99e567ee7a27c8bb",
+    "index-manifest.json.gz": "33b047d9f7487ab877fbf33cf6aebd7e719d2a3beb75d2fac5df9260d865807a",
+    "corpus-manifest.json.gz": "f89c61743ef96a59a807fd84037df1fcbede70ad4283536bbdb9270e8cdd29fc",
+    "capture.py": "5329c8a2cf18492f724e7f1bb22fcdebcf6c20a0b4a30670ceec6d96ad45e6fa",
+    "prepare.py": "5a91b7ee1604521897b2176a69ad0c3fde0389e3629ba154a39be456f0c750bb",
+    "accept.py": "ee453b3cf1cdf81235e4df12cecb92e0b30e399adc5c2af4dd9ae165de562ec3",
+    "test_accept.py": "0569dc7b86ed930126411154600fece76e29c3b63db0dc614133385e9673244d"
+  },
+  "inputs": {
+    "docs/eval/bsuite-repo.eval-set.json": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
+    "docs/eval/baselines/bsuite-repo.6d-symbol-join-audit.json": "bd5723825b4dc897f4f55ffdf019d249a1a3a2c7f5b4bc8548a0e925e81784be"
+  }
+}

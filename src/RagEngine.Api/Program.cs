@@ -1,0 +1,1113 @@
+using System.Diagnostics;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using RagEngine.Api;
+using RagEngine.Api.Observability;
+using RagEngine.Core.Abstractions;
+using RagEngine.Core.Diagnostics;
+using RagEngine.Core.Domain;
+using RagEngine.Core.Extensions;
+using RagEngine.Core.Infrastructure.Authorization;
+using RagEngine.Core.Infrastructure.Vectorization;
+using RagEngine.Core.Infrastructure.VectorStore;
+using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Utilities;
+using Serilog;
+using Serilog.Formatting.Compact;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// RagEngine API — piloto de acceso en red al motor RAG ya existente.
+//
+// Reutiliza exactamente los mismos servicios que consume el CLI
+// (AddRagEngineCore / AddRagEngineGeneration ya están diseñados para esto —
+// ver el comentario en ServiceCollectionExtensions.AddRagEngineCore).
+// No hay lógica de retrieval/generación nueva aquí: este proyecto es solo
+// el "host" HTTP delgado sobre lo que ya corre en el CLI.
+//
+// Pensado para LAN/VPN interna, no para exponerse a internet público — el
+// contenido ingestado puede incluir reglas de negocio internas.
+// ──────────────────────────────────────────────────────────────────────────────
+
+// La ruta se ancla a la raíz del repo (o a RAG_LOGS_DIR), no al directorio de
+// trabajo: con la ruta relativa anterior, `dotnet run --project src/RagEngine.Api`
+// escribía los logs DENTRO del árbol de código.
+//
+// Cada consulta (pregunta + respuesta + fuentes citadas) queda en logs/rag-api-*.json
+// como una línea JSON — es lo que permite revisar después qué preguntó el equipo
+// durante el piloto y si las respuestas fueron buenas, sin depender de `docker logs`
+// (efímero y sin estructura). Mismo patrón que ya usa RagEngine.Cli.
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.File(
+        formatter: new CompactJsonFormatter(),
+        path: Path.Combine(RagEnginePaths.ResolveLogsDirectory(), "rag-api-.json"),
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30)
+    .CreateLogger();
+
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Fuente compartida con RagEngine.Cli para RetrievalFusion y los umbrales del
+    // gate de confianza (ítem 8.g) — evita que un host quede con defaults
+    // silenciosos mientras el otro se recalibra. Precedencia menor que este
+    // appsettings.json, así que un override local sigue funcionando.
+    RagEnginePaths.InsertSharedConfigSource(builder.Configuration);
+
+    builder.Logging.ClearProviders();
+    builder.Logging.AddSerilog(dispose: true);
+
+    builder.Services.AddRagEngineCore(builder.Configuration);
+    builder.Services.AddRagEngineGeneration(builder.Configuration);
+
+    // Ítem 13.3: exportación configurable (OFF por defecto) de los 6 instrumentos ya
+    // definidos en RagEngineMetrics. Reemplaza el listener/exportador de solo-log de
+    // 3.3-exportador-otel (nunca corren ambos a la vez: eso duplicaría conteos). Con
+    // Metrics:Enabled=false (default) no se registra NINGÚN exportador — el Meter sigue
+    // emitiendo al vacío, exactamente el comportamiento previo a este ítem.
+    //
+    // La decisión de exportador se difiere con IDeferredMeterProviderBuilder.Configure
+    // en vez de leerse aquí de builder.Configuration: OpenTelemetry construye el
+    // MeterProvider real durante IHost.StartAsync() (TelemetryHostedService), momento en
+    // el que YA está resuelta la configuración final del host — incluida la que un
+    // WebApplicationFactory de test agrega vía ConfigureAppConfiguration, invisible en
+    // un snapshot leído aquí antes de builder.Build(). Resolver IOptions<MetricsOptions>
+    // en ese punto también dispara MetricsOptionsValidator automáticamente: sin
+    // Metrics:OtlpEndpoint válido, falla con OptionsValidationException accionable en
+    // vez de un ArgumentNullException crudo de System.Uri.
+    builder.Services.Configure<MetricsOptions>(builder.Configuration.GetSection(MetricsOptions.SectionName));
+    builder.Services.AddSingleton<IValidateOptions<MetricsOptions>, MetricsOptionsValidator>();
+    builder.Services.AddOptions<MetricsOptions>().ValidateOnStart();
+
+    builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
+    {
+        metrics.AddMeter(RagEngineMetrics.Meter.Name);
+
+        if (metrics is not IDeferredMeterProviderBuilder deferred)
+            return;
+
+        deferred.Configure((sp, meterProviderBuilder) =>
+        {
+            var opts = sp.GetRequiredService<IOptions<MetricsOptions>>().Value;
+            if (!opts.Enabled)
+                return;
+
+            if (string.Equals(opts.Exporter, "Prometheus", StringComparison.OrdinalIgnoreCase))
+            {
+                meterProviderBuilder.AddPrometheusExporter();
+            }
+            else if (string.Equals(opts.Exporter, "Otlp", StringComparison.OrdinalIgnoreCase))
+            {
+                meterProviderBuilder.AddOtlpExporter((otlpOptions, _) =>
+                    otlpOptions.Endpoint = new Uri(opts.OtlpEndpoint!));
+            }
+        });
+    });
+
+    // Ítem 13.4: trazas del turno (RagEngineTracing.ActivitySource, "rag.turn" +
+    // spans de retrieval/rerank/gate/contexto/generación). AddSource se registra
+    // SIEMPRE — sin él, ActivitySource.StartActivity no tiene listener y devuelve
+    // null en TODOS los niveles, y ni el turno ni sus pasos tendrían trace_id para
+    // correlacionar con auditoría/logs. El exportador (Tracing:Enabled, apagado por
+    // defecto) es lo único condicional: sin él, los spans se crean y se descartan sin
+    // salir del proceso — mismo patrón de costo que el Meter de RagEngineMetrics.
+    builder.Services.Configure<TracingOptions>(builder.Configuration.GetSection(TracingOptions.SectionName));
+    builder.Services.AddSingleton<IValidateOptions<TracingOptions>, TracingOptionsValidator>();
+    builder.Services.AddOptions<TracingOptions>().ValidateOnStart();
+
+    builder.Services.AddOpenTelemetry().WithTracing(tracing =>
+    {
+        tracing.AddSource(RagEngineTracing.SourceName);
+
+        if (tracing is not IDeferredTracerProviderBuilder deferred)
+            return;
+
+        deferred.Configure((sp, tracerProviderBuilder) =>
+        {
+            var opts = sp.GetRequiredService<IOptions<TracingOptions>>().Value;
+            if (!opts.Enabled)
+                return;
+
+            tracerProviderBuilder.AddOtlpExporter(otlpOptions =>
+                otlpOptions.Endpoint = new Uri(opts.OtlpEndpoint!));
+        });
+    });
+
+
+    // AddProblemDetails() habilita el relleno automático de ProblemDetails que ya
+    // hace el propio binding de minimal API cuando el body no parsea como JSON
+    // (RequestDelegateFactory captura el JsonException y, si encuentra
+    // IProblemDetailsService registrado, lo usa en vez de devolver un 400 vacío).
+    // El exception handler de abajo lo reusa para las excepciones no capturadas.
+    builder.Services.AddProblemDetails();
+
+    // Cliente aparte del que arma GenerationServiceExtensions para el Kernel de SK:
+    // ese HttpClient apunta a Ollama con el timeout largo de generación
+    // (Ollama:TimeoutSeconds, hasta 120s) y no se expone como servicio. El chequeo de
+    // salud necesita un timeout corto propio — no tiene sentido que /api/health cuelgue
+    // 120s solo porque Ollama está caído.
+    builder.Services.AddHttpClient();
+
+    // "Cors:AllowedOrigins" con default vacío: sin nadie configurado, ningún origen
+    // cross-site recibe los headers Access-Control-Allow-*. Este host es para LAN/VPN
+    // interna (ver cabecera del archivo) — no hay cliente en producción hoy que lo
+    // necesite (ver ledger, ítem de rollback de Fase 2), así que "restrictivo por
+    // defecto" no le quita nada a nadie todavía.
+    const string ApiCorsPolicy = "ApiCorsPolicy";
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    builder.Services.AddCors(options => options.AddPolicy(ApiCorsPolicy, policy =>
+    {
+        if (allowedOrigins.Length > 0)
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+    }));
+
+    // Límite conservador de tamaño de body: este host solo recibe queries de texto
+    // (RagQueryRequest) — 1 MB deja margen de sobra para historial de chat largo sin
+    // dejar que un request arbitrariamente grande consuma memoria sin límite.
+    const long MaxRequestBodyBytes = 1 * 1024 * 1024;
+    builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = MaxRequestBodyBytes);
+
+    // Escucha en todas las interfaces para que el equipo pueda alcanzarlo por LAN,
+    // no solo localhost.
+    //
+    // El UseUrls fijo que habia aqui ANULABA a ASPNETCORE_URLS, al contrario de lo
+    // que decia su propio comentario: con el puerto ocupado, la unica salida era
+    // editar el codigo. Eso bloqueaba levantar una segunda instancia con otra
+    // configuracion, que es como se comparan dos variantes de generacion sin
+    // apagar la que esta sirviendo. Ahora el default solo se aplica si nadie dijo
+    // otra cosa.
+    if (string.IsNullOrWhiteSpace(builder.Configuration["urls"]) &&
+        string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
+    {
+        builder.WebHost.UseUrls("http://0.0.0.0:5080");
+    }
+
+    var app = builder.Build();
+
+    // Ítem 12.9: si el operador activó el diagnóstico de contenido de consulta pero
+    // quedó inactivo (caducó o no configuró la fecha de expiración), se avisa una vez
+    // al arrancar — un "se me olvidó apagarlo" no debe pasar inadvertido, y tampoco
+    // debe hacer que el diagnóstico se reactive solo.
+    {
+        var loggingOpts = app.Services.GetRequiredService<IOptions<LoggingOptions>>().Value;
+        if (QueryContentDiagnostics.IsExpiredOrMisconfigured(loggingOpts, DateTimeOffset.UtcNow))
+        {
+            app.Services.GetRequiredService<ILogger<Program>>().LogWarning(
+                "Logging:EnableQueryContentDiagnostics está activo pero " +
+                "Logging:QueryContentDiagnosticsExpiresAt ({ExpiresAt}) ya caducó o no está " +
+                "configurado — el QueryEvent NO incluirá pregunta/respuesta/fuentes hasta que " +
+                "se reconfigure una nueva caducidad futura.",
+                loggingOpts.QueryContentDiagnosticsExpiresAt);
+        }
+    }
+
+    // Ítem 12.1: rate limiting + cota de concurrencia por actor sobre las tres rutas de
+    // recuperación/generación. Se lee de app.Configuration (no builder.Configuration):
+    // los overrides de configuración que WebApplicationFactory<Program> inyecta para
+    // tests (ConfigureAppConfiguration) solo se aplican dentro de builder.Build() — leer
+    // antes de esa llamada vería siempre los defaults de appsettings.json e ignoraría
+    // cualquier override de test. RagEnginePaths.InsertSharedConfigSource ya insertó
+    // config/shared.appsettings.json con precedencia menor, así que esta sección puede
+    // recalibrarse sin recompilar. Ver RateLimitingOptions para el porqué de cada default.
+    //
+    // Se implementa como PartitionedRateLimiter + EndpointFilter (no
+    // AddRateLimiter/RequireRateLimiting) porque el middleware de rate limiting solo
+    // admite UNA política nombrada activa por endpoint — [EnableRateLimiting]/
+    // RequireRateLimiting REEMPLAZAN la política anterior en vez de sumarse. /api/ask y
+    // /api/ask/stream necesitan DOS cotas independientes (tasa por ventana + concurrencia
+    // en vuelo) sobre el mismo endpoint, así que cada filtro adquiere de la lista de
+    // limiters que le toque, en orden, y libera todo lo adquirido al terminar.
+    var rateLimitingOptions = app.Configuration
+        .GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>() ?? new RateLimitingOptions();
+
+    // "Actor local/autenticado": mismo criterio que ResolveRetrievalContext — un tenant/
+    // módulo autenticado obtiene su propia partición; sin identidad autenticada (modo
+    // Local, o modo Empresarial sin credenciales) la partición cae en la IP remota, así
+    // que sigue habiendo AL MENOS una cota por origen, no una cota global compartida por
+    // todo el mundo sin distinción.
+    static string ResolveRateLimitKey(HttpContext http)
+    {
+        var identity = ReadCollectionIdentity(http);
+        if (identity is { IsAuthenticated: true })
+        {
+            var tenant = identity.Actor.Tenant;
+            var name = http.User.Identity?.Name;
+            return $"actor:{tenant ?? name ?? "sin-tenant"}";
+        }
+        return $"origen:{http.Connection.RemoteIpAddress}";
+    }
+
+    var requestRateLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+        RateLimitPartition.GetFixedWindowLimiter(ResolveRateLimitKey(http), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = rateLimitingOptions.PermitLimit,
+            Window = TimeSpan.FromSeconds(rateLimitingOptions.WindowSeconds),
+            QueueLimit = rateLimitingOptions.QueueLimit,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            AutoReplenishment = true
+        }));
+
+    // Cota de concurrencia distinta de la de tasa: /api/ask y /api/ask/stream abren una
+    // generación completa contra Ollama (segundos, no milisegundos) — un actor podría
+    // quedar dentro de su cupo de PermitLimit y aun así mantener N generaciones
+    // simultáneas abiertas. Esta cota limita cuántas puede tener EN VUELO a la vez, no
+    // cuántas puede empezar por ventana. No se aplica a /api/search (no invoca a Ollama).
+    var generationConcurrencyLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+        RateLimitPartition.GetConcurrencyLimiter(ResolveRateLimitKey(http), _ => new ConcurrencyLimiterOptions
+        {
+            PermitLimit = rateLimitingOptions.MaxConcurrentGenerationsPerActor,
+            QueueLimit = rateLimitingOptions.ConcurrencyQueueLimit,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+
+    // Adquiere de cada limiter EN ORDEN antes de invocar el handler real — si cualquiera
+    // rechaza, el handler (y por tanto retrieval/generación) nunca se ejecuta: cero
+    // invocaciones extra de retrieval, tal como exige el criterio de este ítem. Todas las
+    // adquisiciones exitosas se liberan al terminar, hayan o no seguido hasta el handler.
+    static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RateLimitFilter(
+        params PartitionedRateLimiter<HttpContext>[] limiters) => async (context, next) =>
+    {
+        var http = context.HttpContext;
+        var leases = new List<RateLimitLease>(limiters.Length);
+        try
+        {
+            foreach (var limiter in limiters)
+            {
+                var lease = await limiter.AcquireAsync(http, 1, http.RequestAborted);
+                leases.Add(lease);
+                if (!lease.IsAcquired)
+                {
+                    return Results.Problem(
+                        title: "Demasiadas solicitudes; reintente más tarde.",
+                        statusCode: StatusCodes.Status429TooManyRequests);
+                }
+            }
+            return await next(context);
+        }
+        finally
+        {
+            foreach (var lease in leases)
+                lease.Dispose();
+        }
+    };
+
+    // Fase 1 del modo Simple (docs/analisis-futuro/modo-respuesta-simple-codigo.md)
+    // agrega un filtro determinístico + buffer para ResponseMode.Simple, con una
+    // válvula de escape de rollback sin rebuild. Si alguien la apaga vía config/env
+    // var, debe quedar bien visible en el arranque — no algo que se descubra
+    // semanas después de un incidente puntual.
+    if (!app.Services.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>().CurrentValue.EnableSimpleModeSanitizer)
+    {
+        app.Services.GetRequiredService<ILogger<Program>>().LogWarning(
+            "[RAG] EnableSimpleModeSanitizer=false — ResponseMode.Simple está transmitiendo sin " +
+            "el filtro post-generación de Fase 1 (streaming crudo, sin buffer). Revisar " +
+            "docs/analisis-futuro/modo-respuesta-simple-codigo.md antes de dejarlo así por mucho tiempo.");
+    }
+
+    // Traduce cualquier excepción no capturada por un endpoint a ProblemDetails
+    // (application/problem+json, status 500) en vez del 500 con detalle de
+    // desarrollador (HTML o texto plano) que da UseDeveloperExceptionPage o el
+    // handler por defecto sin esto. IProblemDetailsService ya sabe rellenar
+    // type/title/status — solo hace falta apuntarle el código de estado.
+    app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
+    {
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        context.RequestServices.GetRequiredService<ILogger<Program>>()
+            .LogError(feature?.Error, "Excepción no manejada en {Path}", feature?.Path);
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        var problemDetailsService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
+        await problemDetailsService.WriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = context,
+            ProblemDetails =
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Ocurrió un error interno procesando la solicitud."
+            }
+        });
+    }));
+
+    // El binding automático de minimal API (JSON malformado, o un campo que no
+    // castea al tipo esperado) ya deja el response en 400 sin cuerpo — no lanza una
+    // excepción que UseExceptionHandler pueda interceptar. UseStatusCodePages() es lo
+    // que, con AddProblemDetails() registrado arriba, rellena ese response vacío con
+    // el cuerpo application/problem+json en vez de dejarlo en Content-Length: 0.
+    app.UseStatusCodePages();
+
+    app.UseCors(ApiCorsPolicy);
+
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+
+    // Ítem 13.3: /metrics solo se mapea con Metrics:Enabled=true y Exporter="Prometheus".
+    // Igual que el resto del host, no publica más allá de lo que ya permite
+    // Transport:Published — no es una superficie autenticada aparte, es scrape local.
+    // Se lee de app.Services (config final, ya con validación disparada), no del
+    // snapshot de builder.Configuration de más arriba.
+    var metricsOptions = app.Services.GetRequiredService<IOptions<MetricsOptions>>().Value;
+    if (metricsOptions.Enabled &&
+        string.Equals(metricsOptions.Exporter, "Prometheus", StringComparison.OrdinalIgnoreCase))
+    {
+        app.MapPrometheusScrapingEndpoint("/metrics");
+    }
+
+    var defaultCollection = builder.Configuration["Qdrant:DefaultCollection"] ?? "default";
+
+    static CollectionIdentity? ReadCollectionIdentity(HttpContext http)
+    {
+        // Sólo claims de una identidad autenticada por el host. No se interpretan
+        // headers/token crudos como identidad ni se mezclan privilegios de identidades.
+        var identities = http.User.Identities.Where(identity => identity.IsAuthenticated).ToArray();
+        if (identities.Length != 1)
+            return null;
+
+        var identity = identities[0];
+        var tenants = identity.FindAll("tenant").Select(claim => claim.Value)
+            .Distinct(StringComparer.Ordinal).ToArray();
+        if (tenants.Length > 1)
+            return null;
+        var modules = identity.FindAll("module").Select(claim => claim.Value)
+            .Distinct(StringComparer.Ordinal).ToArray();
+        if (modules.Length > 1)
+            return null;
+
+        return new CollectionIdentity
+        {
+            IsAuthenticated = true,
+            Actor = new CollectionActor
+            {
+                // RoleClaimType permite el mapeo del host; "admin" es sensible a mayúsculas.
+                IsAdministrator = identity.HasClaim(ClaimTypes.Role, "admin") ||
+                    identity.HasClaim(identity.RoleClaimType, "admin"),
+                // "scope" admite claims repetidos (arrays mapeados por el host) y valores
+                // separados por espacios; "tenant" es un identificador único opcional.
+                Scopes = identity.FindAll("scope")
+                    .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                    .Distinct(StringComparer.Ordinal).ToArray(),
+                Tenant = tenants.SingleOrDefault(),
+                Module = modules.SingleOrDefault()
+            }
+        };
+    }
+
+    static RetrievalContext ResolveRetrievalContext(CollectionActor actor, CollectionAuthorizationOptions options) =>
+        options.Mode == AuthorizationMode.Local
+            ? RetrievalContext.Local
+            : RetrievalContext.ForAuthorized(actor.Tenant, actor.Module);
+
+    // Ítem 12.1: cotas literales sobre TopK/MinScore. RECHAZA (400 ProblemDetails), no
+    // recorta silenciosamente — un TopK=100000 o un MinScore=2.5 aceptado en silencio
+    // dispararía retrieval/rerank con un costo o un resultado que el cliente nunca pidió
+    // y no podría explicar. null conserva el default (perfil de colección o literal),
+    // así que un cliente que nunca manda el campo no se ve afectado.
+    const int MinTopK = 1;
+    const int MaxTopK = 100;
+
+    static IResult? ValidateRetrievalParameters(RagQueryRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+
+        if (request.TopK is { } topK && (topK < MinTopK || topK > MaxTopK))
+        {
+            errors["topK"] = [$"Debe estar entre {MinTopK} y {MaxTopK} (recibido {topK})."];
+        }
+
+        if (request.MinScore is { } minScore && (!float.IsFinite(minScore) || minScore < 0f || minScore > 1f))
+        {
+            errors["minScore"] = [$"Debe ser un número finito entre 0 y 1 (recibido {minScore})."];
+        }
+
+        return errors.Count == 0
+            ? null
+            : Results.ValidationProblem(errors, title: "Parámetros de recuperación fuera de rango.");
+    }
+
+    /// <summary>
+    /// Autoriza la colección y devuelve el manifiesto ya leído (o null si nunca se
+    /// publicó uno) para que el llamador pueda resolver el perfil de recuperación
+    /// (ítem 7.a) sin repetir el round-trip a Qdrant que ya hizo esta función.
+    /// </summary>
+    static async Task<(IResult? Denied, CollectionManifest? Manifest, CollectionActor Actor)> AuthorizeCollectionAsync(
+        string collection,
+        HttpContext http,
+        IVectorStoreAdmin store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        CancellationToken cancellationToken)
+    {
+        // Manifiesto ausente equivale a no publicado: sólo administrador, no acceso público.
+        var manifest = await store.GetManifestAsync(collection, cancellationToken);
+        // La lectura de HttpContext.User es perezosa: Local nunca toca la fuente de identidad.
+        var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
+        var denied = authorization.Authorize(manifest, actor)
+            ? null
+            : Results.Problem(
+                title: "No tiene autorización para leer esta colección.",
+                statusCode: StatusCodes.Status403Forbidden);
+        return (denied, manifest, actor);
+    }
+
+    // Ítem 12.11: un evento por consulta (search/ask, ambos transportes de ask), con
+    // ActorType SIEMPRE local_operator — el modo Empresarial de retrieval (ítem 9.1)
+    // decide autorización de colección, no identidad auditable; no existe todavía un
+    // IDP corporativo real, así que auditar como si lo hubiera sería inventar una
+    // identidad que nadie verificó. CancellationToken.None a propósito: la escritura de
+    // auditoría no debe abortarse por la cancelación de la request que está registrando,
+    // y un fallo al persistir se loguea pero NUNCA convierte una respuesta exitosa en un
+    // error de cara al cliente.
+    static async Task RecordQueryAuditAsync(
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        ILogger<Program> logger,
+        string operation,
+        string correlationId,
+        string collection,
+        AuditOutcome outcome,
+        string? detail)
+    {
+        try
+        {
+            await auditStore.RecordAsync(new AuditEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationId,
+                Operation = operation,
+                ActorType = AuditActor.TypeLocalOperator,
+                ActorId = AuditActor.ResolveId(auditOptions.Value),
+                Collection = collection,
+                Outcome = outcome,
+                Detail = detail,
+                Timestamp = DateTimeOffset.UtcNow,
+                Version = AuditEvent.CurrentVersion
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "No se pudo persistir el evento de auditoría de consulta ({Operation}/{Outcome}) para '{Collection}'.",
+                operation, outcome, collection);
+        }
+    }
+
+    // Ítem 12.9: por defecto el QueryEvent de logs operativos (rag-api-*.json) NO
+    // lleva pregunta, respuesta ni fuentes citadas — sólo metadatos. Sólo se incluye
+    // contenido si el operador activó el diagnóstico Y configuró una caducidad Y esa
+    // caducidad todavía no pasó (QueryContentDiagnostics.IsActive, con el reloj real
+    // pasado explícitamente para que la lógica de expiración sea la misma que
+    // verifican los tests puros de esa clase). Un diagnóstico activado pero ya
+    // caducado o mal configurado se avisa una vez al arrancar el host (ver más abajo,
+    // junto al resto del bootstrap), no en cada request.
+    static object BuildSearchEventContent(
+        IOptions<LoggingOptions> loggingOptions, string query, IEnumerable<object> sources)
+    {
+        var sourceList = sources.ToList();
+        return QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow)
+            ? new { Query = query, Sources = sourceList }
+            : new { QueryLength = query.Length, ResultCount = sourceList.Count };
+    }
+
+    static object BuildAskEventContent(
+        IOptions<LoggingOptions> loggingOptions, string query, string answer, IEnumerable<object> sources)
+    {
+        var sourceList = sources.ToList();
+        return QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow)
+            ? new { Query = query, Answer = answer, Sources = sourceList }
+            : new { QueryLength = query.Length, AnswerLength = answer.Length, ResultCount = sourceList.Count };
+    }
+
+    /// <summary>
+    /// Ítem 7.a: resuelve los defaults efectivos de topK/minScore para una request.
+    /// El valor explícito del cliente SIEMPRE gana; en su ausencia, el perfil de la
+    /// colección (si hay uno declarado y existe en el catálogo) decide; sin perfil
+    /// resuelto, topK/minScore caen exactamente en los literales 10/0.10f que ya
+    /// usaba este endpoint antes de ese ítem — ese baseline queda intacto.
+    ///
+    /// Ítem 7.c: rerank YA NO tiene un default silencioso a <c>true</c>. Sin valor
+    /// explícito del cliente ni perfil que lo declare, el resultado es <c>false</c>
+    /// — quien quiere pagar el costo del cross-encoder lo pide por request o lo
+    /// publica en el perfil de la colección; no vuelve a ser un efecto lateral
+    /// invisible del endpoint.
+    /// </summary>
+    static (int TopK, float MinScore, bool Rerank, PromptFamily? PromptFamily) ResolveEffectiveRetrievalDefaults(
+        RagQueryRequest request, RetrievalProfile? profile) => (
+        request.TopK ?? profile?.TopK ?? 10,
+        request.MinScore ?? profile?.MinScore ?? 0.10f,
+        request.Rerank ?? profile?.UseReRanking ?? false,
+        profile?.PromptFamily);
+
+    // El resumen de negocio ya se generó y cacheó en ingesta (Fase 2, opt-in por colección
+    // vía --con-resumen) para producir el vector dense-resumen — acá se reusa como campo de
+    // fuente, sin generar nada nuevo. Miss de caché (colección sin resumen, o chunk que cayó
+    // en el sentinel SIN_CONTENIDO_DE_NEGOCIO) simplemente deja Resumen en null.
+    //
+    // responseMode decide la forma del DTO, no solo su contenido: en Simple, un lector no
+    // técnico no puede distinguir si un fragmento de código crudo ES la respuesta, una cita,
+    // o un error — así que File/Section/StartLine/EndLine/Content se omiten por completo
+    // (SourceDto.Redacted), dejando solo Score y, si existe, el Resumen ya en lenguaje de
+    // negocio. /api/search (el botón "Buscar", una herramienta explícita de power-user) no
+    // pasa por acá con Simple — solo /api/ask y /api/ask/stream respetan el toggle.
+    static async Task<List<SourceDto>> BuildSourcesAsync(
+        IReadOnlyList<RetrievalResult> results,
+        ISummaryCache summaryCache,
+        ResponseMode responseMode,
+        CancellationToken cancellationToken)
+    {
+        var resumenes = await Task.WhenAll(
+            results.Select(r => summaryCache.TryGetAsync(r.ContentHash, cancellationToken)));
+        return results.Zip(resumenes, (r, hit) =>
+                responseMode != ResponseMode.Simple    ? SourceDto.From(r, hit.Summary)
+                : r.Metadata.Language.IsProse()        ? SourceDto.ForProse(r, hit.Summary)
+                :                                        SourceDto.Redacted(r, hit.Summary))
+            .ToList();
+    }
+
+    // Chequeo real de los tres componentes de los que depende el motor: Qdrant, Ollama
+    // y el brain de vectorización ONNX. IVectorizationBrain se resuelve desde el
+    // IServiceProvider (no por parámetro del delegate) por el mismo motivo que
+    // DoctorCommand lo resuelve perezosamente desde _services: es singleton y su
+    // InferenceSession ya se construyó en el primer uso real (embeddings/reranker),
+    // así que esto NO abre una sesión ONNX nueva por llamada — solo lee
+    // EmbeddingDimensions de la que ya vive en el contenedor. Si el modelo faltara,
+    // ese GetRequiredService fallaría aquí (dentro del try), no en el arranque del host.
+    app.MapGet("/api/health", async (
+        IVectorStoreAdmin store,
+        IHttpClientFactory httpClientFactory,
+        IOptions<OllamaOptions> ollamaOptions,
+        IServiceProvider services,
+        CancellationToken cancellationToken) =>
+    {
+        var checks = new Dictionary<string, string>();
+        var healthy = true;
+
+        try
+        {
+            await store.ListCollectionsAsync(cancellationToken);
+            checks["qdrant"] = "ok";
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["qdrant"] = $"down: {ex.Message}";
+        }
+
+        try
+        {
+            // GET a /v1/models (OpenAI-compatible, lo que Ollama expone en el
+            // Endpoint configurado): barato, no carga ningún modelo en memoria, solo
+            // confirma que el proceso de Ollama responde. Timeout corto y propio —
+            // Ollama:TimeoutSeconds (hasta 120s) es para generación, no para esto.
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(3);
+            var response = await httpClient.GetAsync(
+                $"{ollamaOptions.Value.Endpoint.TrimEnd('/')}/models", cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                checks["ollama"] = "ok";
+            }
+            else
+            {
+                healthy = false;
+                checks["ollama"] = $"down: status {(int)response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["ollama"] = $"down: {ex.Message}";
+        }
+
+        try
+        {
+            var brain = services.GetRequiredService<IVectorizationBrain>();
+            if (brain.EmbeddingDimensions > 0)
+            {
+                checks["onnx"] = $"ok ({brain.EmbeddingDimensions} dims)";
+            }
+            else
+            {
+                healthy = false;
+                checks["onnx"] = "down: EmbeddingDimensions <= 0";
+            }
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            checks["onnx"] = $"down: {ex.Message}";
+        }
+
+        return healthy
+            ? Results.Ok(new { status = "ok", checks })
+            : Results.Problem(
+                title: "Uno o más componentes del motor RAG no están disponibles.",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                extensions: new Dictionary<string, object?> { ["checks"] = checks });
+    });
+
+    // Alimenta el selector de colección de la página — así el equipo no
+    // depende de que quede fija a un proyecto (hoy innovapp-docs, mañana
+    // podría ser cualquier otra colección ingestada).
+    //
+    // Ítem 7.b: este listado usaba ListCollectionsAsync sin filtrar, así que en modo
+    // Empresarial cualquier actor autenticado (o incluso sin autenticar) veía los
+    // nombres de TODAS las colecciones, incluidas las ajenas o no publicadas —
+    // exactamente la filtración que /api/search, /api/ask y /api/ask/stream ya
+    // evitan al negar por AuthorizeCollectionAsync. Ahora aplica la misma
+    // ICollectionAuthorizationService por colección: solo entran al listado las que
+    // el actor puede leer. En modo Local (todo actor es administrador implícito),
+    // el comportamiento no cambia — sigue siendo el listado completo de siempre.
+    app.MapGet("/api/collections", async (
+        IVectorStoreAdmin store,
+        HttpContext http,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        CancellationToken cancellationToken) =>
+    {
+        var allCollections = await store.ListCollectionsAsync(cancellationToken);
+        var actor = actorResolver.Resolve(() => ReadCollectionIdentity(http));
+
+        var visibleCollections = new List<string>();
+        foreach (var collection in allCollections)
+        {
+            var manifest = await store.GetManifestAsync(collection, cancellationToken);
+            if (authorization.Authorize(manifest, actor))
+                visibleCollections.Add(collection);
+        }
+
+        return Results.Ok(new { collections = visibleCollections, @default = defaultCollection });
+    });
+
+    // Retrieval/generación/caché se resuelven después de autorizar: el binding de
+    // parámetros DI los construiría antes del handler, incluso para devolver 403.
+    app.MapPost("/api/search", async (
+        RagQueryRequest request,
+        HttpContext http,
+        IVectorStoreAdmin store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
+        IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
+        ILogger<Program> queryLogger,
+        CancellationToken cancellationToken) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+            return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+            return invalidParameters;
+
+        var collection = request.Collection ?? defaultCollection;
+        var auditCorrelationId = Guid.NewGuid().ToString();
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
+            return denied;
+        }
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
+
+        var retriever = http.RequestServices.GetRequiredService<ISemanticRetriever>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
+        var (topK, minScore, rerank, _) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
+
+        var stopwatch = Stopwatch.StartNew();
+        IReadOnlyList<RetrievalResult> results;
+        try
+        {
+            results = await retriever.SearchAsync(
+                request.Query,
+                new RetrievalOptions
+                {
+                    Context = retrievalContext,
+                    CollectionName = collection,
+                    TopK = topK,
+                    MinimumSimilarityScore = minScore,
+                    UseReRanking = rerank
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
+            throw;
+        }
+        stopwatch.Stop();
+
+        // /api/search es la herramienta "Buscar" del power-user — siempre trae el fragmento
+        // crudo con file/líneas, sin importar el toggle de respuesta simple/técnica del chat.
+        var sources = await BuildSourcesAsync(results, summaryCache, ResponseMode.Technical, cancellationToken);
+
+        queryLogger.LogInformation(
+            "QueryEvent {@Entry}",
+            new
+            {
+                Type = "search",
+                Collection = collection,
+                TopK = topK,
+                MinScore = minScore,
+                Rerank = rerank,
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                Content = BuildSearchEventContent(
+                    loggingOptions, request.Query,
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
+            });
+
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QuerySearch, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
+
+        return Results.Ok(sources);
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter));
+
+    app.MapPost("/api/ask", async (
+        RagQueryRequest request,
+        HttpContext http,
+        IVectorStoreAdmin store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
+        IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
+        ILogger<Program> queryLogger,
+        CancellationToken cancellationToken) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+            return Results.BadRequest(new { error = "El campo 'query' es obligatorio." });
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+            return invalidParameters;
+
+        var collection = request.Collection ?? defaultCollection;
+        // Ítem 13.4: span raíz del turno. Su TraceId se reusa como auditCorrelationId
+        // (mismo campo CorrelationId que ya escribe RecordQueryAuditAsync) para que
+        // auditoría, el QueryEvent de abajo y los spans de retrieval/gate/contexto/
+        // generación (creados más abajo en la misma cadena async, ver
+        // RagEngineTracing) compartan un único identificador — sin exportador
+        // configurado, StartActivity devuelve null y el Guid de siempre sigue siendo
+        // el fallback.
+        using var turnActivity = RagEngineTracing.ActivitySource.StartActivity(
+            RagEngineTracing.Steps.Turn, ActivityKind.Server);
+        turnActivity?.SetTag("rag.collection", collection);
+        var auditCorrelationId = turnActivity?.TraceId.ToString() ?? Guid.NewGuid().ToString();
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
+            return denied;
+        }
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
+
+        var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
+        var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
+        var responseMode = request.ResponseMode.ParseResponseMode();
+        turnActivity?.SetTag("rag.response_mode", responseMode.ToString());
+        turnActivity?.SetTag("rag.top_k", topK);
+        var stopwatch = Stopwatch.StartNew();
+
+        var history = request.History?.Select(t => t.ToDomain()).ToList();
+
+        // Incluye la unica recuperacion del turno; el total incluye ademas los DTOs.
+        var generationStopwatch = Stopwatch.StartNew();
+        var answer = new StringBuilder();
+        IReadOnlyList<RetrievalResult> retrievedSources = [];
+        try
+        {
+            await foreach (var update in generation.AskStreamingAsync(
+                request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
+                promptFamily, onStatus: null, cancellationToken: cancellationToken))
+            {
+                switch (update)
+                {
+                    case GenerationEvent.ContextReady context:
+                        retrievedSources = context.Sources;
+                        break;
+                    case GenerationEvent.TextDelta fragment:
+                        answer.Append(fragment.Text);
+                        break;
+                    case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined }:
+                        retrievedSources = [];
+                        break;
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            turnActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            turnActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
+            throw;
+        }
+        generationStopwatch.Stop();
+
+        var answerText = answer.ToString();
+        var sources = await BuildSourcesAsync(retrievedSources, summaryCache, responseMode, cancellationToken);
+        stopwatch.Stop();
+
+        queryLogger.LogInformation(
+            "QueryEvent {@Entry}",
+            new
+            {
+                Type = "ask",
+                TraceId = auditCorrelationId,
+                Collection = collection,
+                TopK = topK,
+                MinScore = minScore,
+                Rerank = rerank,
+                ResponseMode = responseMode,
+                HistoryTurns = history?.Count ?? 0,
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
+                Content = BuildAskEventContent(
+                    loggingOptions, request.Query, answerText,
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
+            });
+
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
+
+        return Results.Ok(new RagAskResponse(answerText, sources));
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter, generationConcurrencyLimiter));
+
+    // Variante SSE de /api/ask para la página web: en vez de bloquear hasta
+    // tener la respuesta completa, va emitiendo eventos según avanza el
+    // pipeline real (retrieval → fuentes encontradas → tokens de la
+    // generación) para que el front pueda mostrar progreso genuino en vez de
+    // un mensaje fijo de "espera".
+    app.MapPost("/api/ask/stream", async (
+        RagQueryRequest request,
+        HttpContext http,
+        IVectorStoreAdmin store,
+        ICollectionActorResolver actorResolver,
+        ICollectionAuthorizationService authorization,
+        IOptions<CollectionAuthorizationOptions> authorizationOptions,
+        IRetrievalProfileResolver profileResolver,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        IOptions<LoggingOptions> loggingOptions,
+        ILogger<Program> queryLogger,
+        CancellationToken cancellationToken) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            http.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await http.Response.WriteAsJsonAsync(new { error = "El campo 'query' es obligatorio." }, cancellationToken);
+            return;
+        }
+        if (ValidateRetrievalParameters(request) is { } invalidParameters)
+        {
+            await invalidParameters.ExecuteAsync(http);
+            return;
+        }
+
+        var collection = request.Collection ?? defaultCollection;
+        using var turnActivity = RagEngineTracing.ActivitySource.StartActivity(
+            RagEngineTracing.Steps.Turn, ActivityKind.Server);
+        turnActivity?.SetTag("rag.collection", collection);
+        var auditCorrelationId = turnActivity?.TraceId.ToString() ?? Guid.NewGuid().ToString();
+        var (denied, manifest, actor) = await AuthorizeCollectionAsync(
+            collection, http, store, actorResolver, authorization, cancellationToken);
+        if (denied is not null)
+        {
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Denied, detail: null);
+            await denied.ExecuteAsync(http);
+            return;
+        }
+        var retrievalContext = ResolveRetrievalContext(actor, authorizationOptions.Value);
+
+        var generation = http.RequestServices.GetRequiredService<IRagGenerationService>();
+        var summaryCache = http.RequestServices.GetRequiredService<ISummaryCache>();
+        var (topK, minScore, rerank, promptFamily) = ResolveEffectiveRetrievalDefaults(
+            request, profileResolver.Resolve(manifest));
+        var responseMode = request.ResponseMode.ParseResponseMode();
+        turnActivity?.SetTag("rag.response_mode", responseMode.ToString());
+        turnActivity?.SetTag("rag.top_k", topK);
+        http.Response.Headers.CacheControl = "no-cache";
+        http.Response.ContentType = "text/event-stream";
+
+        async Task SendAsync(string eventName, object payload)
+        {
+            // JsonSerializerOptions.Web replica el camelCase que Results.Ok() ya
+            // aplica en /api/search y /api/ask — sin esto, el front recibiría
+            // "File"/"Section" en vez de "file"/"section" y no matchearía.
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                payload, System.Text.Json.JsonSerializerOptions.Web);
+            await http.Response.WriteAsync($"event: {eventName}\ndata: {json}\n\n", cancellationToken);
+            await http.Response.Body.FlushAsync(cancellationToken);
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+
+        await SendAsync("status", new { message = "Buscando en la documentación..." });
+
+        List<SourceDto> sources = [];
+        var history = request.History?.Select(t => t.ToDomain()).ToList();
+
+        // Ambos transportes miden ahora el mismo tramo: retrieval + generacion.
+        var generationStopwatch = Stopwatch.StartNew();
+        var answer = new StringBuilder();
+        try
+        {
+            await foreach (var update in generation.AskStreamingAsync(
+                request.Query, collection, retrievalContext, topK, minScore, rerank, responseMode, history,
+                promptFamily,
+                onStatus: async (message, ct) => await SendAsync("status", new { message }),
+                cancellationToken: cancellationToken))
+            {
+                switch (update)
+                {
+                    case GenerationEvent.ContextReady context:
+                        sources = await BuildSourcesAsync(context.Sources, summaryCache, responseMode, cancellationToken);
+                        await SendAsync("sources", new { sources });
+                        await SendAsync("status", new { message = sources.Count > 0
+                            ? $"Generando respuesta a partir de {sources.Count} fragmentos..."
+                            : "Generando respuesta..." });
+                        break;
+                    case GenerationEvent.TextDelta fragment:
+                        answer.Append(fragment.Text);
+                        await SendAsync("token", new { text = fragment.Text });
+                        break;
+                    case GenerationEvent.Completed { Outcome: GenerationOutcome.ModelDeclined } when sources.Count > 0:
+                        sources = [];
+                        await SendAsync("sources", new { sources });
+                        break;
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // El cliente cortó la conexión — no hay a quién mandarle un evento de error.
+            turnActivity?.SetStatus(ActivityStatusCode.Error, "cancelled");
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Cancelled, detail: null);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Ítem 8.e: para acá la respuesta SSE ya se abrió (los eventos "status"/
+            // "sources" de arriba ya salieron), así que los headers ya se escribieron —
+            // no se puede convertir esto en un ProblemDetails 500 como hace
+            // UseExceptionHandler para /api/ask, que sí puede porque nada se había
+            // escrito todavía. Tampoco se reintenta: si ya se emitieron fragmentos de
+            // "token", reabrir la generación duplicaría lo que el cliente ya recibió
+            // (ChatAnswerStreamer ya no reintenta una vez abierto el stream, por la
+            // misma razón). Se cierra limpio con un evento "error" y se corta acá, sin
+            // "done" ni el log de QueryEvent de abajo, que asume una respuesta completa.
+            // Ítem 12.9: el mensaje de error NO incluye la pregunta por defecto — mismo
+            // criterio de minimización que el QueryEvent de abajo.
+            turnActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            if (QueryContentDiagnostics.IsActive(loggingOptions.Value, DateTimeOffset.UtcNow))
+                queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream para '{Query}'", request.Query);
+            else
+                queryLogger.LogError(ex, "Fallo generando respuesta en /api/ask/stream (longitud de query: {QueryLength})", request.Query.Length);
+            await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+                AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Failed, ex.Message);
+            await SendAsync("error", new { message = "Ocurrió un error generando la respuesta." });
+            return;
+        }
+        generationStopwatch.Stop();
+
+        stopwatch.Stop();
+
+        queryLogger.LogInformation(
+            "QueryEvent {@Entry}",
+            new
+            {
+                Type = "ask",
+                Transport = "sse",
+                TraceId = auditCorrelationId,
+                Collection = collection,
+                TopK = topK,
+                MinScore = minScore,
+                Rerank = rerank,
+                ResponseMode = responseMode,
+                HistoryTurns = history?.Count ?? 0,
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                GenerationDurationMs = generationStopwatch.ElapsedMilliseconds,
+                Content = BuildAskEventContent(
+                    loggingOptions, request.Query, answer.ToString(),
+                    sources.Select(s => (object)new { s.File, s.Section, s.StartLine, s.EndLine, s.Score }))
+            });
+
+        await RecordQueryAuditAsync(auditStore, auditOptions, queryLogger,
+            AuditOperations.QueryAsk, auditCorrelationId, collection, AuditOutcome.Success, detail: null);
+
+        await SendAsync("done", new { });
+    })
+    .AddEndpointFilter(RateLimitFilter(requestRateLimiter, generationConcurrencyLimiter));
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "El host terminó inesperadamente debido a una excepción fatal.");
+}
+finally
+{
+    // Libera el entorno global de ONNX, igual que hace el CLI.
+    //
+    // Aquí hubo una nota que decía lo contrario ("la API ya cierra con exit 0, no hay
+    // problema que arreglar"). Estaba equivocada, y el ítem 1.13 del ledger midió por
+    // qué: aquella medición apagó la API sin haberle hecho ninguna consulta, y la
+    // InferenceSession se construye perezosamente en el primer request. Un host que
+    // nunca vectorizó nada no toca el runtime nativo y, efectivamente, sale 0.
+    //
+    // Con una sola consulta servida, la API aborta exactamente igual que abortaba el
+    // CLI. Medido el 2026-08-24 sobre este host: 3 de 3 apagados con SIGINT tras un
+    // POST /api/search terminaron en exit 134 con 'libc++abi: mutex lock failed';
+    // 2 de 2 apagados sin consulta previa terminaron en 0.
+    //
+    // La otra mitad de la hipótesis vieja —que este host no destruye el contenedor de
+    // DI y por eso la sesión sobrevive— también es falsa: WebApplication.Run() destruye
+    // el host en su propio finally, y una traza en OnnxVectorizationBrain.Dispose
+    // confirmó que corre al recibir SIGINT. La sesión se liberaba bien; lo que quedaba
+    // sin liberar era el OrtEnv global, que es justo lo que arregla Shutdown().
+    //
+    // Va aquí, después de app.Run(), porque para entonces el contenedor ya se destruyó
+    // y no quedan sesiones vivas — la misma precondición que documenta Shutdown().
+    OnnxRuntimeLifetime.Shutdown();
+
+    Log.CloseAndFlush();
+}
+
+// Marcador necesario para WebApplicationFactory<Program> (5.f.4-harness-4-actores):
+// los top-level statements generan una clase Program interna por defecto, invisible
+// desde el ensamblado de tests. Esta declaración parcial y pública no cambia ningún
+// comportamiento de arranque — solo expone el tipo de entrada para el harness HTTP.
+public partial class Program;

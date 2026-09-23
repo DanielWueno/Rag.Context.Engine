@@ -1,0 +1,29 @@
+{
+  "_procedencia": "Raices = repos fuente que replicate-env/scripts/04-ingest-collections.sh realmente ingesta como colecciones de Qdrant (ver ../../replicate-env/scripts/03-clone-source-repos.sh y 04-ingest-collections.sh). Rutas relativas a $HOME/Documents/Projects, la misma convencion que usan esos scripts.",
+  "_excluidas_deliberadamente": [
+    "rag-engine: es el propio motor (codigo del proyecto), no corpus de negocio; se audita aparte si hace falta.",
+    "Reyma.InnovApp: existe en disco pero NO es una coleccion ingestada (decision D-1 registrada en docs/analisis-futuro/plan-refinamiento-arquitectonico-produccion.md#7): su entrada como coleccion es un item aparte (15.6), no parte de este censo de raices autorizadas."
+  ],
+  "raices": [
+    {
+      "nombre": "bsuite-repo",
+      "coleccion": "bsuite-repo",
+      "ruta": "~/Documents/Projects/BusinessSuite.Xaf"
+    },
+    {
+      "nombre": "innovapp-docs",
+      "coleccion": "innovapp-docs",
+      "ruta": "~/Documents/Projects/docs-bsute-innovapp-plan"
+    },
+    {
+      "nombre": "micro-repo",
+      "coleccion": "micro-repo",
+      "ruta": "~/Documents/Projects/Reyma.TI.Tickets.Microservice"
+    },
+    {
+      "nombre": "wiki-solis",
+      "coleccion": "wiki-solis",
+      "ruta": "~/Documents/Projects/Business-Suite"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "item": "15.2.1-preparar-oraculo-y-comparador",
+  "kind": "instrument_preparation_not_retrieval_result",
+  "collection": "bsuite-repo",
+  "historical_audit": "docs/eval/baselines/bsuite-repo.6d-symbol-join-audit.json",
+  "dataset": "docs/eval/bsuite-repo.eval-set.json",
+  "population": {"total": 84, "salto": 20, "salto-negativo": 9, "fuera-de-dominio": 8},
+  "selection": {
+    "primary": "Una oportunidad por consulta salto, en orden del eval-set: llamada y archivo de entrada ya descritos en Note, verificados contra fuente. Semilla: chunk que contiene esa llamada; destinos: fragmentos indexados de la definicion real del metodo. No seleccionar por resultados de ningun brazo.",
+    "secondary": "Segunda vuelta en orden de consulta: desde la definicion primaria, primera llamada no cualificada a otro metodo declarado en la MISMA clase y presente en el indice, en orden de aparicion en fuente. Excluir recursividad, constructores, propiedades, extensiones, framework y llamadas con receptor externo. Una por consulta, hasta completar 30. Inventario y exclusiones en review.json; no se amplian despues de resultados.",
+    "assignment": "Ejecutar cada oportunidad con su semilla explicita, sin pasar destinos esperados al brazo. Registrar la lista ordenada de hasta 20 candidatos efectivamente devueltos, sin la semilla. El PRIMER candidato es la unica prediccion, no buscar el esperado entre los restantes. Lista vacia es abstencion (0/30); error de ejecucion es evidencia incompleta. Cada ID devuelto puede acreditar como maximo una oportunidad de la misma consulta/brazo, en orden congelado. Repetirlo es error, nunca otro acierto. Consultas distintas son invocaciones independientes.",
+    "difference_from_6d": "6.d etiqueto 30 candidatos historicos de 19 consultas, sin IDs de semilla, 6 correctos/24 colisiones. Esta muestra mide resolucion condicionada a 30 semillas de fuente (20 entradas y 10 dependencias internas), NO precision natural del top-5 recuperado ni reconstruccion de aquellas expansiones. Algunas semillas son reglas de negocio, no controladores. Mayor precision aqui no prueba ganancia de recall: se exige ademas A/B independiente sobre las 84 consultas con semillas normales del retrieval. No comparar 27/30 directamente con 6/30 como ganancia causal.",
+    "review": "Revision directa de llamadas, receptores, definiciones y contenido contra BusinessSuite.Xaf, antes de implementar/ejecutar brazos. Independiente de los brazos, NO segundo revisor humano ni compilacion semantica. Las notas del eval-set orientan pero no sustituyen la fuente.",
+    "chunk_versions": "IDs y content_hash del indice se conservan literalmente. Version experimental = fingerprint de payloads/vectores de todos los puntos; SHA256 adicional de content. Revision del corpus es la verificada hoy, NO revision de ingesta inferida. Rangos source_evidence se obtienen por coincidencia de contenido sin whitespace; rangos de payload se conservan aparte porque hay desfases preexistentes."
+  },
+  "arms": ["no-expansion", "name-join", "syntax", "semantic", "graph"],
+  "alternatives": ["syntax", "semantic", "graph"],
+  "precision_control": "name-join",
+  "recall_latency_control": "no-expansion",
+  "parameters": {
+    "top_k": 10,
+    "min_score": 0.1,
+    "rerank": false,
+    "context": "local",
+    "seed_results": 5,
+    "max_seed_symbols": 50,
+    "max_expansion_results": 20,
+    "expansion_weight": 0.8,
+    "fusion": {"WeightCodigo": 1.0, "WeightSparse": 1.3, "WeightResumen": 2.5, "RrfK": 60},
+    "embedding": {"model": "paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx", "tokenizer": "SentencePiece", "max_sequence_length": 256, "dimensions": 384},
+    "prefetch_limit": 40,
+    "primary_pool_without_expansion": 10,
+    "primary_pool_with_expansion": 30
+  },
+  "thresholds": {"correct_destinations": 27, "denominator": 30, "jump_gain": 5, "outside_losses": 0, "p95_delta_ms": 150},
+  "recall": {
+    "metric": "hit_any_at_10: basename SourceFile/SourceFiles ordinal ignore case Y al menos un TargetContentContains literal ordinal en content. Misma semantica de EvalCommand.Evaluate. Recalcular por IDs contra anchor_ids capturados del indice, no confiar en booleanos declarados por el brazo.",
+    "outside": "Cero perdidas individuales en las 56 consultas respondibles fuera de salto, incluidos los 9 salto-negativo. Informar tambien perdidas dentro de salto, no solo neto.",
+    "unanchored": "Las 8 fuera-de-dominio no tienen verdad de recall y nunca son aciertos artificiales. Exigir cobertura/latencia y reportar IDs. Como guardia de ruido, ningun ID nuevo @10 respecto al control sin expansion; no afirmar precision de respuestas ni calibracion del gate.",
+    "replicas": "IDs y orden de hits iguales en las cinco replicas por brazo/consulta; variacion deja evidencia incompleta, no promediar etiquetas ni escoger replica favorable."
+  },
+  "latency": {
+    "warmup_passes": 1,
+    "replicas": 5,
+    "clock": "time.monotonic_ns o Stopwatch monotonic; desde entrada a SearchAsync hasta resultados materializados, incluye expansion, excluye serializacion/inicio del proceso/compilacion",
+    "order": "Warmup: consultas en orden de dataset, cinco brazos en orden declarado. Medicion: replica 0..4, consulta 0..83, rotar lista de brazos a la izquierda (replica+consulta)%5. Un solo proceso estable por brazo, secuencial, sin concurrencia ni otros escritores. Cada llamada lleva sequence continuo y elapsed_ms > 0.",
+    "p95": "Nearest rank: sorted(420 latencias medidas por brazo)[ceil(0.95*420)-1]. No incluir warmup, no percentil de promedios ni interpolacion. Delta = p95(candidato)-p95(no-expansion), <=150 ms.",
+    "build_update": "Registrar segundos de construccion y actualizacion por brazo por separado, incluso cero justificado para controles sin estado; hashes de binario/fuentes del runner y de cada implementacion. No sustituir latencia de busqueda por latencia del proceso CLI."
+  },
+  "provenance": {
+    "freeze": "freeze.json sella protocolo, instrumentos, tests, review, oportunidades, fixture de grafo, cohorte/anchor_ids y manifiestos de corpus/indice por SHA256. No re-sellar despues de observar brazos. Cambios justificados exigen version nueva y volver a medir TODOS los brazos, conservando evidencia anterior.",
+    "experiment": "Evidencia debe referenciar freeze_sha256, index_sha256, collection_config_sha256, hashes de modelo/tokenizador y corpus_manifest_sha256 identicos antes/despues de cada brazo; todas las consultas/replicas/controles son obligatorias. config efectiva compartida = parameters del protocolo, sin override por perfil/manifiesto; variantes solo mecanismo de expansion. Capturar command, engine_commit, implementation_sha256, runner_sha256, runtime y hardware del experimento. Huellas de modelo/config en preparation.json; no copiar defaults como si fueran opciones efectivas medidas.",
+    "failure": "Exit 2 = evidencia incompleta/invalida. Exit 0 + complete_no_promotion = experimento completo sin alternativa elegible (hipotesis nula valida). Exit 0 + complete_with_eligible = elegibilidad, no permiso de desplegar ni prueba de wiring."
+  },
+  "graph": {
+    "contract": "graph-fixtures.json define operaciones y observaciones esperadas de alta, actualizacion atomica, interrupcion antes de commit, reanudacion/replay idempotente, borrado y ACL en cada salto. Versionar nodos y extremos de aristas; no huerfanos. El runner consume input, no expected; entrega estado persistido y trazas de cada salto tras ejecutar realmente las operaciones.",
+    "promotion": "Si graph satisface metricas, exigir todas las observaciones exactas del fixture. Ausentes = experimento incompleto; observaciones completas pero incorrectas = grafo no elegible, no fingir falta de evidencia. No obligar a desplegar grafo si gana una alternativa menor; desempate de preferencia syntax, semantic, graph."
+  },
+  "scope": "Preparacion local; cero LLM, prototipos, ingestas, nuevos servicios o cambios en retrieval/indices/caches. Fuente e indice servido solo lectura. El resultado de esta fase no es una medicion de precision/recall de alternativas.",
+  "rollback": "Revertir instrumentos y artefactos nuevos del item, preservando auditoria, dataset, corpus y colecciones."
+}

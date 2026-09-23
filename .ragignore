@@ -1,0 +1,19 @@
+# Exclusiones de CORPUS (sintaxis .gitignore).
+#
+# El escáner de ingesta ya respeta .gitignore: lo que el repo declara como "no es
+# fuente" (bin/, obj/, logs/, models/) tampoco entra al índice, sin repetirlo aquí.
+# Este archivo es para lo contrario: cosas VERSIONADAS y legítimas que aun así no
+# aportan a la búsqueda semántica.
+#
+# Gana la última regla que coincide, y `!patrón` re-incluye — también sirve para
+# rescatar algo que .gitignore excluye.
+
+# Salida de máquina del arnés de evaluación: baselines y corridas A/B. Son cifras
+# de una ejecución concreta, no conocimiento sobre el sistema; al indexarlas
+# compiten en el retrieval con el código y la documentación reales.
+docs/eval/baselines/
+docs/eval/quality/
+
+# Los eval-set SÍ se conservan: las preguntas están escritas a mano y describen
+# qué se espera del motor.
+!docs/eval/*.eval-set.json

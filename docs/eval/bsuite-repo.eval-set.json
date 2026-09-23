@@ -1,0 +1,846 @@
+[
+  {
+    "Question": "¿En qué estatus deben estar los activos relacionados para poder finalizar una recolección?",
+    "Category": "literal",
+    "SourceFile": "RecoleccionActivo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Para finalizar la recolección, todos los activos relacionados deberán estar en estatus EnRecolección."
+    ],
+    "Note": "FinalizarDetallesRecoleccion: si Mantenimiento es null, todos los detalles deben tener ActivoComputo.Estatus == EnRecoleccion."
+  },
+  {
+    "Question": "¿Por qué no se puede cancelar una entrega contable que ya tiene facturas pagadas?",
+    "Category": "literal",
+    "SourceFile": "EntregaContable.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Error, no se puede cancelar la entrega, una o más facturas ya fueron pagadas."
+    ],
+    "Note": "EntregaContable.BeforeEstatusChange, rama Cancelado."
+  },
+  {
+    "Question": "¿Qué pasa si el saldo de una cuenta por pagar queda por debajo de cero?",
+    "Category": "literal",
+    "SourceFile": "Transaccion.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El saldo de la cuenta por pagar no puede ser menor a cero"
+    ],
+    "Note": "Transaccion.Recalculate: lanza si Saldo < 0; si Saldo == 0 marca la transacción como Pagado."
+  },
+  {
+    "Question": "¿Qué se valida sobre la caja chica al registrar un préstamo?",
+    "Category": "literal",
+    "SourceFile": "Prestamo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La caja chica seleccionada no está asociada a una central de caja chica."
+    ],
+    "Note": "Prestamo: busca CentralCajaChicaCajaChica de la caja chica; si no existe, aborta."
+  },
+  {
+    "Question": "¿Qué restricción hay entre la moneda de las transacciones y la de la cuenta bancaria con la que se paga?",
+    "Category": "literal",
+    "SourceFile": "Pago.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Existen transacciones asociadas al pago que no son de la misma moneda que de la cuenta bancaria con la que desea pagar."
+    ],
+    "Note": "Pago.OnSaving, sólo en IsNewInSession(): detecta detalles en MXN cuando la moneda del pago no es MXN."
+  },
+  {
+    "Question": "¿Qué requisito tienen los productos especiales o genéricos dentro de una solicitud de compra?",
+    "Category": "literal",
+    "SourceFile": "SolicitudCompraDetalle.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Error, Productos especiales (Genericos) deben tener una requisición de material."
+    ],
+    "Note": "SolicitudCompraDetalle.OnSaving: ProductoLigero.EsEspecial y RequisicionMaterialDetalle == null."
+  },
+  {
+    "Question": "¿Cuándo una requisición de material no es candidata a reversa?",
+    "Category": "literal",
+    "SourceFile": "RequisicionMaterial.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Esta requisición no es candidato a reversa, no cuenta con el respaldo de datos requerido."
+    ],
+    "Note": "RequisicionMaterial.RevertDetails: exige que existan RequisicionMaterialDetalleRespaldo del Master."
+  },
+  {
+    "Question": "¿Qué se valida sobre el almacén antes de afectar el inventario en una entrada de cómputo?",
+    "Category": "literal",
+    "SourceFile": "AlmacenComputoEntrada.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Error, El almacén no gestiona inventario."
+    ],
+    "Note": "Además del permiso del usuario sobre el almacén, el almacén debe gestionar inventario."
+  },
+  {
+    "Question": "¿Puede un usuario cerrar un ticket de cómputo asignado a otro departamento?",
+    "Category": "literal",
+    "SourceFile": "TicketComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El ticket corresponde a otro departamento."
+    ],
+    "Note": "ValidaCerrarTicket: compara PersonalAsignado.Departamento con el departamento del empleado en sesión."
+  },
+  {
+    "Question": "¿Se puede usar la misma comprobación de préstamo en dos solicitudes de reembolso distintas?",
+    "Category": "literal",
+    "SourceFile": "SolicitudReembolsoDetalle.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La comprobación de préstamo ya está asociado a una solicitud de reembolso."
+    ],
+    "Note": "SolicitudReembolsoDetalle.OnSaving: relee la PrestamoComprobacion de la base y compara su SolicitudReembolso contra el Master."
+  },
+  {
+    "Question": "¿Qué nombre debe tener la hoja de la plantilla de Excel al importar un inventario cíclico?",
+    "Category": "literal",
+    "SourceFile": "InventarioCiclico.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PLANTILLA INVENTARIO CIEGO"
+    ],
+    "Note": "InventarioCiclico: valida ws.Name contra el literal antes de exportar el rango a DataTable."
+  },
+  {
+    "Question": "¿Qué ocurre al registrar una salida de almacén con un producto marcado como nuevo?",
+    "Category": "literal",
+    "SourceFile": "SalidaDetalle.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Hay productos bloqueados para la salida, favor de verificar."
+    ],
+    "Note": "SalidaDetalle.OnSaving: Producto.ProductoNuevo bloquea la salida. El mensaje análogo de entrada vive en otros archivos."
+  },
+  {
+    "Question": "¿Cómo se decide si un equipo de cómputo pertenece a primera, segunda o tercera línea según su antigüedad?",
+    "Category": "parafraseada",
+    "SourceFile": "ClasificacionActivoComputoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "if (fecha.Date < fechaActual.AddYears(-6).Date)"
+    ],
+    "Note": "BuscarLineaClasificacion: >6 años TerceraLinea, >3 años SegundaLinea, hasta hoy PrimeraLinea, futuro Ninguno."
+  },
+  {
+    "Question": "¿Qué pasa cuando el día de aniversario de un contrato no existe en el mes, por ejemplo el 31 en febrero?",
+    "Category": "parafraseada",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "return Math.Min(diaBaseContrato, ultimoDiaDelMes);"
+    ],
+    "Note": "CalcularDiaAjustadoAniversario: se ajusta al último día válido del mes (lógica LEAST de MAKE_DATE)."
+  },
+  {
+    "Question": "¿Qué significa que un contrato de licencias se renueve por sí solo al vencer?",
+    "Category": "parafraseada",
+    "SourceFile": "Contrato.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Especifica si el contrato será recurrente, es decir, que se creará en automático uno nuevo después de la fecha vencimiento"
+    ],
+    "Note": "Propiedad EsRecurrente de Contrato (LicenciasServicios); ContratoNuevoGenerado marca si ya se generó el sucesor."
+  },
+  {
+    "Question": "¿Qué relación debe haber entre las cantidades mínima y máxima de un producto en el almacén?",
+    "Category": "parafraseada",
+    "SourceFile": "Existencia.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El Stock Mínimo debe ser menor al Stock Máximo"
+    ],
+    "Note": "RuleCriteria C_Existencia_StockMin_LT / C_Existencia_StockMax_GT declaradas sobre la clase Existencia."
+  },
+  {
+    "Question": "¿Se pueden juntar préstamos de distintas cajas chicas en una misma solicitud de reembolso?",
+    "Category": "parafraseada",
+    "SourceFile": "PrestamoViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Seleccione únicamente préstamos de la misma caja chica para generar las solicitudes de reembolso"
+    ],
+    "Note": "PrestamoViewController: la misma regla se repite para el reembolso normal y el fiscal; el ancla es el tramo común a ambos mensajes."
+  },
+  {
+    "Question": "¿Por qué un usuario ve solamente algunas subfamilias en la consulta de existencias de cómputo?",
+    "Category": "parafraseada",
+    "SourceFile": "FiltroExistenciasComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Retorna la cláusula WHERE adicional según el departamento del usuario."
+    ],
+    "Note": "FiltroSubfamilia: agrega 'AND sub.oid IN (...)' salvo que el usuario sea administrador."
+  },
+  {
+    "Question": "¿Qué impide cerrar un ticket cuyo diagnóstico sigue pendiente de autorización digital?",
+    "Category": "parafraseada",
+    "SourceFile": "TicketComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "ya que requiere del proceso de autorización digital del diagnóstico."
+    ],
+    "Note": "ValidaCerrarTicket: cualquier diagnóstico en RequiereAutorizacion o EnAutorizacion bloquea el cierre."
+  },
+  {
+    "Question": "¿Puede repetirse el mismo número telefónico entre dos líneas de telefonía?",
+    "Category": "parafraseada",
+    "SourceFile": "LineaTelefonia.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El No. Teléfono debe de ser único, el mismo valor ya existe."
+    ],
+    "Note": "RuleCriteria U.LineaTelefonia.Telefono declarada sobre la clase, con SkipNullOrEmptyValues = false."
+  },
+  {
+    "Question": "¿Puede haber dos activos de cómputo con el mismo código de barras?",
+    "Category": "parafraseada",
+    "SourceFile": "ActivosComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El Codigo Barras debe de ser único, el mismo valor ya existe."
+    ],
+    "Note": "RuleCriteria U_Activos_Computo_CodigoBarras sobre ActivosComputo, apoyada en la propiedad EsActivoDuplicado."
+  },
+  {
+    "Question": "¿Qué validación existe entre la fecha de inicio y la de finalización de un proyecto?",
+    "Category": "parafraseada",
+    "SourceFile": "SolicitudServicio.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La Fecha de finalización no es valida."
+    ],
+    "Note": "RuleCriteria C_SolicitudServicio_FechaFinalizacion: FechaFinalizacion > FechaInicio."
+  },
+  {
+    "Question": "¿Qué monto mínimo debe tener un vale de gasto de viáticos para poder continuar?",
+    "Category": "parafraseada",
+    "SourceFile": "SolicitudViaticoBlazor.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El Monto Entregado debe ser mayor a $0.00 para continuar."
+    ],
+    "Note": "RuleCriteria del contexto ValeGasto, con TargetCriteria Estatus = 'Progreso'."
+  },
+  {
+    "Question": "¿Se puede repetir la clave corta de una subrama dentro de la misma categoría?",
+    "Category": "parafraseada",
+    "SourceFile": "Subrama.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Error, Clave Corta ya existe para la misma Categoría."
+    ],
+    "Note": "RuleCriteria C_Subrama_AlmacenSubramaND apoyada en el método ValidaDuplicidad."
+  },
+  {
+    "Question": "¿De qué clase base deben heredar los objetos de negocio del sistema?",
+    "Category": "parafraseada",
+    "SourceFile": "constitution.md",
+    "TargetSectionHeader": "I. XAF Module Architecture",
+    "TargetContentContains": [
+      "Los objetos de negocio deben heredar de `AuditEstatusBaseObject` excepto cuando se necesite consecutivo"
+    ],
+    "Note": "Documento de gobernanza del repositorio (.specify/memory/constitution.md), no código. Prueba que el corpus mixto código+docs no entierra la prosa."
+  },
+  {
+    "Question": "¿En qué idioma se deben nombrar las clases y propiedades nuevas del proyecto?",
+    "Category": "parafraseada",
+    "SourceFile": "constitution.md",
+    "TargetSectionHeader": "I. XAF Module Architecture",
+    "TargetContentContains": [
+      "Todas las nuevas clases, propiedades y campos DEBEN estar en español"
+    ],
+    "Note": "Principio VII de la constitución, declarado NON-NEGOTIABLE."
+  },
+  {
+    "Question": "¿En qué momento se le asigna el folio consecutivo a un documento de compras?",
+    "Category": "parafraseada",
+    "SourceFile": "ProcesoBaseObject.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Folio = ObtenerSecuencia(Prefijo, Namespace);"
+    ],
+    "Note": "ProcesoBaseObject.OnSaving, sólo cuando IsNewInSession(); si Namespace es null aborta antes de pedir la secuencia."
+  },
+  {
+    "Question": "¿Qué se hace con las refacciones cuando se dan de baja desde un mantenimiento correctivo?",
+    "Category": "parafraseada",
+    "SourceFile": "ActivosComputoRefaccion.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Baja de refaccion en activo desde el mantenimiento correctivo."
+    ],
+    "Note": "Resumen XML de los métodos de baja de refacción en ActivosComputoRefaccion."
+  },
+  {
+    "Question": "¿Cómo se avisa por correo al personal cuando se le asigna internamente un ticket?",
+    "Category": "parafraseada",
+    "SourceFile": "EmailHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Envía la notificación de asignación interna de un Ticket al personal asignado."
+    ],
+    "Note": "EmailHelper del módulo Cómputo. Ojo: existe otro EmailHelper.cs en Compras; el ancla sólo aparece en el de Cómputo."
+  },
+  {
+    "Question": "¿Qué pasa si el monto de un préstamo se sale del rango permitido por la excepción del concepto?",
+    "Category": "parafraseada",
+    "SourceFile": "Prestamo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El Monto Prestado esta fuera del rango permitido para la excepción del concepto seleccionado."
+    ],
+    "Note": "Sólo aplica cuando la central de caja chica tiene grupo autorizador y existe ConceptoPrestamoExcepcion activa para el concepto."
+  },
+  {
+    "Question": "¿Qué hace el método CalcularDiaAjustadoAniversario y qué recibe?",
+    "Category": "simbolo",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public static int CalcularDiaAjustadoAniversario(int diaBaseContrato, DateTime fechaObjetivo)"
+    ],
+    "Note": "Firma exacta. La pregunta nombra el símbolo: es el caso que las olas 5 y 6 deben mover."
+  },
+  {
+    "Question": "¿Qué valida el método ValidaCerrarTicket?",
+    "Category": "simbolo",
+    "SourceFile": "TicketComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public bool ValidaCerrarTicket()"
+    ],
+    "Note": "Firma exacta del método en TicketComputo."
+  },
+  {
+    "Question": "¿Qué hace RevertDetails en la requisición de material?",
+    "Category": "simbolo",
+    "SourceFile": "RequisicionMaterial.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public void RevertDetails(Session s)"
+    ],
+    "Note": "Firma exacta; el cuerpo borra los detalles vigentes y los repuebla desde RequisicionMaterialDetalleRespaldo."
+  },
+  {
+    "Question": "¿Qué devuelve BuscarLineaClasificacion?",
+    "Category": "simbolo",
+    "SourceFile": "ClasificacionActivoComputoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public static TipoClasificacion BuscarLineaClasificacion(IObjectSpace os, DateTime fecha)"
+    ],
+    "Note": "Firma exacta; devuelve un TipoClasificacion."
+  },
+  {
+    "Question": "¿Qué obliga a implementar la interfaz IEntidadReport?",
+    "Category": "simbolo",
+    "SourceFile": "IEntidadReport.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "XtraReport Report();"
+    ],
+    "Note": "IEntidadReport declara XtraReport Report() y short NumberOfPrintCopies. El ancla es la firma del método, no la declaración de la interfaz: el chunker de hoy no indexa la línea 'public interface IEntidadReport : IEntidad' (ver el hallazgo anotado en el README de docs/eval)."
+  },
+  {
+    "Question": "¿Qué sobrecargas de Create ofrece el proveedor de GUID COMB?",
+    "Category": "simbolo",
+    "SourceFile": "IProvider.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Guid Create(Guid value, DateTime timestamp);"
+    ],
+    "Note": "ICombProvider expone Create() y tres sobrecargas. El archivo se llama IProvider.cs y el tipo ICombProvider: desalineación deliberada nombre-de-archivo/símbolo. El chunker no indexa la declaración de la interfaz, sólo sus miembros."
+  },
+  {
+    "Question": "¿De qué hereda y qué interfaces implementa la clase AlmacenComputoEmpleado?",
+    "Category": "simbolo",
+    "SourceFile": "AlmacenComputoEmpleado.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      ": AuditEstatusBaseObject, IEntidadUndeletable, IEstatusBaja, IEstatusUndo, IEntidadDelayed"
+    ],
+    "Note": "El ancla conserva la base y todas las interfaces que pide la pregunta, dentro de AlmacenComputoEmpleado.cs. Desde 5.g el chunker normaliza un espacio antes de ':', mientras la fuente no lo lleva. Se usa el sufijo desde ':' que existe literalmente en ambos, sin depender de ese whitespace. Corregida el 2026-09-12 antes del A/B de 5.h; cambia eval_set_hash y no es comparable directamente con el baseline historico."
+  },
+  {
+    "Question": "¿Qué hace BeforeEstatusChange en EntregaContable cuando el estatus pasa a Cancelado?",
+    "Category": "simbolo",
+    "SourceFile": "EntregaContable.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "No se puede cancelar la Entrega Contable actual, no cuenta con el permiso necesario."
+    ],
+    "Note": "Ruta: permiso especial AuthCancelacionDirectaPago, o una Autorizacion vigente; si no hay ninguna, aborta."
+  },
+  {
+    "Question": "¿Qué hace ValidarFechaAniversarioAjustada y qué devuelve?",
+    "Category": "simbolo",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public static (bool esValido, string mensajeError) ValidarFechaAniversarioAjustada("
+    ],
+    "Note": "Devuelve una tupla (esValido, mensajeError)."
+  },
+  {
+    "Question": "¿Qué propiedad de ActivosComputo desactiva la sincronización automática de los datos del personal asignado?",
+    "Category": "simbolo",
+    "SourceFile": "ActivosComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "public bool EsDeshabilitarSincronizacion"
+    ],
+    "Note": "Persistent es_deshabilitar_sincronizacion; en TRUE omite la sincronización que dispara PersonalAsignado."
+  },
+  {
+    "Question": "¿Cómo implementa ReymaBaseObject el método GetProperty?",
+    "Category": "simbolo",
+    "SourceFile": "ReymaBaseObject.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "protected T GetProperty<T>([CallerMemberName] string propertyName = null)"
+    ],
+    "Note": "Lee del diccionario _properties usando el CallerMemberName; la constitución obliga a usar GetProperty/SetProperty en todos los BO."
+  },
+  {
+    "Question": "¿Por qué la consulta de existencias de cómputo usa un LEFT JOIN pre-agregado?",
+    "Category": "simbolo",
+    "SourceFile": "FiltroExistenciasComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "LEFT JOIN pre-agregado para evitar subconsultas correlacionadas"
+    ],
+    "Note": "Resumen XML de ObtenerConsulta: la razón declarada es el rendimiento."
+  },
+  {
+    "Question": "¿Qué impide cancelar una devolución cuando la cantidad devuelta no coincide con la cantidad en devolución?",
+    "Category": "ambigua",
+    "SourceFile": "DevolucionInterna.cs",
+    "SourceFiles": [
+      "DevolucionInterna.cs",
+      "Devolucion.cs"
+    ],
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La cantidad devuelta y la cantidad en devolución no son iguales, favor de realizar los ajustes correspondientes e intentar nuevamente."
+    ],
+    "Note": "La misma regla está duplicada en Devolucion y DevolucionInterna; cualquiera de las dos responde."
+  },
+  {
+    "Question": "¿Qué pasa si intento registrar un movimiento de inventario con cantidad cero?",
+    "Category": "ambigua",
+    "SourceFile": "DevolucionInterna.cs",
+    "SourceFiles": [
+      "DevolucionInterna.cs",
+      "Devolucion.cs"
+    ],
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "No se pueden hacer movimientos con cantidad cero (0)"
+    ],
+    "Note": "Regla repetida en varios puntos de ambos procesos de devolución."
+  },
+  {
+    "Question": "¿Qué ocurre si el usuario no tiene una central de compra asignada al abrir los pendientes de compra?",
+    "Category": "ambigua",
+    "SourceFile": "FiltroSolicitudesCompraPendientes.cs",
+    "SourceFiles": [
+      "FiltroSolicitudesCompraPendientes.cs",
+      "FiltroOrdenesCompraPendientes.cs"
+    ],
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "El Usuario no cuenta con central de compra asignada."
+    ],
+    "Note": "Mismo requisito en el filtro de solicitudes y en el de órdenes de compra pendientes."
+  },
+  {
+    "Question": "¿Qué ocurre al importar una plantilla de Excel con un formato que no corresponde?",
+    "Category": "ambigua",
+    "SourceFile": "InventarioCiclico.cs",
+    "SourceFiles": [
+      "InventarioCiclico.cs",
+      "ImportarOrdenCompraDetalle.cs"
+    ],
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La plantilla no cuenta con el formato correcto, contacte a Sistemas."
+    ],
+    "Note": "Mensaje idéntico en la importación de inventario cíclico y en la de detalles de orden de compra."
+  },
+  {
+    "Question": "¿Quién autoriza las solicitudes de pago de un contrato de licencias?",
+    "Category": "ambigua",
+    "SourceFile": "Contrato.cs",
+    "SourceFiles": [
+      "Contrato.cs",
+      "Precontrato.cs"
+    ],
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Indica el personal que autoriza las solicitudes de pago"
+    ],
+    "Note": "ToolTip repetido en Contrato y Precontrato; ProgramacionPago usa una redacción distinta ('las Programaciones de pago') y no cuenta."
+  },
+  {
+    "Question": "¿Cómo se calcula el aguinaldo y la prima vacacional del personal?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial adyacente: el corpus tiene Empleado, Personal y Departamento, pero ninguna lógica de nómina. Verificado sobre el contenido indexado: 0 chunks con 'aguinaldo' y 0 con 'prima vacacional'."
+  },
+  {
+    "Question": "¿Cada cuántos días caduca la contraseña de un usuario y cuántos intentos fallidos bloquean la cuenta?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial adyacente: hay Usuario y permisos especiales, pero no política de contraseñas. Verificado sobre el índice: 0 chunks con 'caducidad de la contraseña' y 0 con 'intentos fallidos'."
+  },
+  {
+    "Question": "¿Cómo se despliega el sistema en un clúster de Kubernetes?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial de infraestructura: el repositorio tiene Dockerfile y deployments/*.yaml, pero .yaml no está en el perfil de ingesta y 'kubernetes' da 0 chunks en el índice. La respuesta no está en el corpus indexado aunque el tema roce el repo."
+  },
+  {
+    "Question": "¿Qué esquema de GraphQL expone la aplicación?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial tecnológico: existe un proyecto WebApi, pero no hay GraphQL. Verificado: 0 chunks con 'graphql'."
+  },
+  {
+    "Question": "¿Cuáles son los criterios de aceptación de la historia de usuario US-17?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial cross-corpus: las historias US-nn viven en innovapp-docs. Aquí existe el concepto (HistoriaUsuario.cs en GestionProyectos) pero 0 chunks con 'us-17', así que el concepto adyacente no debe arrastrar una respuesta."
+  },
+  {
+    "Question": "¿Cómo se sincronizan los catálogos de productos con MongoDB?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial tecnológico: la persistencia es XPO sobre PostgreSQL. Verificado: 0 chunks con 'mongodb'."
+  },
+  {
+    "Question": "¿Qué modelo de embeddings y qué base vectorial usa la búsqueda?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial cross-corpus y meta: describe el motor RAG que hace la consulta, no el ERP consultado. Verificado: 0 chunks con 'embedding' y 0 con 'qdrant'."
+  },
+  {
+    "Question": "¿Cómo se indexan los documentos en Elasticsearch para la búsqueda de productos?",
+    "Category": "fuera-de-dominio",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [],
+    "Note": "Adversarial tecnológico con premisa falsa: la búsqueda de productos es XPO/SQL. Verificado: 0 chunks con 'elasticsearch'."
+  },
+  {
+    "Question": "¿Qué le pasa al estatus de una solicitud de cuenta de TI cuando el usuario la cancela desde el formulario?",
+    "Category": "salto",
+    "SourceFile": "SolicitudCuentaTI.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Estatus = TipoEstatus.Cancelado;"
+    ],
+    "Note": "Salto BO->BO: SolicitudCuentaTiViewController.cs.CancelarSolicitud invoca solicitudAcceso.SolicitudCuenta.CancelarSolicitud(); la regla real vive en SolicitudCuentaTI.CancelarSolicitud(), no en el controlador."
+  },
+  {
+    "Question": "¿A qué estatus queda un equipo de cómputo solicitado cuando se aprueba?",
+    "Category": "salto",
+    "SourceFile": "SolicitudServicioEquipoComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Estatus = TipoEstatus.Revisado;"
+    ],
+    "Note": "Salto Controlador->Regla: SolicitudServicioEquipoComputoViewController.cs invoca eq.AprobarEqComputo(); el cambio de estatus real vive en SolicitudServicioEquipoComputo.AprobarEqComputo()."
+  },
+  {
+    "Question": "¿Quién queda registrado como responsable de la revisión cuando se aprueba una solicitud de servicio?",
+    "Category": "salto",
+    "SourceFile": "SolicitudServicio.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PersonalRevision = this.Employee(Session);"
+    ],
+    "Note": "Salto Controlador->Regla: SolicitudServicioViewController.cs invoca solicitudEmpleado.Item1.AprobarSolicitudServicio(); la asignación real vive en SolicitudServicio.AprobarSolicitudServicio()."
+  },
+  {
+    "Question": "¿Cómo influye la ponderación de cada grupo del checklist en la calificación final de una auditoría?",
+    "Category": "salto",
+    "SourceFile": "Auditorias.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "(calificacion / 100) * grupo.Ponderacion"
+    ],
+    "Note": "Salto Controlador->Regla: EjecucionAuditoriaViewController.cs invoca auditoria.CalcularCalificacionAuditoria(); la fórmula vive en Auditorias.CalcularCalificacionAuditoria()."
+  },
+  {
+    "Question": "¿Qué pasa si falta la fecha de aniversario del contrato o de la programación al validar un pago?",
+    "Category": "salto",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no tiene fecha de aniversario definida."
+    ],
+    "Note": "Salto Controlador->Regla: PagoContratoViewController.cs invoca ProgramacionPagoHelper.ValidarFechaAniversarioAjustada(); la rama de fechas DateTime.MinValue vive en ProgramacionPagoHelper.cs."
+  },
+  {
+    "Question": "¿Qué se compara para saber si la fecha de una programación de pago respeta el ciclo de aniversario del contrato?",
+    "Category": "salto",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "fechaAniversarioProgramacion.Day != diaEsperado"
+    ],
+    "Note": "Salto BO->Servicio: ProgramacionPago.cs invoca ProgramacionPagoHelper.ValidarFechaAniversarioAjustada(); la rama de día ajustado/mismatch vive en ProgramacionPagoHelper.cs (misma función que el ítem anterior, otra rama y otro punto de entrada)."
+  },
+  {
+    "Question": "¿Qué se revisa del expediente de un empleado antes de asignarle un equipo de cómputo?",
+    "Category": "salto",
+    "SourceFile": "Empleado.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "var tmp2 = TieneUsuarioTickets();"
+    ],
+    "Note": "Salto Controlador->Regla: AsignacionComputoViewController.cs invoca wrkAsignacion.PersonalAsignado?.ValidarExpedienteFromAsignacionComputo(); la regla vive en Empleado.ValidarExpedienteFromAsignacionComputo()."
+  },
+  {
+    "Question": "¿Qué datos de auditoría se registran cuando se cancela una salida de almacén de cómputo por un mantenimiento?",
+    "Category": "salto",
+    "SourceFile": "AlmacenComputoSalida.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PersonalCancela = Session.CurrentUser()?.Employee(Session);"
+    ],
+    "Note": "Salto BO->BO: MantenimientoCorrectivoEntregas.cs invoca salidaDetalle.Salida.CancelarSalidaComputo(); la regla vive en AlmacenComputoSalida.CancelarSalidaComputo()."
+  },
+  {
+    "Question": "¿Qué fecha se registra en la salida de cómputo cuando se cancela un traspaso?",
+    "Category": "salto",
+    "SourceFile": "AlmacenComputoSalida.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "FechaCancelacion = DataHelper.ServerDateTime(Session);"
+    ],
+    "Note": "Salto BO->BO: TraspasoComputo.cs invoca salidaComputo.CancelarSalidaComputo(); la regla vive en AlmacenComputoSalida.CancelarSalidaComputo() (mismo método que el ítem anterior, otro punto de entrada, otra línea)."
+  },
+  {
+    "Question": "¿Por qué no se puede modificar un activo de cómputo que ya está cancelado al intentar recuperarlo de un traspaso?",
+    "Category": "salto",
+    "SourceFile": "ActivosComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Activo no puede ser alterado. Estatus de Activo"
+    ],
+    "Note": "Salto BO->BO: TraspasoComputo.cs invoca item.ActivoComputo.CancelaTraspaso(item); la regla vive en ActivosComputo.CancelaTraspaso()."
+  },
+  {
+    "Question": "¿De dónde se toma la información al crear una devolución interna a proveedor?",
+    "Category": "salto",
+    "SourceFile": "Devolucion.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "DevolucionInterna = devolucionInternaDetalle.Master;"
+    ],
+    "Note": "Salto Controlador->Regla: DevolucionInternaDetalleViewController.cs invoca devolucion.CrearDevolucionInternaProveedor(...); la regla vive en Devolucion.CrearDevolucionInternaProveedor()."
+  },
+  {
+    "Question": "¿Qué debe coincidir entre la orden de compra y la cantidad de licencias de la bóveda al renovar una licencia?",
+    "Category": "salto",
+    "SourceFile": "BovedaLicenciaHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "deberá cuadrar con la suma de los campos [Cantidad actual en bóveda y Cantidad Adicional]."
+    ],
+    "Note": "Salto BO->Servicio: PagoContrato.cs invoca BovedaLicenciaHelper.ValidarLicenciaRenovarIgualOrdencompraContratoActual(pp, Session); la regla vive en BovedaLicenciaHelper.cs."
+  },
+  {
+    "Question": "¿Qué debe cuadrar entre la programación de pago y la bóveda de licencias activas del contrato al renovar?",
+    "Category": "salto",
+    "SourceFile": "BovedaLicenciaHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Favor de homologar el número de licencias con la cantidad a renovar."
+    ],
+    "Note": "Salto BO->Servicio: ProgramacionPago.cs invoca BovedaLicenciaHelper.ValidarLicenciaRenovarIgualBovedaLicenciasActivas(programacion, session); la regla vive en BovedaLicenciaHelper.cs."
+  },
+  {
+    "Question": "¿Qué pasa si el contrato relacionado a una programación de pago no tiene bóveda de licencias asociada?",
+    "Category": "salto",
+    "SourceFile": "BovedaLicenciaHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no cuenta con una bóveda de licencias relacionada."
+    ],
+    "Note": "Salto BO->Servicio: PagoContrato.cs invoca BovedaLicenciaHelper.ValidaLicenciasProgramacion(pp, Session); la regla vive en BovedaLicenciaHelper.cs."
+  },
+  {
+    "Question": "¿Qué otra validación de licencias y orden de compra se aplica cuando una programación de pago del módulo de licencias intenta renovar?",
+    "Category": "salto",
+    "SourceFile": "BovedaLicenciaHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "deberá cuadrar con la suma de los campos [Cantidad actual en bóveda y Cantidad Adicional]."
+    ],
+    "Note": "Salto BO->Servicio, mismo destino que el ítem de PagoContrato.cs pero otro punto de entrada: ProgramacionPago.cs (línea 1511) invoca también BovedaLicenciaHelper.ValidarLicenciaRenovarIgualOrdencompraContratoActual(programacion, session)."
+  },
+  {
+    "Question": "¿Cómo se decide si una orden de compra se clasifica como de proyectos o como de inventario en stock?",
+    "Category": "salto",
+    "SourceFile": "OrdenCompra.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "TipoInventario = SolicitudesServicio.Count() > 0 ? TipoInventario.Proyectos : TipoInventario.Stock;"
+    ],
+    "Note": "Salto Controlador->Regla: OrdenCompraSolServicioViewController.cs invoca solSerObj.Master.ActualizarTipoInventario(); la regla vive en OrdenCompra.ActualizarTipoInventario()."
+  },
+  {
+    "Question": "¿Qué tipos de solicitudes y compras se incluyen al generar la proyección de compras?",
+    "Category": "salto",
+    "SourceFile": "ProyeccionesCompras.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "SqlComprasOperativas(_fechaFiltro)"
+    ],
+    "Note": "Salto Controlador->Regla: ProyeccionesComprasViewController.cs invoca master.GenerarConsulta(); la lista de fuentes consultadas vive en ProyeccionesCompras.GenerarConsulta()."
+  },
+  {
+    "Question": "¿Cómo se determina si el correo de un ticket de origen tiene una plantilla registrada antes de crear subtickets?",
+    "Category": "salto",
+    "SourceFile": "CuentaCorreoPlantillaHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "ExisteCorreoPlantilla(session, email)"
+    ],
+    "Note": "Salto Controlador->Servicio: TicketComputoViewController.cs invoca CuentaCorreoPlantillaHelper.ValidarCorreoEletronico(...); la regla vive en CuentaCorreoPlantillaHelper.cs."
+  },
+  {
+    "Question": "¿Cómo se calcula cuántos periodos completos de pago han transcurrido desde el aniversario del contrato?",
+    "Category": "salto",
+    "SourceFile": "ProgramacionPagoHelper.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "(int)Math.Floor((double)totalMeses / periodicidadMeses)"
+    ],
+    "Note": "Salto Controlador->Servicio: ProgramacionPagoViewController.cs invoca ProgramacionPagoHelper.CalcularFechaCandidata(...); la fórmula vive en ProgramacionPagoHelper.cs (otro método que los ítems 5 y 6, mismo archivo)."
+  },
+  {
+    "Question": "¿Qué se registra en la bitácora del hallazgo cuando se reabre una acción correctiva de auditoría?",
+    "Category": "salto",
+    "SourceFile": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "AuditHelper.Add(Session, this, actividad, informacion)"
+    ],
+    "Note": "Salto Controlador->Regla: AuditoriaResultadoHallazgoAccionCorrectivaViewController.cs invoca accionCorrectiva.RegistrarBitacora(...) con el texto de la reapertura; el registro real delega en AuditoriaResultadoHallazgoAccionCorrectiva.RegistrarBitacora()."
+  },
+  {
+    "Question": "¿Cuánto deben sumar los porcentajes asignados en el prorrateo de gasto de una solicitud de servicio?",
+    "Category": "salto-negativo",
+    "SourceFile": "SolicitudServicioProrrateoGasto.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La sumatoria de los porcentajes en el Prorrateo de Gasto debe ser exactamente 100%. Por favor, revise y ajuste los valores."
+    ],
+    "Note": "Negativo: la validación de OnEstatusUpdated está completa en este mismo archivo (SolicitudServicioProrrateoGasto.cs); no depende de un método de otra clase. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Qué comentario es obligatorio capturar antes de marcar como revisada una solicitud de equipo de cómputo?",
+    "Category": "salto-negativo",
+    "SourceFile": "SolicitudServicioEquipoComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Es necesario registrar 'Comentarios CAU' en la solicitud de servicios."
+    ],
+    "Note": "Negativo: la validación de OnEstatusUpdated (rama Revisado) está completa en este mismo archivo, sin llamar a otra clase. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿En qué estatus debe estar un ticket de cómputo para poder cancelarse?",
+    "Category": "salto-negativo",
+    "SourceFile": "TicketComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PuedeCancelarSolicitud => Estatus.In(TipoEstatus.Registrada, TipoEstatus.AutorizacionInvalida) && SolicitudCuenta != null;"
+    ],
+    "Note": "Negativo: la propiedad PuedeCancelarSolicitud es una expresión local, sin dependencia de otra clase. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Qué condiciones debe cumplir una requisición de material de cómputo para poder cancelarse?",
+    "Category": "salto-negativo",
+    "SourceFile": "RequisicionMaterial.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PuedeCancelarSolicitud => EsComputo && Estatus == TipoEstatus.Activo"
+    ],
+    "Note": "Negativo: expresión local completa en RequisicionMaterial.cs, sin llamada a otra clase. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Se puede cancelar directamente una solicitud de servicio de equipo de cómputo una vez creada?",
+    "Category": "salto-negativo",
+    "SourceFile": "SolicitudServicioEquipoComputo.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "PuedeCancelarSolicitud => false;"
+    ],
+    "Note": "Negativo: respuesta trivial y local (siempre false), sin dependencia externa. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Qué mensaje de error se muestra si los porcentajes del prorrateo de gasto no suman 100% en la segunda validación del mismo método?",
+    "Category": "salto-negativo",
+    "SourceFile": "SolicitudServicioProrrateoGasto.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "La sumatoria de los porcentajes en el Prorrateo de Gasto es incorrecta. La suma total debe ser exactamente 100%."
+    ],
+    "Note": "Negativo: segunda validación redundante en el mismo método y archivo, sin llamada externa. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Qué mensaje recibe el usuario si intenta cancelar un pago que no admite cancelación?",
+    "Category": "salto-negativo",
+    "SourceFile": "Pago.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "No se puede cancelar el Pago seleccionado."
+    ],
+    "Note": "Negativo: mensaje de error emitido directamente por el propio método de Pago.cs, sin dependencia externa. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Por qué se rechaza un pago cuyas transacciones están en una moneda distinta a la cuenta bancaria?",
+    "Category": "salto-negativo",
+    "SourceFile": "Pago.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Existen transacciones asociadas al pago que no son de la misma moneda que de la cuenta bancaria con la que desea pagar."
+    ],
+    "Note": "Negativo: validación local y autocontenida en Pago.cs, sin llamada a otra clase. El salto no debería ayudar aquí."
+  },
+  {
+    "Question": "¿Qué debe seleccionar el usuario antes de generar el reporte de necesidades funcionales de negocio?",
+    "Category": "salto-negativo",
+    "SourceFile": "SolicitudServicioNecesidadViewController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Por favor seleccione una necesidad para generar el reporte de necesidades Funcionales de Negocio"
+    ],
+    "Note": "Negativo: la validación de selección ocurre directamente en el propio controlador, sin invocar una regla de negocio en otra clase. El salto no debería ayudar aquí."
+  }
+]

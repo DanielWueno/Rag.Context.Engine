@@ -1,0 +1,2950 @@
+{
+  "collection": "innovapp-docs",
+  "top_k": 10,
+  "rerank": false,
+  "min_score": 0.1,
+  "generated_at": "2026-09-17T18:39:09.348753+00:00",
+  "provenance": {
+    "git_commit": "bb9b11f",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/innovapp-docs.eval-set.json",
+    "eval_set_hash": "1f9571b91552",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": null,
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "¿Quién puede cancelar un ticket que está en estatus Registrado?",
+      "category": "literal",
+      "source_file": "Cancelación de Ticket por el usuario.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "76e258c1-a858-5d9c-8586-dc7b31f9c6b1",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5a3338a-4dcf-5c5e-9c07-cb2818e979c3",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d6b86b3b-3f10-5057-b8c0-60c572e17e74",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8b3cc3ac-9669-51ac-bf53-0990429ec141",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bb4f7720-e990-504d-b759-b3f3b19fadc9",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f3228be9-7be5-507d-bdb7-cac31c5403e9",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "468b1a3b-df6f-5efc-aa39-b722a8771862",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 173.9023,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Qué pasa si el motivo de cancelación seleccionado es 'Otro'?",
+      "category": "literal",
+      "source_file": "Cancelación de Ticket por el usuario.md",
+      "top_score": 0.6111111,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.6111111,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "77edaba9-afa4-55ca-873e-f90a3b7e3101",
+          "ranking_score": 0.6111111044883728,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.56666666,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e43f1c0e-9a16-5763-957e-bf6507a1ab0c",
+          "ranking_score": 0.5666666626930237,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "00a053b1-f8ae-532b-b9a7-5171c3cac9d0",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.27702704,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "7f937ddd-bdef-518d-941a-7d416ac5c7d5",
+          "ranking_score": 0.27702704071998596,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07d05a83-1951-5b71-addd-fa88d2fe1117",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.22777778,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e816dabf-693a-564f-9bd4-d75b7217756c",
+          "ranking_score": 0.22777777910232544,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "ba8e8b2c-87ae-5467-945d-9b8a293bd848",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.17261904,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "79fbfcba-414b-5761-9cda-cc4f67556feb",
+          "ranking_score": 0.1726190447807312,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 36.1005,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Cuándo se muestra el bloque de encuesta de satisfacción en la Trayectoria?",
+      "category": "literal",
+      "source_file": "Encuesta de Satisfacción al Cierre de Ticket.md",
+      "top_score": 0.527027,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.527027,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e77e4484-e8ef-55f8-af08-6b4c296460ba",
+          "ranking_score": 0.5270270109176636,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "10a81dbe-a0aa-5b00-9474-8f85e42445cf",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "1ecbc273-1441-50a1-9edf-266bb9d110f9",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c8198c0a-e24f-596c-82d7-18a79d90156e",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.27631578,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "bc0280a2-503a-57b3-abd9-ed300f86e16a",
+          "ranking_score": 0.2763157784938812,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "38bdc051-681c-5f43-a165-803e4599bd98",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.24166667,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "7326feef-7550-53bb-b477-813bfc31d75e",
+          "ranking_score": 0.24166667461395264,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.23376624,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "db9b2dad-3c10-5e4f-8413-79f933cb7340",
+          "ranking_score": 0.23376624286174774,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.21111111,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "31fa311f-fd14-51fc-94fc-60088fc0b308",
+          "ranking_score": 0.21111111342906952,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "89160470-5fec-5fe4-911e-3b4c7a7307d3",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.9926,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué es el Folio Único de Atención?",
+      "category": "literal",
+      "source_file": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.537037,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.537037,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "be42cfb5-1b7a-5d33-bb2b-97ee3180ea90",
+          "ranking_score": 0.5370370149612427,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0f91a66a-f36b-5b60-9993-0052d065116c",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.43333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "371704e7-0d04-5876-96f4-9209b49213ef",
+          "ranking_score": 0.4333333373069763,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c0ace9c3-1956-5e58-b2c2-4f622c5d4e20",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.28333333,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "4c375a8c-47fa-50b9-8602-a4db86d1295d",
+          "ranking_score": 0.28333333134651184,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "724d4c4c-1825-593b-9057-cf46a153300b",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "e1ca1955-78e9-56f4-8eaf-56ef3a5211e8",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.24166667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "1cfad941-6c0c-54ae-8222-9b2f1bef1efd",
+          "ranking_score": 0.24166667461395264,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9a159de2-4472-57bf-9f69-1e01d488ab2f",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "8cde6b3e-de44-5a69-854b-e6b411566bd8",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.7721,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué estatus del Ticket generan correo electrónico?",
+      "category": "literal",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "2642659b-19db-5a2e-ba1a-f71a30cb570f",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "4656cd05-a77c-521a-9a08-c32d6b30a913",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f3228be9-7be5-507d-bdb7-cac31c5403e9",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "426686b7-a602-522d-a86f-ed79f2ff8618",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "4764ac57-4bf8-5732-8db1-2225c3ec2550",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "22c80ca2-2186-5da5-8f68-432b3df0ab37",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.19444445,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "d97d18ed-2160-547d-9125-f89e1328bf31",
+          "ranking_score": 0.1944444477558136,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "40e9e348-d3e8-5e0e-8bf6-f93a08374748",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 12.3409,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Cómo se marca una notificación como leída?",
+      "category": "literal",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.5909091,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5909091,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "7e23f0f0-96f4-55d6-866c-5afbf3a6b36e",
+          "ranking_score": 0.5909091234207153,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e13b62ee-3fd5-5502-86a7-15d2866fc844",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.4761905,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "d98e2c4f-2f24-5f60-ab90-2af07cc65589",
+          "ranking_score": 0.4761905074119568,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "197b11cd-e242-5e25-af91-e26341882376",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.2777778,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50f3f37b-b24c-5d85-9781-c5c3b9fb09d7",
+          "ranking_score": 0.2777777910232544,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25555557,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c01804d5-d810-540b-8b05-4b863ec28c9b",
+          "ranking_score": 0.25555557012557983,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "14dbbb2a-f94d-59f9-8321-9ec4d4f82702",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "c9ab3ea0-2fd1-5c75-a7fa-08b3c30f7007",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.23571429,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a5924bb2-5c02-5eba-a71a-3235c124c2f4",
+          "ranking_score": 0.23571428656578064,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "7e00fc76-925f-5375-af81-a6efbb213648",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 9.1014,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué insignia se muestra cuando un estatus del timeline es terminal?",
+      "category": "literal",
+      "source_file": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+      "top_score": 0.75,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.75,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "236738a1-2d00-51c8-8c3c-b7f19cc2aefa",
+          "ranking_score": 0.75,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "38bdc051-681c-5f43-a165-803e4599bd98",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "ed89578c-81be-55fa-bce4-ac5f4bca1c6c",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "c42a265d-ad4c-5dd3-8a8a-bb8f7880b33c",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6b8a8d13-8b22-5363-84b7-46e28884b524",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "0522ef87-6815-5ac6-abb7-8c47744abd12",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "fdec1493-35a3-59ef-813f-eaec4fec6f7d",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "a1376f18-cbcc-54d4-bff7-95c28503cf90",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.14285715,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "91caabb4-d8d1-572b-8db5-8797f60bcbbb",
+          "ranking_score": 0.1428571492433548,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.14285715,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e0617c69-7763-5db1-b112-88042d9f7735",
+          "ranking_score": 0.1428571492433548,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.2139,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué permiso se necesita para marcar un ticket como 'Ing. en Traslado'?",
+      "category": "literal",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bc4aa8d5-b2e6-5fad-9265-b95ac191f24c",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e87c927f-f1e7-5974-be59-7bfed507356d",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.3655914,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "a51e85c4-3ecd-539b-a027-84108ab4717e",
+          "ranking_score": 0.3655914068222046,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "928f1aa9-30f8-5d93-b10e-bf93b21d2ca3",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.28333333,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "a2c7d221-1282-5361-aa7d-d93915b19635",
+          "ranking_score": 0.28333333134651184,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fa054648-397c-5c17-bbae-53080c2be066",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "63288fdc-9853-551c-ae84-9c0e0090b025",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "4764ac57-4bf8-5732-8db1-2225c3ec2550",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 15.2449,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "Si levanté un ticket por error y ya no lo necesito, ¿lo puedo borrar yo mismo?",
+      "category": "parafraseada",
+      "source_file": "Cancelación de Ticket por el usuario.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "146b4be8-cb8d-5d33-8e3c-61e6b8659633",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "76e258c1-a858-5d9c-8586-dc7b31f9c6b1",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "85e43943-519d-5645-aa81-a5c3eddc0199",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e87c927f-f1e7-5974-be59-7bfed507356d",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e9cc3289-9332-5527-b3f1-acfc24aec717",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ab03b257-d978-58ea-9405-771329d0a4c2",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.1923077,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5a3338a-4dcf-5c5e-9c07-cb2818e979c3",
+          "ranking_score": 0.19230769574642181,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a51e85c4-3ecd-539b-a027-84108ab4717e",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 8.6845,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "Si escojo 'otro' como razón para cancelar, ¿tengo que explicar por qué?",
+      "category": "parafraseada",
+      "source_file": "Cancelación de Ticket por el usuario.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "00a053b1-f8ae-532b-b9a7-5171c3cac9d0",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07d05a83-1951-5b71-addd-fa88d2fe1117",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "357a21fa-f901-5abc-ab5e-ce2398c0b20f",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.29347825,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "77edaba9-afa4-55ca-873e-f90a3b7e3101",
+          "ranking_score": 0.29347825050354004,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.27702704,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "033e7179-b124-5026-8bb8-2baaea89c45f",
+          "ranking_score": 0.27702704071998596,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "aa5d3546-5f8a-5a38-a620-1dbadd086e04",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "ba8e8b2c-87ae-5467-945d-9b8a293bd848",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6d7ae4eb-ec78-5dc2-a5fe-a29a360c9d46",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ab03b257-d978-58ea-9405-771329d0a4c2",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 18.185,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿En qué momento me sale la pregunta de qué tan contento quedé con el servicio?",
+      "category": "parafraseada",
+      "source_file": "Encuesta de Satisfacción al Cierre de Ticket.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "1ecbc273-1441-50a1-9edf-266bb9d110f9",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "68c9dea8-a6fe-508e-accf-ed714551e79f",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a8239839-9158-59f3-9c2d-8538b8b965ea",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c8198c0a-e24f-596c-82d7-18a79d90156e",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "45ebc5fa-9962-58bf-8329-93272ae3b695",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d66b2fc4-505b-51da-91b5-feef1bbee02c",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0f0791f0-606a-5714-9c6f-eeeedd3b3088",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "896d31f3-8438-53b2-8978-d4d82f270ede",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0154ca0f-d375-579c-b9bf-8d6f93bf2cb2",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8c6a3655-3f48-5ddc-8b5f-8baaab4f9413",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 16.0601,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Hay un número que identifique mi caso sin importar si terminó siendo ticket o solicitud de servicio?",
+      "category": "parafraseada",
+      "source_file": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "05d4a2e0-19e5-534f-a641-017c1e555284",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "40e9e348-d3e8-5e0e-8bf6-f93a08374748",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e9cc3289-9332-5527-b3f1-acfc24aec717",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0f91a66a-f36b-5b60-9993-0052d065116c",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "df723339-7adf-5a91-ad3e-f91e171b647b",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "94fbb1df-ec4d-5243-b51b-56d9c7b47b2f",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "aaa6c3cb-ac58-51ff-b35f-e79c0a07faa5",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 8.7307,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Me avisan por correo cuando resuelven mi problema?",
+      "category": "parafraseada",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.6666667,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.6666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e6462da6-75db-50dc-97c0-13f9e0e64af4",
+          "ranking_score": 0.6666666865348816,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "426686b7-a602-522d-a86f-ed79f2ff8618",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6d8b8a94-c72b-563b-baa8-cc93d1b6c8c9",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.39285713,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "1e7b8d22-8d1d-524a-81a1-c15259a15d45",
+          "ranking_score": 0.3928571343421936,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.375,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0a045435-e179-5ee5-9837-f4155c802f8b",
+          "ranking_score": 0.375,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.3,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "be7672bc-e05b-53fa-980b-52dce73d2f99",
+          "ranking_score": 0.30000001192092896,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.22702703,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d114169f-75bf-5d20-a3af-94526771a9e1",
+          "ranking_score": 0.227027028799057,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.21428572,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "05d4a2e0-19e5-534f-a641-017c1e555284",
+          "ranking_score": 0.2142857164144516,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.20535715,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f85fca55-c226-516e-b678-482ac4732445",
+          "ranking_score": 0.2053571492433548,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.2020202,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "4d083a01-8b29-52a4-8808-0415dd4cd40b",
+          "ranking_score": 0.20202019810676575,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 12.6553,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Cómo le hago para que ya no me aparezca como pendiente algo que ya vi?",
+      "category": "parafraseada",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0522ef87-6815-5ac6-abb7-8c47744abd12",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ecad8b9e-7f5b-5489-95cd-3dcd543160af",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8757f778-5503-5551-b82f-79559b5df806",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8f9dc8a5-3306-5b1a-8f7e-f43a9fd8aa94",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "902d3f8e-9b26-5f66-aab1-b7d85dbb81a7",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d2fd9920-6e0a-5fbc-aa49-cf4cdf793c7f",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "cd381c48-22fa-5b23-adfd-a606c02eb54e",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e87c927f-f1e7-5974-be59-7bfed507356d",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.19548872,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "b4898951-0f4b-5fed-a939-1832633c60b5",
+          "ranking_score": 0.19548872113227844,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "197b11cd-e242-5e25-af91-e26341882376",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 15.5063,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Cómo sé qué pasos ya se completaron en mi caso?",
+      "category": "parafraseada",
+      "source_file": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+      "top_score": 0.55263156,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.55263156,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e38e4d4e-d370-579a-b5be-7a8745fb1b6c",
+          "ranking_score": 0.5526315569877625,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e9cc3289-9332-5527-b3f1-acfc24aec717",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a8a0025a-be71-503e-8024-6b73f89d6741",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c0ace9c3-1956-5e58-b2c2-4f622c5d4e20",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2055ffe8-5295-5dc9-b145-e49222832de4",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "5bab2919-89cf-5c03-8349-a139418b5288",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.23448277,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8ecfefab-cc03-5807-b06d-529c797591ed",
+          "ranking_score": 0.2344827651977539,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0377c427-5dce-5121-9e79-9c352c97ee9c",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "959b67b3-0c3c-58ef-97f9-6b0ff2fec896",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 9.308,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Necesito un permiso especial para decir que el técnico ya va en camino a atender mi ticket?",
+      "category": "parafraseada",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e87c927f-f1e7-5974-be59-7bfed507356d",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "4764ac57-4bf8-5732-8db1-2225c3ec2550",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e9cc3289-9332-5527-b3f1-acfc24aec717",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "c350caf5-61e6-5575-8437-30350902985a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "5b1028ee-f141-53b5-b3e7-757d44a7050e",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "5bf7eee0-8f49-5e11-a1d5-155cde99701e",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fa65c86a-56ac-526a-9bc1-a9c11236caaf",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 8.056,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Puedo cancelar mi ticket en cualquier momento?",
+      "category": "ambigua",
+      "source_file": "Cancelación de Ticket por el usuario.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "033e7179-b124-5026-8bb8-2baaea89c45f",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "76e258c1-a858-5d9c-8586-dc7b31f9c6b1",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bc0280a2-503a-57b3-abd9-ed300f86e16a",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "47528c1e-02b2-589b-8059-3148d83248f7",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "88af8f76-ed77-5423-9d2d-63d882e61a50",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5a3338a-4dcf-5c5e-9c07-cb2818e979c3",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "527ed55c-136b-53a7-b28b-11e84693caf9",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 13.1507,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Cuál es la diferencia entre el folio del ticket y el Folio Único de Atención?",
+      "category": "ambigua",
+      "source_file": "Folio Único de Atención + Reestructura de Descripciones en Autorizaciones.md",
+      "top_score": 0.5588235,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5588235,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "8cde6b3e-de44-5a69-854b-e6b411566bd8",
+          "ranking_score": 0.5588235259056091,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0f91a66a-f36b-5b60-9993-0052d065116c",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.4761905,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9a159de2-4472-57bf-9f69-1e01d488ab2f",
+          "ranking_score": 0.4761905074119568,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.44444445,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "bb83f370-ab60-53b8-9c95-6fffd2606114",
+          "ranking_score": 0.4444444477558136,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.39285713,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "e1ca1955-78e9-56f4-8eaf-56ef3a5211e8",
+          "ranking_score": 0.3928571343421936,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "724d4c4c-1825-593b-9057-cf46a153300b",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "be1a1514-4be7-50ef-84d9-88b9fb0b5287",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d4c26090-e45e-5005-b52e-382cfb70fc4f",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.19166668,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "cf35381b-4518-52a4-b79a-49cc2bcc6ef0",
+          "ranking_score": 0.19166667759418488,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16783217,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "371704e7-0d04-5876-96f4-9209b49213ef",
+          "ranking_score": 0.1678321659564972,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 15.257,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Se me notifica igual por correo que por la app cuando mi ticket cambia de estatus?",
+      "category": "ambigua",
+      "source_file": "Notificaciones por Cambio de Estado.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "426686b7-a602-522d-a86f-ed79f2ff8618",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d076a334-4ca7-5640-b56d-d3807e27ee7b",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "05d4a2e0-19e5-534f-a641-017c1e555284",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "7852d78e-7173-56db-9376-722abcdba68e",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "14dbbb2a-f94d-59f9-8321-9ec4d4f82702",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "d97d18ed-2160-547d-9125-f89e1328bf31",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 8.4325,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué significa que un nodo del timeline esté 'en curso' comparado con uno que ya pasó pero no terminó el proceso?",
+      "category": "ambigua",
+      "source_file": "Rediseño UX-UI de Mis Tickets - Línea de Tiempo de Trayectoria.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "38bdc051-681c-5f43-a165-803e4599bd98",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "74abfd93-053e-5728-972d-1f7d9dc92e63",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "3a1be14a-43be-55ae-b383-fc346643b138",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "c42a265d-ad4c-5dd3-8a8a-bb8f7880b33c",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "85e43943-519d-5645-aa81-a5c3eddc0199",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "ae1ddf5b-1b4b-5aa9-ac77-77cd29594499",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "bb104684-fb3a-5139-9b35-78a374097971",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "df625d77-9093-5289-bddd-d3a13eec0b18",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "be8949e4-c458-5672-8b92-a4ae4dd924be",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bea47b72-9c39-5292-b999-e4346c1776d7",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 9.647,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Cómo solicito mis vacaciones o días económicos?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.5,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3f23322d-6b4a-51b4-9a19-a3a677655f07",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fe4aef0c-35bd-54d8-9ac4-d2cd7505b27e",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bb0b9899-1083-5b83-b141-66ee9e361bd5",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f5cac522-7b1b-5ab7-ad42-38f22e98f076",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "22b3e800-22dc-52ed-b379-7cbc7a2de89d",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f328e87f-3f5e-59a3-b2ca-aba6d56fdea7",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.21111111,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fd750a60-9ccb-5cef-8b06-424dfb55137d",
+          "ranking_score": 0.21111111342906952,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "01ab739e-e037-519b-a513-fd78b72d56c0",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ebb607fe-1d89-53f6-8579-99fa9b6dcfe7",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.18382353,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c9cc503c-a39f-5a25-b98a-fbf7248cf664",
+          "ranking_score": 0.18382352590560913,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 12.845,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Cómo se factura un ticket a un cliente externo?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.5,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "733c990a-3da3-560f-9e7c-3bd18c6f7fc2",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "05d4a2e0-19e5-534f-a641-017c1e555284",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "91a8704a-5d9d-52d4-acdf-90973c448b91",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bb4f7720-e990-504d-b759-b3f3b19fadc9",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f3228be9-7be5-507d-bdb7-cac31c5403e9",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f5cac522-7b1b-5ab7-ad42-38f22e98f076",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 7.0372,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Puedo cancelar una encuesta de satisfacción después de haberla enviado?",
+      "category": "fuera-de-dominio",
+      "source_file": "Encuesta de Satisfacción al Cierre de Ticket.md",
+      "top_score": 0.5344828,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5344828,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "e77e4484-e8ef-55f8-af08-6b4c296460ba",
+          "ranking_score": 0.5344827771186829,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "cd381c48-22fa-5b23-adfd-a606c02eb54e",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9c1dcce8-c078-5f6c-8a3b-28e70a9d7702",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ad26b3a5-3109-501c-8cda-d2bb442fbe48",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "03a8f62d-c107-59fe-b5af-938cab92021b",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "bc0280a2-503a-57b3-abd9-ed300f86e16a",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "739928f7-79a1-5616-b340-9598b7662552",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b9954c9c-47d0-5af4-afa5-9c024f9049f5",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "5c08035e-15b0-5d2f-932c-9ab1d460073e",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e43f1c0e-9a16-5763-957e-bf6507a1ab0c",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 12.8919,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Qué pasa si el CAU pierde la conexión a internet durante una investigación?",
+      "category": "fuera-de-dominio",
+      "source_file": null,
+      "top_score": 0.5,
+      "hit_any_at_k": {},
+      "hit_full_at_k": {},
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ab3904fe-d9df-5f5d-83ba-e13f82e77d8c",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8559d9d4-ad1f-56f8-9e18-3b08c777b6be",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a0541e72-a435-5e58-af76-7b0046ff80ab",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "41798a4e-247e-5644-925b-dcfcbcd11bd4",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "4656cd05-a77c-521a-9a08-c32d6b30a913",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a2a702e0-c3fe-5cf2-b35b-35458d080138",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ba53da1d-2c88-50e4-975f-b1ad89ec8099",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "380ae2c9-68d5-5730-a3bd-62f04e15bdf6",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a622349a-d57e-52e8-95fd-9e4858b88558",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 15.7822,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    },
+    {
+      "question": "¿Puedo ver la encuesta de un ticket ajeno?",
+      "category": "regresion-conocida",
+      "source_file": "Pruebas Funcionales - Encuesta de Satisfacción al Cierre de Ticket.md",
+      "top_score": 0.5,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "146b4be8-cb8d-5d33-8e3c-61e6b8659633",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.5,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9be7b3ef-9aa3-56be-a9c3-e621ee333635",
+          "ranking_score": 0.5,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d277a2f0-e3f4-5992-99fc-bcd7d9dae119",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e47593ac-66d3-5832-962c-0c1497b26e31",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "19e5a372-e214-5320-a2ca-d9cce3c975ff",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "896d31f3-8438-53b2-8978-d4d82f270ede",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "c8198c0a-e24f-596c-82d7-18a79d90156e",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f99898d0-6682-5273-8356-7397a1c13884",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "22c80ca2-2186-5da5-8f68-432b3df0ab37",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c08e603e-3e0f-52b3-a8d4-f2aabea9db8e",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 9.3845,
+      "vector_queries": 2,
+      "candidates_returned": 82
+    },
+    {
+      "question": "¿Qué pasa si un ticket espera confirmación y nadie responde?",
+      "category": "regresion-conocida",
+      "source_file": "RF-Monitor-Estatus-Tickets.md",
+      "top_score": 0.5625,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5625,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "fe63427c-9746-5408-9bb4-3d5c1b450f2c",
+          "ranking_score": 0.5625,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 2,
+          "score": 0.54761904,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "88af8f76-ed77-5423-9d2d-63d882e61a50",
+          "ranking_score": 0.5476190447807312,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 3,
+          "score": 0.33333334,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "24de8211-46da-5dd4-b51a-bb3e9e8e931a",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 4,
+          "score": 0.33333334,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "a622349a-d57e-52e8-95fd-9e4858b88558",
+          "ranking_score": 0.3333333432674408,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 5,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "68c9dea8-a6fe-508e-accf-ed714551e79f",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 6,
+          "score": 0.25,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "99908ac0-175e-5d69-8222-b050fdedaad8",
+          "ranking_score": 0.25,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 7,
+          "score": 0.2,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "008f7483-b726-569c-a686-bc640028d68f",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 8,
+          "score": 0.2,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "8f9dc8a5-3306-5b1a-8f7e-f43a9fd8aa94",
+          "ranking_score": 0.20000000298023224,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 9,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "11fa6c29-49f4-5d2e-9ca6-82708703111f",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        },
+        {
+          "rank": 10,
+          "score": 0.16666667,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "76e258c1-a858-5d9c-8586-dc7b31f9c6b1",
+          "ranking_score": 0.1666666716337204,
+          "ranking_score_scale": "RankFusionNative"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 15.8278,
+      "vector_queries": 3,
+      "candidates_returned": 164
+    }
+  ]
+}

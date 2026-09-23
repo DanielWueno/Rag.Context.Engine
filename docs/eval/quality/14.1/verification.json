@@ -1,0 +1,368 @@
+{
+  "item": "14.1-eval-nocturno",
+  "accepted": true,
+  "tests_passed": 19,
+  "source": {
+    "git_commit": "4245a22616a316790c646b418e36c2e689c40c58",
+    "git_dirty": true
+  },
+  "schedule_evidence_sha256": "cdbd0802eccebce6022fbe4b7855d242f9f8db698d4ed4dc614254b12c47b5a4",
+  "source_sha256": {
+    "runner.py": "170e6ccbf24907b9e5608b9ac77fc6a86f49ffaa63efbc1d9e7e415cde8917a2",
+    "test_runner.py": "0a0247a6b753183df4e451866a636e26be003e6b0e6d027a4574e182369db34c",
+    "accept.py": "1453e3aebab784a94fc385a922f3ee7042c4adeabcb7fe283046d50538d5e38b",
+    "inventory.json": "b919bacd677e32bacc0ea43c51f974a1d9c659c3ce616e467a81a006ca519c12"
+  },
+  "elapsed_seconds": 47.41,
+  "model_sha256": {
+    "OnnxBrain__ModelPath": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672",
+    "OnnxBrain__VocabPath": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+    "CrossEncoder__ModelPath": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4",
+    "CrossEncoder__VocabPath": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+  },
+  "binary_sha256": {
+    "RagEngine.Core.dll": "12604ee695dd5575b3bebb39260dd82ae2bf6573c2099d1378f8960affeed2b4",
+    "RagEngine.Cli.dll": "ba1be63d1fe864d8fbb2d0b990323268a724ffe81f007df8a4c0881f086daa94"
+  },
+  "collections": {
+    "bsuite-auditorias-test": {
+      "points": 1697,
+      "sha256": "66f2a2e0bfdcf7922ca34b37afb0604ce2cd8f998da602dbac9a630d4ea3e35f",
+      "vectors": {
+        "dense": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        },
+        "dense-resumen": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        }
+      },
+      "sparse_vectors": {
+        "sparse-code": {
+          "index": {
+            "full_scan_threshold": 5000
+          }
+        }
+      }
+    },
+    "innovapp-docs": {
+      "points": 743,
+      "sha256": "a5bbf46b66bddf67e748b07e515769fe6d2cf7c9e48effda19a2b07eaee809f3",
+      "vectors": {
+        "dense": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        }
+      },
+      "sparse_vectors": {
+        "sparse-code": {
+          "index": {
+            "full_scan_threshold": 5000
+          }
+        }
+      }
+    },
+    "micro-repo": {
+      "points": 955,
+      "sha256": "ed1a6d8d187eab9d3dad59a19639981dbd2dc16c89ee87e556811b3f375c748c",
+      "vectors": {
+        "dense": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        }
+      },
+      "sparse_vectors": {
+        "sparse-code": {
+          "index": {
+            "full_scan_threshold": 5000
+          }
+        }
+      }
+    },
+    "bsuite-repo": {
+      "points": 23058,
+      "sha256": "695426544ce1c85a261dc8c3f0f579944ad413ff324f0e0cdc93e33099b925de",
+      "vectors": {
+        "dense": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        },
+        "dense-resumen": {
+          "size": 384,
+          "distance": "Cosine",
+          "on_disk": false
+        }
+      },
+      "sparse_vectors": {
+        "sparse-code": {
+          "index": {
+            "full_scan_threshold": 5000
+          }
+        }
+      }
+    }
+  },
+  "collections_unchanged": true,
+  "profiles": [
+    {
+      "id": "bsuite-auditorias.norerank",
+      "dataset_sha256": "ec6ff169d1a63b65cddcd799eacea0ab17770edf42fb2ed8e58ead621cd563ba",
+      "result_sha256": "a9c312cd591cb46edb8fb0c36ffd01f2d7a31d1bab73370a86358e73af48bba8",
+      "historical_status": "incomparable",
+      "answerable": 16,
+      "negative": 0,
+      "historical_reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations",
+      "two_losses": {
+        "answerable": 16,
+        "negative": 0,
+        "dataset_sha256": "ec6ff169d1a63b65cddcd799eacea0ab17770edf42fb2ed8e58ead621cd563ba",
+        "status": "regression",
+        "lost": [
+          {
+            "id": "b6bdfc149110bdc5",
+            "category": "bsuite-auditorias"
+          },
+          {
+            "id": "dfc9d2e984876f7e",
+            "category": "bsuite-auditorias"
+          }
+        ],
+        "gained": [],
+        "net_lost": 2,
+        "lost_percentage_points": 12.5,
+        "baseline_hits": 9,
+        "candidate_hits": 7
+      },
+      "provenance": {
+        "git_commit": "4245a22",
+        "git_dirty": true,
+        "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/bsuite-auditorias.eval-set.json",
+        "eval_set_hash": "ec6ff169d1a6",
+        "embedding_model": "model_qint8_arm64.onnx",
+        "embedding_dimensions": 384,
+        "embedding_max_sequence_length": 256,
+        "cross_encoder_model": null,
+        "cross_encoder": null,
+        "gate_calibration": null,
+        "weight_codigo": 1,
+        "weight_sparse": 1.3,
+        "weight_resumen": 2.5,
+        "rrf_k": 60,
+        "chunking_contract_version": 3,
+        "index_short_type_declarations": false,
+        "resumen_prompt_version": "210d3e35"
+      }
+    },
+    {
+      "id": "innovapp-docs.norerank",
+      "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+      "result_sha256": "883ddde3eed8925601fb6a15a6778874e8a7e5723c0e3b6102da6cb34ca1c828",
+      "historical_status": "incomparable",
+      "answerable": 22,
+      "negative": 4,
+      "historical_reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations",
+      "two_losses": {
+        "answerable": 22,
+        "negative": 4,
+        "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+        "status": "regression",
+        "lost": [
+          {
+            "id": "32e973830fe2594a",
+            "category": "literal"
+          },
+          {
+            "id": "ac3b7cc6f46d3fdf",
+            "category": "literal"
+          }
+        ],
+        "gained": [],
+        "net_lost": 2,
+        "lost_percentage_points": 9.090909090909092,
+        "baseline_hits": 8,
+        "candidate_hits": 6
+      },
+      "provenance": {
+        "git_commit": "4245a22",
+        "git_dirty": true,
+        "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/innovapp-docs.eval-set.json",
+        "eval_set_hash": "1f9571b91552",
+        "embedding_model": "model_qint8_arm64.onnx",
+        "embedding_dimensions": 384,
+        "embedding_max_sequence_length": 256,
+        "cross_encoder_model": null,
+        "cross_encoder": null,
+        "gate_calibration": null,
+        "weight_codigo": 1,
+        "weight_sparse": 1.3,
+        "weight_resumen": 2.5,
+        "rrf_k": 60,
+        "chunking_contract_version": 3,
+        "index_short_type_declarations": false,
+        "resumen_prompt_version": "210d3e35"
+      }
+    },
+    {
+      "id": "innovapp-docs.rerank",
+      "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+      "result_sha256": "780e7eb17374cc4e073b52e5bf226f0d4e7fa0ed7ccd9e7c8ca87095a1c71cb3",
+      "historical_status": "incomparable",
+      "answerable": 22,
+      "negative": 4,
+      "historical_reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations",
+      "two_losses": {
+        "answerable": 22,
+        "negative": 4,
+        "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+        "status": "regression",
+        "lost": [
+          {
+            "id": "d232134932a7bb37",
+            "category": "literal"
+          },
+          {
+            "id": "32e973830fe2594a",
+            "category": "literal"
+          }
+        ],
+        "gained": [],
+        "net_lost": 2,
+        "lost_percentage_points": 9.090909090909092,
+        "baseline_hits": 12,
+        "candidate_hits": 10
+      },
+      "provenance": {
+        "git_commit": "4245a22",
+        "git_dirty": true,
+        "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/innovapp-docs.eval-set.json",
+        "eval_set_hash": "1f9571b91552",
+        "embedding_model": "model_qint8_arm64.onnx",
+        "embedding_dimensions": 384,
+        "embedding_max_sequence_length": 256,
+        "cross_encoder_model": "model_qint8_arm64.onnx",
+        "cross_encoder": {
+          "model_sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4",
+          "tokenizer_sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+          "binary": "model_qint8_arm64.onnx",
+          "architecture": "arm64",
+          "stable_gate_score": true,
+          "max_sequence_length": 512,
+          "batch_size": 8
+        },
+        "gate_calibration": null,
+        "weight_codigo": 1,
+        "weight_sparse": 1.3,
+        "weight_resumen": 2.5,
+        "rrf_k": 60,
+        "chunking_contract_version": 3,
+        "index_short_type_declarations": false,
+        "resumen_prompt_version": "210d3e35"
+      }
+    },
+    {
+      "id": "tickets-microservice.norerank",
+      "dataset_sha256": "2ae380bb02df6c0fb28aaa3cb3101973a126ba3c1c8b970d0802ad104709bf0c",
+      "result_sha256": "c5b5ba42cb6f13c7e7271af61148dcf43bd12c136d788f1a5e40a5070c618288",
+      "historical_status": "incomparable",
+      "answerable": 19,
+      "negative": 0,
+      "historical_reason": "Procedencia incompleta: cross_encoder, gate_calibration, index_short_type_declarations",
+      "two_losses": {
+        "answerable": 19,
+        "negative": 0,
+        "dataset_sha256": "2ae380bb02df6c0fb28aaa3cb3101973a126ba3c1c8b970d0802ad104709bf0c",
+        "status": "regression",
+        "lost": [
+          {
+            "id": "9167cf5933d8559e",
+            "category": "bsuite-codigo"
+          },
+          {
+            "id": "5d5f220e1b4e0799",
+            "category": "bsuite-codigo"
+          }
+        ],
+        "gained": [],
+        "net_lost": 2,
+        "lost_percentage_points": 10.526315789473685,
+        "baseline_hits": 5,
+        "candidate_hits": 3
+      },
+      "provenance": {
+        "git_commit": "4245a22",
+        "git_dirty": true,
+        "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/tickets-microservice.eval-set.json",
+        "eval_set_hash": "2ae380bb02df",
+        "embedding_model": "model_qint8_arm64.onnx",
+        "embedding_dimensions": 384,
+        "embedding_max_sequence_length": 256,
+        "cross_encoder_model": null,
+        "cross_encoder": null,
+        "gate_calibration": null,
+        "weight_codigo": 1,
+        "weight_sparse": 1.3,
+        "weight_resumen": 2.5,
+        "rrf_k": 60,
+        "chunking_contract_version": 3,
+        "index_short_type_declarations": false,
+        "resumen_prompt_version": "210d3e35"
+      }
+    },
+    {
+      "id": "bsuite-repo.norerank",
+      "dataset_sha256": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
+      "result_sha256": "59378d3af96aca5b4496dacbe773b9b9f1938b4b69805b367d0edb56c4a54aa4",
+      "historical_status": "incomparable",
+      "answerable": 76,
+      "negative": 8,
+      "historical_reason": "Procedencia incompleta: cross_encoder, gate_calibration",
+      "two_losses": {
+        "answerable": 76,
+        "negative": 8,
+        "dataset_sha256": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
+        "status": "regression",
+        "lost": [
+          {
+            "id": "b41bd8434fdab120",
+            "category": "literal"
+          },
+          {
+            "id": "43b89779bb3afeb9",
+            "category": "literal"
+          }
+        ],
+        "gained": [],
+        "net_lost": 2,
+        "lost_percentage_points": 2.6315789473684212,
+        "baseline_hits": 34,
+        "candidate_hits": 32
+      },
+      "provenance": {
+        "git_commit": "4245a22",
+        "git_dirty": true,
+        "eval_set_path": "/Users/DevStudio/Documents/Projects/Rag.Context.Engine/docs/eval/bsuite-repo.eval-set.json",
+        "eval_set_hash": "cdb39feef4ee",
+        "embedding_model": "model_qint8_arm64.onnx",
+        "embedding_dimensions": 384,
+        "embedding_max_sequence_length": 256,
+        "cross_encoder_model": null,
+        "cross_encoder": null,
+        "gate_calibration": null,
+        "weight_codigo": 1,
+        "weight_sparse": 1.3,
+        "weight_resumen": 2.5,
+        "rrf_k": 60,
+        "chunking_contract_version": 3,
+        "index_short_type_declarations": false,
+        "resumen_prompt_version": "210d3e35"
+      }
+    }
+  ],
+  "limits": "Historical baselines preserved, never promoted automatically. Missing provenance is an incomparable alarm, not quality acceptance. Real outputs and logs stay local under logs/eval-nocturno. Fixture/mutation tests validate alarms, not retrieval improvements. No ingestion, generation or shared summary-cache writer. Schedule installed separately after committing, pinned to that clean reviewed commit."
+}

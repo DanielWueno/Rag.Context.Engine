@@ -1,0 +1,22 @@
+{
+  "item": "15.2.1-preparar-oraculo-y-comparador",
+  "shared_authorization_seconds": 7200,
+  "measured_segments_seconds": {
+    "initial_read_only_index_capture": 10.442974625,
+    "initial_source_preparation": 4.937398167,
+    "development_tests_first_attempt": 1.326,
+    "final_read_only_index_capture_with_config_and_models": 10.603002042,
+    "final_source_preparation": 4.886689666,
+    "development_tests_second_attempt": 1.389,
+    "development_tests_after_report_change": 1.366,
+    "final_acceptance_including_58_tests": 1.749754125
+  },
+  "measured_segments_total_seconds": 36.700818625,
+  "charged_conservative_seconds": 72,
+  "remaining_authorized_seconds": 7128,
+  "remaining_authorized_hours": 1.98,
+  "accounting": "Tramos medidos por monotonic en captura/preparacion/aceptacion y tiempo informado por unittest para tres corridas de desarrollo. No representan tiempo de conversacion ni tokens. Cargo conservador de 0.02 h incluye margen para arranque, serializacion, sellado y consultas breves de solo lectura no cronometradas por separado; no se afirma que esos extras durasen exactamente 35.299 s. Sin ingesta, LLM, prototipos o mediciones de retrieval. Saldo calculado sobre la unica bolsa de 2 h ya autorizada, no nueva autorizacion.",
+  "rework": "Una regresion del test de no reutilizacion eligio por error el fragmento que tambien era semilla secundaria; se corrigio el fixture a otro fragmento del mismo destino, sin alterar oportunidades, anclas ni umbrales. 55 tests pasaron antes de ampliar a 58 con contrato CLI; aceptacion final 58/58, cero omitidos.",
+  "pre_freeze_instrument_change": "La segunda captura agrega configuracion de coleccion y hashes de modelo/tokenizador. Ambas capturas tienen el mismo fingerprint completo de puntos 85f4c2fe1293dbbd091d3d16711ca5044d9e2bef4f4beef4e73a0304ed7225be. No se midio ningun brazo antes o despues; el cambio no selecciona resultados favorables.",
+  "next_phase": "15.2.2 debe estimar construccion/actualizacion, 30 oportunidades por cuatro brazos, 420 calentamientos y 2100 busquedas medidas antes de gastar. Puede redistribuir el saldo compartido, pero requiere ampliacion antes de superar 7128 s. Ejecutar en conversacion nueva."
+}

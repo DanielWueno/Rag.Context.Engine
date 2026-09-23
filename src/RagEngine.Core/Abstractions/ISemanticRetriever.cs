@@ -3,9 +3,10 @@ using RagEngine.Core.Domain;
 namespace RagEngine.Core.Abstractions;
 
 /// <summary>
-/// Executes semantic searches against the Qdrant vector database.
+/// Executes semantic searches against the vector store.
 /// Vectorizes the natural-language query via IVectorizationBrain, then
-/// retrieves the most semantically similar code chunks using HNSW search.
+/// retrieves the most semantically similar code chunks using approximate
+/// nearest-neighbour search.
 /// </summary>
 public interface ISemanticRetriever
 {

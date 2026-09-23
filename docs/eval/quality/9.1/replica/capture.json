@@ -1,0 +1,113 @@
+{
+  "protocol_sha256": "f6be874701aaa227ec077a0b60cbadfb73fef74f4b86228c39c81b176c9d3d9b",
+  "sets": {
+    "innovapp-docs": {
+      "control_sha256": "4116ff41581df5513549c1ecdbaff439bad1b451419d4620526df6c9f62e893d",
+      "candidate_sha256": "d4f89fc03c9533d340a74770823c79ae6a61c3b2e5f5af0946a6e17f208b1fde",
+      "after": {
+        "points": 743,
+        "points_sha256": "f85ebd2097dbfc6174d5233066478e7ce4480eb992cac0c3ac8af1b2c7de74d7",
+        "schema_sha256": "07ade4e86853ee49c7728ffc6cb371f1daefa375b93e29951fbbaf94aa88e3ca"
+      },
+      "models_after": {
+        "OnnxBrain.ModelPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+          "sha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672"
+        },
+        "OnnxBrain.VocabPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        },
+        "CrossEncoder.ModelPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+          "sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4"
+        },
+        "CrossEncoder.VocabPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        }
+      }
+    },
+    "bsuite-repo": {
+      "control_sha256": "9fbe59616589bc323e8224d5a237013bc0bf1fc69df4bd67a16e9becfc8a3c39",
+      "candidate_sha256": "7315800e5b1e08ad3ffedfe00b3ffedcbc7ce75d569dcfbaedf6b2dea5a5c76d",
+      "after": {
+        "points": 23058,
+        "points_sha256": "1ea49c2c03a0a0ec94c4b593bc4d7816bff5f0ad4753e24b1d550040c8f74452",
+        "schema_sha256": "f565d1bb19323e925d9318755faf45c4c503b06ac6d3f093285da1e570ce9bcd"
+      },
+      "models_after": {
+        "OnnxBrain.ModelPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+          "sha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672"
+        },
+        "OnnxBrain.VocabPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        },
+        "CrossEncoder.ModelPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+          "sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4"
+        },
+        "CrossEncoder.VocabPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        }
+      }
+    },
+    "bsuite-auditorias": {
+      "control_sha256": "567eb35b60e56f457a221be5b89b2f67ff71a8aa622f7e98d062a42e0fdcd1e1",
+      "candidate_sha256": "97da4b71deb70a363f622ba2640ec17618e9ba697f94294e6c32fff1f5c54d11",
+      "after": {
+        "points": 1697,
+        "points_sha256": "231461ba2a6a13661944d4f2d8886c68a0203ae83482be2399de047c8a43f6b7",
+        "schema_sha256": "e01f71b8a89e0be6a1d1c4f63ede852f2f5973c644329aaff274639da1820ccf"
+      },
+      "models_after": {
+        "OnnxBrain.ModelPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+          "sha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672"
+        },
+        "OnnxBrain.VocabPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        },
+        "CrossEncoder.ModelPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+          "sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4"
+        },
+        "CrossEncoder.VocabPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        }
+      }
+    },
+    "tickets-microservice": {
+      "control_sha256": "cb58b05a5930b6a4a34f2581ade9ce7e6da308e928e8cdc71eb7e71536f028c8",
+      "candidate_sha256": "daced2ffeecab24ee93d13c17738fac27b02df7c512b8f3f48aead5670cd1b44",
+      "after": {
+        "points": 955,
+        "points_sha256": "c26949653d9f3883c42492da0d8043a75069138f9b5155a6afc29dc5e2170d7c",
+        "schema_sha256": "ff0faaa80528f9f435aa96d6378d3d2fb2d5148629fe85ad4ff6cc8e07d0c967"
+      },
+      "models_after": {
+        "OnnxBrain.ModelPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+          "sha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672"
+        },
+        "OnnxBrain.VocabPath": {
+          "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        },
+        "CrossEncoder.ModelPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+          "sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4"
+        },
+        "CrossEncoder.VocabPath": {
+          "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+          "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+        }
+      }
+    }
+  }
+}

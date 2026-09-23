@@ -1,0 +1,824 @@
+{
+  "raices": [
+    {
+      "nombre": "bsuite-repo",
+      "coleccion": "bsuite-repo",
+      "ruta": "/Users/DevStudio/Documents/Projects/BusinessSuite.Xaf",
+      "directorios_excluidos": 1,
+      "errores_acceso": 0,
+      "filas": [
+        {
+          "extension": ".cs",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "CSharp",
+          "archivos": 2094,
+          "archivos_unicos": 2091,
+          "duplicados": 3,
+          "bytes_total": 27165586
+        },
+        {
+          "extension": ".png",
+          "mime": "image/png",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1147,
+          "archivos_unicos": 1104,
+          "duplicados": 43,
+          "bytes_total": 6032507
+        },
+        {
+          "extension": ".resx",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 134,
+          "archivos_unicos": 119,
+          "duplicados": 15,
+          "bytes_total": 2280774
+        },
+        {
+          "extension": ".razor",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 92,
+          "archivos_unicos": 92,
+          "duplicados": 0,
+          "bytes_total": 922702
+        },
+        {
+          "extension": ".css",
+          "mime": "text/css",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 61,
+          "archivos_unicos": 60,
+          "duplicados": 1,
+          "bytes_total": 1868188
+        },
+        {
+          "extension": ".txt",
+          "mime": "text/plain",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 28,
+          "archivos_unicos": 13,
+          "duplicados": 15,
+          "bytes_total": 22756
+        },
+        {
+          "extension": ".map",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 24,
+          "archivos_unicos": 24,
+          "duplicados": 0,
+          "bytes_total": 6520149
+        },
+        {
+          "extension": ".js",
+          "mime": "text/javascript",
+          "estado": "admitido_fallback",
+          "lenguaje": "JavaScript",
+          "archivos": 20,
+          "archivos_unicos": 20,
+          "duplicados": 0,
+          "bytes_total": 1577043
+        },
+        {
+          "extension": ".csproj",
+          "mime": "application/octet-stream",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 16,
+          "archivos_unicos": 16,
+          "duplicados": 0,
+          "bytes_total": 163256
+        },
+        {
+          "extension": ".jpg",
+          "mime": "image/jpeg",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 12,
+          "archivos_unicos": 11,
+          "duplicados": 1,
+          "bytes_total": 16323853
+        },
+        {
+          "extension": ".json",
+          "mime": "application/json",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 11,
+          "archivos_unicos": 11,
+          "duplicados": 0,
+          "bytes_total": 287594
+        },
+        {
+          "extension": ".xafml",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 10,
+          "archivos_unicos": 9,
+          "duplicados": 1,
+          "bytes_total": 1771044
+        },
+        {
+          "extension": ".ps1",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 9,
+          "archivos_unicos": 8,
+          "duplicados": 1,
+          "bytes_total": 70716
+        },
+        {
+          "extension": ".md",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "Markdown",
+          "archivos": 8,
+          "archivos_unicos": 8,
+          "duplicados": 0,
+          "bytes_total": 81707
+        },
+        {
+          "extension": "(sin extension)",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 6,
+          "archivos_unicos": 6,
+          "duplicados": 0,
+          "bytes_total": 32024
+        },
+        {
+          "extension": ".svg",
+          "mime": "image/svg+xml",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 4,
+          "archivos_unicos": 4,
+          "duplicados": 0,
+          "bytes_total": 11667
+        },
+        {
+          "extension": ".yaml",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 7511
+        },
+        {
+          "extension": ".ico",
+          "mime": "image/x-icon",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 60066
+        },
+        {
+          "extension": ".ttf",
+          "mime": "font/ttf",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 1376820
+        },
+        {
+          "extension": ".config",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 223
+        },
+        {
+          "extension": ".sln",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 13511
+        },
+        {
+          "extension": ".licx",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 133
+        },
+        {
+          "extension": ".gif",
+          "mime": "image/gif",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 27786
+        },
+        {
+          "extension": ".woff2",
+          "mime": "font/woff2",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 9728
+        },
+        {
+          "extension": ".cshtml",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 31044
+        }
+      ]
+    },
+    {
+      "nombre": "innovapp-docs",
+      "coleccion": "innovapp-docs",
+      "ruta": "/Users/DevStudio/Documents/Projects/docs-bsute-innovapp-plan",
+      "directorios_excluidos": 1,
+      "errores_acceso": 0,
+      "filas": [
+        {
+          "extension": ".md",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "Markdown",
+          "archivos": 15,
+          "archivos_unicos": 15,
+          "duplicados": 0,
+          "bytes_total": 762585
+        }
+      ]
+    },
+    {
+      "nombre": "micro-repo",
+      "coleccion": "micro-repo",
+      "ruta": "/Users/DevStudio/Documents/Projects/Reyma.TI.Tickets.Microservice",
+      "directorios_excluidos": 1,
+      "errores_acceso": 0,
+      "filas": [
+        {
+          "extension": ".cs",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "CSharp",
+          "archivos": 275,
+          "archivos_unicos": 275,
+          "duplicados": 0,
+          "bytes_total": 617963
+        },
+        {
+          "extension": "(sin extension)",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 5,
+          "archivos_unicos": 5,
+          "duplicados": 0,
+          "bytes_total": 21622
+        },
+        {
+          "extension": ".csproj",
+          "mime": "application/octet-stream",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 5,
+          "archivos_unicos": 5,
+          "duplicados": 0,
+          "bytes_total": 6839
+        },
+        {
+          "extension": ".json",
+          "mime": "application/json",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 4167
+        },
+        {
+          "extension": ".yaml",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 2,
+          "archivos_unicos": 2,
+          "duplicados": 0,
+          "bytes_total": 5023
+        },
+        {
+          "extension": ".xml",
+          "mime": "application/xml",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 2,
+          "archivos_unicos": 2,
+          "duplicados": 0,
+          "bytes_total": 24546
+        },
+        {
+          "extension": ".sln",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 4157
+        },
+        {
+          "extension": ".md",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "Markdown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 6329
+        },
+        {
+          "extension": ".develop",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 1910
+        }
+      ]
+    },
+    {
+      "nombre": "wiki-solis",
+      "coleccion": "wiki-solis",
+      "ruta": "/Users/DevStudio/Documents/Projects/Business-Suite",
+      "directorios_excluidos": 1,
+      "errores_acceso": 0,
+      "filas": [
+        {
+          "extension": ".md",
+          "mime": "application/octet-stream",
+          "estado": "admitido_estructural",
+          "lenguaje": "Markdown",
+          "archivos": 49,
+          "archivos_unicos": 43,
+          "duplicados": 6,
+          "bytes_total": 1059673
+        },
+        {
+          "extension": ".html",
+          "mime": "text/html",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 4,
+          "archivos_unicos": 4,
+          "duplicados": 0,
+          "bytes_total": 270613
+        },
+        {
+          "extension": "(sin extension)",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 6402
+        },
+        {
+          "extension": ".pdf",
+          "mime": "application/pdf",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 3,
+          "archivos_unicos": 3,
+          "duplicados": 0,
+          "bytes_total": 949811
+        },
+        {
+          "extension": ".yml",
+          "mime": "application/octet-stream",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 2,
+          "archivos_unicos": 2,
+          "duplicados": 0,
+          "bytes_total": 6822
+        },
+        {
+          "extension": ".json",
+          "mime": "application/json",
+          "estado": "admitido_fallback",
+          "lenguaje": "PlainText",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 3623
+        },
+        {
+          "extension": ".js",
+          "mime": "text/javascript",
+          "estado": "admitido_fallback",
+          "lenguaje": "JavaScript",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 11208
+        },
+        {
+          "extension": ".css",
+          "mime": "text/css",
+          "estado": "no_admitido",
+          "lenguaje": "Unknown",
+          "archivos": 1,
+          "archivos_unicos": 1,
+          "duplicados": 0,
+          "bytes_total": 7389
+        }
+      ]
+    }
+  ],
+  "agregado": {
+    "corpus_util_archivos_unicos": 3979,
+    "no_admitido_archivos_unicos": 1474,
+    "fraccion_no_admitido": 0.3704,
+    "familias_no_admitidas": {
+      "imagen": {
+        "archivos_unicos": 1120,
+        "bytes_total": 22395813
+      },
+      "pdf": {
+        "archivos_unicos": 3,
+        "bytes_total": 949811
+      }
+    },
+    "filas": [
+      {
+        "extension": ".cs",
+        "mime": "application/octet-stream",
+        "estado": "admitido_estructural",
+        "lenguaje": "CSharp",
+        "archivos": 2369,
+        "archivos_unicos": 2366,
+        "duplicados": 3,
+        "bytes_total": 27783549
+      },
+      {
+        "extension": ".png",
+        "mime": "image/png",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1147,
+        "archivos_unicos": 1104,
+        "duplicados": 43,
+        "bytes_total": 6032507
+      },
+      {
+        "extension": ".resx",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 134,
+        "archivos_unicos": 119,
+        "duplicados": 15,
+        "bytes_total": 2280774
+      },
+      {
+        "extension": ".razor",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 92,
+        "archivos_unicos": 92,
+        "duplicados": 0,
+        "bytes_total": 922702
+      },
+      {
+        "extension": ".md",
+        "mime": "application/octet-stream",
+        "estado": "admitido_estructural",
+        "lenguaje": "Markdown",
+        "archivos": 73,
+        "archivos_unicos": 67,
+        "duplicados": 6,
+        "bytes_total": 1910294
+      },
+      {
+        "extension": ".css",
+        "mime": "text/css",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 62,
+        "archivos_unicos": 61,
+        "duplicados": 1,
+        "bytes_total": 1875577
+      },
+      {
+        "extension": ".map",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 24,
+        "archivos_unicos": 24,
+        "duplicados": 0,
+        "bytes_total": 6520149
+      },
+      {
+        "extension": ".csproj",
+        "mime": "application/octet-stream",
+        "estado": "admitido_fallback",
+        "lenguaje": "PlainText",
+        "archivos": 21,
+        "archivos_unicos": 21,
+        "duplicados": 0,
+        "bytes_total": 170095
+      },
+      {
+        "extension": ".js",
+        "mime": "text/javascript",
+        "estado": "admitido_fallback",
+        "lenguaje": "JavaScript",
+        "archivos": 21,
+        "archivos_unicos": 21,
+        "duplicados": 0,
+        "bytes_total": 1588251
+      },
+      {
+        "extension": ".json",
+        "mime": "application/json",
+        "estado": "admitido_fallback",
+        "lenguaje": "PlainText",
+        "archivos": 15,
+        "archivos_unicos": 15,
+        "duplicados": 0,
+        "bytes_total": 295384
+      },
+      {
+        "extension": "(sin extension)",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 14,
+        "archivos_unicos": 14,
+        "duplicados": 0,
+        "bytes_total": 60048
+      },
+      {
+        "extension": ".txt",
+        "mime": "text/plain",
+        "estado": "admitido_fallback",
+        "lenguaje": "PlainText",
+        "archivos": 28,
+        "archivos_unicos": 13,
+        "duplicados": 15,
+        "bytes_total": 22756
+      },
+      {
+        "extension": ".jpg",
+        "mime": "image/jpeg",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 12,
+        "archivos_unicos": 11,
+        "duplicados": 1,
+        "bytes_total": 16323853
+      },
+      {
+        "extension": ".xafml",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 10,
+        "archivos_unicos": 9,
+        "duplicados": 1,
+        "bytes_total": 1771044
+      },
+      {
+        "extension": ".ps1",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 9,
+        "archivos_unicos": 8,
+        "duplicados": 1,
+        "bytes_total": 70716
+      },
+      {
+        "extension": ".yaml",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 5,
+        "archivos_unicos": 5,
+        "duplicados": 0,
+        "bytes_total": 12534
+      },
+      {
+        "extension": ".svg",
+        "mime": "image/svg+xml",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 4,
+        "archivos_unicos": 4,
+        "duplicados": 0,
+        "bytes_total": 11667
+      },
+      {
+        "extension": ".html",
+        "mime": "text/html",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 4,
+        "archivos_unicos": 4,
+        "duplicados": 0,
+        "bytes_total": 270613
+      },
+      {
+        "extension": ".ico",
+        "mime": "image/x-icon",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 3,
+        "archivos_unicos": 3,
+        "duplicados": 0,
+        "bytes_total": 60066
+      },
+      {
+        "extension": ".ttf",
+        "mime": "font/ttf",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 3,
+        "archivos_unicos": 3,
+        "duplicados": 0,
+        "bytes_total": 1376820
+      },
+      {
+        "extension": ".pdf",
+        "mime": "application/pdf",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 3,
+        "archivos_unicos": 3,
+        "duplicados": 0,
+        "bytes_total": 949811
+      },
+      {
+        "extension": ".sln",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 2,
+        "archivos_unicos": 2,
+        "duplicados": 0,
+        "bytes_total": 17668
+      },
+      {
+        "extension": ".xml",
+        "mime": "application/xml",
+        "estado": "admitido_fallback",
+        "lenguaje": "PlainText",
+        "archivos": 2,
+        "archivos_unicos": 2,
+        "duplicados": 0,
+        "bytes_total": 24546
+      },
+      {
+        "extension": ".yml",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 2,
+        "archivos_unicos": 2,
+        "duplicados": 0,
+        "bytes_total": 6822
+      },
+      {
+        "extension": ".config",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 223
+      },
+      {
+        "extension": ".licx",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 133
+      },
+      {
+        "extension": ".gif",
+        "mime": "image/gif",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 27786
+      },
+      {
+        "extension": ".woff2",
+        "mime": "font/woff2",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 9728
+      },
+      {
+        "extension": ".cshtml",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 31044
+      },
+      {
+        "extension": ".develop",
+        "mime": "application/octet-stream",
+        "estado": "no_admitido",
+        "lenguaje": "Unknown",
+        "archivos": 1,
+        "archivos_unicos": 1,
+        "duplicados": 0,
+        "bytes_total": 1910
+      }
+    ]
+  },
+  "criterio_de_entrada": {
+    "umbral_archivos_unicos": 10,
+    "umbral_fraccion": 0.1,
+    "cumple_umbral_archivos": true,
+    "cumple_umbral_fraccion": true,
+    "entra_por_volumen_de_archivos": true,
+    "nota": "Entrada tambien puede cumplirse con >=5 preguntas de negocio prioritarias verificadas que solo estos formatos respondan; eso no lo puede medir un inventario automatico y se registra aparte en el ledger."
+  },
+  "_procedencia": {
+    "extensiones_admitidas": [
+      ".cs",
+      ".csproj",
+      ".js",
+      ".json",
+      ".jsx",
+      ".md",
+      ".sql",
+      ".ts",
+      ".tsx",
+      ".txt",
+      ".xaml",
+      ".xml"
+    ],
+    "patrones_exclusion": [
+      "bin",
+      "obj",
+      "node_modules",
+      ".git",
+      ".vs",
+      "__pycache__",
+      ".idea",
+      "packages",
+      "migrations",
+      "Migrations"
+    ],
+    "raices_config": "infra/inventario-formatos/raices_autorizadas.json"
+  }
+}

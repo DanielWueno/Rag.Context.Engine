@@ -20,6 +20,18 @@ public static class RagEngineMetrics
         name: "rag_ingestion_errors_total",
         description: "Total number of errors encountered during ingestion");
 
+    // Truncation Metrics (11.1) — fase de embedding de chunks admitidos, no
+    // resúmenes ni reintentos. Delta por corrida, nunca reseteado a mano.
+    public static readonly Counter<long> ChunksTruncatedTotal = Meter.CreateCounter<long>(
+        name: "rag_chunks_truncated_total",
+        unit: "{chunks}",
+        description: "Total number of admitted chunks whose real token count exceeded the tokenizer's usable capacity (MaxSequenceLength minus special tokens) and were truncated");
+
+    public static readonly Counter<long> TokensDiscardedTotal = Meter.CreateCounter<long>(
+        name: "rag_tokens_discarded_total",
+        unit: "{tokens}",
+        description: "Total number of real (non-special) tokens discarded by truncation across admitted chunks during embedding");
+
     // Search Metrics
     public static readonly Histogram<double> SearchLatencyMs = Meter.CreateHistogram<double>(
         name: "rag_search_latency_ms",

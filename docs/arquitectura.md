@@ -23,7 +23,7 @@ flowchart LR
         Q[Query] --> R[QdrantSemanticRetriever<br/>prefetch denso + disperso → RRF]
         R -.-> RR[OnnxCrossEncoderReRanker<br/>opt-in --rerank]
         RR -.-> R
-        R --> S[RagGenerationService<br/>contexto + prompt]
+        R --> S[RagGenerationService<br/>orquesta: gate → contexto → prompt]
         S --> T[Ollama / Semantic Kernel]
     end
     G -.-> R
@@ -35,6 +35,7 @@ flowchart LR
 |---|---|
 | `RagEngine.Core` | Toda la lógica de negocio. Sin dependencias de UI. |
 | `RagEngine.Cli` | Capa delgada de presentación: comandos Spectre.Console + configuración del host. |
+| `RagEngine.Api` | Capa delgada de presentación HTTP: endpoints mínimos (`/api/health`, `/api/collections`, `/api/search`, `/api/ask`, `/api/ask/stream`) y la página de `wwwroot/`. |
 
 Dentro de `RagEngine.Core`:
 
@@ -48,7 +49,7 @@ Dentro de `RagEngine.Core`:
 | `Infrastructure/VectorStore` | `QdrantVectorStore` (colecciones/upsert) y `QdrantSemanticRetriever` (búsqueda híbrida) |
 | `Infrastructure/Reranking` | `OnnxCrossEncoderReRanker` — re-scoring opt-in del pool 3×TopK (`--rerank`) |
 | `Pipeline/` | `DefaultIngestionPipeline` (orquestador productor/consumidores) y `ContextAssembler` |
-| `Services/Generation` | `RagGenerationService` — ensamblado de contexto + streaming del LLM |
+| `Services/Generation` | `RagGenerationService` (orquestador) y sus colaboradores: `ConfidenceGate`, `GenerationContextAssembler`, `SystemPromptComposer`, `ChatAnswerStreamer`, `SimpleAnswerSanitizer`. Los textos de prompt viven en `Services/Generation/Prompts/` |
 | `Diagnostics/` | `RagEngineMetrics` (System.Diagnostics.Metrics) |
 
 ## Componentes del núcleo
@@ -81,13 +82,99 @@ afecta al flujo por defecto. El score resultante (sigmoide del logit) reemplaza 
 `RetrievalResult.SimilarityScore` — son escalas distintas, no comparables. Detalle:
 [busqueda-hibrida.md](busqueda-hibrida.md#re-ranking-cross-encoder--onnxcrossencoderreranker).
 
+### El contrato del score
+
+`RetrievalResult.SimilarityScore` es un `float` cuyo significado depende del camino que lo
+produjo, así que va siempre acompañado de `RetrievalResult.ScoreScale`, que lo declara:
+
+| `ScoreScale` | Qué es | ¿Comparable entre consultas? |
+|---|---|---|
+| `CosineSimilarity` | Similitud coseno cruda; la escala de `MinimumSimilarityScore` | Sí |
+| `RankFusionNative` | RRF de Qdrant sobre denso + disperso, pesos iguales | **No** — es función del rango |
+| `RankFusionWeighted` | RRF ponderada manual sobre código + disperso + resumen | **No** — y además otra magnitud |
+| `CrossEncoderBatched` | Sigmoide del cross-encoder en la pasada por lotes; **decide el orden** | Sí |
+| `CrossEncoderStable` | La misma sigmoide en lote de 1; invariante al TopK (ítem 4.2) | Sí |
+
+Un consumidor que vaya a comparar el score contra un umbral absoluto debe consultar antes
+`ScoreScale.IsComparableAcrossQueries()`. Es lo que hace `ConfidenceGate` para decidir la
+banda: un score RRF nunca se evalúa contra los umbrales calibrados sobre sigmoides.
+
+**Invariante de orden.** Con `CrossEncoder:StableGateScore` encendido, `ReRankAsync` re-puntúa
+la posición #0 en lote de 1 y **no reordena**: la lista devuelta lleva `CrossEncoderStable` en
+el #0 y `CrossEncoderBatched` en el resto, y por tanto **no está ordenada monótonamente por
+score** — el #0 puede puntuar por debajo del #1. El ranking lo decide la pasada por lotes y es
+el bueno. Reordenar por `SimilarityScore` "para normalizar" revierte el ítem 4.2 y devuelve al
+gate un número que vuelve a moverse con el TopK. Fijado en
+`tests/RagEngine.Core.Tests/RetrievalScoreContractTests.cs`.
+
 ### DefaultIngestionPipeline
 
 Productor (scan → chunk) y **N consumidores** (vectorizar → upsert) desacoplados por un `Channel` acotado (backpressure a 512 chunks). Detalle y números: [pipeline-de-ingesta.md](pipeline-de-ingesta.md).
 
-### RagGenerationService
+### RagGenerationService y sus colaboradores
 
-Ensambla el contexto (chunks rankeados, presupuesto de 12k chars, los chunks que no caben se **omiten sin truncar la cola**), construye un system prompt estricto de grounding (responde en el idioma de la pregunta; los atributos declarativos cuentan como reglas de negocio) y hace streaming desde Ollama vía Semantic Kernel.
+`RagGenerationService` **sólo orquesta**: encadena los pasos del turno y decide el camino. El
+trabajo de cada paso vive en una clase con una responsabilidad. La separación es del ítem 2.2 del
+plan de ingeniería; antes las seis vivían en un archivo de 680 líneas, y tocar una obligaba a leer
+las otras cinco.
+
+| Paso | Clase | Qué hace |
+|---|---|---|
+| 0 | `SemanticMetaIntentDetector` | Corta antes de buscar si la pregunta es sobre el propio asistente |
+| 1 | `ISemanticRetriever` | Recupera el top-K (el servicio sólo envuelve el `try/catch`) |
+| 2 | `ConfidenceGate` | Decide la banda: sin anclaje, banda media (con matiz) o banda alta |
+| 3 | `GenerationContextAssembler` | Resuelve el contenido de cada chunk y arma el bloque de contexto |
+| 4 | `SystemPromptComposer` | Elige la plantilla (código / documentos / Simple) y la compone |
+| 5 | `ChatAnswerStreamer` | Única pieza que toca el `Kernel`; emite los fragmentos |
+| 6 | `SimpleAnswerSanitizer` | Filtro determinista posterior, sólo en modo Simple |
+
+Detalles que no son obvios y conviene no re-descubrir:
+
+- **Presupuesto de contexto:** 12k caracteres. Los chunks que no caben se **omiten sin truncar la
+  cola** — un chunk gigante a mitad del ranking no descarta a los que vienen detrás. El número de
+  chunk en la cabecera se incrementa igual, así que la numeración refleja el ranking, no lo que entró.
+- **El gate corta de verdad:** cuando `ConfidenceGate` dice que no hay anclaje, los chunks
+  recuperados **no se vuelven a tocar**; se conversa sin contexto. Es garantía estructural, no una
+  instrucción al modelo — ver
+  [guardrail-banda-baja-conversacional.md](analisis-futuro/guardrail-banda-baja-conversacional.md).
+- **Modo Simple no puede hacer streaming token a token:** el sanitizador necesita el texto completo
+  para casar cercas e identificadores que se abren y cierran en fragmentos distintos, así que ese
+  camino bufferiza. Los demás emiten según llegan.
+- **Los umbrales se leen por turno** vía `IOptionsMonitor`, para que la bandera de rollback surta
+  efecto con un reinicio y sin recompilar.
+- **Los logs del turno ya no salen todos bajo una misma categoría.** Cada colaborador registra con
+  la suya (`…Generation.ConfidenceGate`, `…Generation.ChatAnswerStreamer`,
+  `…Generation.GenerationContextAssembler`), no bajo `…Generation.RagGenerationService` como antes
+  de partir la clase. El filtro `"RagEngine": "Information"` de `appsettings.json` las cubre todas;
+  un filtro escrito contra el nombre completo del servicio, no.
+
+**Cómo se prueba que no cambió nada al partirlo:** `GenerationContextGoldenTests` compara el bloque
+de contexto byte a byte y la plantilla elegida contra un golden capturado ejecutando el código
+**previo** a la descomposición (`tests/RagEngine.Core.Tests/GoldenMaster/generacion-contexto.json`).
+Los textos de prompt los cubre aparte `PromptHashesTests`.
+
+**Contrato hacia API y CLI (9.3):** `IRagGenerationService.AskStreamingAsync` devuelve
+`IAsyncEnumerable<GenerationEvent>`, no sólo texto. El orden es `ContextReady`
+(fuentes en orden de retrieval y veredicto `NotEvaluated/Ungrounded/Medium/High`),
+`TextDelta` por fragmento y `Completed` con el resultado final. La generación hace
+una única búsqueda; meta-intención no busca. Sin anclaje no expone chunks como
+fuentes. Si el modelo emite el rechazo exacto del prompt, `ModelDeclined` permite
+retirar las fuentes sin que el host conozca esa frase. El gate sigue siendo interno
+y la API ya no tiene acceso privilegiado a los tipos internos de Core.
+
+El JSON de `/api/ask` y los eventos SSE (`status`, `sources`, `token`, `done`)
+se conservan, incluida la corrección final de fuentes vacías tras un rechazo.
+Technical y Simple con el sanitizador apagado siguen emitiendo cada fragmento sin
+esperar el siguiente. Los errores se propagan sin `Completed`: HTTP devuelve
+ProblemDetails 500, SSE emite `error` sin `done`, y CLI usa su salida de error
+habitual (ya no imprime un fallo de retrieval como respuesta exitosa).
+`GenerationDurationMs` incluye ahora la única búsqueda en ambos transportes;
+sus duraciones no son directamente comparables con el tramo SSE anterior.
+
+Evidencia pre/post: `docs/eval/quality/9.3/`. Se compara respuesta, fuentes, secuencia
+SSE y entrada completa del proveedor determinista, además de contar llamadas y
+mediciones reales de retrieval. Esto acredita equivalencia del contrato y de las
+entradas de generación, no una mejora de recall ni calidad de un LLM real.
 
 ## Decisiones de diseño clave
 
@@ -103,4 +190,4 @@ Ensambla el contexto (chunks rankeados, presupuesto de 12k chars, los chunks que
 
 ## Registro DI
 
-Un único punto de composición: `ServiceCollectionExtensions.AddRagEngineCore(IConfiguration)`. Los hosts (CLI hoy, API mañana) permanecen delgados. Las estrategias de chunking se auto-descubren por reflexión sobre `IChunkingStrategy`.
+Un único punto de composición: `ServiceCollectionExtensions.AddRagEngineCore(IConfiguration)`. Los dos hosts (CLI y API) permanecen delgados. Las estrategias de chunking se auto-descubren por reflexión sobre `IChunkingStrategy`.

@@ -1,0 +1,217 @@
+{
+  "passed": false,
+  "ab": {},
+  "failures": [
+    "9.1/innovapp-docs: Regresion/cambio por pregunta: ¿Puedo cancelar una encuesta de satisfacción después de haberla enviado?: salida sin ancla",
+    "replica/innovapp-docs: Regresion/cambio por pregunta: ¿Qué estatus del Ticket generan correo electrónico?: hit_any_at_k; ¿Qué estatus del Ticket generan correo electrónico?: hit_full_at_k"
+  ],
+  "contracts": {
+    "total": 49,
+    "classes": {
+      "ModuleBoundaryTests": 25,
+      "RetrievalAuthorizationContextHttpHarnessTests": 19,
+      "RetrievalOptionsCompileContractTests": 2,
+      "VectorStoreResumeTests": 3
+    },
+    "tests": [
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Busqueda_por_resumen_aplica_tenant_y_modulo_desde_el_contexto",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(authorized: True, explicitModule: \"alpha-private\", expectedCount: 0)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha\", relativePath: \"\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"twohop-query\", twoHopEnabled: True, rerank: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"twohop-query\", twoHopEnabled: True, rerank: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha.Foo.Bar\", relativePath: \"\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"dense-query\", twoHopEnabled: False, rerank: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalOptionsCompileContractTests.RetrievalOptions_con_contexto_local_compila",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"sparse-query\", twoHopEnabled: False, rerank: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha.Foo\", relativePath: \"\", module: \"alpha.Foo\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha-private/Secrets.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha/child/Foo.cs\", module: \"alpha/child\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha-private\", relativePath: \"\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Two_hop_no_reintroduce_puntos_no_autorizados",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalOptionsCompileContractTests.RetrievalOptions_sin_contexto_explicito_no_compila",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha/children/Foo.cs\", module: \"alpha/child\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha\", relativePath: \"alpha/Foo.cs\", module: \" \", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"\", relativePath: \"\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"beta\", relativePath: \"alpha/Foo.cs\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"notalpha\", relativePath: \"notalpha/Foo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Busqueda_densa_aplica_tenant_y_modulo_desde_el_contexto",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Api_search_devuelve_fuentes_filtradas_dentro_del_puerto",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Fusion_nativa_y_two_hop_filtran_antes_del_reranker(twoHopEnabled: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha.Foobar\", relativePath: \"\", module: \"alpha.Foo\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(authorized: True, explicitModule: \"alpha\", expectedCount: 4)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(authorized: True, explicitModule: \"alpha/Noise1.cs\", expectedCount: 1)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.VectorStoreResumeTests.Pipeline_interrumpido_reanuda_tres_paginas_sin_reprocesar_ni_perder_vectores",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"Company.alpha\", relativePath: \"src/alpha/Foo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Fusion_nativa_y_two_hop_filtran_antes_del_reranker(twoHopEnabled: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha/Foo.cs\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha\", relativePath: \"beta/Foo.cs\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"dense-query\", twoHopEnabled: False, rerank: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha/Foo\", relativePath: \"alpha.Foo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.VectorStoreResumeTests.Puertos_y_pipeline_no_exponen_tipos_del_adaptador",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha.Foo\", relativePath: \"\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha.Foo.Bar\", relativePath: \"\", module: \"alpha.Foo\", expected: True)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Modulo_alpha_rechaza_colisiones_de_prefijo(query: \"summary-query\", twoHopEnabled: False, rerank: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Busqueda_sparse_aplica_tenant_y_modulo_desde_el_contexto",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(authorized: True, explicitModule: \"beta\", expectedCount: 0)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Api_search_no_expone_fuentes_de_alpha_oculto",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"Alpha\", relativePath: \"Alpha/Foo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha-oculto\", relativePath: \"alpha-oculto/Archivo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.VectorStoreResumeTests.Upsert_sin_estado_previo_borra_resumen_control_adversarial_del_oraculo",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.RetrievalAuthorizationContextHttpHarnessTests.Filtros_de_modulo_local_y_autorizado_se_combinan_con_AND(authorized: False, explicitModule: \"alpha\", expectedCount: 4)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"beta\", relativePath: \"beta/Foo.cs\", module: \"alpha\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: \"alpha\", relativePath: \"alpha/Foo.cs\", module: \"\", expected: False)",
+        "outcome": "Passed"
+      },
+      {
+        "name": "RagEngine.Core.Tests.ModuleBoundaryTests.MatchesModuleBoundary_respects_exact_roots_and_descendants(namespaceName: null, relativePath: \"alpha/child/Foo.cs\", module: \"alpha\", expected: True)",
+        "outcome": "Passed"
+      }
+    ]
+  },
+  "protocol_sha256": "f6be874701aaa227ec077a0b60cbadfb73fef74f4b86228c39c81b176c9d3d9b",
+  "replica_protocol_sha256": "f6be874701aaa227ec077a0b60cbadfb73fef74f4b86228c39c81b176c9d3d9b"
+}

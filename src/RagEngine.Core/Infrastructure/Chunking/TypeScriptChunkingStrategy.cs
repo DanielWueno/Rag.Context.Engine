@@ -76,7 +76,11 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         // Yield para liberar el hilo y respetar el modelo de streaming asíncrono
         await Task.Yield();
 
-        var lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
 
         // Estado del parser
         var lexerState   = LexerState.Normal;
@@ -86,6 +90,11 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         var  capturedLines = new List<string>();
         int  captureStart  = -1;
         int  braceDepth    = 0;    // Contador de llaves anidadas
+        // Si el bloque en captura ya abrio su llave. Hace falta para no confundir
+        // "el bloque cerro" con "el bloque todavia no abrio": braceDepth vale 0 en
+        // los dos casos, y tratarlos igual emitia la firma sola como si fuera el
+        // cuerpo completo (ver el comentario del flush mas abajo).
+        bool abrioLlave    = false;
         bool isCapturing   = false;
         var  currentSig    = BlockSignature.Empty;
 
@@ -143,13 +152,14 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                             if (c == '{')
                             {
                                 braceDepth++;
+                                abrioLlave = true;
                             }
                             else if (c == '}')
                             {
                                 braceDepth--;
 
                                 // depth == 0 significa que el bloque raíz cerró
-                                if (braceDepth == 0)
+                                if (braceDepth == 0 && abrioLlave)
                                 {
                                     // Emitir el chunk completo
                                     foreach (var chunk in FlushBlock(
@@ -165,6 +175,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                                     currentSig    = BlockSignature.Empty;
                                     captureStart  = -1;
                                     braceDepth    = 0;
+                                    abrioLlave    = false;
                                 }
                             }
                             break;
@@ -245,12 +256,20 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                 // (la apertura '{' puede estar en la misma línea que la firma)
                 foreach (char c in line)
                 {
-                    if      (c == '{') braceDepth++;
+                    if      (c == '{') { braceDepth++; abrioLlave = true; }
                     else if (c == '}') braceDepth--;
                 }
 
-                // Si el bloque cerró en la misma línea (one-liner), emitirlo ya
-                if (braceDepth == 0 && capturedLines.Count > 0)
+                // Solo es un one-liner si la llave se ABRIO y volvio a cerrar en esta
+                // misma linea. Antes bastaba con braceDepth == 0, que tambien es cierto
+                // cuando la firma no lleva llave todavia: llave en estilo Allman, o
+                // firma partida en varias lineas por prettier al pasar del ancho maximo
+                // (el caso mas comun en TypeScript con parametros anotados). En esos dos
+                // formatos se emitia la FIRMA SOLA como chunk de tipo Method y el cuerpo
+                // caia despues al bucket de lineas sueltas, indexado como
+                // PlainTextWindow con clase y metodo vacios: codigo real sin su
+                // encabezado semantico. Confirmado con test antes del arreglo.
+                if (braceDepth == 0 && abrioLlave && capturedLines.Count > 0)
                 {
                     foreach (var chunk in FlushBlock(artifact, currentSig, capturedLines, captureStart, lineNum, options))
                         yield return chunk;
@@ -260,6 +279,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
                     currentSig    = BlockSignature.Empty;
                     captureStart  = -1;
                     braceDepth    = 0;
+                    abrioLlave    = false;
                 }
             }
             else
@@ -382,37 +402,42 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
             "Block '{Name}' en {File} excede {Max} tokens — particionando por párrafos.",
             sig.Name, artifact.RelativePath, options.MaxTokensPerChunk);
 
-        var paragraphs    = SplitIntoParagraphs(capturedLines);
-        var currentParas  = new List<string>();
-        int currentStart  = startLine;
-        int currentEnd    = startLine;
-        int relLine       = startLine;
+        var paragraphs = SplitIntoParagraphs(capturedLines);
 
-        foreach (var (paraLines, paraLen) in paragraphs)
+        // Línea de inicio de cada párrafo, acumulando longitudes. Se precalcula para
+        // que la contabilidad de líneas siga siendo la de esta estrategia mientras la
+        // decisión de presupuesto se comparte con Markdown vía ParagraphBudget.
+        var textos = new List<string>(paragraphs.Count);
+        var inicioDe = new int[paragraphs.Count];
+        var finDe = new int[paragraphs.Count];
+        int relLine = startLine;
+
+        for (int i = 0; i < paragraphs.Count; i++)
         {
-            string paraText  = string.Join("\n", paraLines);
-            string testContent = $"{header}\n\n{string.Join("\n\n", currentParas.Append(paraText))}";
-
-            if (TokenEstimator.Estimate(testContent) > options.MaxTokensPerChunk && currentParas.Count > 0)
-            {
-                string flushBody    = string.Join("\n\n", currentParas);
-                string flushContent = $"{header}\n\n{flushBody}";
-                yield return CreateChunk(artifact, sig, flushContent, flushBody, currentStart, currentEnd, options);
-
-                currentParas  = [];
-                currentStart  = relLine;
-            }
-
-            currentParas.Add(paraText);
-            currentEnd  = relLine + paraLen - 1;
-            relLine    += paraLen;
+            var (paraLines, paraLen) = paragraphs[i];
+            textos.Add(string.Join("\n", paraLines));
+            inicioDe[i] = relLine;
+            finDe[i] = relLine + paraLen - 1;
+            relLine += paraLen;
         }
 
-        if (currentParas.Count > 0)
+        var lotes = ParagraphBudget.Agrupar(textos, header, options.MaxTokensPerChunk).ToList();
+
+        for (int l = 0; l < lotes.Count; l++)
         {
-            string flushBody    = string.Join("\n\n", currentParas);
+            var (grupo, primero, ultimo) = lotes[l];
+
+            string flushBody    = string.Join("\n\n", grupo);
             string flushContent = $"{header}\n\n{flushBody}";
-            yield return CreateChunk(artifact, sig, flushContent, flushBody, currentStart, endLine, options);
+
+            // El último lote cierra en el fin del BLOQUE, no en el fin de su último
+            // párrafo: así el rango cubre la llave de cierre y cualquier línea en
+            // blanco final. Es la asimetría que ya tenía el código original y se
+            // preserva a propósito — cambiarla movería la metadata de los chunks.
+            int fin = l == lotes.Count - 1 ? endLine : finDe[ultimo];
+
+            yield return CreateChunk(
+                artifact, sig, flushContent, flushBody, inicioDe[primero], fin, options);
         }
     }
 
@@ -450,8 +475,7 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
     {
         var parts = new List<string>
         {
-            $"// Repository: {options.RepositoryName}",
-            $"// File: {artifact.RelativePath}"
+            ChunkBuilder.HeaderPrefix(options.RepositoryName, artifact.RelativePath)
         };
 
         parts.Add(sig.Type switch
@@ -491,34 +515,34 @@ public sealed partial class TypeScriptChunkingStrategy : IChunkingStrategy
         int endLine,
         ChunkingOptions options)
     {
-        string hash = ContentHasher.Compute(rawContent);
-        Guid   id   = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash);
-
         // Extraer nombre de clase vs. método para los metadatos
         string? className  = sig.Type == BlockType.Class ? sig.Name : null;
         string? methodName = sig.Type is BlockType.Function or BlockType.ArrowFunction or BlockType.Method
             ? sig.Name : null;
 
-        return new CodeChunk
-        {
-            Id              = id,
-            Content         = rawContent,
-            EnrichedContent = enrichedContent,
-            ContentHash     = hash,
-            Type            = MapToChunkType(sig.Type),
-            Metadata        = new CodeChunkMetadata(
-                FilePath:         artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language:         artifact.Language,
-                Namespace:        null,  // TS no tiene namespaces C#; se podría extraer el módulo en el futuro
-                ClassName:        className,
-                MethodName:       methodName,
-                StartLine:        startLine,
-                EndLine:          endLine,
-                LastModified:     artifact.LastModified,
-                RepositoryName:   options.RepositoryName
-            )
-        };
+        // Los bloques Loose (imports/declaraciones sueltas) no llevan símbolos: no
+        // son el caso que cubre el criterio de aceptación de este ítem.
+        IReadOnlyList<string> defined = sig.Type != BlockType.Loose
+            ? new[] { sig.Name }
+            : Array.Empty<string>();
+        IReadOnlyList<string> consumed = sig.Type != BlockType.Loose
+            ? SymbolExtractor.FromTypeScriptLines(rawContent.Split('\n'))
+            : Array.Empty<string>();
+
+        // Namespace queda en null: TS no tiene namespaces como C#; se podria extraer
+        // el modulo en el futuro.
+        return ChunkBuilder.Create(
+            artifact,
+            content: rawContent,
+            enrichedContent: enrichedContent,
+            type: MapToChunkType(sig.Type),
+            startLine: startLine,
+            endLine: endLine,
+            repositoryName: options.RepositoryName,
+            className: className,
+            methodName: methodName,
+            definedSymbols: defined,
+            consumedSymbols: consumed);
     }
 
     /// <summary>

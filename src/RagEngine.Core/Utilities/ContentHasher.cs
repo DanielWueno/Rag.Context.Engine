@@ -17,6 +17,11 @@ public static class ContentHasher
     {
         ArgumentNullException.ThrowIfNull(text);
         byte[] bytes = Encoding.UTF8.GetBytes(text);
+        return Compute(bytes);
+    }
+
+    public static string Compute(ReadOnlySpan<byte> bytes)
+    {
         byte[] hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }

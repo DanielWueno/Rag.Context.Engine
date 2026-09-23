@@ -1,23 +1,71 @@
 services:
-  qdrant:
-    image: qdrant/qdrant:v1.14.1
-    container_name: rag-qdrant
+  rag-api:
+    build:
+      context: ..
+      dockerfile: src/RagEngine.Api/Dockerfile
+    container_name: rag-api
     restart: unless-stopped
     ports:
-      - "6333:6333"   # REST API
-      - "6334:6334"   # gRPC (used by RagEngine.Core)
+      # Ítem 12.1: solo loopback del host, no todas las interfaces (antes "5080:5080",
+      # equivalente a 0.0.0.0:5080, alcanzable desde cualquier interfaz de red del host).
+      # Este servicio sigue pensado para LAN/VPN interna vía un proxy/túnel explícito, no
+      # para escuchar directo en todas las interfaces del host que lo corre.
+      - "127.0.0.1:5080:5080"
     volumes:
-      - qdrant_storage:/qdrant/storage
+      # Modelos ONNX ya descargados en el host (ver download-model.sh); montados
+      # de solo lectura para no reconstruir la imagen si cambias de modelo.
+      #
+      # Ítem 12.1: la ruta absoluta es configurable vía RAG_MODELS_DIR (env var del
+      # host, no de este compose) — sin ella, cae en infra/../models relativo al repo,
+      # no en la ruta de un usuario/máquina concretos.
+      - "${RAG_MODELS_DIR:-../models}:/models:ro"
+      # Log de consultas (pregunta + respuesta + fuentes) en el mismo logs/ del
+      # repo que ya usa el CLI — sobrevive a recrear el contenedor y se puede
+      # analizar directo desde el host sin `docker logs`.
+      - "${RAG_LOGS_DIR:-../logs}:/app/logs"
+      # Caché SQLite de resúmenes de negocio (Reto A), generada por `rag ingest
+      # --con-resumen` corriendo nativo en el host — sin este mount, SummaryCache
+      # abriría un sqlite3 vacío dentro del contenedor y Sources[].Resumen (Reto D)
+      # sería siempre null aunque la colección sí tenga resumen. Montado read-write
+      # (no :ro): el modo WAL de SQLite necesita escribir *-wal/*-shm incluso para
+      # lecturas; la API igual nunca llama a SummaryCache.SetAsync.
+      #
+      # Ítem 12.1: ruta configurable vía RAG_SUMMARY_CACHE_DIR — sin ella, cae en un
+      # volumen nombrado de Docker (persistente entre recreaciones del contenedor,
+      # pero sin depender de la ruta de perfil de ningún usuario concreto del host).
+      - "${RAG_SUMMARY_CACHE_DIR:-rag-summary-cache}:/data/rag-engine"
     environment:
-      QDRANT__SERVICE__GRPC_PORT: "6334"
-      QDRANT__LOG_LEVEL: INFO
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+      Ingestion__ResumenCachePath: /data/rag-engine/summary-cache.sqlite3
+      # NOTA: en esta máquina Qdrant corre como un contenedor standalone
+      # ("qdrant-local", fuera de este compose), no como el servicio "qdrant"
+      # de arriba. Por eso se alcanza igual que Ollama: publicado en el host.
+      # Si alguna vez migras a que el servicio "qdrant" de este archivo sea
+      # el real, cambia esto a "qdrant" y restaura el depends_on.
+      Qdrant__Host: host.docker.internal
+      # Ítem 12.1: opcional — si el Qdrant de destino exige autenticación
+      # (QDRANT__SERVICE__API_KEY en su propia configuración), fijar aquí la misma
+      # key vía variable de entorno del host (nunca hardcodeada en este archivo).
+      # Vacío conserva el comportamiento previo (sin autenticación).
+      Qdrant__ApiKey: "${RAG_QDRANT_API_KEY:-}"
+      # Ítem 12.8: este compose sigue en el perfil LOCAL de siempre (Transport:Published
+      # no se fija, cae en false) — el binding 127.0.0.1:5080 de arriba ya es el
+      # loopback esperado para ese perfil. Publicar más allá de eso (LAN/VPN interna)
+      # exige fijar Transport__Published=true (y con ello RAG_QDRANT_API_KEY no vacío +
+      # TLS resuelto): ver docs/configuracion.md y docs/operaciones.md, sección de
+      # perfil publicado. No se activa aquí por defecto.
+      # Ollama se deja NATIVO en el host (no en Docker) para conservar la
+      # aceleración Metal de Apple Silicon — un Ollama en el contenedor Linux
+      # caería a CPU-only. host.docker.internal expone el host desde el contenedor.
+      Ollama__Endpoint: "http://host.docker.internal:11434/v1"
+      OnnxBrain__ModelPath: /models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx
+      OnnxBrain__VocabPath: /models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model
+      CrossEncoder__ModelPath: /models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx
+      CrossEncoder__VocabPath: /models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model
+    extra_hosts:
+      # host.docker.internal ya funciona out-of-the-box en Docker Desktop (Mac);
+      # esta línea solo es necesaria si esto se corre alguna vez en Docker Engine/Linux.
+      - "host.docker.internal:host-gateway"
 
 volumes:
-  qdrant_storage:
-    driver: local
+  rag-summary-cache: {}
+

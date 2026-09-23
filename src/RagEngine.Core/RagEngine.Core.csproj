@@ -8,6 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
+    <!-- 10.0.11 en vez de 10.0.10: la anterior arrastraba
+         SQLitePCLRaw.bundle_e_sqlite3 2.1.11, cuya SQLite embebida tiene
+         CVE-2025-6965 (GHSA-2m69-gcr7-jv3q, severidad alta, afecta <= 2.1.11).
+         10.0.11 referencia bundle y core 2.1.12, ya corregidos. Se sube el
+         paquete de primer nivel en vez de pinchar la dependencia transitiva,
+         para no descuadrar bundle y core entre si. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
@@ -16,8 +24,27 @@
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.78.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.78.0" />
     <PackageReference Include="Polly.Core" Version="8.7.0" />
-    <PackageReference Include="Qdrant.Client" Version="1.14.0" />
+    <!-- Ítem 9.2: PrivateAssets="compile" corta SOLO la referencia de compilación
+         transitiva — RagEngine.Api y RagEngine.Cli ya no pueden escribir código que
+         nombre Qdrant.Client.QdrantClient (CS0246 si lo intentan), así que cualquier
+         resolución directa del tipo desde un host vuelve a romper el build, en vez de
+         depender de una disciplina de code review. El asset "runtime" (Qdrant.Client.dll)
+         SIGUE fluyendo a los hosts porque QdrantVectorStore lo necesita cargado en su
+         proceso: "all" en vez de "compile" rompería el arranque en tiempo de ejecución
+         (FileNotFoundException) sin aportar nada al objetivo de este ítem. -->
+    <PackageReference Include="Qdrant.Client" Version="1.14.0" PrivateAssets="compile" />
     <PackageReference Include="Serilog" Version="4.4.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <!-- SanitizeSimpleAnswer es internal a proposito: es un detalle de
+         implementacion del modo Simple, no API publica. Se expone al proyecto de
+         tests en vez de hacerla publica, para poder probarla sin ampliar la
+         superficie del ensamblado. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>RagEngine.Core.Tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,13 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
-using Qdrant.Client;
+using Microsoft.Extensions.Options;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Infrastructure.Chunking;
-using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Diagnostics;
+using RagEngine.Core.Infrastructure.Summary;
 
 namespace RagEngine.Core.Pipeline;
 
@@ -32,20 +33,45 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
     private static readonly int ConsumerCount = Math.Clamp(Environment.ProcessorCount / 4, 2, 4);
 
     /// <summary>
-    /// Longitud mínima (en caracteres) del contenido de un chunk para ser indexado.
-    /// Los micro-chunks (constructores boilerplate de una línea, interfaces
-    /// marcador vacías, cáscaras "public static class X") no contienen información
-    /// respondible, pero su EnrichedContent —casi puro encabezado con el nombre de
-    /// la clase— produce embeddings artificialmente cercanos a cualquier consulta
-    /// que mencione esa entidad, ensuciando el ranking de ambas ramas híbridas.
+    /// Longitud mínima del contenido crudo, salvo declaraciones de tipos cuando
+    /// se habilita el experimento: su nombre es una respuesta válida aunque sea corto.
+    /// Los demás micro-chunks siguen fuera para que un encabezado largo no
+    /// convierta boilerplate en un candidato artificialmente cercano.
     /// </summary>
     private const int MinIndexableContentChars = 60;
+
+    internal static bool IsIndexable(CodeChunk chunk, bool indexShortTypeDeclarations)
+    {
+        var contentLength = chunk.Content.AsSpan().Trim().Length;
+        if (contentLength >= MinIndexableContentChars)
+            return true;
+
+        // Class también etiqueta grupos de campos; sólo se exime el chunk que
+        // declara el propio tipo, no cualquiera que pertenezca a él.
+        var typeName = chunk.Metadata.ClassName;
+        return indexShortTypeDeclarations
+            && contentLength > 0
+            && chunk.Type is ChunkType.Class or ChunkType.Interface
+            && !string.IsNullOrWhiteSpace(typeName)
+            && chunk.DefinedSymbols.Contains(typeName, StringComparer.Ordinal);
+    }
+
+    /// <summary>Umbral de fallos de conexión CONSECUTIVOS con Ollama antes de abortar la Fase 2 (decisión 3b).</summary>
+    private const int ResumenConnectionFailureThreshold = 10;
 
     private readonly IIngestionScanner _scanner;
     private readonly ChunkingStrategyRouter _chunkRouter;
     private readonly IVectorizationBrain _brain;
     private readonly ISparseTokenizer _sparseTokenizer;
-    private readonly QdrantVectorStore _vectorStore;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
+    private readonly IVectorStoreWriter _vectorStoreWriter;
+    private readonly IBusinessSummaryGenerator _summaryGenerator;
+    private readonly ISummaryCache _summaryCache;
+    private readonly IOptions<IngestionOptions> _ingestionOptions;
+    private readonly IAuditEventStore _auditStore;
+    private readonly IOptions<AuditOptions> _auditOptions;
+    private readonly IIngestionStateStore _stateStore;
+    private readonly string _groupPromptVersion;
     private readonly ILogger<DefaultIngestionPipeline> _logger;
 
     public DefaultIngestionPipeline(
@@ -53,14 +79,32 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ChunkingStrategyRouter chunkRouter,
         IVectorizationBrain brain,
         ISparseTokenizer sparseTokenizer,
-        QdrantVectorStore vectorStore,
+        IVectorStoreAdmin vectorStoreAdmin,
+        IVectorStoreWriter vectorStoreWriter,
+        IBusinessSummaryGenerator summaryGenerator,
+        ISummaryCache summaryCache,
+        IOptions<IngestionOptions> ingestionOptions,
+        IOptions<OllamaOptions> ollamaOptions,
+        IAuditEventStore auditStore,
+        IOptions<AuditOptions> auditOptions,
+        IIngestionStateStore stateStore,
         ILogger<DefaultIngestionPipeline> logger)
     {
         _scanner = scanner;
         _chunkRouter = chunkRouter;
         _brain = brain;
         _sparseTokenizer = sparseTokenizer;
-        _vectorStore = vectorStore;
+        _vectorStoreAdmin = vectorStoreAdmin;
+        _vectorStoreWriter = vectorStoreWriter;
+        _summaryGenerator = summaryGenerator;
+        _summaryCache = summaryCache;
+        _ingestionOptions = ingestionOptions;
+        _auditStore = auditStore;
+        _auditOptions = auditOptions;
+        _stateStore = stateStore;
+        // Ítem 5.b: namespace de caché propio del modo por archivo/tipo, calculado una
+        // sola vez aquí (no en DI) porque sólo se usa cuando SummaryGranularity=PerFile.
+        _groupPromptVersion = OllamaBusinessSummaryGenerator.ComputeGroupPromptVersion(ollamaOptions.Value.ModelId);
         _logger = logger;
     }
 
@@ -73,41 +117,130 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         var sw = Stopwatch.StartNew();
         var stats = new PipelineStats();
 
-        _logger.LogInformation(
-            "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force}",
-            request.RepositoryPath, request.CollectionName, request.ForceReindex);
+        // Ítem 12.11: correlation_id agrupa el único evento de auditoría que emite esta
+        // corrida (Success/Failed/Cancelled — no hay Denied porque la ingesta todavía no
+        // tiene una puerta de autorización de escritura, a diferencia del retrieval del
+        // ítem 9.1). actorId se resuelve una sola vez, no en cada rama del try/catch.
+        var auditCorrelationId = Guid.NewGuid().ToString();
+        var auditActorId = AuditActor.ResolveId(_auditOptions.Value);
 
-        // ── Step 1: Prepare collection ──────────────────────────────────────────
-        if (request.ForceReindex)
-            await _vectorStore.RecreateCollectionAsync(
-                request.CollectionName, _brain.EmbeddingDimensions, cancellationToken);
-        else
-            await _vectorStore.EnsureCollectionAsync(
-                request.CollectionName, _brain.EmbeddingDimensions, cancellationToken);
-
-        // ── Step 2: Producer/Consumer via bounded Channel ───────────────────────
-        var channel = Channel.CreateBounded<CodeChunk>(new BoundedChannelOptions(ChannelCapacity)
+        // Ítem 13.1: run_id propio (distinto de auditCorrelationId — la auditoría es
+        // el registro inmutable de "qué pasó al final"; el run_id agrupa el estado
+        // mutable por-documento de ESTA corrida, consultable mientras corre). El actor
+        // reutiliza AuditOptions: no se justifica una segunda fuente de identidad local.
+        var runId = Guid.NewGuid().ToString();
+        var runStartedAt = DateTimeOffset.UtcNow;
+        var stateCtx = new IngestionStateContext
         {
-            FullMode = BoundedChannelFullMode.Wait,
-            SingleReader = false,
-            SingleWriter = false
-        });
+            RunId = runId,
+            ActorId = auditActorId,
+            Contract = ComputeContractFingerprint(request, _ingestionOptions.Value.IndexShortTypeDeclarations)
+        };
+        await _stateStore.StartRunAsync(new IngestionRunRecord
+        {
+            RunId = runId,
+            Collection = request.CollectionName,
+            RepositoryPath = request.RepositoryPath,
+            ActorId = auditActorId,
+            Status = IngestionRunStatus.Running,
+            StartedAt = runStartedAt
+        }, cancellationToken);
 
-        var producerTask = ProduceChunksAsync(
-            request, channel.Writer, progress, stats, cancellationToken);
+        _logger.LogInformation(
+            "Starting ingestion: {Path} → collection '{Collection}' | ForceReindex: {Force} | ConResumen: {Resumen} | IndexShortTypeDeclarations: {ShortTypes}",
+            request.RepositoryPath, request.CollectionName, request.ForceReindex, request.EnableResumenLlm,
+            _ingestionOptions.Value.IndexShortTypeDeclarations);
 
-        // Varios consumidores compiten por el mismo Channel (SingleReader = false):
-        // mientras uno espera el upsert de Qdrant, otro vectoriza el siguiente lote.
-        var consumerTasks = Enumerable.Range(0, ConsumerCount)
-            .Select(_ => ConsumeAndIndexAsync(
-                request.CollectionName, channel.Reader,
-                request.Options.BatchSize, progress, stats, cancellationToken))
-            .ToArray();
+        try
+        {
 
-        // Run producer and consumers concurrently; propagate any exception
-        await Task.WhenAll(consumerTasks.Append(producerTask));
+        // ── Decisión 1: si se pide --con-resumen sin --force sobre una colección que ya
+        // existe SIN el tercer vector, hace falta --force para recrearla con 3 vectores
+        // (Qdrant no permite agregar un named vector a una colección ya creada). Si YA
+        // lo tiene, la Fase 1 corre normalmente más abajo — no hace falta saltarla: el
+        // upsert preserva el resumen ya generado de los chunks sin cambios (ver
+        // GetExistingResumenStateAsync/UpsertBatchAsync), así que re-ingestar el mismo
+        // path (con archivos nuevos, modificados, o sin cambios) siempre es seguro.
+        if (request.EnableResumenLlm && !request.ForceReindex)
+        {
+            var exists = await _vectorStoreAdmin.CollectionExistsAsync(request.CollectionName, cancellationToken);
+            if (exists && !await _vectorStoreAdmin.HasSummaryVectorAsync(request.CollectionName, cancellationToken))
+            {
+                throw new InvalidOperationException(
+                    $"La colección '{request.CollectionName}' ya existe sin el vector de resumen. " +
+                    "Usa --force para recrearla con el tercer vector (esto reindexa todo desde cero).");
+            }
+        }
+
+        // Ids vigentes y archivos efectivamente procesados: alimentan la limpieza de
+        // puntos obsoletos al cerrar la Fase 1. El productor es una sola tarea secuencial,
+        // así que no hacen falta colecciones concurrentes.
+        var generatedIds = new HashSet<Guid>();
+        var processedFiles = new HashSet<string>(StringComparer.Ordinal);
+
+        {
+            // ── Step 1: Prepare collection ──────────────────────────────────────
+            if (request.ForceReindex)
+                await _vectorStoreAdmin.RecreateCollectionAsync(
+                    request.CollectionName, _brain.EmbeddingDimensions, request.EnableResumenLlm, cancellationToken);
+            else
+                await _vectorStoreAdmin.EnsureCollectionAsync(
+                    request.CollectionName, _brain.EmbeddingDimensions, request.EnableResumenLlm, cancellationToken);
+
+            // ── Step 2: Producer/Consumer via bounded Channel ───────────────────
+            var channel = Channel.CreateBounded<CodeChunk>(new BoundedChannelOptions(ChannelCapacity)
+            {
+                FullMode = BoundedChannelFullMode.Wait,
+                SingleReader = false,
+                SingleWriter = false
+            });
+
+            var producerTask = ProduceChunksAsync(
+                request, channel.Writer, progress, stats, generatedIds, processedFiles, stateCtx, cancellationToken);
+
+            // Varios consumidores compiten por el mismo Channel (SingleReader = false):
+            // mientras uno espera el upsert de Qdrant, otro vectoriza el siguiente lote.
+            var consumerTasks = Enumerable.Range(0, ConsumerCount)
+                .Select(_ => ConsumeAndIndexAsync(
+                    request.CollectionName, channel.Reader,
+                    request.Options.BatchSize, request.EnableResumenLlm, request.Tenant, progress, stats, stateCtx, cancellationToken))
+                .ToArray();
+
+            // Run producer and consumers concurrently; propagate any exception
+            await Task.WhenAll(consumerTasks.Append(producerTask));
+        }
+
+        // Fase 1 produjo chunks pero Qdrant no aceptó ninguno: antes esto se
+        // registraba como "Ingestion complete. Indexed: 0" y el proceso salía con
+        // éxito, dejando la colección silenciosamente sin actualizar. Es fatal.
+        if (stats.ChunksGenerated > 0 && stats.ChunksIndexed == 0)
+            throw new InvalidOperationException(
+                $"La ingesta generó {stats.ChunksGenerated} chunks pero Qdrant no indexó ninguno " +
+                $"en la colección '{request.CollectionName}'. Revisa los errores de upsert en el log; " +
+                "la colección quedó sin cambios.");
+
+        // Un chunk cuyo archivo cambió (o al que el chunker reagrupó) entra con un Id
+        // nuevo y deja el viejo indexado para siempre. Con --force no aplica: la
+        // colección se acaba de recrear y no hay nada obsoleto que barrer.
+        if (!request.ForceReindex)
+        {
+            stats.PointsDeleted = await _vectorStoreWriter.DeleteSupersededPointsAsync(
+                request.CollectionName, generatedIds, processedFiles, cancellationToken);
+        }
+
+        // ── Step 3: Fase 2 — resumen de negocio (opt-in, desacoplada del throughput
+        // de Fase 1). Corre igual tanto si Fase 1 acaba de correr como si se saltó
+        // por reanudación: siempre opera sobre los puntos marcados resumen_pending=true
+        // en Qdrant, nunca sobre la lista de chunks en memoria.
+        ResumenPhaseStats? resumenStats = null;
+        if (request.EnableResumenLlm)
+        {
+            resumenStats = await RunResumenPhaseAsync(request.CollectionName, stats, progress, cancellationToken);
+        }
 
         sw.Stop();
+
+        var (tokensN, tokensP50, tokensP95) = stats.ComputeTokenPercentiles();
 
         var summary = new IngestionSummary(
             FilesScanned: stats.FilesScanned,
@@ -115,13 +248,100 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
             ChunksIndexed: stats.ChunksIndexed,
             FilesSkipped: stats.FilesSkipped,
             TotalDuration: sw.Elapsed,
-            EstimatedMemoryPeakBytes: GC.GetTotalMemory(false));
+            EstimatedMemoryPeakBytes: GC.GetTotalMemory(false),
+            ResumenesCompleted: resumenStats?.Completed ?? 0,
+            ResumenesPending: resumenStats?.Pending ?? 0,
+            ResumenesSinNegocio: resumenStats?.SinNegocio ?? 0,
+            TokensObserved: tokensN,
+            TokensP50: tokensP50,
+            TokensP95: tokensP95,
+            TokensMaxUsable: stats.TokensMaxUsable,
+            ChunksTruncatedTotal: stats.ChunksTruncatedTotal,
+            TokensDiscardedTotal: stats.TokensDiscardedTotal,
+            ResumenGranularity: _ingestionOptions.Value.SummaryGranularity.ToString(),
+            ResumenGroups: resumenStats?.Groups ?? 0,
+            ResumenLlmCalls: resumenStats?.LlmCalls ?? 0,
+            ResumenCacheHits: resumenStats?.CacheHits ?? 0,
+            ResumenCacheMisses: resumenStats?.CacheMisses ?? 0,
+            ResumenElapsedMs: resumenStats?.ElapsedMs ?? 0);
 
         _logger.LogInformation(
-            "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Duration: {Elapsed}",
-            summary.FilesScanned, summary.ChunksGenerated, summary.ChunksIndexed, summary.TotalDuration);
+            "Ingestion complete. Files: {Files}, Chunks: {Chunks}, Indexed: {Indexed}, Obsoletos borrados: {Deleted}, Duration: {Elapsed}",
+            summary.FilesScanned, summary.ChunksGenerated, summary.ChunksIndexed, stats.PointsDeleted, summary.TotalDuration);
+
+        await RecordIngestionAuditAsync(
+            auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Success, detail: null);
+        await FinishRunStateAsync(runId, IngestionRunStatus.Succeeded);
 
         return summary;
+        }
+        catch (OperationCanceledException)
+        {
+            // CancellationToken.None: la escritura de auditoría no debe abortarse sólo
+            // porque el token de la operación cancelada ya está señalado.
+            await RecordIngestionAuditAsync(
+                auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Cancelled, detail: null);
+            await FinishRunStateAsync(runId, IngestionRunStatus.Cancelled);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordIngestionAuditAsync(
+                auditCorrelationId, auditActorId, request.CollectionName, AuditOutcome.Failed, ex.Message);
+            await FinishRunStateAsync(runId, IngestionRunStatus.Failed);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Cierra el encabezado de corrida (ítem 13.1). Igual criterio que
+    /// <see cref="RecordIngestionAuditAsync"/>: un fallo al persistir el cierre nunca
+    /// debe ocultar el resultado real de la ingesta ni impedir relanzar la excepción
+    /// original — se registra en el log y sigue.
+    /// </summary>
+    private async Task FinishRunStateAsync(string runId, IngestionRunStatus status)
+    {
+        try
+        {
+            await _stateStore.FinishRunAsync(runId, status, DateTimeOffset.UtcNow, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo cerrar el estado de la corrida de ingesta {RunId} ({Status}).", runId, status);
+        }
+    }
+
+    /// <summary>
+    /// Escribe el evento final de auditoría de esta corrida. Nunca deja que un fallo en
+    /// la escritura de auditoría oculte el resultado real de la ingesta: se registra en
+    /// el log y no se relanza — perder un evento de auditoría es peor que arriesgar
+    /// consistencia perfecta entre ambos, pero no debe convertir una ingesta exitosa en
+    /// un fallo reportado al operador.
+    /// </summary>
+    private async Task RecordIngestionAuditAsync(
+        string correlationId, string actorId, string collection, AuditOutcome outcome, string? detail)
+    {
+        try
+        {
+            await _auditStore.RecordAsync(new AuditEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationId,
+                Operation = AuditOperations.IngestRepository,
+                ActorType = AuditActor.TypeLocalOperator,
+                ActorId = actorId,
+                Collection = collection,
+                Outcome = outcome,
+                Detail = detail,
+                Timestamp = DateTimeOffset.UtcNow,
+                Version = AuditEvent.CurrentVersion
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo persistir el evento de auditoría de ingesta ({Outcome}) para '{Collection}'.",
+                outcome, collection);
+        }
     }
 
     // ── Producer: Scan → Read → Chunk → Write to Channel ───────────────────────
@@ -130,6 +350,9 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         ChannelWriter<CodeChunk> writer,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        HashSet<Guid> generatedIds,
+        HashSet<string> processedFiles,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         try
@@ -145,6 +368,16 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     CurrentFile: artifact.RelativePath,
                     Stage: IngestionStage.Scanning));
 
+                // Ítem 13.1: mismo docKey que el payload de Qdrant (ChunkBuilder.BuildIdentityKey,
+                // 8.f). Se registra Pending ANTES de leer el archivo — si el proceso muere
+                // aquí, el documento queda visible como "descubierto pero no procesado",
+                // nunca desaparecido ni falsamente marcado como éxito.
+                var docKey = ChunkBuilder.BuildIdentityKey(request.Options.RepositoryName, artifact.RelativePath);
+                var tracker = new DocumentTracker { StartedAt = DateTimeOffset.UtcNow };
+                stateCtx.Trackers[docKey] = tracker;
+                await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                    stateCtx, docKey, tracker, DocumentIngestionStatus.Pending, detail: null), ct);
+
                 string content;
                 try
                 {
@@ -155,21 +388,35 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "read_file"));
                     _logger.LogWarning(ex, "Failed to read {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
+                    await MarkDocumentFailedAsync(stateCtx, docKey, tracker, ex.Message, ct);
                     continue;
                 }
 
                 Interlocked.Increment(ref stats.FilesScanned);
 
+                tracker.ContentHash = Utilities.ContentHasher.Compute(content);
+                await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                    stateCtx, docKey, tracker, DocumentIngestionStatus.Running, detail: null), ct);
+
                 var strategy = _chunkRouter.GetStrategy(artifact);
+                var chunksForDoc = 0;
 
                 try
                 {
                     await foreach (var chunk in strategy.ChunkAsync(
                         artifact, content, request.Options, ct))
                     {
-                        if (chunk.Content.AsSpan().Trim().Length < MinIndexableContentChars)
+                        if (!IsIndexable(chunk, _ingestionOptions.Value.IndexShortTypeDeclarations))
+                        {
+                            _logger.LogDebug(
+                                "Skipping chunk {ChunkId} ({ChunkType}) in {File}: below the admission threshold",
+                                chunk.Id, chunk.Type, artifact.RelativePath);
                             continue;
+                        }
 
+                        generatedIds.Add(chunk.Id);
+                        stateCtx.ChunkOwners[chunk.Id] = docKey;
+                        chunksForDoc++;
                         await writer.WriteAsync(chunk, ct);
                         Interlocked.Increment(ref stats.ChunksGenerated);
 
@@ -187,7 +434,31 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                     RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "chunking"));
                     _logger.LogWarning(ex, "Failed to chunk {File}", artifact.AbsolutePath);
                     Interlocked.Increment(ref stats.FilesSkipped);
+                    await MarkDocumentFailedAsync(stateCtx, docKey, tracker, ex.Message, ct);
+                    continue;
                 }
+
+                // El chunking de este documento terminó sin excepción: fija el total
+                // esperado y, si ya está satisfecho (0 chunks admitidos, o el consumidor
+                // ya confirmó todos antes de que el productor llegara aquí), cierra el
+                // documento como Succeeded ahora mismo — nunca lo deja "Running" para siempre.
+                bool readyNow;
+                lock (tracker)
+                {
+                    tracker.ExpectedChunks = chunksForDoc;
+                    readyNow = !tracker.Finalized && tracker.ConfirmedChunks >= chunksForDoc;
+                    if (readyNow) tracker.Finalized = true;
+                }
+                if (readyNow)
+                {
+                    await _stateStore.UpsertDocumentStateAsync(BuildDocumentState(
+                        stateCtx, docKey, tracker, DocumentIngestionStatus.Succeeded, detail: null), ct);
+                }
+
+                // Misma clave que ChunkBuilder.BuildIdentityKey (ítem 8.f): el barrido
+                // de obsoletos compara contra "file_path" en el payload, que ya no es
+                // la ruta absoluta, así que la comparación debe usar la misma clave.
+                processedFiles.Add(docKey);
 
                 // Explicit GC hint after processing large C# files with Roslyn
                 if (artifact.SizeBytes > 100_000)
@@ -200,13 +471,144 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         }
     }
 
+    /// <summary>Fingerprint del contrato de chunking efectivo de esta corrida (ítem 13.1).</summary>
+    private static string ComputeContractFingerprint(IngestionRequest request, bool indexShortTypeDeclarations)
+    {
+        var extensions = string.Join(',', request.Profile.AllowedExtensions.OrderBy(e => e, StringComparer.Ordinal));
+        return string.Join(';',
+            $"repo={request.Options.RepositoryName}",
+            $"maxTokens={request.Options.MaxTokensPerChunk}",
+            $"overlap={request.Options.OverlapTokens}",
+            $"oversized={request.Options.OversizedBehavior}",
+            $"parentCtx={request.Options.ParentContextLines}",
+            $"resumen={request.EnableResumenLlm}",
+            $"shortTypes={indexShortTypeDeclarations}",
+            $"ext={extensions}");
+    }
+
+    private static DocumentIngestionState BuildDocumentState(
+        IngestionStateContext ctx, string docKey, DocumentTracker tracker,
+        DocumentIngestionStatus status, string? detail) => new()
+    {
+        RunId = ctx.RunId,
+        DocumentKey = docKey,
+        ContentHash = tracker.ContentHash,
+        Contract = ctx.Contract,
+        ActorId = ctx.ActorId,
+        Status = status,
+        ChunksExpected = tracker.ExpectedChunks,
+        ChunksIndexed = tracker.ConfirmedChunks,
+        StartedAt = tracker.StartedAt,
+        UpdatedAt = DateTimeOffset.UtcNow,
+        Detail = detail
+    };
+
+    /// <summary>
+    /// Marca un documento Failed si todavía no llegó a un estado terminal en esta
+    /// corrida. Nunca pisa un Succeeded ya finalizado por el consumidor — evita la
+    /// carrera donde el productor sigue reportando un fallo tardío (p. ej. cancelación)
+    /// sobre un documento cuyos chunks ya se confirmaron todos.
+    /// </summary>
+    private async Task MarkDocumentFailedAsync(
+        IngestionStateContext ctx, string docKey, DocumentTracker tracker, string detail, CancellationToken ct)
+    {
+        bool shouldMark;
+        lock (tracker)
+        {
+            shouldMark = !tracker.Finalized;
+            if (shouldMark) tracker.Finalized = true;
+        }
+        if (!shouldMark) return;
+
+        try
+        {
+            await _stateStore.UpsertDocumentStateAsync(
+                BuildDocumentState(ctx, docKey, tracker, DocumentIngestionStatus.Failed, detail), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo persistir el estado Failed del documento '{DocKey}'.", docKey);
+        }
+    }
+
+    /// <summary>
+    /// Se llama tras cada upsert exitoso de un lote (ítem 13.1): por cada documento
+    /// dueño de algún chunk del lote, suma los chunks confirmados y cierra el
+    /// documento como Succeeded si ya alcanzó su total esperado. El productor puede
+    /// terminar de trocear un archivo DESPUÉS de que el consumidor ya confirmó todos
+    /// sus chunks (lotes chicos, archivo grande) — por eso la finalización se intenta
+    /// en ambos lados y sólo se persiste la primera vez que se cumple la condición.
+    /// </summary>
+    private async Task ConfirmChunksIndexedAsync(
+        IngestionStateContext ctx, IEnumerable<CodeChunk> confirmedChunks, CancellationToken ct)
+    {
+        var byDoc = confirmedChunks
+            .GroupBy(c => ctx.ChunkOwners.TryGetValue(c.Id, out var key) ? key : null)
+            .Where(g => g.Key is not null);
+
+        foreach (var group in byDoc)
+        {
+            var docKey = group.Key!;
+            if (!ctx.Trackers.TryGetValue(docKey, out var tracker))
+                continue;
+
+            bool readyNow;
+            lock (tracker)
+            {
+                tracker.ConfirmedChunks += group.Count();
+                readyNow = !tracker.Finalized
+                    && tracker.ExpectedChunks is int expected
+                    && tracker.ConfirmedChunks >= expected;
+                if (readyNow) tracker.Finalized = true;
+            }
+            if (!readyNow) continue;
+
+            try
+            {
+                await _stateStore.UpsertDocumentStateAsync(
+                    BuildDocumentState(ctx, docKey, tracker, DocumentIngestionStatus.Succeeded, detail: null),
+                    CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "No se pudo persistir el estado Succeeded del documento '{DocKey}'.", docKey);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Se llama cuando el upsert de un lote falla (ítem 13.1): marca Failed cada
+    /// documento dueño de algún chunk del lote, salvo que ya haya llegado a un
+    /// estado terminal (no pisa un Succeeded previo de otro lote del mismo documento).
+    /// </summary>
+    private async Task MarkChunksFailedAsync(
+        IngestionStateContext ctx, IEnumerable<CodeChunk> failedChunks, string detail, CancellationToken ct)
+    {
+        var docKeys = failedChunks
+            .Select(c => ctx.ChunkOwners.TryGetValue(c.Id, out var key) ? key : null)
+            .Where(k => k is not null)
+            .Distinct()
+            .Cast<string>();
+
+        foreach (var docKey in docKeys)
+        {
+            if (!ctx.Trackers.TryGetValue(docKey, out var tracker))
+                continue;
+
+            await MarkDocumentFailedAsync(ctx, docKey, tracker, detail, ct);
+        }
+    }
+
     // ── Consumer: Read from Channel → Batch → ONNX → Qdrant Upsert ────────────
     private async Task ConsumeAndIndexAsync(
         string collectionName,
         ChannelReader<CodeChunk> reader,
         int batchSize,
+        bool markResumenPending,
+        string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         var batch = new List<CodeChunk>(batchSize);
@@ -217,38 +619,63 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
 
             if (batch.Count >= batchSize)
             {
-                await ProcessBatchAsync(collectionName, batch, progress, stats, ct);
+                await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, stateCtx, ct);
                 batch.Clear();
             }
         }
 
         // Flush remaining chunks
         if (batch.Count > 0)
-            await ProcessBatchAsync(collectionName, batch, progress, stats, ct);
+            await ProcessBatchAsync(collectionName, batch, markResumenPending, tenant, progress, stats, stateCtx, ct);
     }
 
     private async Task ProcessBatchAsync(
         string collectionName,
         List<CodeChunk> batch,
+        bool markResumenPending,
+        string? tenant,
         IProgress<IngestionProgress>? progress,
         PipelineStats stats,
+        IngestionStateContext stateCtx,
         CancellationToken ct)
     {
         var texts = batch.Select(c => c.EnrichedContent).ToList();
 
-        // 1. Iniciar Vectorización Densa y Dispersa en paralelo
-        var denseTask = _brain.GenerateBatchEmbeddingsAsync(texts, ct);
+        // 1. Iniciar Vectorización Densa y Dispersa en paralelo. Si la colección tiene
+        // resumen habilitado, en paralelo también se busca el estado de resumen que estos
+        // mismos chunk IDs ya tuvieran de una corrida anterior (decisión: re-ingestar nunca
+        // debe destruir un resumen ya generado — ver GetExistingResumenStateAsync).
+        var denseTask = _brain.GenerateBatchEmbeddingsWithStatsAsync(texts, ct);
         var sparseTask = Task.Run(() => _sparseTokenizer.TokenizeBatch(texts), ct);
+        var existingResumenTask = markResumenPending
+            ? _vectorStoreWriter.GetExistingResumenStateAsync(collectionName, batch.Select(c => c.Id).ToList(), ct)
+            : Task.FromResult<IReadOnlyDictionary<Guid, ExistingResumenState>>(
+                new Dictionary<Guid, ExistingResumenState>());
 
         float[][] denseVectors;
         IReadOnlyList<IReadOnlyList<SparseEntry>> sparseVectors;
+        IReadOnlyDictionary<Guid, ExistingResumenState> existingResumenStates;
 
         try
         {
-            await Task.WhenAll(denseTask, sparseTask);
-            
-            denseVectors = (await denseTask).ToArray();
+            await Task.WhenAll(denseTask, sparseTask, existingResumenTask);
+
+            var denseResult = await denseTask;
+            denseVectors = denseResult.Embeddings.ToArray();
             sparseVectors = await sparseTask;
+            existingResumenStates = await existingResumenTask;
+
+            // 11.1: contar T/descartados/truncados de la fase de embedding de
+            // chunks ADMITIDOS, independientemente de si el upsert a Qdrant
+            // más abajo termina en éxito o error — el costo de tokenización ya
+            // se pagó y es lo que hay que medir.
+            stats.RecordTokenizationStats(denseResult.Stats);
+            long batchTruncated = denseResult.Stats.Count(s => s.Truncated);
+            long batchDiscarded = denseResult.Stats.Sum(s => (long)s.Discarded);
+            if (batchTruncated > 0)
+                RagEngineMetrics.ChunksTruncatedTotal.Add(batchTruncated, new KeyValuePair<string, object?>("collection", collectionName));
+            if (batchDiscarded > 0)
+                RagEngineMetrics.TokensDiscardedTotal.Add(batchDiscarded, new KeyValuePair<string, object?>("collection", collectionName));
         }
         catch (Exception)
         {
@@ -262,25 +689,44 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                 RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "sparse_tokenization"));
                 _logger.LogError(sparseTask.Exception?.InnerException ?? sparseTask.Exception, "Sparse tokenization failed for {Count} chunks.", batch.Count);
             }
+            if (existingResumenTask.IsFaulted)
+            {
+                RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "resumen_state_lookup"));
+                _logger.LogError(existingResumenTask.Exception?.InnerException ?? existingResumenTask.Exception,
+                    "Fallo consultando el estado de resumen previo para {Count} chunks.", batch.Count);
+            }
+            // Ítem 13.1: un lote que nunca llegó a vectorizarse tampoco llega a
+            // upsert — sus documentos quedan Failed en vez de Running para siempre.
+            await MarkChunksFailedAsync(stateCtx, batch, "Fallo vectorizando/tokenizando el lote.", CancellationToken.None);
             return;
         }
 
         // 3. Zip and Upsert
         var triples = batch
-            .Select((chunk, i) => (
-                Chunk: chunk, 
-                DenseVector: denseVectors[i], 
-                SparseVector: sparseVectors[i]
-            ))
+            .Select((chunk, i) => new VectorStoreBatchItem(
+                chunk,
+                denseVectors[i],
+                sparseVectors[i],
+                existingResumenStates.GetValueOrDefault(chunk.Id)))
             .ToList();
 
         try
         {
             // waitForCommit: false — el WAL de Qdrant garantiza durabilidad; diferir
             // la aplicación de los índices saca ~300 ms/lote de la ruta crítica.
-            await _vectorStore.UpsertBatchAsync(collectionName, triples, waitForCommit: false, ct: ct);
+            await _vectorStoreWriter.UpsertBatchAsync(
+                collectionName, triples, waitForCommit: false, markResumenPending: markResumenPending, tenant: tenant, ct: ct);
             Interlocked.Add(ref stats.ChunksIndexed, batch.Count);
             RagEngineMetrics.ChunksIndexedTotal.Add(batch.Count, new KeyValuePair<string, object?>("collection", collectionName));
+
+            // Ítem 13.1: reconciliación idempotente entre upsert y persistencia — si el
+            // proceso muere justo después de este await pero antes de que termine de
+            // escribir el estado, la próxima corrida vuelve a leer y re-trocear el
+            // archivo (mismos Ids deterministas, Qdrant no duplica) y esta vez sí deja
+            // el estado consistente. Se usa CancellationToken.None: un upsert ya
+            // confirmado en Qdrant no debe quedar sin reflejar por una cancelación
+            // que llegó un instante después.
+            await ConfirmChunksIndexedAsync(stateCtx, batch, CancellationToken.None);
 
             progress?.Report(new IngestionProgress(
                 FilesProcessed: stats.FilesScanned,
@@ -294,7 +740,326 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         {
             RagEngineMetrics.IngestionErrorsTotal.Add(batch.Count, new KeyValuePair<string, object?>("stage", "qdrant_upsert"));
             _logger.LogError(ex, "Qdrant upsert failed for batch of {Count} chunks.", batch.Count);
+            await MarkChunksFailedAsync(stateCtx, batch, ex.Message, CancellationToken.None);
         }
+    }
+
+    // ── Fase 2: resumen de negocio (opt-in) ─────────────────────────────────────
+    //
+    // Desacoplada del throughput de Fase 1 (decisión 3): un LLM local es órdenes de
+    // magnitud más lento que ONNX, así que corre en su propio Channel + pool de
+    // workers acotado por MaxConcurrentResumenCalls, DESPUÉS de que Fase 1 (si corrió)
+    // ya dejó los puntos buscables por dense+sparse.
+    //
+    // Siempre opera vía scroll sobre Qdrant (resumen_pending=true), nunca sobre la
+    // lista de chunks en memoria — así una corrida que se cortó a mitad de la Fase 2
+    // se reanuda automáticamente (decisión 3a) sin distinguir código entre "recién
+    // generado" y "pendiente de una corrida anterior".
+    private async Task<ResumenPhaseStats> RunResumenPhaseAsync(
+        string collectionName,
+        PipelineStats phase1Stats,
+        IProgress<IngestionProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var stats = new ResumenPhaseStats();
+        var phaseSw = Stopwatch.StartNew();
+        var totalPending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, cancellationToken);
+
+        if (totalPending == 0)
+        {
+            _logger.LogInformation("Fase 2 (resumen de negocio): no hay puntos pendientes en '{Collection}'.", collectionName);
+            return stats;
+        }
+
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio): {Total} puntos pendientes en '{Collection}'.", totalPending, collectionName);
+
+        // Ítem 5.b (experimental, opt-in): agrupa por (archivo, tipo) en vez de llamar al
+        // LLM por chunk. Requiere cargar TODOS los puntos pendientes en memoria para
+        // agruparlos (no hay agrupación posible en streaming puro sobre el scroll) — límite
+        // aceptable para los corpus de evaluación de este experimento, documentado en la
+        // ficha; no pensado (todavía) para una reingesta de producción de gran escala.
+        if (_ingestionOptions.Value.SummaryGranularity == SummaryGranularity.PerFile)
+            return await RunResumenPhasePerFileAsync(collectionName, phase1Stats, totalPending, progress, cancellationToken);
+
+        // Circuit breaker (decisión 3b): fallos de CONEXIÓN consecutivos (no de
+        // contenido/sentinel) cancelan este token compartido para abortar la fase
+        // ordenadamente en vez de degradarse chunk a chunk durante horas.
+        using var breakerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var consecutiveConnectionFailures = 0;
+        var failureLock = new object();
+
+        var channel = Channel.CreateBounded<PendingResumenPoint>(new BoundedChannelOptions(256)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = false,
+            SingleWriter = true
+        });
+
+        var producerTask = Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var point in _vectorStoreWriter.StreamPendingResumenAsync(
+                    collectionName, pageSize: 100, breakerCts.Token))
+                {
+                    await channel.Writer.WriteAsync(point, breakerCts.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancelación real, o el circuit breaker de 3b abortó la fase.
+            }
+            finally
+            {
+                channel.Writer.Complete();
+            }
+        }, cancellationToken);
+
+        var concurrency = Math.Max(1, _ingestionOptions.Value.MaxConcurrentResumenCalls);
+        var consumerTasks = Enumerable.Range(0, concurrency).Select(_ => Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var point in channel.Reader.ReadAllAsync(breakerCts.Token))
+                {
+                    try
+                    {
+                        await ProcessResumenPointAsync(collectionName, point, stats, breakerCts.Token);
+                        lock (failureLock) consecutiveConnectionFailures = 0;
+                    }
+                    catch (BusinessSummaryConnectionException ex)
+                    {
+                        int failures;
+                        lock (failureLock) failures = ++consecutiveConnectionFailures;
+
+                        RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "resumen_connection"));
+                        _logger.LogWarning(ex, "Fallo de conexión con Ollama ({Failures}/{Threshold} consecutivos).",
+                            failures, ResumenConnectionFailureThreshold);
+
+                        if (failures >= ResumenConnectionFailureThreshold)
+                        {
+                            _logger.LogError(
+                                "Ollama inalcanzable tras {Failures} fallos consecutivos — abortando Fase 2. " +
+                                "Los puntos ya procesados quedan válidos; una futura corrida con --con-resumen reanuda automáticamente.",
+                                failures);
+                            breakerCts.Cancel();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "resumen_generation"));
+                        _logger.LogWarning(ex, "Fallo aislado generando resumen para el punto {PointId} ({File}).",
+                            point.PointId, point.Chunk.Metadata.RelativeFilePath);
+                        // Queda resumen_pending=true — se reintenta en una futura reanudación.
+                    }
+
+                    progress?.Report(new IngestionProgress(
+                        FilesProcessed: phase1Stats.FilesScanned,
+                        TotalFilesDiscovered: 0,
+                        ChunksProduced: phase1Stats.ChunksGenerated,
+                        ChunksIndexed: phase1Stats.ChunksIndexed,
+                        CurrentFile: point.Chunk.Metadata.RelativeFilePath,
+                        Stage: IngestionStage.GeneratingResumenes,
+                        ResumenesCompleted: stats.Completed + stats.SinNegocio,
+                        ResumenesTotal: totalPending));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancelación real, o el circuit breaker de 3b.
+            }
+        }, cancellationToken)).ToArray();
+
+        await Task.WhenAll(consumerTasks.Append(producerTask));
+
+        stats.Pending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerChunk) terminada en {WallMs} ms: {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
+            phaseSw.ElapsedMilliseconds, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);
+        return stats;
+    }
+
+    private async Task ProcessResumenPointAsync(
+        string collectionName,
+        PendingResumenPoint point,
+        ResumenPhaseStats stats,
+        CancellationToken ct)
+    {
+        var sw = Stopwatch.StartNew();
+        var (found, cachedSummary) = await _summaryCache.TryGetAsync(point.Chunk.ContentHash, ct);
+
+        string? summaryText;
+        bool sinNegocio;
+
+        if (found)
+        {
+            summaryText = cachedSummary;
+            sinNegocio = cachedSummary is null;
+            Interlocked.Increment(ref stats.CacheHits);
+        }
+        else
+        {
+            // Puede lanzar BusinessSummaryConnectionException — se propaga tal cual
+            // para que el circuit breaker de la fase la cuente.
+            var result = await _summaryGenerator.GenerateAsync(point.Chunk, ct);
+            if (result is null)
+                throw new InvalidOperationException("Fallo aislado al generar el resumen (no es un fallo de conexión).");
+
+            sinNegocio = result.SinContenidoDeNegocio;
+            summaryText = sinNegocio ? null : result.Text;
+            await _summaryCache.SetAsync(point.Chunk.ContentHash, summaryText, ct);
+            Interlocked.Increment(ref stats.CacheMisses);
+            Interlocked.Increment(ref stats.LlmCalls);
+        }
+
+        Interlocked.Increment(ref stats.Groups);
+
+        if (sinNegocio)
+        {
+            // Sin significado de negocio: no recibe vector, pero deja de estar "pendiente".
+            await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
+            Interlocked.Increment(ref stats.SinNegocio);
+            Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
+            return;
+        }
+
+        var vector = await _brain.GenerateEmbeddingAsync(summaryText!, ct);
+        await _vectorStoreWriter.UpdateSummaryVectorAsync(collectionName, point.PointId, vector, ct);
+        await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, [point.PointId], ct);
+        Interlocked.Increment(ref stats.Completed);
+        Interlocked.Add(ref stats.ElapsedMs, sw.ElapsedMilliseconds);
+    }
+
+    /// <summary>
+    /// Ítem 5.b (experimental, opt-in): variante de la Fase 2 que agrupa los puntos
+    /// pendientes por (RelativeFilePath, ClassName) y hace UNA llamada al LLM por grupo,
+    /// reutilizando el resultado para todos los chunks del grupo. Instrumenta llamadas
+    /// LLM, hits/misses de caché y tiempo total — el comparador A/B de la ficha exige
+    /// esta evidencia, no sólo el recall.
+    /// </summary>
+    private async Task<ResumenPhaseStats> RunResumenPhasePerFileAsync(
+        string collectionName,
+        PipelineStats phase1Stats,
+        int totalPending,
+        IProgress<IngestionProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var stats = new ResumenPhaseStats();
+        var sw = Stopwatch.StartNew();
+
+        // Carga completa: la agrupación por archivo/tipo no es expresable como streaming
+        // puro sobre el scroll (un grupo puede completarse en cualquier punto del corpus).
+        var allPoints = new List<PendingResumenPoint>(totalPending);
+        await foreach (var point in _vectorStoreWriter.StreamPendingResumenAsync(
+            collectionName, pageSize: 200, cancellationToken))
+        {
+            allPoints.Add(point);
+        }
+
+        var groups = allPoints
+            .GroupBy(p => (p.Chunk.Metadata.RelativeFilePath, Type: p.Chunk.Metadata.ClassName ?? string.Empty))
+            .ToList();
+
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerFile): {Groups} grupos archivo/tipo para {Total} chunks pendientes en '{Collection}'.",
+            groups.Count, allPoints.Count, collectionName);
+
+        var completedCount = 0;
+        foreach (var group in groups)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var chunks = group.Select(p => p.Chunk).ToList();
+
+            // Hash de grupo: sobre los content_hash ordenados de sus chunks — determinista
+            // e independiente del orden de scroll, y jamás colisiona con un hash de chunk
+            // individual porque vive bajo su propio prompt_version (_groupPromptVersion).
+            var groupHash = ComputeGroupContentHash(chunks);
+
+            var (found, cachedSummary) = await _summaryCache.TryGetAsync(groupHash, cancellationToken, _groupPromptVersion);
+            string? summaryText;
+            bool sinNegocio;
+
+            if (found)
+            {
+                summaryText = cachedSummary;
+                sinNegocio = cachedSummary is null;
+                Interlocked.Increment(ref stats.CacheHits);
+            }
+            else
+            {
+                var result = await _summaryGenerator.GenerateForGroupAsync(chunks, cancellationToken);
+                if (result is null)
+                    throw new InvalidOperationException(
+                        $"Fallo aislado al generar el resumen de grupo para {group.Key.RelativeFilePath} (no es un fallo de conexión).");
+
+                sinNegocio = result.SinContenidoDeNegocio;
+                summaryText = sinNegocio ? null : result.Text;
+                await _summaryCache.SetAsync(groupHash, summaryText, cancellationToken, _groupPromptVersion);
+                Interlocked.Increment(ref stats.CacheMisses);
+                Interlocked.Increment(ref stats.LlmCalls);
+            }
+
+            Interlocked.Increment(ref stats.Groups);
+
+            var pointIds = group.Select(p => p.PointId).ToList();
+            if (sinNegocio)
+            {
+                await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                stats.SinNegocio += pointIds.Count;
+            }
+            else
+            {
+                var vector = await _brain.GenerateEmbeddingAsync(summaryText!, cancellationToken);
+                foreach (var pointId in pointIds)
+                    await _vectorStoreWriter.UpdateSummaryVectorAsync(collectionName, pointId, vector, cancellationToken);
+                await _vectorStoreWriter.MarkResumenCompleteAsync(collectionName, pointIds, cancellationToken);
+                stats.Completed += pointIds.Count;
+            }
+
+            completedCount += pointIds.Count;
+            progress?.Report(new IngestionProgress(
+                FilesProcessed: phase1Stats.FilesScanned,
+                TotalFilesDiscovered: 0,
+                ChunksProduced: phase1Stats.ChunksGenerated,
+                ChunksIndexed: phase1Stats.ChunksIndexed,
+                CurrentFile: group.Key.RelativeFilePath,
+                Stage: IngestionStage.GeneratingResumenes,
+                ResumenesCompleted: completedCount,
+                ResumenesTotal: totalPending));
+        }
+
+        stats.ElapsedMs = sw.ElapsedMilliseconds;
+        stats.Pending = (int)await _vectorStoreWriter.CountResumenPendingAsync(collectionName, CancellationToken.None);
+        _logger.LogInformation(
+            "Fase 2 (resumen de negocio, modo PerFile) terminada en {WallMs} ms: {Groups} grupos, {LlmCalls} llamadas LLM, {Hits} hits/{Misses} misses de caché.",
+            sw.ElapsedMilliseconds, stats.Groups, stats.LlmCalls, stats.CacheHits, stats.CacheMisses);
+        return stats;
+    }
+
+    /// <summary>SHA-256 sobre los content_hash del grupo, ordenados para ser independiente del orden de scroll.</summary>
+    internal static string ComputeGroupContentHash(IReadOnlyList<CodeChunk> chunks)
+    {
+        var joined = string.Join('|', chunks.Select(c => c.ContentHash).OrderBy(h => h, StringComparer.Ordinal));
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(joined));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+
+    private sealed class ResumenPhaseStats
+    {
+        public int Completed;
+        public int SinNegocio;
+        public int Pending;
+
+        // ── 5.b: instrumentación A/B por granularidad (llamadas LLM, hits/misses,
+        // tiempo) — obligatoria por la ficha para no aceptar la reducción de ÷10 como
+        // hipótesis sin medir. Groups==Chunks en modo PerChunk (una llamada por chunk).
+        public int Groups;
+        public int LlmCalls;
+        public int CacheHits;
+        public int CacheMisses;
+        public long ElapsedMs;
     }
 
     // Mutable stats class shared between producer and consumer via Interlocked
@@ -303,6 +1068,78 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
         public int FilesScanned;
         public int ChunksGenerated;
         public int ChunksIndexed;
+        public int PointsDeleted;
         public int FilesSkipped;
+
+        // ── 11.1: medición de tokens reales de la fase de embedding ─────────
+        // Un solo escritor lógico por lote (ProcessBatchAsync agrega sus propios
+        // T antes de soltar el control), pero varios consumidores concurrentes
+        // pueden llamar a la vez: se protege con un candado propio, separado de
+        // los contadores Interlocked de arriba porque agrega a una lista, no a
+        // un entero.
+        private readonly object _tokenStatsLock = new();
+        private readonly List<int> _tokenCounts = [];
+        public long ChunksTruncatedTotal;
+        public long TokensDiscardedTotal;
+        public int TokensMaxUsable;
+
+        public void RecordTokenizationStats(IReadOnlyList<TokenizationStats> batchStats)
+        {
+            lock (_tokenStatsLock)
+            {
+                foreach (var s in batchStats)
+                {
+                    _tokenCounts.Add(s.TotalTokens);
+                    if (s.Truncated) ChunksTruncatedTotal++;
+                    TokensDiscardedTotal += s.Discarded;
+                    TokensMaxUsable = s.MaxUsableTokens;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Percentil nearest-rank (1-indexado, indice=ceil(p*n)) sobre T
+        /// ordenados. n=0 no produce percentiles ficticios: retorna null.
+        /// </summary>
+        public (int N, int? P50, int? P95) ComputeTokenPercentiles()
+        {
+            lock (_tokenStatsLock)
+            {
+                return Diagnostics.TokenPercentileCalculator.Compute(_tokenCounts);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contexto de estado (ítem 13.1) compartido entre el productor y todos los
+    /// consumidores de UNA corrida. <see cref="ChunkOwners"/> mapea cada chunk admitido
+    /// a su documento dueño — se llena en el productor apenas se genera el chunk, se
+    /// lee en el consumidor para saber a qué documento atribuir un upsert confirmado
+    /// o fallido, sin tener que repropagar RepositoryName/RelativePath por cada firma
+    /// de método de la ruta caliente.
+    /// </summary>
+    private sealed class IngestionStateContext
+    {
+        public required string RunId { get; init; }
+        public required string ActorId { get; init; }
+        public required string Contract { get; init; }
+        public ConcurrentDictionary<string, DocumentTracker> Trackers { get; } = new(StringComparer.Ordinal);
+        public ConcurrentDictionary<Guid, string> ChunkOwners { get; } = new();
+    }
+
+    /// <summary>
+    /// Progreso en memoria de UN documento dentro de la corrida actual (ítem 13.1).
+    /// <see cref="Finalized"/> es la guarda que impide que dos rutas concurrentes
+    /// (el productor terminando de trocear vs. un consumidor confirmando el último
+    /// lote) persistan el desenlace terminal dos veces o que una se pise con la otra
+    /// — se accede siempre bajo <c>lock (tracker)</c>.
+    /// </summary>
+    private sealed class DocumentTracker
+    {
+        public string? ContentHash;
+        public DateTimeOffset StartedAt;
+        public int? ExpectedChunks;
+        public int ConfirmedChunks;
+        public bool Finalized;
     }
 }

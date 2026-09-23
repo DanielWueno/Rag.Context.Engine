@@ -1,0 +1,1850 @@
+{
+  "collection": "bsuite-auditorias-test",
+  "top_k": 10,
+  "rerank": false,
+  "min_score": 0.1,
+  "generated_at": "2026-09-17T18:34:27.395832+00:00",
+  "provenance": {
+    "git_commit": "9690c49",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/bsuite-auditorias.eval-set.json",
+    "eval_set_hash": "ec6ff169d1a6",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": null,
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "¿Qué significa que un hallazgo de auditoría sea recurrente?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgo.cs",
+      "top_score": 0.05749076,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05749076,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.05749075886062187,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.055523768,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "3f1c933a-3bce-5c31-92cd-79e9cccf496b",
+          "ranking_score": 0.05552376760563381,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.051964287,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9c50a77f-95de-5643-a6cd-372f581dc6a9",
+          "ranking_score": 0.05196428571428571,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.04939809,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2267e98c-d8e7-5843-b136-e731693ce2b6",
+          "ranking_score": 0.0493980904939809,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.048193198,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "7cb9d42e-4299-53c9-a646-04f72e604f06",
+          "ranking_score": 0.048193195839943595,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.048130184,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9d76791a-238d-59b2-9f4b-9d790f3d4db2",
+          "ranking_score": 0.0481301830699421,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.04810745,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "328e99a6-dc63-51c6-848d-45c420ace7a6",
+          "ranking_score": 0.0481074481074481,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.04781746,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "703fde48-4310-5158-b6c0-f37debcff1c8",
+          "ranking_score": 0.047817460317460314,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.044163313,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.04416331224841863,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.040983606557377046,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 170.8124,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    },
+    {
+      "question": "¿Cuándo se puede reabrir una acción correctiva ya finalizada?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.07340548,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07340548,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "2cebf402-153c-553d-a369-8e47a397548b",
+          "ranking_score": 0.0734054834054834,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.059725564,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "78518af2-792c-561c-9885-fd19bd03c183",
+          "ranking_score": 0.059725565719788154,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.05851371,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "60af633b-d251-5308-b0f3-d1783eab5400",
+          "ranking_score": 0.05851370851370852,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.056269757,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "97304d36-64cb-537f-b867-5bd7ff598246",
+          "ranking_score": 0.05626975763962065,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.05318645,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ff4162d5-d415-509e-9bda-326cd9bb0c9e",
+          "ranking_score": 0.053186448708836764,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.050379507,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "dac92869-2fe4-539e-9df6-40971c7e6d4c",
+          "ranking_score": 0.05037950664136623,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.04803178,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2be184e6-8592-58b6-a6d2-276644ec3652",
+          "ranking_score": 0.04803178042614663,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.047387492,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "cf3c720f-f142-5325-88ee-8ab8ab2f679e",
+          "ranking_score": 0.04738749046529367,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.04712176,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "7086e279-cb06-5e5d-93db-c852057d2b97",
+          "ranking_score": 0.04712176009644364,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.045193687,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "091cc22f-ebcd-55aa-adb1-0657023faf94",
+          "ranking_score": 0.04519368723098996,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 39.433,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Cuándo pasa un hallazgo de auditoría a estatus de validación?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.054554865,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.054554865,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.05455486542443064,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.04881475,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "60af633b-d251-5308-b0f3-d1783eab5400",
+          "ranking_score": 0.04881474978050922,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.0480695,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e1b06760-5846-5ffe-b593-da05e395f3c0",
+          "ranking_score": 0.04806949806949807,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.04608083,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "eb66e9d5-fac2-5741-a194-734a71f4992e",
+          "ranking_score": 0.04608083282302511,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.044890843,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.04489084293511219,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.04117984,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d463010e-97fd-5c93-bc27-bc36db520ede",
+          "ranking_score": 0.04117983963344788,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9842092f-9f7f-5a08-8aaf-6b42942fd6f2",
+          "ranking_score": 0.040983606557377046,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.04032258,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.04032258064516129,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.0401721,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c96152c7-22b8-5776-aee7-66f1bec54d7a",
+          "ranking_score": 0.04017210144927536,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50eb5c88-f0c9-558b-b76c-32cd4eea3105",
+          "ranking_score": 0.03968253968253968,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 16.1889,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    },
+    {
+      "question": "¿Qué información se registra al validar o rechazar un hallazgo de auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoValidacion.cs",
+      "top_score": 0.056771398,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.056771398,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.056771397616468045,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.053782698,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "703fde48-4310-5158-b6c0-f37debcff1c8",
+          "ranking_score": 0.05378269617706238,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.051567946,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9d76791a-238d-59b2-9f4b-9d790f3d4db2",
+          "ranking_score": 0.05156794425087108,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.050432984,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a191801f-96d9-5561-881c-a349725b5c69",
+          "ranking_score": 0.05043298192771084,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.048188854,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "7cb9d42e-4299-53c9-a646-04f72e604f06",
+          "ranking_score": 0.04818885448916409,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.047676284,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e1b06760-5846-5ffe-b593-da05e395f3c0",
+          "ranking_score": 0.04767628205128205,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.047563486,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c96152c7-22b8-5776-aee7-66f1bec54d7a",
+          "ranking_score": 0.047563486616334937,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.046216477,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bbeaa08e-1a54-56b3-a43b-dab839748749",
+          "ranking_score": 0.04621647509578544,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.044994634,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "22580ca8-ff0e-59fb-958c-3b14e1d49282",
+          "ranking_score": 0.04499463231347289,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.044913188,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f8a1c581-b075-55af-a6b5-411b6dc066f7",
+          "ranking_score": 0.04491318915625952,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 23.3015,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Qué se necesita para reprogramar la ejecución de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaReprogramacion.cs",
+      "top_score": 0.06965869,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.06965869,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a64cb9f9-4471-508e-834f-823a4d68bfe0",
+          "ranking_score": 0.0696586897350904,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.05968254,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9c8887ae-71fe-5527-bf88-aa79f0fe290d",
+          "ranking_score": 0.059682539682539684,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.058675017,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5625739-ddf9-59ae-b7fb-f42f26be0766",
+          "ranking_score": 0.05867501572596786,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.056073677,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ce1b0666-64a4-59c7-9a48-6d37a5f8a617",
+          "ranking_score": 0.05607367595585563,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.05116893,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fd7a9f90-1999-517c-b502-1919542085ed",
+          "ranking_score": 0.05116892911010558,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.05087879,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "18deb65d-d299-538c-bcc0-6311f36d50b4",
+          "ranking_score": 0.050878787878787884,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.050676327,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.05067632850241546,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.048193198,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "752747fa-8a1f-5e46-a6c2-e41d7812062e",
+          "ranking_score": 0.048193195839943595,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.047379628,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3170ab1c-1b87-5091-917e-6d10d9edc352",
+          "ranking_score": 0.04737962659679004,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.043885283,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "8eb77e34-0e3e-588e-bedf-5bcb0888cfd7",
+          "ranking_score": 0.04388528138528139,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 23.2904,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Desde dónde reprogramo una auditoría ya planificada?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanificacionAuditoriaViewController.cs",
+      "top_score": 0.061003085,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061003085,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "a64cb9f9-4471-508e-834f-823a4d68bfe0",
+          "ranking_score": 0.061003086419753084,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.060635082,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.06063508064516129,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.056231882,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50eb5c88-f0c9-558b-b76c-32cd4eea3105",
+          "ranking_score": 0.05623188405797101,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.051877934,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "9c8887ae-71fe-5527-bf88-aa79f0fe290d",
+          "ranking_score": 0.051877934272300474,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.05015873,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "18deb65d-d299-538c-bcc0-6311f36d50b4",
+          "ranking_score": 0.05015873015873016,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.05010684,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.05010683760683761,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.04981519,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.049815188172043015,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.048188854,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ce1b0666-64a4-59c7-9a48-6d37a5f8a617",
+          "ranking_score": 0.04818885448916409,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.046930466,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3170ab1c-1b87-5091-917e-6d10d9edc352",
+          "ranking_score": 0.04693046735059436,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.046491228,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "01b1dfb5-25ed-5b2f-88b6-1792c1c54a8b",
+          "ranking_score": 0.04649122807017544,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 20.4658,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Cuándo se puede finalizar completamente una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": null,
+      "top_score": 0.061951347,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061951347,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "035800fe-3f56-5fd0-9d9d-31267a21a6aa",
+          "ranking_score": 0.06195134849286092,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.056870718,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.05687071917808219,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.054096285,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.05409628378378378,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.053836092,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "eb66e9d5-fac2-5741-a194-734a71f4992e",
+          "ranking_score": 0.0538360941586748,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.050997645,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.050997643362136684,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.05089514,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "18deb65d-d299-538c-bcc0-6311f36d50b4",
+          "ranking_score": 0.05089514066496164,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.048370928,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bd16bab7-a1b2-5fcf-aada-0b245c15bb48",
+          "ranking_score": 0.04837092731829574,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.048340548,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2267e98c-d8e7-5843-b136-e731693ce2b6",
+          "ranking_score": 0.04834054834054834,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.04635013,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "79487070-4f9f-5f2b-8952-a223ba7ca75f",
+          "ranking_score": 0.04635012919896641,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.046336997,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c96152c7-22b8-5776-aee7-66f1bec54d7a",
+          "ranking_score": 0.04633699633699634,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 20.5311,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Qué pasa con una auditoría si no se encontraron hallazgos activos al completarla?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.0579924,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0579924,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.05799239883746926,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.05,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "703fde48-4310-5158-b6c0-f37debcff1c8",
+          "ranking_score": 0.05,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.049411766,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.04941176470588235,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.0485348,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "f692cfb6-2f6c-5a80-8ede-db6fa8459588",
+          "ranking_score": 0.04853479853479853,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.04807636,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9d76791a-238d-59b2-9f4b-9d790f3d4db2",
+          "ranking_score": 0.048076362576508304,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.04790722,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "60af633b-d251-5308-b0f3-d1783eab5400",
+          "ranking_score": 0.04790722009068713,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.044211823,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a050b5f7-e110-5eee-b18a-6ae42674cca5",
+          "ranking_score": 0.04421182266009852,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.043545537,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "328e99a6-dc63-51c6-848d-45c420ace7a6",
+          "ranking_score": 0.04354553492484527,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.043318424,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "fd7a9f90-1999-517c-b502-1919542085ed",
+          "ranking_score": 0.04331842325971484,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50eb5c88-f0c9-558b-b76c-32cd4eea3105",
+          "ranking_score": 0.040983606557377046,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.4494,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    },
+    {
+      "question": "¿Cuándo puedo exportar la plantilla de hallazgos de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.05944023,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.05944023,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.05944022770398482,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.05412521,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "703fde48-4310-5158-b6c0-f37debcff1c8",
+          "ranking_score": 0.05412520729684909,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.04662829,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f8a1c581-b075-55af-a6b5-411b6dc066f7",
+          "ranking_score": 0.046628289473684206,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.04601449,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.04601449275362319,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.04326241,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9d76791a-238d-59b2-9f4b-9d790f3d4db2",
+          "ranking_score": 0.04326241134751773,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.04138322,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2267e98c-d8e7-5843-b136-e731693ce2b6",
+          "ranking_score": 0.041383219954648526,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.040983606,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.040983606557377046,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.0409104,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2a3d1128-8eb4-5a67-a94e-6501c1c5e2f3",
+          "ranking_score": 0.040910400460962254,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.040457282,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ce1b0666-64a4-59c7-9a48-6d37a5f8a617",
+          "ranking_score": 0.040457283680175246,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.03968254,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50eb5c88-f0c9-558b-b76c-32cd4eea3105",
+          "ranking_score": 0.03968253968253968,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 20.3416,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Cómo se determina si un empleado es el auditado de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.06662648,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.06662648,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "0abaa54c-9c31-5c85-8e9c-0b0d13d2e8ec",
+          "ranking_score": 0.06662648181635523,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.05231653,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0394425b-3391-5ef9-966c-810cfa41f98a",
+          "ranking_score": 0.052316530763528546,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.052240897,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f3ec8eec-b537-5b81-9243-179724f0bc8c",
+          "ranking_score": 0.05224089635854342,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.049916096,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "752747fa-8a1f-5e46-a6c2-e41d7812062e",
+          "ranking_score": 0.04991609458428681,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.049523465,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b7751bd4-2a92-5e90-b191-99b1ee576bfd",
+          "ranking_score": 0.04952346700233771,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.04702517,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.04702517162471396,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.04631579,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "22580ca8-ff0e-59fb-958c-3b14e1d49282",
+          "ranking_score": 0.04631578947368421,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.044093106,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.04409310496267018,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.04211644,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "12fde0d2-2a4e-5703-873c-d00f989b8b97",
+          "ranking_score": 0.04211644177911045,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.041998,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "035800fe-3f56-5fd0-9d9d-31267a21a6aa",
+          "ranking_score": 0.04199799949987497,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 17.8583,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Qué motivo se registra cuando se reprograma un plan de auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanAuditoria.cs",
+      "top_score": 0.07105817,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07105817,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f692cfb6-2f6c-5a80-8ede-db6fa8459588",
+          "ranking_score": 0.07105817159465956,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.06774353,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "a64cb9f9-4471-508e-834f-823a4d68bfe0",
+          "ranking_score": 0.0677435334151752,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.060635082,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fd7a9f90-1999-517c-b502-1919542085ed",
+          "ranking_score": 0.06063508064516129,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.05942928,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bd16bab7-a1b2-5fcf-aada-0b245c15bb48",
+          "ranking_score": 0.05942928039702233,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.057948355,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5625739-ddf9-59ae-b7fb-f42f26be0766",
+          "ranking_score": 0.05794835347074152,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.057118054,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9c8887ae-71fe-5527-bf88-aa79f0fe290d",
+          "ranking_score": 0.05711805555555556,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.054334484,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "01b1dfb5-25ed-5b2f-88b6-1792c1c54a8b",
+          "ranking_score": 0.05433448408131952,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.053030305,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f0d66a39-27fa-5c5f-912d-b02b65b9776e",
+          "ranking_score": 0.05303030303030303,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.050217,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ac976f5e-8840-5e05-b474-0bc416039241",
+          "ranking_score": 0.05021699819168174,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.04961885,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2914e6b1-b182-5240-b235-ea26d64eaf3b",
+          "ranking_score": 0.04961884961884962,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 19.8921,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Cómo se calcula la calificación global de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.0765825,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.0765825,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "889d697f-4042-5075-933c-4a11e4d74d46",
+          "ranking_score": 0.07658250128008193,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.0601613,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ce1b0666-64a4-59c7-9a48-6d37a5f8a617",
+          "ranking_score": 0.06016130039661472,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.05846154,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.05846153846153847,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.058180146,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "014f02a4-1f0a-561e-a75c-cc80c431b65f",
+          "ranking_score": 0.05818014705882353,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.053782698,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3170ab1c-1b87-5091-917e-6d10d9edc352",
+          "ranking_score": 0.05378269617706238,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.051292885,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.05129288490789251,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.04712176,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.04712176009644364,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.046446025,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bc044fbe-27a1-518b-8a52-09b41ebb6ad5",
+          "ranking_score": 0.04644602709118838,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.045976657,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "0dfefbc6-05cb-5ea8-bb3a-83b34a701e31",
+          "ranking_score": 0.04597665847665848,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.043032415,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "752747fa-8a1f-5e46-a6c2-e41d7812062e",
+          "ranking_score": 0.04303241637608162,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.2977,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    },
+    {
+      "question": "¿Cómo se calcula la calificación de un grupo de criterios del checklist?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.07686703,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07686703,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "f1bc7fc5-0a4c-5264-96e1-c0a3428cf46f",
+          "ranking_score": 0.07686703096539162,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.07564455,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "7696c8a8-6433-5b3b-b557-32ffa03b28bd",
+          "ranking_score": 0.075644550342131,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.07545594,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "889d697f-4042-5075-933c-4a11e4d74d46",
+          "ranking_score": 0.07545594262295083,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.0657448,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6860abe6-ce24-54db-b91a-076617dd8b3d",
+          "ranking_score": 0.0657448053848405,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.06312702,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "41670c8a-42e3-5a94-a62d-dadb59b504ff",
+          "ranking_score": 0.06312701787542327,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.059976656,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e80d297b-f1d0-55ce-aa9c-e0618e2b80e2",
+          "ranking_score": 0.059976655185610406,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.059824187,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "186c717d-3220-5e3a-b1e9-f375beb8a0a7",
+          "ranking_score": 0.05982418626752198,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.057086773,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ca307d27-63e0-5136-8867-2f3041838c86",
+          "ranking_score": 0.05708677220704712,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.055934343,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "e5be2e8a-626f-5496-8903-1abc61fc2e95",
+          "ranking_score": 0.055934343434343434,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.055566803,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "d7954546-064a-519f-8db8-4d06660ca13d",
+          "ranking_score": 0.0555668016194332,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 11.1176,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    },
+    {
+      "question": "¿Cómo registro el plan de acción de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.07301824,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.07301824,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f692cfb6-2f6c-5a80-8ede-db6fa8459588",
+          "ranking_score": 0.0730182385920091,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.060473256,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5625739-ddf9-59ae-b7fb-f42f26be0766",
+          "ranking_score": 0.06047325449096999,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.052546047,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.05254604550379199,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.05221774,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fc099d1a-966b-59e0-94ed-250300a4c451",
+          "ranking_score": 0.05221774193548387,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.05159915,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "703fde48-4310-5158-b6c0-f37debcff1c8",
+          "ranking_score": 0.05159914712153518,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.05068746,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2914e6b1-b182-5240-b235-ea26d64eaf3b",
+          "ranking_score": 0.05068745808182428,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.048124284,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "88e228a1-5316-584e-ae6d-c5745424b96a",
+          "ranking_score": 0.04812428407789233,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.047808833,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fd7a9f90-1999-517c-b502-1919542085ed",
+          "ranking_score": 0.047808833678398895,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.047225744,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "ac976f5e-8840-5e05-b474-0bc416039241",
+          "ranking_score": 0.04722574508560558,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.04682401,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c96152c7-22b8-5776-aee7-66f1bec54d7a",
+          "ranking_score": 0.04682400932400932,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 18.673,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Cómo importo auditorías desde un archivo Excel?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.061290324,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.061290324,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "86d3d5b1-bf8c-52cb-a7e0-13376830e422",
+          "ranking_score": 0.061290322580645165,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.06031746,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "50eb5c88-f0c9-558b-b76c-32cd4eea3105",
+          "ranking_score": 0.06031746031746031,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.048430342,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "3d9226a5-69f8-5f31-934f-977772033eaf",
+          "ranking_score": 0.048430341082640424,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.047167562,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f8a1c581-b075-55af-a6b5-411b6dc066f7",
+          "ranking_score": 0.04716756112104949,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.046825398,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.046825396825396826,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.04629156,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "3170ab1c-1b87-5091-917e-6d10d9edc352",
+          "ranking_score": 0.04629156010230179,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.045694444,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "18deb65d-d299-538c-bcc0-6311f36d50b4",
+          "ranking_score": 0.04569444444444445,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.04488487,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "2511d572-4058-5a5d-a72f-d548d0e7113d",
+          "ranking_score": 0.04488487321480618,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.044339888,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bc044fbe-27a1-518b-8a52-09b41ebb6ad5",
+          "ranking_score": 0.04433988764044944,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.044303797,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "bbeaa08e-1a54-56b3-a43b-dab839748749",
+          "ranking_score": 0.04430379746835443,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 18.414,
+      "vector_queries": 4,
+      "candidates_returned": 205
+    },
+    {
+      "question": "¿Qué significa recibir el plan de acción PDCA de una auditoría?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.073137976,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.073137976,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "b5625739-ddf9-59ae-b7fb-f42f26be0766",
+          "ranking_score": 0.07313797313797313,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 2,
+          "score": 0.066147424,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "f692cfb6-2f6c-5a80-8ede-db6fa8459588",
+          "ranking_score": 0.06614742193173566,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 3,
+          "score": 0.06001955,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "6b9360ca-8261-55c9-a938-9f9670aa5c21",
+          "ranking_score": 0.06001955034213099,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 4,
+          "score": 0.056277726,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "c96152c7-22b8-5776-aee7-66f1bec54d7a",
+          "ranking_score": 0.05627772420443587,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 5,
+          "score": 0.055558052,
+          "is_target_file": true,
+          "matches_anchor": true,
+          "chunk_id": "19d078c2-952c-5211-a308-64b849a6a1ef",
+          "ranking_score": 0.055558050752301816,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 6,
+          "score": 0.054178778,
+          "is_target_file": true,
+          "matches_anchor": false,
+          "chunk_id": "c63cc5aa-249d-5369-a007-91283b5da9ba",
+          "ranking_score": 0.05417877906976744,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 7,
+          "score": 0.05013664,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "07dfa460-ab51-5c6b-9882-8e5ad953d159",
+          "ranking_score": 0.050136640739962164,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 8,
+          "score": 0.048101265,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "9c2e2240-5383-5eb1-b61a-60084a3daf77",
+          "ranking_score": 0.04810126582278482,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 9,
+          "score": 0.04784946,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "fc099d1a-966b-59e0-94ed-250300a4c451",
+          "ranking_score": 0.0478494623655914,
+          "ranking_score_scale": "RankFusionWeighted"
+        },
+        {
+          "rank": 10,
+          "score": 0.046661317,
+          "is_target_file": false,
+          "matches_anchor": false,
+          "chunk_id": "752747fa-8a1f-5e46-a6c2-e41d7812062e",
+          "ranking_score": 0.04666131621187801,
+          "ranking_score_scale": "RankFusionWeighted"
+        }
+      ],
+      "retrieval_succeeded": true,
+      "elapsed_ms": 12.2761,
+      "vector_queries": 3,
+      "candidates_returned": 123
+    }
+  ]
+}

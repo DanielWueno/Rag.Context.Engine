@@ -1,0 +1,471 @@
+{
+  "item": "6.d-precision-del-join-por-nombre",
+  "collection": "bsuite-repo",
+  "method": "TwoHop.Enabled=true (SeedResults=5, MaxExpansionResults=20, Weight=0.8 defaults), CLI \"rag search\" --top-k 30 --output json, sobre las 20 preguntas Category=salto de docs/eval/bsuite-repo.eval-set.json. Se extrajeron todas las entradas con score_scale=5 (SymbolExpansion, ver RetrievalScoreScale.cs) de las 20 corridas (193 expansiones totales identificables). Para cada una, se reconstruyo el simbolo exacto que produjo el join: se tomaron los primeros 5 resultados de la fusion primaria (TwoHop.Enabled=false, misma consulta, misma coleccion) como semillas, se recupero su payload consumed_symbols via API REST de Qdrant (localhost:6333/collections/bsuite-repo/points), se aplico el mismo tope MaxSeedSymbols=50 del codigo, y se interseco contra el payload defined_symbols del candidato. 37/193 expansiones no reprodujeron una interseccion no vacia (limite honesto de la reconstruccion, ver mas abajo) y se excluyeron de la muestra congelada para que cada etiqueta tenga referencia trazable.",
+  "sample_size": 30,
+  "sample_selection": "De las 156 expansiones con simbolo(s) trazado(s), round-robin por pregunta (1a por pregunta, luego 2a por pregunta) hasta completar 30 -- cobertura de 19 de las 20 preguntas salto (pregunta 16 no aporto expansiones con simbolo trazable).",
+  "results": [
+    {
+      "idx": 0,
+      "query_idx": 0,
+      "question": "¿Qué le pasa al estatus de una solicitud de cuenta de TI cuando el usuario la cancela desde el formulario?",
+      "expected_source_file": "SolicitudCuentaTI.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/BusinessObjects/Procesos/Computo/SolicitudCuentaTI.cs",
+      "candidate_class": "SolicitudCuentaTI",
+      "candidate_method": "CancelarSolicitud",
+      "matched_symbols": [
+        "CancelarSolicitud"
+      ],
+      "chunk_id": "d5da5824-a555-59fe-a34d-4e5a9bc8b565",
+      "label": "correcto",
+      "reason": "CancelarSolicitud coincide exactamente con SolicitudCuentaTI.cs, el archivo objetivo literal del eval-set (ver nota: 'la regla real vive en SolicitudCuentaTI.CancelarSolicitud()')."
+    },
+    {
+      "idx": 1,
+      "query_idx": 1,
+      "question": "¿A qué estatus queda un equipo de cómputo solicitado cuando se aprueba?",
+      "expected_source_file": "SolicitudServicioEquipoComputo.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/TicketComputoAuditoriaEstado.cs",
+      "candidate_class": "TicketComputoAuditoriaEstado",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "8d746df9-ba42-577c-9e40-12d11dac189c",
+      "label": "colision",
+      "reason": "'Master' es la propiedad generica de asociacion padre de XPO (aqui TicketComputo en TicketComputoAuditoriaEstado), sin relacion con SolicitudServicioEquipoComputo."
+    },
+    {
+      "idx": 2,
+      "query_idx": 2,
+      "question": "¿Quién queda registrado como responsable de la revisión cuando se aprueba una solicitud de servicio?",
+      "expected_source_file": "SolicitudServicio.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/Interfaces/IUsuarioInformeNotificable.cs",
+      "candidate_class": "IUsuarioInformeNotificable",
+      "candidate_method": null,
+      "matched_symbols": [
+        "ServicioCliente"
+      ],
+      "chunk_id": "b852a25e-8dab-5040-978f-2d5544249426",
+      "label": "colision",
+      "reason": "IUsuarioInformeNotificable.ServicioCliente es un Guid para enrutar notificaciones de cambios en informes; no es 'PersonalRevision', el campo real que pregunta la consulta sobre SolicitudServicio."
+    },
+    {
+      "idx": 3,
+      "query_idx": 3,
+      "question": "¿Cómo influye la ponderación de cada grupo del checklist en la calificación final de una auditoría?",
+      "expected_source_file": "Auditorias.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Auditorias/BO/Catalogos/ChecklistVersion.cs",
+      "candidate_class": "ChecklistVersion",
+      "candidate_method": null,
+      "matched_symbols": [
+        "ChecklistVersion"
+      ],
+      "chunk_id": "09370bd1-6448-54cd-9b30-1f15713199c3",
+      "label": "correcto",
+      "reason": "ChecklistVersion.cs es el catalogo real de versiones de checklist de auditorias, mismo dominio que la pregunta sobre ponderacion de grupos del checklist."
+    },
+    {
+      "idx": 4,
+      "query_idx": 4,
+      "question": "¿Qué pasa si falta la fecha de aniversario del contrato o de la programación al validar un pago?",
+      "expected_source_file": "ProgramacionPagoHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Compras/Reports/RptRequisicionMaterial.cs",
+      "candidate_class": "RptRequisicionMaterial",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "a63d7bd3-7781-55d9-85f7-0bb2e702ea93",
+      "label": "colision",
+      "reason": "AddDays es un wrapper privado identico (FastReport.Functions.StdFunctions.AddDays) duplicado en decenas de clases de reporte; no tiene relacion con ProgramacionPagoHelper."
+    },
+    {
+      "idx": 5,
+      "query_idx": 5,
+      "question": "¿Qué se compara para saber si la fecha de una programación de pago respeta el ciclo de aniversario del contrato?",
+      "expected_source_file": "ProgramacionPagoHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Compras/Reports/RptRequisicionMaterial.cs",
+      "candidate_class": "RptRequisicionMaterial",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "a63d7bd3-7781-55d9-85f7-0bb2e702ea93",
+      "label": "colision",
+      "reason": "Mismo wrapper generico AddDays que el item 4, en el mismo archivo de reporte no relacionado."
+    },
+    {
+      "idx": 6,
+      "query_idx": 6,
+      "question": "¿Qué se revisa del expediente de un empleado antes de asignarle un equipo de cómputo?",
+      "expected_source_file": "Empleado.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/BusinessObjects/DepartamentoArea.cs",
+      "candidate_class": "DepartamentoArea",
+      "candidate_method": null,
+      "matched_symbols": [
+        "DepartamentoArea"
+      ],
+      "chunk_id": "b752d69a-7a3f-5a95-b935-1b904c88d19a",
+      "label": "correcto",
+      "reason": "Empleado.cs valida DepartamentoArea != null como parte del expediente del empleado (verificado en Empleado.cs lineas 1069/1078); es un campo real del dominio consultado."
+    },
+    {
+      "idx": 7,
+      "query_idx": 7,
+      "question": "¿Qué datos de auditoría se registran cuando se cancela una salida de almacén de cómputo por un mantenimiento?",
+      "expected_source_file": "AlmacenComputoSalida.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/ActivosDiagnosticosDocumentos.cs",
+      "candidate_class": "ActivosDiagnosticosDocumentos",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "c2b545ea-7a8d-5fff-857f-0680bc8860b9",
+      "label": "colision",
+      "reason": "'Master' aqui referencia ActivosDiagnosticos (no AlmacenComputoSalida); mismo nombre de propiedad XPO generica, dominio distinto (diagnosticos de activos vs auditoria de salida cancelada)."
+    },
+    {
+      "idx": 8,
+      "query_idx": 8,
+      "question": "¿Qué fecha se registra en la salida de cómputo cuando se cancela un traspaso?",
+      "expected_source_file": "AlmacenComputoSalida.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/Reports/ReporteExistenciaProducto/ReporteExistenciaProducto.cs",
+      "candidate_class": "ReporteExistenciaProducto",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "f4ba86a9-1485-5628-b7b3-22d0e7757076",
+      "label": "colision",
+      "reason": "AddDays generico de FastReport en ReporteExistenciaProducto, sin relacion con AlmacenComputoSalida."
+    },
+    {
+      "idx": 9,
+      "query_idx": 9,
+      "question": "¿Por qué no se puede modificar un activo de cómputo que ya está cancelado al intentar recuperarlo de un traspaso?",
+      "expected_source_file": "ActivosComputo.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Base/BO/AuditEstatusBaseObject.cs",
+      "candidate_class": "AuditEstatusBaseObject",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Estatus",
+        "EstatusFecha"
+      ],
+      "chunk_id": "f71d1811-14a9-5f95-a0e7-452de1f6dcda",
+      "label": "correcto",
+      "reason": "AuditEstatusBaseObject define Estatus/EstatusFecha con la logica real de cambio de estatus (IsEstatusInAllowedRange); es la base de la que hereda ActivosComputo y explica por que un activo cancelado no se puede modificar."
+    },
+    {
+      "idx": 10,
+      "query_idx": 10,
+      "question": "¿De dónde se toma la información al crear una devolución interna a proveedor?",
+      "expected_source_file": "Devolucion.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Compras/BO/Procesos/RecepcionCompraDetalle.cs",
+      "candidate_class": "RecepcionCompraDetalle",
+      "candidate_method": null,
+      "matched_symbols": [
+        "UnidadMedida"
+      ],
+      "chunk_id": "cf684fae-e3d9-548d-8c24-078074bdf0d1",
+      "label": "correcto",
+      "reason": "Verificado en Devolucion.cs linea 228: 'UnidadMedida = d.UnidadMedida' copia el campo desde RecepcionCompraDetalle al crear la devolucion -- es literalmente la fuente de datos que pregunta la consulta."
+    },
+    {
+      "idx": 11,
+      "query_idx": 11,
+      "question": "¿Qué debe coincidir entre la orden de compra y la cantidad de licencias de la bóveda al renovar una licencia?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/TicketComputoAuditoriaEstado.cs",
+      "candidate_class": "TicketComputoAuditoriaEstado",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "8d746df9-ba42-577c-9e40-12d11dac189c",
+      "label": "colision",
+      "reason": "Mismo patron que item 1: 'Master' de TicketComputoAuditoriaEstado no tiene relacion con BovedaLicenciaHelper."
+    },
+    {
+      "idx": 12,
+      "query_idx": 12,
+      "question": "¿Qué debe cuadrar entre la programación de pago y la bóveda de licencias activas del contrato al renovar?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Catalogos/DocumentoTicket.cs",
+      "candidate_class": "DocumentoTicket",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "74a681b9-80f9-5e60-a756-25498043822c",
+      "label": "colision",
+      "reason": "DocumentoTicket.Master referencia TicketComputo; sin relacion con la boveda de licencias."
+    },
+    {
+      "idx": 13,
+      "query_idx": 13,
+      "question": "¿Qué pasa si el contrato relacionado a una programación de pago no tiene bóveda de licencias asociada?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/LicenciasServicios/ProgramacionPago.cs",
+      "candidate_class": "ProgramacionPago",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Contratos"
+      ],
+      "chunk_id": "99b2489d-d83c-562c-ad8e-dfb04193ea7b",
+      "label": "correcto",
+      "reason": "Verificado: ProgramacionPago.Contratos es la coleccion real de contratos de la programacion de pago -- exactamente el concepto que pregunta la consulta sobre el contrato relacionado a una programacion de pago."
+    },
+    {
+      "idx": 14,
+      "query_idx": 14,
+      "question": "¿Qué otra validación de licencias y orden de compra se aplica cuando una programación de pago del módulo de licencias intenta renovar?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/LicenciasServicios/ProgramacionPagoTicket.cs",
+      "candidate_class": "ProgramacionPagoTicket",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "6ba1054e-c047-55c1-8b76-91361f23acb3",
+      "label": "colision",
+      "reason": "ProgramacionPagoTicket.Master referencia ProgramacionPago via un FK generico de asociacion, no aporta informacion sobre la boveda de licencias en si."
+    },
+    {
+      "idx": 15,
+      "query_idx": 15,
+      "question": "¿Cómo se decide si una orden de compra se clasifica como de proyectos o como de inventario en stock?",
+      "expected_source_file": "OrdenCompra.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/BusinessObjects/Catalogos/TipoAlmacenC.cs",
+      "candidate_class": "TipoAlmacenC",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Abreviatura"
+      ],
+      "chunk_id": "4285553b-b78a-59d3-b86f-a58a76e6a7a1",
+      "label": "colision",
+      "reason": "TipoAlmacenC.Abreviatura es un campo generico de catalogo (abreviatura de tipo de almacen); sin relacion con la clasificacion de ordenes de compra en OrdenCompra.cs."
+    },
+    {
+      "idx": 16,
+      "query_idx": 17,
+      "question": "¿Cómo se determina si el correo de un ticket de origen tiene una plantilla registrada antes de crear subtickets?",
+      "expected_source_file": "CuentaCorreoPlantillaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Auxiliares/Tickets/RecibirTicket.cs",
+      "candidate_class": "RecibirTicket",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Session"
+      ],
+      "chunk_id": "141e0699-1ec5-5b6f-a44c-2095e562cade",
+      "label": "colision",
+      "reason": "RecibirTicket.Session es el campo de sesion XPO ubicuo en casi cualquier clase de proceso; no aporta nada sobre plantillas de correo."
+    },
+    {
+      "idx": 17,
+      "query_idx": 18,
+      "question": "¿Cómo se calcula cuántos periodos completos de pago han transcurrido desde el aniversario del contrato?",
+      "expected_source_file": "ProgramacionPagoHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/Consultas/MonitorOrdenCompra/RptMonitorOrdenCompra.cs",
+      "candidate_class": "RptMonitorOrdenCompra",
+      "candidate_method": "AddMonths",
+      "matched_symbols": [
+        "AddMonths"
+      ],
+      "chunk_id": "dc534d9d-ba58-582c-a840-dc23b46cc7ea",
+      "label": "colision",
+      "reason": "AddMonths es el mismo wrapper generico de FastReport que AddDays, en un reporte de ordenes de compra no relacionado con el aniversario de contrato."
+    },
+    {
+      "idx": 18,
+      "query_idx": 19,
+      "question": "¿Qué se registra en la bitácora del hallazgo cuando se reabre una acción correctiva de auditoría?",
+      "expected_source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Compras/BO/Procesos/RecepcionCompraDetalle.cs",
+      "candidate_class": "RecepcionCompraDetalle",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Descripcion"
+      ],
+      "chunk_id": "9c8a4122-e98d-54ac-b29c-c75ad75865a8",
+      "label": "colision",
+      "reason": "RecepcionCompraDetalle.Descripcion es un campo generico presente en casi cualquier entidad; sin relacion con AuditoriaResultadoHallazgoAccionCorrectiva."
+    },
+    {
+      "idx": 19,
+      "query_idx": 0,
+      "question": "¿Qué le pasa al estatus de una solicitud de cuenta de TI cuando el usuario la cancela desde el formulario?",
+      "expected_source_file": "SolicitudCuentaTI.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/Consultas/MonitorEntregas/ConsultaEntregaPendiente.cs",
+      "candidate_class": "ConsultaEntregaPendiente",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Estatus"
+      ],
+      "chunk_id": "377e6802-3475-59fd-995c-4423042b271e",
+      "label": "colision",
+      "reason": "ConsultaEntregaPendiente.Estatus es un campo de estatus en una consulta/dashboard de entregas de equipo, dominio distinto de la cancelacion de SolicitudCuentaTI."
+    },
+    {
+      "idx": 20,
+      "query_idx": 1,
+      "question": "¿A qué estatus queda un equipo de cómputo solicitado cuando se aprueba?",
+      "expected_source_file": "SolicitudServicioEquipoComputo.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/CajaChica/BO/Catalogos/GrupoAutorizadorSolicitante.cs",
+      "candidate_class": "GrupoAutorizadorSolicitante",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "5002d644-6241-5096-b7dd-79d0b257b883",
+      "label": "colision",
+      "reason": "GrupoAutorizadorSolicitante.Master referencia GrupoAutorizador (caja chica), sin relacion con SolicitudServicioEquipoComputo."
+    },
+    {
+      "idx": 21,
+      "query_idx": 2,
+      "question": "¿Quién queda registrado como responsable de la revisión cuando se aprueba una solicitud de servicio?",
+      "expected_source_file": "SolicitudServicio.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/BusinessObjects/RegistraFolioBaseObject.cs",
+      "candidate_class": "RegistraFolioBaseObject",
+      "candidate_method": null,
+      "matched_symbols": [
+        "FechaRegistro",
+        "PersonalRegistra"
+      ],
+      "chunk_id": "9440e1c0-ed75-521c-a2b2-2844a61ccaf7",
+      "label": "colision",
+      "reason": "RegistraFolioBaseObject.PersonalRegistra/FechaRegistro es una base generica de auditoria de registro, distinta de PersonalRevision (el campo real que pregunta la consulta sobre SolicitudServicio)."
+    },
+    {
+      "idx": 22,
+      "query_idx": 4,
+      "question": "¿Qué pasa si falta la fecha de aniversario del contrato o de la programación al validar un pago?",
+      "expected_source_file": "ProgramacionPagoHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Compras/Compras/Reports/OrdenCompra/RptAsignacionesOrdenCompra.cs",
+      "candidate_class": "RptAsignacionesOrdenCompra",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "2e807399-0fa5-560f-834a-3dd8844e898a",
+      "label": "colision",
+      "reason": "AddDays generico de FastReport en un reporte de asignaciones de orden de compra, no relacionado con ProgramacionPagoHelper."
+    },
+    {
+      "idx": 23,
+      "query_idx": 5,
+      "question": "¿Qué se compara para saber si la fecha de una programación de pago respeta el ciclo de aniversario del contrato?",
+      "expected_source_file": "ProgramacionPagoHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/Reports/ReporteExistenciaProducto/ReporteExistenciaProducto.cs",
+      "candidate_class": "ReporteExistenciaProducto",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "f4ba86a9-1485-5628-b7b3-22d0e7757076",
+      "label": "colision",
+      "reason": "Duplicado del item 8: mismo wrapper AddDays en ReporteExistenciaProducto."
+    },
+    {
+      "idx": 24,
+      "query_idx": 6,
+      "question": "¿Qué se revisa del expediente de un empleado antes de asignarle un equipo de cómputo?",
+      "expected_source_file": "Empleado.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Backbone/BusinessObjects/Catalogos/ClienteContactoComunicacion.cs",
+      "candidate_class": "ClienteContactoComunicacion",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Departamento"
+      ],
+      "chunk_id": "df22889a-ee3e-5d68-92a2-724f13e271fb",
+      "label": "colision",
+      "reason": "ClienteContactoComunicacion.Departamento es el departamento de un CONTACTO DE CLIENTE (modulo comercial), un concepto distinto al DepartamentoArea organizacional de Empleado.cs pese al nombre parecido."
+    },
+    {
+      "idx": 25,
+      "query_idx": 7,
+      "question": "¿Qué datos de auditoría se registran cuando se cancela una salida de almacén de cómputo por un mantenimiento?",
+      "expected_source_file": "AlmacenComputoSalida.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/ActivosDiagnosticos.cs",
+      "candidate_class": "ActivosDiagnosticos",
+      "candidate_method": null,
+      "matched_symbols": [
+        "CentroTrabajo"
+      ],
+      "chunk_id": "cd2ca6ed-2110-5e19-a998-a10f614f4158",
+      "label": "colision",
+      "reason": "ActivosDiagnosticos.CentroTrabajo es un campo generico de ubicacion/asignacion presente en muchas entidades; sin relacion con la auditoria de cancelacion de AlmacenComputoSalida."
+    },
+    {
+      "idx": 26,
+      "query_idx": 8,
+      "question": "¿Qué fecha se registra en la salida de cómputo cuando se cancela un traspaso?",
+      "expected_source_file": "AlmacenComputoSalida.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/Reports/ReporteFinanciero/frReporteFinancieroDetalles.cs",
+      "candidate_class": "frReporteFinancieroDetalles",
+      "candidate_method": "AddDays",
+      "matched_symbols": [
+        "AddDays"
+      ],
+      "chunk_id": "3c337a49-32fd-57ea-95a9-8f020e1642e0",
+      "label": "colision",
+      "reason": "Mismo wrapper generico AddDays de FastReport, esta vez en un reporte financiero no relacionado."
+    },
+    {
+      "idx": 27,
+      "query_idx": 10,
+      "question": "¿De dónde se toma la información al crear una devolución interna a proveedor?",
+      "expected_source_file": "Devolucion.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/LicenciasServicios/PagoContratoDetalle.cs",
+      "candidate_class": "PagoContratoDetalle",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "f58f5e67-8f74-5ee6-b1df-4f1e4d07dda8",
+      "label": "colision",
+      "reason": "PagoContratoDetalle.Master referencia PagoContrato via FK generico; no aporta sobre el flujo de devolucion."
+    },
+    {
+      "idx": 28,
+      "query_idx": 11,
+      "question": "¿Qué debe coincidir entre la orden de compra y la cantidad de licencias de la bóveda al renovar una licencia?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Catalogos/DocumentoTicket.cs",
+      "candidate_class": "DocumentoTicket",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "74a681b9-80f9-5e60-a756-25498043822c",
+      "label": "colision",
+      "reason": "Duplicado del item 12: DocumentoTicket.Master, sin relacion con boveda de licencias."
+    },
+    {
+      "idx": 29,
+      "query_idx": 12,
+      "question": "¿Qué debe cuadrar entre la programación de pago y la bóveda de licencias activas del contrato al renovar?",
+      "expected_source_file": "BovedaLicenciaHelper.cs",
+      "candidate_file": "src/Modules/REYMA.XAFR1PV.Computo/BO/Procesos/LicenciasServicios/ProgramacionPagoTicket.cs",
+      "candidate_class": "ProgramacionPagoTicket",
+      "candidate_method": null,
+      "matched_symbols": [
+        "Master"
+      ],
+      "chunk_id": "6ba1054e-c047-55c1-8b76-91361f23acb3",
+      "label": "colision",
+      "reason": "Duplicado del item 14: ProgramacionPagoTicket.Master, sin relacion con boveda de licencias."
+    }
+  ],
+  "summary": {
+    "colision": 24,
+    "correcto": 6,
+    "total": 30
+  },
+  "limitations": [
+    "37/193 expansiones identificables no reprodujeron un simbolo trazado (posible orden de desempate no determinista entre la corrida OFF usada para semillas y la corrida ON real, o normalizacion de mayusculas/minusculas fuera del alcance de esta reconstruccion); se excluyeron de la muestra en vez de adivinar su etiqueta.",
+    "La clasificacion correcto/colision es una revision semantica manual contra el codigo fuente real de BusinessSuite.Xaf (no un oraculo automatico), como anticipaba _preparacion_de_verificacion de la ficha. Se verificaron con lectura de codigo fuente los 6 casos correctos y los casos ambiguos (Estatus compartido, Departamento vs DepartamentoArea) antes de etiquetar.",
+    "La muestra cubre solo las 20 preguntas salto (no las salto-negativo); es la misma poblacion de control que uso 6.a/6.c."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "chunks_observed": 22606,
+  "indexed_points": 22606,
+  "indexed_id_content_enriched_sha256": "132c027b543c177b4f79089e897cd135c7e57ec794f938fbe1f46b29a553167c",
+  "unique_raw_hashes": 18154,
+  "cold_isolated_summary_cache_misses": 18154,
+  "llm_calls": 0,
+  "total_tokens": 10244147,
+  "p50": 277,
+  "p95": 1696,
+  "usable_tokens": 510,
+  "truncated": 6145,
+  "discarded_tokens": 3230884
+}

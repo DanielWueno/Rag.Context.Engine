@@ -36,7 +36,11 @@ public sealed partial class MarkdownChunkingStrategy : IChunkingStrategy
         // Para asegurar que corra de manera asíncrona real y liberar el hilo
         await Task.Yield();
 
-        var lines = fileContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        // Un solo punto de normalizacion: mismo contenido -> mismos chunks y
+        // mismos hashes, venga el archivo de Windows o de Unix.
+        fileContent = SourceLines.Normalize(fileContent);
+
+        var lines = SourceLines.Split(fileContent);
 
         string currentHeader = "Documento Principal";
         var currentSectionLines = new List<string>();
@@ -120,71 +124,38 @@ public sealed partial class MarkdownChunkingStrategy : IChunkingStrategy
             paragraphs.Add((string.Join("\n", currentPara), paraStartLine, currentLineNum - 1));
         }
 
-        // Agrupar párrafos respetando el MaxTokensPerChunk
-        var chunkParas = new List<string>();
-        int chunkStartLine = sectionStartLine;
-        int chunkEndLine = sectionStartLine;
-
-        foreach (var para in paragraphs)
+        // Agrupar párrafos respetando el MaxTokensPerChunk. La decisión de
+        // presupuesto vive en ParagraphBudget, compartida con la estrategia de
+        // TypeScript; la contabilidad de líneas se queda aquí porque es propia de
+        // Markdown: el primer lote arranca en la línea de la cabecera de sección
+        // para que el chunk la cubra lógicamente, no en la del primer párrafo.
+        foreach (var (textos, primero, ultimo) in ParagraphBudget.Agrupar(
+                     paragraphs.Select(x => x.Text).ToList(),
+                     contextHeader,
+                     options.MaxTokensPerChunk))
         {
-            // Validar si el chunk actual + el nuevo párrafo exceden el límite de tokens
-            string testContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas.Concat(new[] { para.Text }))}";
+            int chunkStartLine = primero == 0 ? sectionStartLine : paragraphs[primero].StartLine;
+            int chunkEndLine = paragraphs[ultimo].EndLine;
 
-            if (TokenEstimator.Estimate(testContent) > options.MaxTokensPerChunk && chunkParas.Count > 0)
-            {
-                // Emitir el bloque consolidado actual
-                string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas)}";
-                yield return CreateChunk(artifact, cleanHeader, flushContent, chunkStartLine, chunkEndLine, options);
-
-                // Iniciar un nuevo bloque secundario
-                chunkParas.Clear();
-                chunkStartLine = para.StartLine;
-            }
-
-            if (chunkParas.Count == 0)
-            {
-                // Si es el primer bloque de esta partición secundaria, usamos su línea de inicio.
-                // Sin embargo, si es el *primer* párrafo absoluto, usamos el sectionStartLine para atrapar la cabecera lógicamente.
-                chunkStartLine = paragraphs.IndexOf(para) == 0 ? sectionStartLine : para.StartLine;
-            }
-
-            chunkParas.Add(para.Text);
-            chunkEndLine = para.EndLine;
-        }
-
-        // Vaciar el último bloque remanente
-        if (chunkParas.Count > 0)
-        {
-            string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", chunkParas)}";
+            string flushContent = $"{contextHeader}\n\n{string.Join("\n\n", textos)}";
             yield return CreateChunk(artifact, cleanHeader, flushContent, chunkStartLine, chunkEndLine, options);
         }
     }
 
     private CodeChunk CreateChunk(RawArtifact artifact, string sectionName, string content, int startLine, int endLine, ChunkingOptions options)
     {
-        // Hash de contenido + Path garantiza IDs estables para el motor de Qdrant (idempotencia)
-        string hash = ContentHasher.Compute(content);
-        Guid id = DeterministicGuid.CreateForChunk(artifact.AbsolutePath, startLine, hash);
-
-        return new CodeChunk
-        {
-            Id = id,
-            Content = content,
-            EnrichedContent = content, // Para Markdown, la cabecera inyectada ya hace las veces de EnrichedContent
-            ContentHash = hash,
-            Type = ChunkType.DocumentSection,
-            Metadata = new CodeChunkMetadata(
-                FilePath: artifact.AbsolutePath,
-                RelativeFilePath: artifact.RelativePath,
-                Language: artifact.Language,
-                Namespace: null,
-                ClassName: null,
-                MethodName: sectionName, // Guardamos la sección lógica aquí
-                StartLine: startLine,
-                EndLine: endLine,
-                LastModified: artifact.LastModified,
-                RepositoryName: options.RepositoryName
-            )
-        };
+        // El EnrichedContent es el contenido tal cual: en Markdown la cabecera de
+        // seccion ya viene inyectada dentro. La seccion logica se guarda en
+        // MethodName, que es el campo que el resto del pipeline lee como "de donde
+        // salio esto".
+        return ChunkBuilder.Create(
+            artifact,
+            content: content,
+            enrichedContent: content,
+            type: ChunkType.DocumentSection,
+            startLine: startLine,
+            endLine: endLine,
+            repositoryName: options.RepositoryName,
+            methodName: sectionName);
     }
 }

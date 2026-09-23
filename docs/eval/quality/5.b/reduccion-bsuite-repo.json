@@ -1,0 +1,9 @@
+{
+  "collection": "bsuite-repo",
+  "total_puntos": 22592,
+  "puntos_sin_relative_path_excluidos": 0,
+  "total_chunks_indexables": 22592,
+  "grupos_unicos_archivo_tipo": 2268,
+  "factor_de_reduccion_observado": 9.96,
+  "nota": "factor = chunks_indexables / grupos_unicos. Es el numero real de llamadas LLM que el modo PerChunk hizo/haria vs las que el modo PerFile haria para ESTE corpus, asumiendo cache fria en ambos casos. NO es una medicion de calidad/recall -- eso lo decide el comparador A/B, no este script."
+}

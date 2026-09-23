@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "origin": "11.4: cinco perfiles historicos; bsuite-repo actualizado al dataset y referencia existentes de 6.c. No se reescriben baselines.",
+  "profiles": [
+    {
+      "id": "bsuite-auditorias.norerank",
+      "collection": "bsuite-auditorias-test",
+      "rerank": false,
+      "dataset": "docs/eval/bsuite-auditorias.eval-set.json",
+      "dataset_sha256": "ec6ff169d1a63b65cddcd799eacea0ab17770edf42fb2ed8e58ead621cd563ba",
+      "answerable": 16,
+      "negative": 0,
+      "baseline": "docs/eval/baselines/bsuite-auditorias.norerank.baseline.json",
+      "baseline_sha256": "37355917a782023d3e11f4f55d6539af80dd21b95147d47827915253ee2db038"
+    },
+    {
+      "id": "innovapp-docs.norerank",
+      "collection": "innovapp-docs",
+      "rerank": false,
+      "dataset": "docs/eval/innovapp-docs.eval-set.json",
+      "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+      "answerable": 22,
+      "negative": 4,
+      "baseline": "docs/eval/baselines/innovapp-docs.norerank.baseline.json",
+      "baseline_sha256": "c15958f0fff3623f8ef775f20edc558e742ca204f93fee93814ae3ad3661f727"
+    },
+    {
+      "id": "innovapp-docs.rerank",
+      "collection": "innovapp-docs",
+      "rerank": true,
+      "dataset": "docs/eval/innovapp-docs.eval-set.json",
+      "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+      "answerable": 22,
+      "negative": 4,
+      "baseline": "docs/eval/baselines/innovapp-docs.rerank.baseline.json",
+      "baseline_sha256": "d3f4f0ae75331388960e038f161b264ae31fd6d9d5f910e3a9a6cc9618176ac6"
+    },
+    {
+      "id": "tickets-microservice.norerank",
+      "collection": "micro-repo",
+      "rerank": false,
+      "dataset": "docs/eval/tickets-microservice.eval-set.json",
+      "dataset_sha256": "2ae380bb02df6c0fb28aaa3cb3101973a126ba3c1c8b970d0802ad104709bf0c",
+      "answerable": 19,
+      "negative": 0,
+      "baseline": "docs/eval/baselines/tickets-microservice.norerank.baseline.json",
+      "baseline_sha256": "a9f311830d20b37b9f96df2d27b9bc5dac80f0454a8caf379cf2f301c602e3e7"
+    },
+    {
+      "id": "bsuite-repo.norerank",
+      "collection": "bsuite-repo",
+      "rerank": false,
+      "dataset": "docs/eval/bsuite-repo.eval-set.json",
+      "dataset_sha256": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
+      "answerable": 76,
+      "negative": 8,
+      "baseline": "docs/eval/baselines/bsuite-repo.6c-salto.norerank.baseline.json",
+      "baseline_sha256": "a854e7cb9b67de30146e7ff030b8ecca9504adce83ad4356d1c5e046fc45b205"
+    }
+  ]
+}

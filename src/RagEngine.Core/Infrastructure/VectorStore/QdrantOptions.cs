@@ -19,4 +19,14 @@ public sealed record QdrantOptions
 
     /// <summary>Default collection name when not specified by the user.</summary>
     public string DefaultCollection { get; init; } = "rag-engine";
+
+    /// <summary>
+    /// Ítem 12.1: clave de API opcional para autenticar contra Qdrant. Vacío/null (el
+    /// default) conserva el comportamiento previo — un Qdrant local sin autenticación
+    /// configurada (typ. <c>QDRANT__SERVICE__API_KEY</c> sin fijar en el servidor). Con un
+    /// valor no vacío, el <c>QdrantClient</c> lo envía en cada llamada; si el servidor
+    /// exige una key y esta no coincide (o falta), Qdrant responde 401/403 antes de tocar
+    /// ninguna colección.
+    /// </summary>
+    public string? ApiKey { get; init; }
 }

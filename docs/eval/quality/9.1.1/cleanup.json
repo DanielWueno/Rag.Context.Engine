@@ -1,0 +1,14 @@
+[
+  {
+    "collection": "rag-engine-test-ranking-155136b2065b48878b1dbf3d5aae6403",
+    "points": 0,
+    "deleted": true,
+    "reason": "left by aborted testhosts in new DeterministicRankingTests"
+  },
+  {
+    "collection": "rag-engine-test-ranking-1d91b12c1e3b43ab9632a4fbbe3c011c",
+    "points": 259,
+    "deleted": true,
+    "reason": "left by aborted testhosts in new DeterministicRankingTests"
+  }
+]

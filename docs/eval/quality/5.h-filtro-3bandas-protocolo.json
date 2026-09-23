@@ -1,0 +1,98 @@
+{
+  "item": "5.h-filtro-de-longitud-minima-descarta-declaraciones-cortas",
+  "fecha": "2026-09-15",
+  "objetivo": "Repetir el A/B de dos bandas de 2026-09-12 con la fusion real de tres bandas (dense, sparse-code, dense-resumen), la condicion de reentrada explicita para salir de bloqueado.",
+  "motor": {
+    "commit_base": "34e360a",
+    "cambios_sin_commit": "solo ejecucion-plan.estado.json (marcar en_curso este item); infra/bench/ preexistente sin tocar",
+    "chunking_contract_version": 3,
+    "embedding_max_sequence_length": 256,
+    "embedding_dimensions": 384,
+    "qdrant": "v1.14.1",
+    "resumen_prompt_version": "210d3e35",
+    "resumen_llm": true,
+    "nota": "El engine avanzo de 03db9c2 (protocolo de dos bandas) a 34e360a: 5.d (payload/indice de simbolos) ya esta hecho y no cambia el chunker ni el filtro."
+  },
+  "corpus": {
+    "repositorio": "BusinessSuite.Xaf",
+    "commit": "4bcb5264a053a38348b9356df283b8f9bd98146d",
+    "entradas_git_status": 3,
+    "archivos_escaneados": 2103,
+    "chunks_control": 22606,
+    "chunks_experimental": 23464,
+    "declaraciones_cortas_anadidas": 858,
+    "nota_variacion": "9 chunks menos que el protocolo de 2026-09-12 (22615/23473) en ambos brazos por igual; mismo delta de 858 entre brazos, mismo commit de corpus y contrato. No afecta la comparacion interna de esta corrida."
+  },
+  "aislamiento": {
+    "qdrant": "Contenedor desechable 'qdrant-5h-experiment', sin volumen, puertos 7333/7334 publicados solo en 127.0.0.1, eliminado al terminar (--rm).",
+    "cache_resumenes": "Se reutilizo la cache SQLite COMPARTIDA (~/Library/Application Support/rag-engine/summary-cache.sqlite3) en vez de una aislada: el usuario autorizo detener el contenedor rag-api durante toda la corrida para evitar dos escritores sobre el mismo WAL. rag-api se reinicio al terminar. Los misses reales fueron solo las ~858 declaraciones cortas nuevas del brazo experimental ademas de un remanente menor en el control; el resto goza de hits porque el corpus ya estaba resumido para la coleccion servida.",
+    "bandas": ["dense", "sparse-code", "dense-resumen"],
+    "colecciones_servidas_modificadas": false,
+    "colecciones_experimentales": ["bsuite-5h-control", "bsuite-5h-experimental"],
+    "colecciones_eliminadas_al_terminar": true
+  },
+  "protocolo": [
+    "Detener rag-api (contenedor) para liberar el unico escritor de la cache de resumenes compartida; qdrant-local (colecciones servidas) se deja intacto y no se toca.",
+    "Levantar Qdrant desechable v1.14.1 en 127.0.0.1:7333/7334, sin volumen.",
+    "Ingestar BusinessSuite.Xaf con --con-resumen e IndexShortTypeDeclarations=false en 'bsuite-5h-control'.",
+    "Ingestar BusinessSuite.Xaf con --con-resumen e IndexShortTypeDeclarations=true en 'bsuite-5h-experimental'.",
+    "La fusion de tres bandas es automatica: QdrantSemanticRetriever detecta el vector 'dense-resumen' en el schema de la coleccion y activa SearchWeightedFusionAsync sin flag de busqueda adicional.",
+    "Ejecutar 'rag eval' contra ambas colecciones con el mismo eval-set (docs/eval/bsuite-repo.eval-set.json, ancla de AlmacenComputoEmpleado ya corregida desde 2026-09-12), k=10, min_score=0.10, sin rerank.",
+    "Repetir cada eval una segunda vez contra el mismo indice para confirmar estabilidad de resultados (respuesta al limite de 'busqueda exacta o replicas' del protocolo anterior).",
+    "Comparar recall@10 total y por categoria; contar cuantas preguntas individuales cambian de hit a miss o viceversa entre brazos.",
+    "Contar chunk_type=Class en ambas colecciones via /points/count para confirmar que la cobertura de declaraciones cortas coincide con el hallazgo historico.",
+    "Detener y eliminar el Qdrant desechable; reiniciar rag-api."
+  ],
+  "cobertura": {
+    "control_chunks_class": 2420,
+    "experimental_chunks_class": 3278,
+    "delta_chunks_class": 858,
+    "coincide_con_protocolo_2026_09_12": true,
+    "nota": "El delta de 858 chunk_type=Class es identico al hallazgo original (declaraciones_cortas_anadidas); no se rehizo el conteo exhaustivo de pares (file_path, class_name) porque el delta identico ya confirma el mismo mecanismo de cobertura reportado el 2026-09-12."
+  },
+  "recall_at_10": {
+    "control": {
+      "total": { "n": 47, "hits": 19 },
+      "literal": { "n": 12, "hits": 7 },
+      "parafraseada": { "n": 18, "hits": 8 },
+      "simbolo": { "n": 12, "hits": 2 },
+      "ambigua": { "n": 5, "hits": 2 },
+      "negativos_excluidos_del_recall": 8
+    },
+    "experimental": {
+      "total": { "n": 47, "hits": 19 },
+      "literal": { "n": 12, "hits": 7 },
+      "parafraseada": { "n": 18, "hits": 8 },
+      "simbolo": { "n": 12, "hits": 2 },
+      "ambigua": { "n": 5, "hits": 2 },
+      "negativos_excluidos_del_recall": 8
+    },
+    "delta_neto": 0,
+    "preguntas_ganadas_control_miss_experimental_hit": 0,
+    "preguntas_perdidas_control_hit_experimental_miss": 0,
+    "estabilidad_entre_repeticiones": "hit_any_at_k identico byte a byte entre la primera y la segunda corrida, en ambos brazos: 0 varianza atribuible a reconstruccion de HNSW o a la busqueda misma.",
+    "diferencia_menor_no_categorica": "1 de 55 preguntas cambio hit_any_at_k en algun k (una literal no relacionada con simbolos, gano en k=1 en control y lo perdio en experimental, pero mantuvo hit en k=10 en ambos brazos); no afecta el agregado de recall@10."
+  },
+  "artefactos": {
+    "control_run1": "docs/eval/quality/5.h-3bandas-control.eval.json",
+    "experimental_run1": "docs/eval/quality/5.h-3bandas-experimental.eval.json",
+    "eval_set": "docs/eval/bsuite-repo.eval-set.json",
+    "eval_set_hash": "5c0b6532ac78",
+    "nota_repeticion": "Las corridas 2 (control y experimental) no se persistieron como archivo aparte porque son identicas byte a byte a las corridas 1 en hit_any_at_k; solo se uso para la comprobacion de estabilidad."
+  },
+  "decision": {
+    "criterio_de_reentrada_cumplido": true,
+    "resultado": "Con la fusion real de tres bandas, la regresion de recall@10 observada en el A/B de dos bandas (22/47 -> 20/47, 2026-09-12) NO se reproduce: control y experimental empatan en 19/47, estables en dos repeticiones cada uno, sin perdidas ni ganancias netas por categoria. La banda dense-resumen compensa el ruido de ranking que el filtro de longitud minima buscaba evitar.",
+    "promover_a_default_true": "aprobado en principio, no ejecutado en este item",
+    "motivo_de_no_flipear_el_default_aqui": "Cambiar IngestionOptions.IndexShortTypeDeclarations de false a true es exactamente el 'salto de contrato y rebaseline' que la ficha 5.e tiene como titulo y responsabilidad propia: requiere subir ChunkingContract.Version (el comentario de la v3 documenta explicitamente 'opt-in, false por defecto' como parte del contrato declarado), re-ingestar y re-baselinear las colecciones SERVIDAS (bsuite-repo, bsuite-auditorias, innovapp-docs, tickets-microservice), no solo las desechables de este experimento. 5.h cierra la DECISION de promocion con evidencia; 5.e ejecuta el cambio operativo sobre colecciones reales.",
+    "pendiente_explicito": "5.e debe: (1) subir ChunkingContract.Version, (2) cambiar el default de IndexShortTypeDeclarations a true en IngestionTypes.cs, (3) actualizar docs/configuracion.md y el test ConfiguracionPorDefecto_ConservaElFiltroAnterior (su nombre y aserciones asumen false; deben re-escribirse deliberadamente, no borrarse), (4) re-ingestar y re-baselinear las colecciones servidas con el criterio de 5.e completo (tenant explicito, misses de cache, A/B estructural contra 11.4)."
+  },
+  "limites": [
+    "No se recompute el conteo exhaustivo de pares (file_path, class_name) sin chunk_type=Class; se uso el delta de chunk_type=Class (858, identico al historico) como evidencia suficiente de que la cobertura no cambio de mecanismo.",
+    "La cache de resumenes compartida crecio durante la corrida (aprox. 38.691 -> 40.027+ entradas nuevas bajo prompt_version 210d3e35): son resumenes legitimos y reutilizables content-addressed, no se revirtieron ni se consideran deuda.",
+    "rag-api estuvo detenido durante toda la corrida (aprox. 45 minutos); qdrant-local (colecciones servidas) no se toco y quedo disponible para busquedas directas via Qdrant aunque la API HTTP no serviera peticiones mientras tanto.",
+    "El bug menor detectado en EvalCommand/EvalProvenance (el campo index_short_type_declarations de la procedencia refleja la configuracion del PROCESO que corre 'rag eval', no la configuracion real con la que se construyo la coleccion consultada) no se corrigio en este item por no ser parte de su alcance; ambas corridas mostraron 'False' en ese campo aunque la coleccion experimental se construyo con true. No afecta los resultados de busqueda (la fusion de bandas se decide por el schema real de la coleccion, no por ese campo de procedencia).",
+    "Colecciones y Qdrant desechables se eliminaron al terminar; no hay snapshot de bsuite-5h-control/bsuite-5h-experimental mas alla de los JSON de resultados persistidos aqui."
+  ],
+  "origen": "Condicion de reentrada de 5.h (bloqueado desde 2026-09-12): 'Ejecucion explicita de 5.h para el A/B pendiente con controles comparables de tres bandas y busqueda exacta o replicas.'"
+}

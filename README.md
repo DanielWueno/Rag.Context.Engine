@@ -61,18 +61,23 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 | [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |
 | [docs/configuracion.md](docs/configuracion.md) | `appsettings.json`, gestión de modelos, cuándo re-ingestar |
 | [docs/operaciones.md](docs/operaciones.md) | Logs, métricas, troubleshooting y runbook |
+| [arnes-plan](https://github.com/DanielWueno/arnes-plan) | **Arnés de ejecución de planes.** Cómo se trabaja aquí en tareas largas con un asistente: el ledger, los comandos, un ítem por sesión limpia. Ya no vive en este repo: es un plugin de Claude Code (`claude plugin marketplace add DanielWueno/arnes-plan`). Lo que sí es de aquí es el ledger, en `docs/analisis-futuro/ejecucion-plan.estado.json`. |
 
 ## Estructura de la solución
 
 ```
 Rag.Context.Engine/
 ├── infra/                  # docker-compose (Qdrant) + descarga de modelos
-├── docs/                   # Documentación formal del sistema
-├── Fase 1..5 - *.md        # Plan de proyecto interno (diseño, roadmap, riesgos)
-└── src/
-    ├── RagEngine.Core/     # Toda la lógica: abstracciones, dominio, pipeline,
-    │                       # chunking (Roslyn/TS/Markdown), vectorización, Qdrant
-    └── RagEngine.Cli/      # Entry point: comandos Spectre.Console
+│   └── arnes/              # Arnés de ejecución de planes (portable, con guía e instalador)
+├── docs/                   # Documentación formal del sistema + Plan de proyecto (Fase 1..5)
+├── src/
+│   ├── RagEngine.Core/     # Toda la lógica: abstracciones, dominio, pipeline,
+│   │                       # chunking (Roslyn/TS/Markdown), vectorización, Qdrant
+│   ├── RagEngine.Api/      # API HTTP: endpoints de búsqueda y generación
+│   └── RagEngine.Cli/      # Entry point: comandos Spectre.Console
+├── tests/                  # Suite de tests unitarios
+├── poc/                    # Proof-of-concepts (búsqueda libre, etc.)
+└── replicate-env/          # Ambiente de replicación con cache de resúmenes
 ```
 
 ## Principios

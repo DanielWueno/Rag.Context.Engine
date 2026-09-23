@@ -2,8 +2,15 @@
 models/
 **/bin/
 **/obj/
+__pycache__/
 *.user
 .DS_Store
+
+# Logs: nunca dentro del árbol de código. Serilog escribe a una ruta relativa al
+# directorio de trabajo, así que `dotnet run --project src/X` los deja en src/X/logs.
+# Ese patrón los ignora en cualquier nivel; ver ítem 1.2b del ledger para la causa raíz.
+logs/
+**/logs/
 
 # IDE
 .vs/
@@ -13,4 +20,19 @@ models/
 # Secrets (never commit)
 appsettings.*.json
 !appsettings.json
-logs/
+
+# nohup: salida de terminales desatendidas / scripts sin redireccion explicita.
+# Mismo genero que 1.12 (artefactos en la raiz del repo).
+nohup.out
+
+# Claude Code: estado local de la máquina, no del repo.
+# .claude/commands/ y .claude/settings.json SÍ se versionan: son el arnés de
+# ejecución del plan (los dos comandos y el hook que anuncia el ítem siguiente).
+# El arnés vive fuera de este repo: github.com/DanielWueno/arnes-plan
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# Ítem 12.1: rutas locales de docker-compose (RAG_MODELS_DIR, RAG_LOGS_DIR,
+# RAG_SUMMARY_CACHE_DIR, RAG_QDRANT_API_KEY) — específicas de esta máquina, nunca
+# hardcodeadas en infra/docker-compose.yml. Ver infra/.env.example para el contrato.
+infra/.env

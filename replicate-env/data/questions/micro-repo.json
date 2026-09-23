@@ -1,0 +1,11 @@
+[
+  {
+    "query": "¿Cómo funciona el registro de dependencias?",
+    "topK": 5,
+    "minScore": 0.1,
+    "rerank": true,
+    "responseMode": "Simple",
+    "historyTurns": 0,
+    "sourceLog": "rag-api-20260803.json"
+  }
+]

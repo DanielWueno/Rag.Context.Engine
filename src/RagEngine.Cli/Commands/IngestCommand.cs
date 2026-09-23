@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -20,6 +21,21 @@ namespace RagEngine.Cli.Commands;
 /// </summary>
 public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 {
+    /// <summary>
+    /// Codigos de salida: 0 = completa, 1 = cancelada o error, 2 = faltan modelos,
+    /// 3 = termino pero perdio chunks en el camino. El 3 existe para que un script
+    /// pueda distinguir "no indexo nada" de "indexo casi todo": ambos son fallos,
+    /// pero solo el segundo deja una coleccion utilizable a medias.
+    /// </summary>
+    private const int ExitCodeIncompleteIngestion = 3;
+
+    /// <summary>
+    /// Minimo entre redibujados de la tabla en vivo. El pipeline reporta progreso por
+    /// cada chunk; a ~7 renders por segundo la tabla se ve fluida sin gastar la CPU
+    /// en repintar una tabla de seis filas decenas de miles de veces.
+    /// </summary>
+    private const int LiveRefreshIntervalMs = 150;
+
     public sealed class Settings : CommandSettings
     {
         [CommandArgument(0, "<path>")]
@@ -42,9 +58,21 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         [Description("Force re-index: deletes and recreates the Qdrant collection.")]
         public bool ForceReindex { get; set; } = false;
 
+        [CommandOption("-y|--yes")]
+        [Description("Asume si en la confirmacion de --force. Necesario para correr sin terminal interactiva.")]
+        public bool AssumeYes { get; set; } = false;
+
         [CommandOption("-l|--lang")]
         [Description("Restrict to a language: csharp, typescript, sql, markdown.")]
         public string? LanguageFilter { get; set; }
+
+        [CommandOption("--con-resumen")]
+        [Description("Genera un tercer vector de resumen de negocio vía LLM (opt-in). Default: false.")]
+        public bool EnableResumenLlm { get; set; } = false;
+
+        [CommandOption("--tenant")]
+        [Description("Identidad local explícita del tenant dueño de esta ingesta (ítem 5.e). Sin valor: sin tenant en el payload.")]
+        public string? Tenant { get; set; }
 
         public override ValidationResult Validate()
         {
@@ -93,13 +121,33 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
         configTable.AddRow("[grey]Batch Size[/]", $"[yellow]{settings.BatchSize}[/]");
         configTable.AddRow("[grey]Force Re-index[/]",
             settings.ForceReindex ? "[red]YES \u26a0\ufe0f[/]" : "[green]No[/]");
+        configTable.AddRow("[grey]Con Resumen (LLM)[/]",
+            settings.EnableResumenLlm ? "[cyan]YES[/]" : "[grey]No[/]");
+        if (!string.IsNullOrWhiteSpace(settings.Tenant))
+            configTable.AddRow("[grey]Tenant[/]", $"[cyan]{settings.Tenant}[/]");
 
         AnsiConsole.Write(configTable);
         AnsiConsole.WriteLine();
 
         // \u2500\u2500 ForceReindex confirmation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-        if (settings.ForceReindex)
+        // La confirmacion solo tiene sentido con una terminal que pueda contestar.
+        // Sin ella, Spectre lanza "Failed to read input in non-interactive mode" y el
+        // comando muere con exit 255 — que es exactamente lo que le pasaba a
+        // replicate-env/scripts/04-ingest-collections.sh, cuyo comando de micro-repo
+        // usa --force: el script de reproduccion del entorno no podia correr
+        // desatendido. Con --yes se salta, y si no hay terminal se aborta con un
+        // mensaje que dice que usar, en vez de con un stack trace.
+        if (settings.ForceReindex && !settings.AssumeYes)
         {
+            if (!AnsiConsole.Profile.Capabilities.Interactive)
+            {
+                AnsiConsole.MarkupLine(
+                    "[red]--force necesita confirmacion y esta terminal no es interactiva.[/]");
+                AnsiConsole.MarkupLine(
+                    "[grey]Agrega [white]--yes[/] para confirmar sin preguntar.[/]");
+                return 1;
+            }
+
             var confirmed = AnsiConsole.Confirm(
                 $"[red]\u26a0\ufe0f  This will DELETE collection '[cyan]{settings.Collection}[/]' and re-index from scratch. Continue?[/]",
                 defaultValue: false);
@@ -123,12 +171,13 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 RepositoryName = settings.RepositoryName,
                 BatchSize = settings.BatchSize
             },
-            ForceReindex: settings.ForceReindex
+            ForceReindex: settings.ForceReindex,
+            EnableResumenLlm: settings.EnableResumenLlm,
+            Tenant: settings.Tenant
         );
 
         // \u2500\u2500 Live Progress Display \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         IngestionSummary? summary = null;
-        Exception? error = null;
 
         var liveProgress = new LiveProgressTracker();
 
@@ -147,13 +196,32 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
                 .Overflow(VerticalOverflow.Ellipsis)
                 .StartAsync(async ctx =>
                 {
+                    // ctx.Refresh() por si solo NO servia: GetLayout() construye las
+                    // filas con los valores literales del momento y solo se llamaba una
+                    // vez, al crear el Live, asi que Refresh redibujaba filas viejas.
+                    // Durante una corrida de 22.986 chunks la tabla mostraba "0 / 0"
+                    // de principio a fin, que en una ingesta larga es volar a ciegas.
+                    // Hay que reconstruir el objetivo con UpdateTarget.
+                    //
+                    // Y con throttle: el productor reporta por CADA chunk, asi que sin
+                    // esto son ~23.000 renders completos de Spectre para una corrida.
+                    var ultimoRender = Stopwatch.StartNew();
                     var progress = new Progress<IngestionProgress>(p =>
                     {
                         liveProgress.Update(p);
-                        ctx.Refresh();
+
+                        if (ultimoRender.ElapsedMilliseconds >= LiveRefreshIntervalMs)
+                        {
+                            ctx.UpdateTarget(liveProgress.GetLayout());
+                            ultimoRender.Restart();
+                        }
                     });
 
                     summary = await _pipeline.IngestRepositoryAsync(request, progress, cts.Token);
+
+                    // Render final: el ultimo reporte pudo caer dentro del throttle y
+                    // la tabla se quedaria con el penultimo estado.
+                    ctx.UpdateTarget(liveProgress.GetLayout());
                 });
         }
         catch (OperationCanceledException)
@@ -176,7 +244,21 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 
         // \u2500\u2500 Final Summary Table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         AnsiConsole.WriteLine();
-        AnsiConsole.Write(new Rule("[green]\u2705 Ingestion Complete[/]").RuleStyle("green"));
+        // Un lote que falla (ONNX, tokenizacion sparse, upsert a Qdrant) se registra
+        // en el log y en el contador IngestionErrorsTotal, pero la corrida terminaba
+        // igual en verde y con exit 0. La perdida es la diferencia entre chunks
+        // generados e indexados: si es mayor que cero la ingesta quedo incompleta, y
+        // hay que decirlo en el veredicto Y en el codigo de salida, o cualquier
+        // script que la invoque leera un fallo parcial como exito.
+        int chunksLost = summary is null
+            ? 0
+            : Math.Max(0, summary.ChunksGenerated - summary.ChunksIndexed);
+        bool incomplete = chunksLost > 0;
+
+        AnsiConsole.Write(incomplete
+            ? new Rule($"[yellow]Ingesta incompleta: {chunksLost:N0} chunks no llegaron al indice[/]")
+                .RuleStyle("yellow")
+            : new Rule("[green]\u2705 Ingestion Complete[/]").RuleStyle("green"));
         AnsiConsole.WriteLine();
 
         if (summary is not null)
@@ -190,15 +272,76 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             summaryTable.AddRow("Files Scanned",    $"[cyan]{summary.FilesScanned:N0}[/]");
             summaryTable.AddRow("Chunks Generated", $"[cyan]{summary.ChunksGenerated:N0}[/]");
             summaryTable.AddRow("Chunks Indexed",   $"[green]{summary.ChunksIndexed:N0}[/]");
+            if (incomplete)
+            {
+                summaryTable.AddRow("[yellow]Chunks perdidos[/]",
+                    $"[yellow]{chunksLost:N0} - revisar los ERROR del log de esta corrida[/]");
+            }
             summaryTable.AddRow("Files Skipped",    $"[yellow]{summary.FilesSkipped:N0}[/]");
-            summaryTable.AddRow("Duration",         $"[white]{summary.TotalDuration:mm\\:ss\\.ff}[/]");
+            var durationText = summary.TotalDuration.TotalDays >= 1
+                ? summary.TotalDuration.ToString(@"d\.hh\:mm\:ss")
+                : summary.TotalDuration.TotalHours >= 1
+                    ? summary.TotalDuration.ToString(@"hh\:mm\:ss")
+                    : summary.TotalDuration.ToString(@"mm\:ss\.ff");
+            summaryTable.AddRow("Duration",         $"[white]{durationText}[/]");
             summaryTable.AddRow("Memory Peak",
                 $"[grey]{summary.EstimatedMemoryPeakBytes / 1_048_576.0:F1} MB[/]");
 
+            if (settings.EnableResumenLlm)
+            {
+                summaryTable.AddRow("Resúmenes generados",   $"[green]{summary.ResumenesCompleted:N0}[/]");
+                summaryTable.AddRow("Resúmenes sin negocio", $"[grey]{summary.ResumenesSinNegocio:N0}[/]");
+                summaryTable.AddRow("Resúmenes pendientes",
+                    summary.ResumenesPending > 0
+                        ? $"[yellow]{summary.ResumenesPending:N0} (correr `rag ingest --con-resumen` de nuevo para completar)[/]"
+                        : "[green]0[/]");
+            }
+
+            // 11.1: tokens reales/descartados/truncados con el tokenizador
+            // efectivo, medidos en la fase de embedding de chunks admitidos.
+            // n=0 no imprime percentiles ficticios.
+            if (summary.TokensObserved > 0)
+            {
+                summaryTable.AddRow("Tokens medidos (n)", $"[cyan]{summary.TokensObserved:N0}[/]");
+                summaryTable.AddRow("Tokens p50/p95",
+                    $"[white]{summary.TokensP50:N0} / {summary.TokensP95:N0}[/] [grey](L={summary.TokensMaxUsable:N0})[/]");
+                summaryTable.AddRow("Chunks truncados",
+                    summary.ChunksTruncatedTotal > 0
+                        ? $"[yellow]{summary.ChunksTruncatedTotal:N0}[/]"
+                        : "[green]0[/]");
+                summaryTable.AddRow("Tokens descartados",
+                    summary.TokensDiscardedTotal > 0
+                        ? $"[yellow]{summary.TokensDiscardedTotal:N0}[/]"
+                        : "[green]0[/]");
+            }
+            else
+            {
+                summaryTable.AddRow("Tokens medidos (n)", "[grey]sin datos[/]");
+            }
+
             AnsiConsole.Write(summaryTable);
+
+            // Advertencia contra L (capacidad útil), no contra M (límite bruto):
+            // un p95 <= M pero > L ya está perdiendo contenido real por chunk.
+            if (summary.TokensP95 is int p95 && p95 > summary.TokensMaxUsable)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[yellow]\u26a0\ufe0f  p95 de tokens ({p95:N0}) supera la capacidad útil del tokenizador " +
+                    $"(L={summary.TokensMaxUsable:N0}): una porcion relevante de chunks se esta truncando.[/]");
+            }
         }
 
         AnsiConsole.WriteLine();
+        if (incomplete)
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]La coleccion [cyan]{settings.Collection}[/] es consultable, pero le faltan " +
+                $"{chunksLost:N0} chunks: toda busqueda sobre ella parte de un indice incompleto.[/]");
+            AnsiConsole.MarkupLine(
+                "[dim]Revisar los ERROR del log y re-ejecutar con [white]--force[/] cuando este resuelto.[/]");
+            return ExitCodeIncompleteIngestion;
+        }
+
         AnsiConsole.MarkupLine(
             $"[dim]Collection [cyan]{settings.Collection}[/] is ready for semantic search.[/]");
         AnsiConsole.MarkupLine(
@@ -210,12 +353,19 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
     // \u2500\u2500 Live progress tracker using Spectre.Console Table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     private sealed class LiveProgressTracker
     {
+        // Los callbacks de Progress<T> se despachan al thread pool cuando no hay
+        // SynchronizationContext, que es el caso en una app de consola: Update puede
+        // correr en paralelo con GetLayout, que limpia y rellena las filas. Sin este
+        // candado la tabla puede leerse a medio reconstruir.
+        private readonly object _candado = new();
         private readonly Table _table;
         private int _filesProcessed;
         private int _chunksProduced;
         private int _chunksIndexed;
         private string _stage = "Starting...";
         private string _currentFile = string.Empty;
+        private int _resumenesCompleted;
+        private int _resumenesTotal;
 
         public LiveProgressTracker()
         {
@@ -229,6 +379,8 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
 
         public void Update(IngestionProgress p)
         {
+            lock (_candado)
+            {
             _filesProcessed = p.FilesProcessed;
             _chunksProduced = p.ChunksProduced;
             _chunksIndexed  = p.ChunksIndexed;
@@ -236,17 +388,25 @@ public sealed class IngestCommand : AsyncCommand<IngestCommand.Settings>
             _currentFile    = p.CurrentFile.Length > 60
                 ? "\u2026" + p.CurrentFile[^57..]
                 : p.CurrentFile;
+            _resumenesCompleted = p.ResumenesCompleted;
+            _resumenesTotal     = p.ResumenesTotal;
+            }
         }
 
         public Table GetLayout()
         {
+            lock (_candado)
+            {
             _table.Rows.Clear();
             _table.AddRow("Stage",           $"[yellow]{_stage}[/]");
             _table.AddRow("Files Processed", $"[cyan]{_filesProcessed:N0}[/]");
             _table.AddRow("Chunks Produced", $"[cyan]{_chunksProduced:N0}[/]");
             _table.AddRow("Chunks Indexed",  $"[green]{_chunksIndexed:N0}[/]");
+            if (_resumenesTotal > 0)
+                _table.AddRow("Res\u00famenes", $"[cyan]{_resumenesCompleted:N0}/{_resumenesTotal:N0}[/]");
             _table.AddRow("Current File",    $"[grey]{Markup.Escape(_currentFile)}[/]");
             return _table;
+            }
         }
     }
 }

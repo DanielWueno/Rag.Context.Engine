@@ -1,0 +1,249 @@
+[
+  {
+    "Question": "¿Cómo levanto un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "TipoTicket.Incidencia",
+      "Post([FromBody] CreateTicketRequest"
+    ],
+    "Note": "Caso motivador. CQRS: endpoint POST + lógica de OnCreate. No hay atributos declarativos.",
+    "SourceFiles": [
+      "CreateTicketCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Qué datos son obligatorios para crear un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "dto.ActivoComputoId",
+      "CaracteresValidosTelefono"
+    ],
+    "Note": "Validator FluentValidation (NotEmpty) + reglas ricas del OnValidate (teléfono, observaciones).",
+    "SourceFiles": [
+      "CreateTicketRequestValidator.cs",
+      "CreateTicketCommandHandler.cs"
+    ]
+  },
+  {
+    "Question": "¿Qué se necesita para cerrar un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "CerrarTicketCommandHandler.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "TicketSinActividad"
+    ],
+    "Note": "Precondiciones de cierre en OnValidate."
+  },
+  {
+    "Question": "¿Cómo reasigno un ticket a otra persona?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "dto.PersonalAsignadoId",
+      "ReasignarTicketRequest request"
+    ],
+    "Note": "Endpoint reasignar + su validator (exige PersonalAsignadoId).",
+    "SourceFiles": [
+      "ReasignarTicketRequestValidator.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo adjunto un documento o evidencia a un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "RegistroTicketDocumentoValidationMessages",
+      "TicketDocumentoRequest request"
+    ],
+    "Note": "Endpoint POST {id}/documento + validator.",
+    "SourceFiles": [
+      "CreateTicketDocumentRequestValidator.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo registro el avance o una actividad en un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no pertenece al empleado o departamento que se asigno",
+      "actividad no puede quedar vacia",
+      "CreateTicketRegistroActividadRequest request"
+    ],
+    "Note": "Handler + validator + endpoint registro_actividad.",
+    "SourceFiles": [
+      "CreateTicketRegistroActividadCommandHandler.cs",
+      "CreateTicketRegistroActividadRequestValidator.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo paso un ticket a Mesa de Ayuda?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no pertenece a ninguno de los departamentos seleccionados",
+      "new MesaAyudaTicketRequest { Id = id }"
+    ],
+    "Note": "El endpoint mesa_ayuda no lleva [FromBody]; se identifica por la construcción del request.",
+    "SourceFiles": [
+      "MesaAyudaTicketCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo recibo un ticket que me asignaron?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no es posible recibir ya que no se selecciono un tipo de servicio",
+      "RecibirTicketRequest request"
+    ],
+    "Note": "Handler OnValidate + endpoint recibir.",
+    "SourceFiles": [
+      "RecibirTicketCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo cambio el tipo de servicio de un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "OrderByDescending(a => a.UltimaAsignacion)",
+      "TicketAsignacionRequest request"
+    ],
+    "Note": "Handler de una línea (OnPatch) + endpoint cambia_tipo_servicio.",
+    "SourceFiles": [
+      "ActualizarTipoServicioCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Cómo actualizo o subo el documento de cierre de un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "no se encuentra en los estatus permitidos",
+      "DocumentoCierreTicketRequest request"
+    ],
+    "Note": "Handler OnValidate + endpoint PUT documento_cierre.",
+    "SourceFiles": [
+      "ActualizarDocCierreCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Qué condiciones deben cumplirse para poder reasignar un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "ReasignarTicketCommandHandler.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "No es posible reasignar ya que no tiene asignado el ticket"
+    ],
+    "Note": "Reglas ricas en OnValidate del handler (distinto del validator de la pregunta 4)."
+  },
+  {
+    "Question": "¿En qué casos un ticket necesita autorización digital?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "Constants.ClaveTipoServicioSolicitudAcceso",
+      "ValidarAutorizacionTicketRequest"
+    ],
+    "Note": "Handler de decisión + endpoint validar_autorizacion.",
+    "SourceFiles": [
+      "ValidarAutorizacionTicketCommandHandler.cs",
+      "TicketsController.cs"
+    ]
+  },
+  {
+    "Question": "¿Por qué a veces me piden llenar el campo Módulo al cerrar un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "ValidarMostrarModuloTicketCommandHandler.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "ClaveSoporteAplicaciones"
+    ],
+    "Note": "Regla: solo Soporte de Aplicaciones o Desarrollo ven el campo Módulo."
+  },
+  {
+    "Question": "¿Cuándo puedo mandar un ticket a Mesa de Ayuda?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "ValidarMesaAyudaTicketCommandHandler.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "ClaveDepartamentoCAU"
+    ],
+    "Note": "Regla de elegibilidad (estatus + departamento)."
+  },
+  {
+    "Question": "¿Cómo consulto mis solicitudes de servicio?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "SolicitudesServicioController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "GetPagedSolicitudServiciosQuery"
+    ],
+    "Note": "Endpoints GET de solicitudes de servicio."
+  },
+  {
+    "Question": "¿Dónde veo a quién se han asignado los tickets?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "TicketsAsignacionesController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "GetPagedTicketsAsignacionesQuery"
+    ],
+    "Note": "Endpoints GET de asignaciones."
+  },
+  {
+    "Question": "¿Qué tipos de servicio corresponden a un departamento?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "TicketsTipoServicioController.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "GetTipoServicioByDepartamentoIdQuery"
+    ],
+    "Note": "Endpoint de tipos de servicio por departamento."
+  },
+  {
+    "Question": "¿Qué información se guarda de un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": "Ticket.cs",
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "RequiereAutorizacionDigital"
+    ],
+    "Note": "Entidad de dominio Ticket (propiedades)."
+  },
+  {
+    "Question": "¿Cómo se registra el seguimiento y las actividades de un ticket?",
+    "Category": "bsuite-codigo",
+    "SourceFile": null,
+    "TargetSectionHeader": null,
+    "TargetContentContains": [
+      "DescripcionActividad",
+      "TipoEvento"
+    ],
+    "Note": "Entidad de registro de actividad + modelo de seguimiento.",
+    "SourceFiles": [
+      "TicketRegistroActividad.cs",
+      "TicketSeguimiento.cs"
+    ]
+  }
+]

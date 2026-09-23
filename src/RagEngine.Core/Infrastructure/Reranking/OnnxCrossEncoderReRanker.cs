@@ -3,8 +3,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Microsoft.ML.Tokenizers;
+using System.Runtime.InteropServices;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Utilities;
+
+using RagEngine.Core.Infrastructure.Vectorization;
 
 namespace RagEngine.Core.Infrastructure.Reranking;
 
@@ -39,7 +43,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
 
     private readonly CrossEncoderOptions _options;
     private readonly ILogger<OnnxCrossEncoderReRanker> _logger;
-    private readonly Lazy<(InferenceSession Session, Tokenizer Tokenizer)> _model;
+    private readonly Lazy<(InferenceSession Session, Tokenizer Tokenizer, CrossEncoderIdentity Identity)> _model;
     private bool _disposed;
 
     public OnnxCrossEncoderReRanker(
@@ -48,7 +52,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
     {
         _options = options.Value;
         _logger = logger;
-        _model = new Lazy<(InferenceSession, Tokenizer)>(
+        _model = new Lazy<(InferenceSession, Tokenizer, CrossEncoderIdentity)>(
             LoadModel, LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -64,26 +68,91 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
+        // El orden de entrada (candidates) NO es determinista: Qdrant rompe los
+        // empates de score RRF de forma no determinista entre corridas idénticas.
+        // Como ScorePairs agrupa en lotes en el orden recibido y el padding
+        // dinámico + cuantización int8 hacen que el score de un chunk dependa de
+        // sus vecinos de lote, el mismo chunk obtenía scores distintos según la
+        // corrida. Reordenamos por una clave estable (ChunkId) ANTES de batchear
+        // para fijar la composición de los lotes y hacer el score reproducible.
+        // El .Zip posterior DEBE usar esta misma lista reordenada para preservar
+        // la correspondencia posicional score[i] ↔ orderedCandidates[i].
+        var orderedCandidates = candidates
+            .OrderBy(c => c.ChunkId, StringComparer.Ordinal)
+            .ToList();
+
         var scores = await Task.Run(
-            () => ScorePairs(query, candidates, cancellationToken),
+            () => ScorePairs(query, orderedCandidates, cancellationToken),
             cancellationToken);
 
-        var reranked = candidates
-            .Zip(scores, (candidate, score) => candidate with { SimilarityScore = score })
-            .OrderByDescending(r => r.SimilarityScore)
-            .Take(topK)
-            .ToList();
+        var reranked = RankScoredCandidates(orderedCandidates, scores, topK);
+        for (var i = 0; i < reranked.Count; i++)
+            reranked[i] = reranked[i] with { CrossEncoder = _model.Value.Identity };
+
+        long stableGateMs = 0;
+        if (_options.StableGateScore && reranked.Count > 0)
+        {
+            // Ítem 4.2: el número que lee el gate de confianza (chunks[0].SimilarityScore)
+            // se recalcula puntuando al ganador SOLO. ScorePairs con una lista de un
+            // elemento produce un lote de tamaño 1, así que seqLen es la longitud del par
+            // y deja de depender del vecino más largo del lote — y por tanto del TopK, que
+            // es quien fija el tamaño del pool. El resultado es función únicamente de
+            // (query, chunk).
+            //
+            // Deliberadamente NO se reordena: el ranking lo sigue decidiendo la pasada por
+            // lotes de arriba, y el ganador se queda en la posición #1 aunque su score
+            // estable quede por debajo del de la posición #2. Estabilizar el gate no es
+            // rehacer el ranking; hacerlo exigiría puntuar los topK en lotes de 1.
+            var gateSw = System.Diagnostics.Stopwatch.StartNew();
+            var winner = reranked[0];
+            var stableScore = await Task.Run(
+                () => ScorePairs(query, new[] { winner }, cancellationToken)[0],
+                cancellationToken);
+            gateSw.Stop();
+            stableGateMs = gateSw.ElapsedMilliseconds;
+
+            _logger.LogInformation(
+                "Cross-encoder stable gate score for {ChunkId}: {Batched:F4} → {Stable:F4} ({ElapsedMs}ms)",
+                winner.ChunkId, winner.SimilarityScore, stableScore, stableGateMs);
+
+            // La escala cambia con el número: a partir de aquí la posición #0 lleva un
+            // score que NO sale del mismo cálculo que el del resto de la lista, y el tipo
+            // lo dice (ítem 4.9). Es lo que hace visible, sin leer este archivo, que la
+            // lista dejó de estar ordenada monótonamente por score.
+            reranked[0] = winner with
+            {
+                SimilarityScore = stableScore,
+                ScoreScale = RetrievalScoreScale.CrossEncoderStable,
+            };
+        }
 
         sw.Stop();
         _logger.LogInformation(
-            "Cross-encoder re-ranked {PoolSize} candidates → top {TopK} in {ElapsedMs}ms. Best score: {Best:F3}",
-            candidates.Count, reranked.Count, sw.ElapsedMilliseconds,
+            "Cross-encoder re-ranked {PoolSize} candidates → top {TopK} in {ElapsedMs}ms (of which {StableGateMs}ms stable gate score). Best score: {Best:F3}",
+            candidates.Count, reranked.Count, sw.ElapsedMilliseconds, stableGateMs,
             reranked.Count > 0 ? reranked[0].SimilarityScore : 0f);
 
         return reranked.AsReadOnly();
     }
 
-    private (InferenceSession, Tokenizer) LoadModel()
+    internal static List<RetrievalResult> RankScoredCandidates(
+        IReadOnlyList<RetrievalResult> candidates, IReadOnlyList<float> scores, int topK)
+    {
+        if (candidates.Count != scores.Count)
+            throw new ArgumentException("Every reranking candidate must have a score.", nameof(scores));
+        var scored = candidates.Zip(scores, (candidate, score) => candidate with
+        {
+            SimilarityScore = score,
+            ScoreScale = RetrievalScoreScale.CrossEncoderBatched,
+            RankingScore = score,
+            RankingScoreScale = RetrievalScoreScale.CrossEncoderBatched,
+            CrossEncoder = null,
+            GateCalibration = null
+        });
+        return RankingOrder.Descending(scored, r => r.RankingScore, r => r.ChunkId).Take(topK).ToList();
+    }
+
+    private (InferenceSession, Tokenizer, CrossEncoderIdentity) LoadModel()
     {
         if (!File.Exists(_options.ModelPath))
             throw new FileNotFoundException(
@@ -105,19 +174,31 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
             GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL
         };
 
-        var session = new InferenceSession(_options.ModelPath, sessionOptions);
-
-        using var spmStream = File.OpenRead(_options.VocabPath);
+        // Hash the same bytes passed to ONNX, never a path re-read after loading.
+        var modelBytes = File.ReadAllBytes(_options.ModelPath);
+        var tokenizerBytes = File.ReadAllBytes(_options.VocabPath);
+        var identity = new CrossEncoderIdentity
+        {
+            ModelSha256 = ContentHasher.Compute(modelBytes),
+            TokenizerSha256 = ContentHasher.Compute(tokenizerBytes),
+            Binary = Path.GetFileName(_options.ModelPath),
+            Architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
+            StableGateScore = _options.StableGateScore,
+            MaxSequenceLength = _options.MaxSequenceLength,
+            BatchSize = _options.BatchSize
+        };
+        using var spmStream = new MemoryStream(tokenizerBytes, writable: false);
         var tokenizer = SentencePieceTokenizer.Create(
             spmStream,
             addBeginningOfSentence: false,
             addEndOfSentence: false);
 
+        OnnxRuntimeLifetime.MarkRuntimeTouched();
+        var session = new InferenceSession(modelBytes, sessionOptions);
         _logger.LogInformation(
-            "Cross-encoder loaded. MaxSeqLen: {Seq}, BatchSize: {Batch}",
-            _options.MaxSequenceLength, _options.BatchSize);
+            "Cross-encoder loaded: {CrossEncoderIdentity}", identity);
 
-        return (session, tokenizer);
+        return (session, tokenizer, identity);
     }
 
     private float[] ScorePairs(
@@ -125,7 +206,7 @@ public sealed class OnnxCrossEncoderReRanker : IReRanker, IDisposable
         IReadOnlyList<RetrievalResult> candidates,
         CancellationToken cancellationToken)
     {
-        var (session, tokenizer) = _model.Value;
+        var (session, tokenizer, _) = _model.Value;
 
         // La query se tokeniza una sola vez y se le reserva como máximo la mitad
         // de la ventana; el resto queda para el chunk, que se trunca a lo que quepa.

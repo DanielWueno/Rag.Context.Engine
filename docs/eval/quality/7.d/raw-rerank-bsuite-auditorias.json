@@ -1,0 +1,1306 @@
+{
+  "collection": "bsuite-auditorias-test",
+  "top_k": 10,
+  "rerank": true,
+  "min_score": 0,
+  "generated_at": "2026-09-16T00:08:26.974061+00:00",
+  "provenance": {
+    "git_commit": "3d33d6a",
+    "git_dirty": true,
+    "eval_set_path": "docs/eval/bsuite-auditorias.eval-set.json",
+    "eval_set_hash": "ec6ff169d1a6",
+    "embedding_model": "model_qint8_arm64.onnx",
+    "embedding_dimensions": 384,
+    "embedding_max_sequence_length": 256,
+    "cross_encoder_model": "model_qint8_arm64.onnx",
+    "weight_codigo": 1,
+    "weight_sparse": 1.3,
+    "weight_resumen": 2.5,
+    "rrf_k": 60,
+    "chunking_contract_version": 3,
+    "index_short_type_declarations": false,
+    "resumen_prompt_version": "210d3e35"
+  },
+  "results": [
+    {
+      "question": "\u00BFQu\u00E9 significa que un hallazgo de auditor\u00EDa sea recurrente?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgo.cs",
+      "top_score": 0.4450597,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.4450597,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.19998796,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0910071,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.08772419,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.05269899,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.050506007,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04689556,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.046384774,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.03422902,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.02977522,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo se puede reabrir una acci\u00F3n correctiva ya finalizada?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.91739964,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.91739964,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.52079064,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.2007835,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.1652596,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.030389654,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.02111797,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.01349128,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.004828219,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0026679428,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0025742927,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo pasa un hallazgo de auditor\u00EDa a estatus de validaci\u00F3n?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoAccionCorrectiva.cs",
+      "top_score": 0.082697146,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.082697146,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.12682395,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.05451478,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.05093956,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.050445125,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.049607184,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.04952018,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.041252814,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.034541257,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.030664342,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 informaci\u00F3n se registra al validar o rechazar un hallazgo de auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaResultadoHallazgoValidacion.cs",
+      "top_score": 0.2279973,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.2279973,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.3141561,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.26199853,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.25851223,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.21026205,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.1932001,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.1901025,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.15033996,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.12574434,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.116902664,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 se necesita para reprogramar la ejecuci\u00F3n de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "AuditoriaReprogramacion.cs",
+      "top_score": 0.98440033,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.98440033,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.9209618,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.5854842,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.570009,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.50508904,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.27939495,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.20822822,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.14566891,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.09644932,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.092815034,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFDesde d\u00F3nde reprogramo una auditor\u00EDa ya planificada?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanificacionAuditoriaViewController.cs",
+      "top_score": 0.96764976,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.96764976,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.9067621,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.810751,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.73154753,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.65750355,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.40088236,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.2909637,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.24289033,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.21118069,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.19793744,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo se puede finalizar completamente una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": null,
+      "top_score": 0.04977962,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.04977962,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.033279464,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.013745726,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.013527357,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.008599439,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.00592875,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.0058848863,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.0049752234,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.0043269717,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.0035714083,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 pasa con una auditor\u00EDa si no se encontraron hallazgos activos al completarla?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.8859838,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.8859838,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.59349793,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.11151514,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.09600208,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.07044971,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.052431483,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.03176289,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.026849719,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.025375439,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 10,
+          "score": 0.023125798,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFCu\u00E1ndo puedo exportar la plantilla de hallazgos de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.97991985,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.97991985,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.1893776,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.09134599,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.07243524,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.064545296,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.06316554,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.05973983,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.046920683,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.045259368,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.043063004,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se determina si un empleado es el auditado de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.77282465,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.77282465,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7283047,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.5764667,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.3273091,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.27962738,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.264417,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.21907195,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.20674959,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.20362747,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.17882591,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 motivo se registra cuando se reprograma un plan de auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "PlanAuditoria.cs",
+      "top_score": 0.9093673,
+      "hit_any_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9093673,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8257859,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.81084794,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 4,
+          "score": 0.80103856,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.392487,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.36374757,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.35132515,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.35042635,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.14781621,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.09667589,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula la calificaci\u00F3n global de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.9642925,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9642925,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.9104439,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9076481,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.58608437,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.49431118,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.39297107,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.35874447,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.34915394,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.25625014,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.2514526,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo se calcula la calificaci\u00F3n de un grupo de criterios del checklist?",
+      "category": "bsuite-auditorias",
+      "source_file": "Auditorias.cs",
+      "top_score": 0.99990475,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.99990475,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.99934894,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.99688584,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.9867769,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.97907525,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.97803473,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.9606631,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.91117483,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.9105423,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.8789275,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo registro el plan de acci\u00F3n de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.9208366,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.9208366,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.937433,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.9192764,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.91195065,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.8634304,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.84299284,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.8314444,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.79286873,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.72737825,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.67354643,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFC\u00F3mo importo auditor\u00EDas desde un archivo Excel?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.5347448,
+      "hit_any_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hit_full_at_k": {
+        "1": false,
+        "3": false,
+        "5": false,
+        "10": false
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.5347448,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 2,
+          "score": 0.639868,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.61544955,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.60334575,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.4674872,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.4620052,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.45331272,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.44953495,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.41939273,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.38038716,
+          "is_target_file": true,
+          "matches_anchor": false
+        }
+      ]
+    },
+    {
+      "question": "\u00BFQu\u00E9 significa recibir el plan de acci\u00F3n PDCA de una auditor\u00EDa?",
+      "category": "bsuite-auditorias",
+      "source_file": "EjecucionAuditoriaViewController.cs",
+      "top_score": 0.81285506,
+      "hit_any_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hit_full_at_k": {
+        "1": true,
+        "3": true,
+        "5": true,
+        "10": true
+      },
+      "hits": [
+        {
+          "rank": 1,
+          "score": 0.81285506,
+          "is_target_file": true,
+          "matches_anchor": true
+        },
+        {
+          "rank": 2,
+          "score": 0.5492083,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 3,
+          "score": 0.41698205,
+          "is_target_file": true,
+          "matches_anchor": false
+        },
+        {
+          "rank": 4,
+          "score": 0.39544365,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 5,
+          "score": 0.36330232,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 6,
+          "score": 0.35375124,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 7,
+          "score": 0.33104983,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 8,
+          "score": 0.27573654,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 9,
+          "score": 0.18029395,
+          "is_target_file": false,
+          "matches_anchor": false
+        },
+        {
+          "rank": 10,
+          "score": 0.11200272,
+          "is_target_file": false,
+          "matches_anchor": false
+        }
+      ]
+    }
+  ]
+}

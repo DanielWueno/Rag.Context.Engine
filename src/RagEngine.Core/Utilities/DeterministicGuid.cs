@@ -23,11 +23,16 @@ public static class DeterministicGuid
     }
 
     /// <summary>
-    /// Creates a UUID v5 from a file path and content hash.
-    /// This ensures two chunks with the same file path and content always have the same ID.
+    /// Creates a UUID v5 from a chunk identity key and content hash.
+    /// <paramref name="identityKey"/> debe ser estable entre entornos (ítem 8.f):
+    /// se construye con <see cref="Chunking.ChunkBuilder.BuildIdentityKey"/> a
+    /// partir de RepositoryName + RelativeFilePath, nunca de la ruta absoluta —
+    /// esta última cambia según el host o el bind mount del contenedor que
+    /// procesó el archivo, y dos rutas distintas para el mismo contenido lógico
+    /// duplicarían el chunk en vez de reemplazarlo.
     /// </summary>
-    public static Guid CreateForChunk(string filePath, int startLine, string contentHash)
-        => Create($"{filePath}:{startLine}:{contentHash}");
+    public static Guid CreateForChunk(string identityKey, int startLine, string contentHash)
+        => Create($"{identityKey}:{startLine}:{contentHash}");
 
     private static Guid CreateFromNamespace(Guid namespaceId, string name)
     {

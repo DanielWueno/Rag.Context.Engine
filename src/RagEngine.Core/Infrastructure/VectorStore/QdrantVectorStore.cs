@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
@@ -11,13 +12,74 @@ namespace RagEngine.Core.Infrastructure.VectorStore;
 /// Uses the gRPC client for lower latency on bulk operations.
 /// All upsert operations are idempotent (Upsert, not Insert).
 /// </summary>
-public sealed class QdrantVectorStore
+public sealed class QdrantVectorStore : IVectorStoreAdmin, IVectorStoreWriter
 {
     public const string DenseVectorName = "dense";
     public const string SparseVectorName = "sparse-code";
 
+    /// <summary>Tercer vector, opt-in por colección: embedding del resumen de negocio generado por LLM.</summary>
+    public const string SummaryVectorName = "dense-resumen";
+
+    /// <summary>
+    /// Payload booleano: true mientras el punto todavía no tiene <see cref="SummaryVectorName"/>
+    /// poblado. Es la marca de trabajo pendiente que permite reanudar la Fase 2 de ingesta
+    /// (resumen de negocio) sin reprocesar toda la colección — ver <c>DefaultIngestionPipeline</c>.
+    /// </summary>
+    public const string ResumenPendingPayloadKey = "resumen_pending";
+
+    /// <summary>
+    /// Clave de payload donde se guarda el <see cref="CollectionManifest"/> serializado
+    /// como JSON. Vive en un único point reservado (<see cref="ManifestPointId"/>), no en
+    /// los points de chunks — ver <see cref="UpsertManifestAsync"/> y
+    /// <see cref="GetManifestAsync"/>.
+    /// </summary>
+    public const string ManifestPayloadKey = "__manifest__";
+
+    /// <summary>Marca booleana del point reservado del manifiesto, usada para excluirlo de búsquedas (ver BuildFilter en QdrantSemanticRetriever).</summary>
+    public const string IsManifestPayloadKey = "is_manifest";
+
+    /// <summary>
+    /// Clave de payload (lista de keywords) con los nombres de símbolos que este chunk
+    /// declara (ver <see cref="CodeChunk.DefinedSymbols"/>). Indexada en Qdrant (ítem 5.d)
+    /// para permitir el segundo salto símbolo→definición del ítem 6.a sin escanear toda
+    /// la colección.
+    /// </summary>
+    public const string DefinedSymbolsPayloadKey = "defined_symbols";
+
+    /// <summary>
+    /// Clave de payload (lista de keywords) con los nombres de símbolos que este chunk
+    /// referencia (ver <see cref="CodeChunk.ConsumedSymbols"/>). Sin índice propio por
+    /// ahora — el ítem 5.d solo exige indexar <see cref="DefinedSymbolsPayloadKey"/>,
+    /// que es el lado de la unión usado para expandir hacia la definición.
+    /// </summary>
+    public const string ConsumedSymbolsPayloadKey = "consumed_symbols";
+
+    /// <summary>
+    /// Clave de payload (keyword) con el tenant explícito dueño de este punto (ítem 5.e,
+    /// absorbe 12.7-tenant-en-el-payload). Se omite por completo cuando la ingesta no
+    /// declaró tenant — nunca se escribe vacío — para que un filtro por tenant no
+    /// excluya por accidente puntos de una colección sin mapeo de tenant definido.
+    /// </summary>
+    public const string TenantPayloadKey = "tenant";
+
+    /// <summary>
+    /// Id fijo y reservado para el único point que guarda el manifiesto de la colección.
+    /// Ningún chunk real puede colisionar con este UUID porque los ids de chunk son
+    /// UUIDv5 derivados de ruta+línea+hash de contenido (ver ChunkBuilder), y este valor
+    /// no es uno de ellos.
+    /// </summary>
+    public static readonly Guid ManifestPointId = new("00000000-0000-0000-0000-00000000ffff");
+
+    private static readonly TimeSpan SchemaCacheTtl = TimeSpan.FromMinutes(5);
+
     private readonly QdrantClient _client;
     private readonly ILogger<QdrantVectorStore> _logger;
+
+    // Decisión 1/6/6a: el schema real de Qdrant es la única fuente de verdad de si una
+    // colección tiene el tercer vector. Este caché en memoria evita pagar un
+    // GetCollectionInfoAsync por cada búsqueda; se invalida explícitamente (no solo por
+    // TTL) al recrear/asegurar una colección desde este mismo proceso.
+    private readonly ConcurrentDictionary<string, (bool HasSummaryVector, DateTimeOffset CheckedAt)> _schemaCache = new();
 
     public QdrantVectorStore(QdrantClient client, ILogger<QdrantVectorStore> logger)
     {
@@ -25,28 +87,71 @@ public sealed class QdrantVectorStore
         _logger = logger;
     }
 
+    /// <summary>Existencia simple de la colección — usado para decidir si hace falta reanudar (decisión 3a).</summary>
+    public async Task<bool> CollectionExistsAsync(string collectionName, CancellationToken ct = default)
+    {
+        var collections = await _client.ListCollectionsAsync(ct);
+        return collections.Contains(collectionName);
+    }
+
+    /// <summary>Ítem 9.2: único punto de este adaptador que expone la lista cruda de colecciones a los hosts.</summary>
+    public async Task<IReadOnlyList<string>> ListCollectionsAsync(CancellationToken ct = default)
+        => await _client.ListCollectionsAsync(ct);
+
+    /// <summary>
+    /// Ítem 9.2: traduce <c>GetCollectionInfoAsync</c> a hechos de dominio para que
+    /// `rag status` (y cualquier otro host) no necesite conocer los tipos gRPC de
+    /// Qdrant. La condición de dimensión reproduce exactamente la que usaba
+    /// `StatusCommand` antes del refactor: solo se resuelve cuando el vector denso NO
+    /// está nombrado (ConfigCase == Params); las colecciones reales de este motor usan
+    /// vectores nombrados (ParamsMap), así que ese campo sigue siendo null para ellas,
+    /// igual que antes.
+    /// </summary>
+    public async Task<CollectionHealthReport> GetCollectionHealthAsync(string collectionName, CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        var status = info.Status switch
+        {
+            CollectionStatus.Green => CollectionHealthStatus.Green,
+            CollectionStatus.Yellow => CollectionHealthStatus.Yellow,
+            CollectionStatus.Red => CollectionHealthStatus.Red,
+            _ => CollectionHealthStatus.Unknown
+        };
+
+        ulong? denseDimension = info.Config?.Params?.VectorsConfig?.ConfigCase == VectorsConfig.ConfigOneofCase.Params
+            ? info.Config.Params.VectorsConfig.Params.Size
+            : null;
+
+        return new CollectionHealthReport(collectionName, status, info.PointsCount, denseDimension);
+    }
+
     /// <summary>
     /// Creates the Qdrant collection if it does not already exist.
-    /// Configures a dual schema: dense (cosine) and sparse (TF).
+    /// Configures dense (cosine), sparse (TF), and — opt-in — un tercer vector denso
+    /// de resumen de negocio.
     /// </summary>
     public async Task EnsureCollectionAsync(
         string collectionName,
         int dimension,
+        bool includeSummaryVector = false,
         CancellationToken ct = default)
     {
         var collections = await _client.ListCollectionsAsync(ct);
         if (collections.Contains(collectionName))
         {
             _logger.LogInformation("Collection '{Name}' already exists.", collectionName);
+            InvalidateSchemaCache(collectionName);
             return;
         }
 
-        await CreateHybridCollectionAsync(collectionName, dimension, ct);
+        await CreateHybridCollectionAsync(collectionName, dimension, includeSummaryVector, ct);
+        InvalidateSchemaCache(collectionName);
     }
 
     private async Task CreateHybridCollectionAsync(
         string collectionName,
         int dimension,
+        bool includeSummaryVector,
         CancellationToken ct)
     {
         var vectorsConfig = new VectorParamsMap();
@@ -56,6 +161,15 @@ public sealed class QdrantVectorStore
             Distance = Distance.Cosine,
             OnDisk = false
         };
+        if (includeSummaryVector)
+        {
+            vectorsConfig.Map[SummaryVectorName] = new VectorParams
+            {
+                Size = (ulong)dimension,
+                Distance = Distance.Cosine,
+                OnDisk = false
+            };
+        }
 
         var sparseConfig = new SparseVectorConfig();
         sparseConfig.Map[SparseVectorName] = new SparseVectorParams
@@ -69,9 +183,18 @@ public sealed class QdrantVectorStore
             sparseVectorsConfig: sparseConfig,
             cancellationToken: ct);
 
+        // Ítem 5.d: índice keyword sobre defined_symbols para que el segundo salto de 6.a
+        // filtre sin escanear toda la colección. Solo se indexa el lado "definición" de la
+        // unión (defined_symbols) — consumed_symbols no lo necesita todavía.
+        await _client.CreatePayloadIndexAsync(
+            collectionName,
+            DefinedSymbolsPayloadKey,
+            PayloadSchemaType.Keyword,
+            cancellationToken: ct);
+
         _logger.LogInformation(
-            "Created Qdrant hybrid collection '{Name}' with {Dim}D dense + sparse vectors.",
-            collectionName, dimension);
+            "Created Qdrant hybrid collection '{Name}' with {Dim}D dense{Summary} + sparse vectors.",
+            collectionName, dimension, includeSummaryVector ? " + dense-resumen" : "");
     }
 
     /// <summary>
@@ -80,6 +203,7 @@ public sealed class QdrantVectorStore
     public async Task RecreateCollectionAsync(
         string collectionName,
         int dimension,
+        bool includeSummaryVector = false,
         CancellationToken ct = default)
     {
         var collections = await _client.ListCollectionsAsync(ct);
@@ -89,11 +213,169 @@ public sealed class QdrantVectorStore
             _logger.LogInformation("Deleted existing collection '{Name}'.", collectionName);
         }
 
-        await CreateHybridCollectionAsync(collectionName, dimension, ct);
+        await CreateHybridCollectionAsync(collectionName, dimension, includeSummaryVector, ct);
+        InvalidateSchemaCache(collectionName);
     }
 
     /// <summary>
-    /// Upserts a batch of points containing both dense and sparse vectors.
+    /// Decisión 1: única fuente de verdad de si una colección tiene el tercer vector de
+    /// resumen — se decide inspeccionando el schema real de Qdrant, no un flag externo.
+    /// Cacheado en memoria con TTL corto (decisión 6a); la ventana de staleness
+    /// cruzada entre procesos queda acotada a ese TTL y es comportamiento aceptado.
+    /// </summary>
+    public async Task<bool> HasSummaryVectorAsync(string collectionName, CancellationToken ct = default)
+    {
+        if (_schemaCache.TryGetValue(collectionName, out var cached) &&
+            DateTimeOffset.UtcNow - cached.CheckedAt < SchemaCacheTtl)
+        {
+            return cached.HasSummaryVector;
+        }
+
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        var vectorsConfig = info.Config?.Params?.VectorsConfig;
+        var has = vectorsConfig?.ConfigCase == VectorsConfig.ConfigOneofCase.ParamsMap
+                   && vectorsConfig.ParamsMap.Map.ContainsKey(SummaryVectorName);
+
+        _schemaCache[collectionName] = (has, DateTimeOffset.UtcNow);
+        return has;
+    }
+
+    public async Task<bool> HasDefinedSymbolsIndexAsync(string collectionName, CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        return info.PayloadSchema.ContainsKey(DefinedSymbolsPayloadKey);
+    }
+
+    private void InvalidateSchemaCache(string collectionName) => _schemaCache.TryRemove(collectionName, out _);
+
+    /// <summary>
+    /// Lee el esquema REAL de todas las colecciones del servidor y lo clasifica contra el que
+    /// crea este motor. Sirve al diagnóstico: una colección creada por una versión anterior se
+    /// lista como sana y sólo revienta en la consulta, así que hay que ir a mirarle el esquema.
+    /// Una colección que falla al inspeccionarse no tumba al resto: se reporta como incompatible
+    /// con el motivo, porque desde el punto de vista de quien consulta es igual de inservible.
+    /// </summary>
+    public async Task<IReadOnlyList<CollectionSchemaReport>> InspectCollectionSchemasAsync(
+        int? expectedDimension,
+        CancellationToken ct = default)
+    {
+        var names = await _client.ListCollectionsAsync(ct);
+        var reports = new List<CollectionSchemaReport>();
+
+        foreach (var name in names.OrderBy(n => n, StringComparer.Ordinal))
+        {
+            try
+            {
+                var snapshot = await DescribeCollectionSchemaAsync(name, ct);
+                reports.Add(CollectionSchemaDiagnostics.Classify(snapshot, expectedDimension));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo inspeccionar el esquema de la colección {Name}.", name);
+                reports.Add(new CollectionSchemaReport(
+                    name,
+                    CollectionSchemaStatus.Incompatible,
+                    new[] { $"no se pudo leer su esquema: {ex.Message}" },
+                    Array.Empty<string>(),
+                    Remedy: null,
+                    PointsCount: 0));
+            }
+        }
+
+        return reports;
+    }
+
+    /// <summary>
+    /// Traduce la configuración gRPC de una colección a hechos planos. Es el único punto que
+    /// conoce los tipos de Qdrant; la clasificación de arriba es pura y se prueba sin servidor.
+    /// </summary>
+    public async Task<CollectionSchemaSnapshot> DescribeCollectionSchemaAsync(
+        string collectionName,
+        CancellationToken ct = default)
+    {
+        var info = await _client.GetCollectionInfoAsync(collectionName, ct);
+        var vectorsConfig = info.Config?.Params?.VectorsConfig;
+
+        var dense = new Dictionary<string, ulong>(StringComparer.Ordinal);
+        ulong? anonymousSize = null;
+        var usesNamedVectors = false;
+
+        switch (vectorsConfig?.ConfigCase)
+        {
+            case VectorsConfig.ConfigOneofCase.ParamsMap:
+                usesNamedVectors = true;
+                foreach (var (name, p) in vectorsConfig.ParamsMap.Map)
+                {
+                    dense[name] = p.Size;
+                }
+
+                break;
+
+            case VectorsConfig.ConfigOneofCase.Params:
+                anonymousSize = vectorsConfig.Params.Size;
+                break;
+        }
+
+        var sparse = info.Config?.Params?.SparseVectorsConfig?.Map.Keys.ToArray() ?? Array.Empty<string>();
+
+        return new CollectionSchemaSnapshot(
+            collectionName,
+            usesNamedVectors,
+            dense,
+            sparse,
+            anonymousSize,
+            info.PointsCount);
+    }
+
+    /// <summary>
+    /// Estado de resumen que YA existía para un chunk antes de este upsert — null significa
+    /// "punto nunca visto" (necesita resumen). Se usa para que re-ingestar un repo (archivos
+    /// nuevos o cambiados, algo que SIEMPRE va a pasar en un repo de código real) nunca
+    /// destruya el trabajo de resumen ya hecho: Qdrant hace upsert por REEMPLAZO COMPLETO de
+    /// vectores y payload (verificado empíricamente), así que un re-upsert que solo incluya
+    /// dense+sparse borraría el vector dense-resumen si no se reincluye explícitamente aquí.
+    /// </summary>
+    /// <summary>
+    /// Busca, para un lote de IDs, el estado de resumen que ya tenían antes de este upsert
+    /// (si existían). Un solo round-trip por lote — se llama antes de <see cref="UpsertBatchAsync"/>
+    /// cuando la colección tiene resumen habilitado.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<Guid, ExistingResumenState>> GetExistingResumenStateAsync(
+        string collectionName,
+        IReadOnlyList<Guid> chunkIds,
+        CancellationToken ct = default)
+    {
+        if (chunkIds.Count == 0) return new Dictionary<Guid, ExistingResumenState>();
+
+        var ids = chunkIds.Select(id => new PointId { Uuid = id.ToString() }).ToList();
+        var points = await _client.RetrieveAsync(collectionName, ids, withPayload: true, withVectors: true, cancellationToken: ct);
+
+        var result = new Dictionary<Guid, ExistingResumenState>(points.Count);
+        foreach (var point in points)
+        {
+            var pending = point.Payload.TryGetValue(ResumenPendingPayloadKey, out var v) && v.BoolValue;
+            float[]? summaryVector = null;
+            if (point.Vectors.VectorsOptionsCase == VectorsOutput.VectorsOptionsOneofCase.Vectors &&
+                point.Vectors.Vectors.Vectors.TryGetValue(SummaryVectorName, out var vecOutput))
+            {
+                // Qdrant >= 1.14 entrega el denso en el oneof `dense`; el campo plano
+                // `Data` quedó vacío por compatibilidad. Leerlo directo devolvía
+                // float[0] (no null), y ese vector vacío se reenviaba en el upsert:
+                // Qdrant rechazaba el punto ("dense vector must not be empty") y,
+                // como el upsert es atómico, se perdía el lote entero.
+                var data = vecOutput.VectorCase == VectorOutput.VectorOneofCase.Dense
+                    ? vecOutput.Dense.Data
+                    : vecOutput.Data;
+                summaryVector = data.Count > 0 ? data.ToArray() : null;
+            }
+
+            result[Guid.Parse(point.Id.Uuid)] = new ExistingResumenState(pending, summaryVector);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Upserts a batch of points containing dense and sparse vectors (Fase 1 de ingesta).
     /// </summary>
     /// <param name="waitForCommit">
     /// true (default): bloquea hasta que Qdrant aplica la operación a los índices.
@@ -102,10 +384,26 @@ public sealed class QdrantVectorStore
     /// Recomendado para ingesta masiva, donde la latencia de aplicación de los
     /// índices dual (HNSW + invertido disperso) saldría de la ruta crítica.
     /// </param>
+    /// <param name="markResumenPending">
+    /// true cuando la colección tiene el tercer vector habilitado. Por cada punto: si
+    /// <c>ExistingResumen</c> viene poblado (el chunk ya existía), se preserva su estado
+    /// (vector de resumen incluido, si lo tenía) en vez de resetearlo — así una re-ingesta
+    /// (archivos nuevos o modificados) nunca pierde resúmenes ya generados. Si es null
+    /// (punto nunca visto), se marca <see cref="ResumenPendingPayloadKey"/>=true.
+    /// </param>
+    /// <param name="tenant">
+    /// Identidad local explícita del tenant dueño de este lote (ítem 5.e). Null/vacío
+    /// no escribe la clave de payload: un punto sin tenant nunca queda excluido por un
+    /// filtro de tenant (ver <see cref="ResumenPayloadKeyTenant"/> más abajo y
+    /// QdrantSemanticRetriever.BuildFilter), igual que Tenants vacío en
+    /// CollectionManifest significa "sin restricción", nunca "sin acceso".
+    /// </param>
     public async Task<int> UpsertBatchAsync(
         string collectionName,
-        IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector)> batch,
+        IReadOnlyList<VectorStoreBatchItem> batch,
         bool waitForCommit = true,
+        bool markResumenPending = false,
+        string? tenant = null,
         CancellationToken ct = default)
     {
         if (batch.Count == 0) return 0;
@@ -134,6 +432,9 @@ public sealed class QdrantVectorStore
             namedVectors.Vectors[DenseVectorName] = denseVec;
             namedVectors.Vectors[SparseVectorName] = sparseVec;
 
+            if (markResumenPending && item.ExistingResumen?.SummaryVector is { Length: > 0 } existingVec)
+                namedVectors.Vectors[SummaryVectorName] = existingVec; // preservar: nunca perder un resumen ya generado
+
             point.Vectors = new Vectors { Vectors_ = namedVectors };
 
             point.Payload["content"]          = new Value { StringValue = item.Chunk.Content };
@@ -155,6 +456,27 @@ public sealed class QdrantVectorStore
             if (item.Chunk.Metadata.MethodName is not null)
                 point.Payload["method_name"] = new Value { StringValue = item.Chunk.Metadata.MethodName };
 
+            // Listas vacías se omiten: no tiene sentido indexar/filtrar por una clave sin
+            // valores, y evita ensuciar el payload de chunks de estrategias sin símbolos
+            // (Markdown, Fallback) o donde la extracción sintáctica falló (ítem 5.c).
+            if (item.Chunk.DefinedSymbols.Count > 0)
+                point.Payload[DefinedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.DefinedSymbols);
+            if (item.Chunk.ConsumedSymbols.Count > 0)
+                point.Payload[ConsumedSymbolsPayloadKey] = ToKeywordListValue(item.Chunk.ConsumedSymbols);
+
+            if (!string.IsNullOrWhiteSpace(tenant))
+                point.Payload[TenantPayloadKey] = new Value { StringValue = tenant };
+
+            if (markResumenPending)
+            {
+                // Punto ya existente: conserva su estado (pending true/false tal cual estaba).
+                // Punto nunca visto: nace pendiente.
+                point.Payload[ResumenPendingPayloadKey] = new Value
+                {
+                    BoolValue = item.ExistingResumen?.ResumenPending ?? true
+                };
+            }
+
             return point;
         }).ToList();
 
@@ -164,5 +486,348 @@ public sealed class QdrantVectorStore
             batch.Count, collectionName);
 
         return batch.Count;
+    }
+
+    /// <summary>
+    /// Sobrecarga de compatibilidad local: conserva la forma histórica del lote mientras
+    /// el refactor de puertos migra a <see cref="VectorStoreBatchItem"/> sin relajar la
+    /// preservación explícita de <see cref="SummaryVectorName"/>.
+    /// </summary>
+    public Task<int> UpsertBatchAsync(
+        string collectionName,
+        IReadOnlyList<(CodeChunk Chunk, float[] DenseVector, IReadOnlyList<SparseEntry> SparseVector, ExistingResumenState? ExistingResumen)> batch,
+        bool waitForCommit = true,
+        bool markResumenPending = false,
+        string? tenant = null,
+        CancellationToken ct = default) =>
+        UpsertBatchAsync(
+            collectionName,
+            batch.Select(item => new VectorStoreBatchItem(
+                item.Chunk,
+                item.DenseVector,
+                item.SparseVector,
+                item.ExistingResumen)).ToList(),
+            waitForCommit,
+            markResumenPending,
+            tenant,
+            ct);
+
+    /// <summary>Serializa una lista de nombres de símbolos como un ListValue de keywords de Qdrant.</summary>
+    private static Value ToKeywordListValue(IReadOnlyList<string> symbols)
+    {
+        var listValue = new ListValue();
+        listValue.Values.AddRange(symbols.Select(s => new Value { StringValue = s }));
+        return new Value { ListValue = listValue };
+    }
+
+    /// <summary>
+    /// Fase 2: adjunta el vector de resumen a un punto YA existente (subido en Fase 1),
+    /// sin reenviar payload ni los otros vectores — gRPC UpdatePointVectors.
+    /// </summary>
+    public async Task UpdateSummaryVectorAsync(
+        string collectionName,
+        Guid pointId,
+        float[] summaryVector,
+        CancellationToken ct = default)
+    {
+        var namedVectors = new NamedVectors();
+        namedVectors.Vectors[SummaryVectorName] = summaryVector;
+
+        var pointVectors = new PointVectors
+        {
+            Id = new PointId { Uuid = pointId.ToString() },
+            Vectors = new Vectors { Vectors_ = namedVectors }
+        };
+
+        await _client.UpdateVectorsAsync(collectionName, new[] { pointVectors }, wait: false, cancellationToken: ct);
+    }
+
+    /// <summary>
+    /// Marca puntos como completados (resumen_pending=false) tras un
+    /// <see cref="UpdateSummaryVectorAsync"/> exitoso, o tras determinar que un
+    /// chunk cayó en el sentinel SIN_CONTENIDO_DE_NEGOCIO (no va a recibir vector,
+    /// pero tampoco debe seguir apareciendo como pendiente).
+    /// </summary>
+    public async Task MarkResumenCompleteAsync(
+        string collectionName,
+        IReadOnlyList<Guid> pointIds,
+        CancellationToken ct = default)
+    {
+        if (pointIds.Count == 0) return;
+
+        var payload = new Dictionary<string, Value> { [ResumenPendingPayloadKey] = new Value { BoolValue = false } };
+        await _client.SetPayloadAsync(collectionName, payload, ids: pointIds, wait: false, cancellationToken: ct);
+    }
+
+    /// <summary>Cuenta puntos con <see cref="ResumenPendingPayloadKey"/>=true — usado por `rag status` (decisión 7).</summary>
+    public async Task<ulong> CountResumenPendingAsync(string collectionName, CancellationToken ct = default)
+    {
+        var filter = new Filter
+        {
+            Must = { new Condition { Field = new FieldCondition { Key = ResumenPendingPayloadKey, Match = new Match { Boolean = true } } } }
+        };
+        return await _client.CountAsync(collectionName, filter, exact: true, cancellationToken: ct);
+    }
+
+    /// <summary>
+    /// Borra los puntos que quedaron obsoletos tras una ingesta incremental: los que
+    /// pertenecen a un archivo que SÍ se acaba de procesar pero cuyo Id ya no está entre
+    /// los chunks que ese archivo genera ahora.
+    ///
+    /// Hace falta porque el Id de chunk es UUIDv5(rutaAbsoluta:startLine:hashContenido):
+    /// si el archivo cambia (un pull) o cambia la agrupación del chunker, los chunks
+    /// nuevos entran con Ids nuevos por upsert, pero los viejos se quedan indexados para
+    /// siempre. Sin esto la colección acumula sedimento en cada corrida y sólo se limpia
+    /// con --force.
+    ///
+    /// Sólo toca archivos presentes en <paramref name="processedFilePaths"/>: un archivo
+    /// que la Fase 1 se saltó (ilegible, error de chunking) conserva sus puntos intactos,
+    /// para que un fallo transitorio nunca borre datos buenos. Corolario: los puntos de un
+    /// archivo BORRADO del repo no se limpian aquí — ese caso necesita --force.
+    /// </summary>
+    /// <returns>Número de puntos borrados.</returns>
+    public async Task<int> DeleteSupersededPointsAsync(
+        string collectionName,
+        IReadOnlySet<Guid> currentChunkIds,
+        IReadOnlySet<string> processedFilePaths,
+        CancellationToken ct = default)
+    {
+        if (processedFilePaths.Count == 0) return 0;
+
+        var toDelete = new List<Guid>();
+        PointId? offset = null;
+
+        while (true)
+        {
+            var response = await _client.ScrollAsync(
+                collectionName,
+                limit: 2048,
+                offset: offset,
+                payloadSelector: new WithPayloadSelector
+                {
+                    Include = new PayloadIncludeSelector { Fields = { "file_path" } }
+                },
+                vectorsSelector: new WithVectorsSelector { Enable = false },
+                cancellationToken: ct);
+
+            foreach (var point in response.Result)
+            {
+                if (!point.Payload.TryGetValue("file_path", out var fp)) continue;
+                if (!processedFilePaths.Contains(fp.StringValue)) continue;
+                var id = Guid.Parse(point.Id.Uuid);
+                if (currentChunkIds.Contains(id)) continue;
+                toDelete.Add(id);
+            }
+
+            var next = response.NextPageOffset;
+            if (next is null || next.PointIdOptionsCase == PointId.PointIdOptionsOneofCase.None) break;
+            offset = next;
+        }
+
+        if (toDelete.Count == 0) return 0;
+
+        const int DeleteBatch = 1024;
+        for (int i = 0; i < toDelete.Count; i += DeleteBatch)
+        {
+            var slice = toDelete.GetRange(i, Math.Min(DeleteBatch, toDelete.Count - i));
+            await _client.DeleteAsync(collectionName, slice, wait: true, cancellationToken: ct);
+        }
+
+        _logger.LogInformation(
+            "Limpieza incremental: {Count} puntos obsoletos borrados de '{Collection}'.",
+            toDelete.Count, collectionName);
+
+        return toDelete.Count;
+    }
+
+    /// <summary>Un punto reconstruido desde el payload de Qdrant, listo para volver a pasar por el generador de resumen.</summary>
+    /// <summary>
+    /// Decisión 3a: reanudación de la Fase 2 sin reprocesar Fase 1. Escanea (scroll)
+    /// los puntos con resumen_pending=true, reconstruyendo el <see cref="CodeChunk"/>
+    /// necesario para volver a llamar al generador de resumen a partir del payload ya
+    /// guardado en Fase 1 (no hace falta releer el archivo fuente).
+    /// </summary>
+    public async Task<(IReadOnlyList<PendingResumenPoint> Points, PointId? NextOffset)> ScrollPendingResumenAsync(
+        string collectionName,
+        PointId? offset = null,
+        uint limit = 100,
+        CancellationToken ct = default)
+    {
+        var filter = new Filter
+        {
+            Must = { new Condition { Field = new FieldCondition { Key = ResumenPendingPayloadKey, Match = new Match { Boolean = true } } } }
+        };
+
+        var response = await _client.ScrollAsync(
+            collectionName,
+            filter: filter,
+            limit: limit,
+            offset: offset,
+            payloadSelector: new WithPayloadSelector { Enable = true },
+            cancellationToken: ct);
+
+        var points = response.Result.Select(MapToPendingResumenPoint).ToList();
+        var next = response.NextPageOffset;
+        var hasNext = next is not null && next.PointIdOptionsCase != PointId.PointIdOptionsOneofCase.None;
+
+        return (points, hasNext ? next : null);
+    }
+
+    public async IAsyncEnumerable<PendingResumenPoint> StreamPendingResumenAsync(
+        string collectionName,
+        uint pageSize = 100,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        PointId? offset = null;
+        do
+        {
+            var (points, next) = await ScrollPendingResumenAsync(collectionName, offset, pageSize, ct);
+            foreach (var point in points)
+                yield return point;
+
+            offset = next;
+        } while (offset is not null);
+    }
+
+    private static PendingResumenPoint MapToPendingResumenPoint(RetrievedPoint point)
+    {
+        var p = point.Payload;
+        var pointId = Guid.Parse(point.Id.Uuid);
+
+        var chunk = new CodeChunk
+        {
+            Id = pointId,
+            Content = p["content"].StringValue,
+            EnrichedContent = p["enriched_content"].StringValue,
+            Type = Enum.Parse<ChunkType>(p["chunk_type"].StringValue),
+            ContentHash = p["content_hash"].StringValue,
+            Metadata = new CodeChunkMetadata(
+                FilePath: p["file_path"].StringValue,
+                RelativeFilePath: p.GetValueOrDefault("relative_path")?.StringValue ?? string.Empty,
+                Language: Enum.Parse<SourceLanguage>(p["language"].StringValue),
+                Namespace: p.GetValueOrDefault("namespace")?.StringValue,
+                ClassName: p.GetValueOrDefault("class_name")?.StringValue,
+                MethodName: p.GetValueOrDefault("method_name")?.StringValue,
+                StartLine: (int)p["start_line"].IntegerValue,
+                EndLine: (int)p["end_line"].IntegerValue,
+                LastModified: DateTimeOffset.Parse(p["last_modified"].StringValue),
+                RepositoryName: p["repository_name"].StringValue
+            )
+        };
+
+        return new PendingResumenPoint(pointId, chunk);
+    }
+
+    /// <summary>
+    /// Persiste (crea o reemplaza) el <see cref="CollectionManifest"/> de una colección
+    /// en su point reservado (<see cref="ManifestPointId"/>). Idempotente: es un upsert,
+    /// igual que el resto de escrituras de este store. El point lleva un vector denso de
+    /// ceros del tamaño de <see cref="CollectionManifest.EmbeddingDimension"/> — nunca se
+    /// recupera por similitud porque <see cref="IsManifestPayloadKey"/> lo excluye de las
+    /// búsquedas (ver <c>QdrantSemanticRetriever.BuildFilter</c>).
+    /// </summary>
+    public async Task UpsertManifestAsync(
+        string collectionName,
+        CollectionManifest manifest,
+        CancellationToken ct = default)
+    {
+        var point = new PointStruct
+        {
+            Id = new PointId { Uuid = ManifestPointId.ToString() }
+        };
+
+        var denseVec = new Vector();
+        denseVec.Data.AddRange(new float[manifest.EmbeddingDimension]);
+        var namedVectors = new NamedVectors();
+        namedVectors.Vectors[DenseVectorName] = denseVec;
+        point.Vectors = new Vectors { Vectors_ = namedVectors };
+
+        point.Payload[IsManifestPayloadKey] = new Value { BoolValue = true };
+        point.Payload[ManifestPayloadKey] = new Value { StringValue = manifest.ToJson() };
+
+        await _client.UpsertAsync(collectionName, new[] { point }, wait: true, cancellationToken: ct);
+
+        _logger.LogInformation(
+            "Manifiesto persistido para '{Collection}': modelo '{Model}' (sha256 {Hash}), perfil '{Profile}', {ScopeCount} scopes, {TenantCount} tenants.",
+            collectionName, manifest.ModelName, manifest.ModelOnnxSha256, manifest.Profile ?? "(default)",
+            manifest.RequiredScopes.Count, manifest.Tenants.Count);
+    }
+
+    /// <summary>
+    /// Lee el manifiesto de una colección. Devuelve null si la colección no tiene
+    /// manifiesto todavía (colección nunca escrita por este mecanismo, o creada por una
+    /// versión anterior a este ítem) — un null NUNCA implica publicación por defecto.
+    ///
+    /// Ítem 7.b: una colección que NO EXISTE en absoluto hace que RetrieveAsync lance
+    /// Grpc.Core.RpcException(StatusCode.NotFound) en vez de devolver una lista vacía —
+    /// a diferencia de una colección existente sin manifiesto, que sí devuelve vacío.
+    /// Sin este catch, AuthorizeCollectionAsync dejaba escapar esa excepción como 500,
+    /// lo que distinguía observablemente "no existe" (500) de "existe pero es ajena/no
+    /// publicada" (403) — justo la filtración de existencia que este ítem cierra. Se
+    /// normaliza a null: para el llamador, "no existe" y "existe sin manifiesto" deben
+    /// ser indistinguibles.
+    /// </summary>
+    public async Task<CollectionManifest?> GetManifestAsync(string collectionName, CancellationToken ct = default)
+    {
+        var ids = new List<PointId> { new() { Uuid = ManifestPointId.ToString() } };
+
+        IReadOnlyList<Qdrant.Client.Grpc.RetrievedPoint> points;
+        try
+        {
+            points = await _client.RetrieveAsync(collectionName, ids, withPayload: true, withVectors: false, cancellationToken: ct);
+        }
+        catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+        {
+            return null;
+        }
+
+        if (points.Count == 0) return null;
+        if (!points[0].Payload.TryGetValue(ManifestPayloadKey, out var raw)) return null;
+
+        return CollectionManifest.FromJson(raw.StringValue);
+    }
+
+    /// <summary>
+    /// Compara el hash ONNX del modelo con el que quedó registrado en el manifiesto
+    /// existente de la colección. Si no hay manifiesto todavía (primera ingesta), no hay
+    /// nada contra qué validar y no lanza. Si el manifiesto existe y el hash no coincide,
+    /// lanza <see cref="ManifestModelMismatchException"/> citando explícitamente el hash
+    /// esperado (el que trae el modelo actual) y el encontrado (el que quedó grabado).
+    /// </summary>
+    public async Task EnsureModelCompatibleAsync(
+        string collectionName,
+        string expectedModelOnnxSha256,
+        CancellationToken ct = default)
+    {
+        var existing = await GetManifestAsync(collectionName, ct);
+        if (existing is null) return;
+
+        if (!string.Equals(existing.ModelOnnxSha256, expectedModelOnnxSha256, StringComparison.Ordinal))
+        {
+            throw new ManifestModelMismatchException(collectionName, expectedModelOnnxSha256, existing.ModelOnnxSha256);
+        }
+    }
+}
+
+/// <summary>
+/// Error accionable: la colección fue indexada con un modelo ONNX distinto al que se
+/// está usando ahora. Re-indexar es la única salida — mezclar embeddings de dos
+/// modelos en la misma colección corrompe silenciosamente la búsqueda por similitud.
+/// </summary>
+public sealed class ManifestModelMismatchException : Exception
+{
+    public string CollectionName { get; }
+    public string ExpectedModelOnnxSha256 { get; }
+    public string FoundModelOnnxSha256 { get; }
+
+    public ManifestModelMismatchException(string collectionName, string expectedModelOnnxSha256, string foundModelOnnxSha256)
+        : base(
+            $"La colección '{collectionName}' fue indexada con un modelo ONNX distinto. " +
+            $"Esperado (modelo actual): {expectedModelOnnxSha256}. Encontrado (manifiesto guardado): {foundModelOnnxSha256}. " +
+            "Hace falta re-indexar la colección con el modelo actual.")
+    {
+        CollectionName = collectionName;
+        ExpectedModelOnnxSha256 = expectedModelOnnxSha256;
+        FoundModelOnnxSha256 = foundModelOnnxSha256;
     }
 }

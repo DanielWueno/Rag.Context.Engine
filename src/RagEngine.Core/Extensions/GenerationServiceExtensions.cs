@@ -1,34 +1,26 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
 using RagEngine.Core.Abstractions;
+using RagEngine.Core.Domain;
 using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Infrastructure.Generation;
+using RagEngine.Core.Infrastructure.Summary;
 
 namespace RagEngine.Core.Extensions;
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Typed options — bound from the "Ollama" section of appsettings.json
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// <summary>
-/// Configuration options for the local Ollama LLM endpoint.
-/// Bound from appsettings.json → "Ollama" section.
-/// </summary>
-public sealed class OllamaOptions
-{
-    public const string SectionName = "Ollama";
-
-    /// <summary>Base URL of the Ollama OpenAI-compatible API endpoint.</summary>
-    public string Endpoint { get; init; } = "http://localhost:11434/v1";
-
-    /// <summary>Model tag to use (must be pulled in Ollama beforehand).</summary>
-    public string ModelId { get; init; } = "qwen2.5-coder";
-
-    /// <summary>Request timeout in seconds for long LLM generations.</summary>
-    public int TimeoutSeconds { get; init; } = 120;
-}
-
+//
+//  Ítem 9.8: OllamaOptions se movió a RagEngine.Core.Domain (ver Domain/OllamaOptions.cs).
+//  Este archivo sólo la CONSUME para configurar el binding y construir el Kernel;
+//  ya no la define, porque adaptadores de aplicación (Infrastructure/, Pipeline/)
+//  la necesitaban y no pueden depender de Extensions/ (la composición del host).
 // ─────────────────────────────────────────────────────────────────────────────
 //  Generation DI extension  (separate from AddRagEngineCore to keep
 //  the Core extension focused on infrastructure and allow hosts that
@@ -54,6 +46,15 @@ public static class GenerationServiceExtensions
         // ── 1. Bind typed options ─────────────────────────────────────────────
         services.Configure<OllamaOptions>(
             configuration.GetSection(OllamaOptions.SectionName));
+        services.Configure<RagGenerationOptions>(
+            configuration.GetSection(RagGenerationOptions.SectionName));
+        services.Configure<MetaIntentOptions>(
+            configuration.GetSection(MetaIntentOptions.SectionName));
+
+        // Singleton: reuses IVectorizationBrain (itself a singleton) and caches the
+        // exemplar embeddings for the process lifetime instead of recomputing them
+        // per request.
+        services.AddSingleton<IMetaIntentDetector, SemanticMetaIntentDetector>();
 
         // ── 2. Register Semantic Kernel as a Singleton ────────────────────────
         //
@@ -61,7 +62,7 @@ public static class GenerationServiceExtensions
         //    • Kernel construction is NOT cheap: it validates the endpoint,
         //      creates the HttpClient pipeline, and sets up middleware.
         //    • The Kernel itself is stateless between calls — ChatHistory lives
-        //      on the stack inside RagGenerationService.AskStreamingAsync.
+        //      on the stack inside ChatAnswerStreamer.StreamAsync.
         //    • Matches how SK is documented for hosted-service scenarios.
         //
         //  Why AddOpenAIChatCompletion and not a dedicated Ollama package?
@@ -91,12 +92,71 @@ public static class GenerationServiceExtensions
             return builder.Build();
         });
 
-        // ── 3. Register the RAG orchestrator ─────────────────────────────────
+        // ── 2b. Resilience pipeline para el HttpClient de chat conversacional ──
+        //
+        //  Ítem 8.e: hasta ahora el HttpClient de arriba sólo tenía Timeout — sin
+        //  retry ni circuit breaker, a diferencia de Qdrant y del generador de
+        //  resúmenes (ServiceCollectionExtensions.cs), que ya usan
+        //  AddResiliencePipeline. Retry corto (igual que el resumen: la interacción
+        //  es conversacional, un usuario esperando en pantalla no debe absorber
+        //  backoff largo) + circuit breaker (igual que Qdrant: si Ollama está caído,
+        //  cortar en vez de seguir intentando conexión por conexión). Ver
+        //  ChatAnswerStreamer.StreamAsync para por qué el pipeline sólo cubre la
+        //  apertura del stream y nunca reintenta una vez que ya se emitió contenido.
+        services.AddResiliencePipeline(ChatAnswerStreamer.ResiliencePipelineName, builder =>
+        {
+            builder.AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                MaxRetryAttempts = 2,
+                Delay = TimeSpan.FromSeconds(1),
+                BackoffType = DelayBackoffType.Constant
+            });
+
+            builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                FailureRatio = 0.5,
+                SamplingDuration = TimeSpan.FromSeconds(30),
+                MinimumThroughput = 5,
+                BreakDuration = TimeSpan.FromSeconds(15)
+            });
+        });
+
+        // ── 3. Colaboradores de generación (ítem 2.2: un rol, una clase) ─────
+        //
+        //  Singleton porque todas sus dependencias lo son (Kernel, ISummaryCache,
+        //  IOptionsMonitor, ILogger) y ninguno guarda estado entre turnos. Registrarlos
+        //  Scoped sería igual de correcto pero pagaría una construcción por petición
+        //  sin ganar nada; registrarlos aquí y no dentro de RagGenerationService es lo
+        //  que permite sustituirlos en un test sin levantar la tubería entera.
+        //  Fábricas explícitas: los colaboradores son internal, y ActivatorUtilities
+        //  —lo que usa AddSingleton<T>()— sólo mira constructores públicos.
+        services.AddSingleton(sp => new ConfidenceGate(
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<ILogger<ConfidenceGate>>()));
+        services.AddSingleton(sp => new GenerationContextAssembler(
+            sp.GetRequiredService<ISummaryCache>(),
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<ILogger<GenerationContextAssembler>>()));
+        services.AddSingleton(sp => new ChatAnswerStreamer(
+            sp.GetRequiredService<Kernel>(),
+            sp.GetRequiredService<ILogger<ChatAnswerStreamer>>(),
+            sp.GetRequiredService<Polly.Registry.ResiliencePipelineProvider<string>>()));
+
+        // ── 4. Register the RAG orchestrator ─────────────────────────────────
         //
         //  Scoped (not Singleton) because ISemanticRetriever is Scoped.
         //  Each CLI command execution gets its own scope (via SpectreHostTypeRegistrar),
         //  so this is effectively one instance per command invocation.
-        services.AddScoped<IRagGenerationService, RagGenerationService>();
+        services.AddScoped<IRagGenerationService>(sp => new RagGenerationService(
+            sp.GetRequiredService<ISemanticRetriever>(),
+            sp.GetRequiredService<ILogger<RagGenerationService>>(),
+            sp.GetRequiredService<IOptionsMonitor<RagGenerationOptions>>(),
+            sp.GetRequiredService<IMetaIntentDetector>(),
+            sp.GetRequiredService<ConfidenceGate>(),
+            sp.GetRequiredService<GenerationContextAssembler>(),
+            sp.GetRequiredService<ChatAnswerStreamer>()));
 
         return services;
     }

@@ -15,7 +15,7 @@ public sealed record CodeChunk
     /// </summary>
     public required Guid Id { get; init; }
 
-    /// <summary>The raw source text of this chunk (stored in Qdrant payload).</summary>
+    /// <summary>The raw source text of this chunk (stored in the vector store's payload).</summary>
     public required string Content { get; init; }
 
     /// <summary>
@@ -38,6 +38,22 @@ public sealed record CodeChunk
 
     /// <summary>SHA-256 hash of Content, used for incremental change detection.</summary>
     public required string ContentHash { get; init; }
+
+    /// <summary>
+    /// Nombres de símbolos declarados por este chunk (nombre de método, constructor,
+    /// tipo, o de cada campo/propiedad de un grupo). Extraídos sintácticamente
+    /// (ítem 5.c del plan) — vacío en las estrategias que no llevan símbolos
+    /// (Markdown, Fallback) o cuando la extracción falla.
+    /// </summary>
+    public IReadOnlyList<string> DefinedSymbols { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Nombres de símbolos referenciados dentro de este chunk (invocaciones, accesos
+    /// a miembro, identificadores sueltos). Extraídos sintácticamente (ítem 5.c del
+    /// plan) — vacío en las estrategias que no llevan símbolos o cuando la
+    /// extracción falla.
+    /// </summary>
+    public IReadOnlyList<string> ConsumedSymbols { get; init; } = Array.Empty<string>();
 }
 
 /// <summary>

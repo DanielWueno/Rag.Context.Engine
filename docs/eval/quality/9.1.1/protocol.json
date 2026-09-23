@@ -1,0 +1,112 @@
+{
+  "item": "9.1.1-desempate-determinista",
+  "arms": {
+    "A": {
+      "base_commit": "bb9b11fb4477f7a34fe4452bd7e242c26d334ada",
+      "patch": "control.patch",
+      "patch_sha256": "d7d5d72aca840da38d35735b4d4f10f1c23f4d917eaff45a03f4a3b030db345f",
+      "source_sha256": "8f9ecaa222248a5f6f3bd07bfe9401e346d16d7448994decae77024b309490a5",
+      "policy": {
+        "src/RagEngine.Core/Diagnostics/RankingDiagnostics.cs": "9e238c5226323f13c0a0923ccfe09bd95ab57cac1b6d74333d22bef29cfe03c6",
+        "src/RagEngine.Core/Domain/RankingOrder.cs": "65f913c52c41c49e1bbb2779c9f836d1f671bde1b9f4a78b40f506705d6ca5ee",
+        "src/RagEngine.Core/Domain/RetrievalScoreScale.cs": "6efc9db5928b2bb3b5dfaa701a91640e09eec3b04daadcde3b69fc00fcec0cec",
+        "src/RagEngine.Core/Abstractions/IReRanker.cs": "36b2b8bc043eaca9422fca34e6921b9689dbac84d3d7d6f4758ef3c59eb1b609",
+        "src/RagEngine.Core/Infrastructure/Reranking/OnnxCrossEncoderReRanker.cs": "1be867d751e4b3351f5456cde5a684ad36b85ca2d0cd76681eb37f263791fe60",
+        "src/RagEngine.Core/Infrastructure/VectorStore/DeterministicVectorQuery.cs": "e9b06495124ad9c3ad101b6ad2f209cb328f0ab166b0d7a181ee3c4427b69e66",
+        "private sealed record RankedPoint": "bb641b5494a44b021619a064ca6e41e25e09992f932fa8cf8e8aed8fb45aa6d2",
+        "if (!hasSummaryVector)": "becb8af8d1eaf75b8c05bce0428e9fdccb15ee24b40385b5d21f0b2e022c071e",
+        "EvalCommand (only Context line differs)": "9f839ff42766480d4dd5cfcbe4faab66d2fed7b99bf7cde653d805231148190e",
+        "RetrievalResult model": "f07e2f8f333c621c5d77f8673ed2af5b58f29993340169397d5ac3f9c7165cda"
+      }
+    },
+    "B": {
+      "base_commit": "9690c49afbde5806e4859636623247234639efc8",
+      "patch": "candidate.patch",
+      "patch_sha256": "0908785a8dc022729eb52b8e5ea41d61ef5b77fdfd9651f021b07e242c7dff9f",
+      "source_sha256": "26c8c1f424ec3338ffbd80026cfdbd6d049c01329f58d3cd0296f638853000b8",
+      "policy": {
+        "src/RagEngine.Core/Diagnostics/RankingDiagnostics.cs": "9e238c5226323f13c0a0923ccfe09bd95ab57cac1b6d74333d22bef29cfe03c6",
+        "src/RagEngine.Core/Domain/RankingOrder.cs": "65f913c52c41c49e1bbb2779c9f836d1f671bde1b9f4a78b40f506705d6ca5ee",
+        "src/RagEngine.Core/Domain/RetrievalScoreScale.cs": "6efc9db5928b2bb3b5dfaa701a91640e09eec3b04daadcde3b69fc00fcec0cec",
+        "src/RagEngine.Core/Abstractions/IReRanker.cs": "36b2b8bc043eaca9422fca34e6921b9689dbac84d3d7d6f4758ef3c59eb1b609",
+        "src/RagEngine.Core/Infrastructure/Reranking/OnnxCrossEncoderReRanker.cs": "1be867d751e4b3351f5456cde5a684ad36b85ca2d0cd76681eb37f263791fe60",
+        "src/RagEngine.Core/Infrastructure/VectorStore/DeterministicVectorQuery.cs": "e9b06495124ad9c3ad101b6ad2f209cb328f0ab166b0d7a181ee3c4427b69e66",
+        "private sealed record RankedPoint": "bb641b5494a44b021619a064ca6e41e25e09992f932fa8cf8e8aed8fb45aa6d2",
+        "if (!hasSummaryVector)": "becb8af8d1eaf75b8c05bce0428e9fdccb15ee24b40385b5d21f0b2e022c071e",
+        "EvalCommand (only Context line differs)": "9f839ff42766480d4dd5cfcbe4faab66d2fed7b99bf7cde653d805231148190e",
+        "RetrievalResult model": "f07e2f8f333c621c5d77f8673ed2af5b58f29993340169397d5ac3f9c7165cda"
+      }
+    }
+  },
+  "models": {
+    "OnnxBrain.ModelPath": {
+      "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx",
+      "sha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672"
+    },
+    "OnnxBrain.VocabPath": {
+      "path": "/Users/DevStudio/models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model",
+      "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+    },
+    "CrossEncoder.ModelPath": {
+      "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx",
+      "sha256": "1825907d6c1a9001ff78124780bbde20a614a8c3df3b63409cf3c72c6fe5c8b4"
+    },
+    "CrossEncoder.VocabPath": {
+      "path": "/Users/DevStudio/models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model",
+      "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+    }
+  },
+  "parameters": {
+    "top_k": 10,
+    "min_score": 0.1,
+    "rerank": false,
+    "two_hop": false,
+    "replicas": 3
+  },
+  "test_sha256": "66df56faa315ac783606e4c3e7ea7ef3e9887960b53e42408aca326c21a7bd73",
+  "instrument_sha256": "4885698bd33e72ffabdebfd2068300f3a2d0004fc95e88f90fc3e6c7c05b40c3",
+  "sets": {
+    "innovapp-docs": {
+      "collection": "innovapp-docs",
+      "dataset_sha256": "1f9571b91552adfa1aa4eca9af92cafe2476a5c0d4d4fd0ea78719d54d85574d",
+      "n": 26,
+      "before": {
+        "points": 743,
+        "points_sha256": "f85ebd2097dbfc6174d5233066478e7ce4480eb992cac0c3ac8af1b2c7de74d7",
+        "schema_sha256": "07ade4e86853ee49c7728ffc6cb371f1daefa375b93e29951fbbaf94aa88e3ca"
+      }
+    },
+    "bsuite-repo": {
+      "collection": "bsuite-repo",
+      "dataset_sha256": "cdb39feef4ee1a20a4e9fe11912bbe4caf82e1d29a12f09e93198164fb68f6d3",
+      "n": 84,
+      "before": {
+        "points": 23058,
+        "points_sha256": "1ea49c2c03a0a0ec94c4b593bc4d7816bff5f0ad4753e24b1d550040c8f74452",
+        "schema_sha256": "f565d1bb19323e925d9318755faf45c4c503b06ac6d3f093285da1e570ce9bcd"
+      }
+    },
+    "bsuite-auditorias": {
+      "collection": "bsuite-auditorias-test",
+      "dataset_sha256": "ec6ff169d1a63b65cddcd799eacea0ab17770edf42fb2ed8e58ead621cd563ba",
+      "n": 16,
+      "before": {
+        "points": 1697,
+        "points_sha256": "231461ba2a6a13661944d4f2d8886c68a0203ae83482be2399de047c8a43f6b7",
+        "schema_sha256": "e01f71b8a89e0be6a1d1c4f63ede852f2f5973c644329aaff274639da1820ccf"
+      }
+    },
+    "tickets-microservice": {
+      "collection": "micro-repo",
+      "dataset_sha256": "2ae380bb02df6c0fb28aaa3cb3101973a126ba3c1c8b970d0802ad104709bf0c",
+      "n": 19,
+      "before": {
+        "points": 955,
+        "points_sha256": "c26949653d9f3883c42492da0d8043a75069138f9b5155a6afc29dc5e2170d7c",
+        "schema_sha256": "ff0faaa80528f9f435aa96d6378d3d2fb2d5148629fe85ad4ff6cc8e07d0c967"
+      }
+    }
+  },
+  "policy": "exact score descending, canonical lowercase UUID D ordinal ascending before each cutoff; exact prefix doubling from limit+1, fail at unresolved 32768; native f32 RRF k=2/zero-based",
+  "adaptations": "A retains concrete store and pre-9.1 unfiltered mapping. No Context/module/ports backport. B retains authorization guards. Shared ranking helpers, formulas, reranker and eval instrument are byte-identical; only the explicit local Context line differs in EvalCommand."
+}

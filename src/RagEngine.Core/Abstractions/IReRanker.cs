@@ -20,7 +20,22 @@ public interface IReRanker
     /// Scores each candidate against <paramref name="query"/> and returns the
     /// <paramref name="topK"/> best, ordered by descending relevance. The
     /// returned results carry the cross-encoder score in
-    /// <see cref="RetrievalResult.SimilarityScore"/> (sigmoid, range 0..1).
+    /// <see cref="RetrievalResult.SimilarityScore"/> (sigmoid, range 0..1) y lo
+    /// declaran en <see cref="RetrievalResult.ScoreScale"/>.
+    /// Empates exactos del score de ranking se resuelven por UUID de chunk canonico
+    /// (formato D minusculas), en orden ordinal ascendente, antes de cortar TopK.
+    /// <see cref="RetrievalResult.RankingScore"/> conserva ese score aunque cambie el gate.
+    ///
+    /// <para><b>El orden devuelto es el contrato; el score no lo reconstruye.</b> Una
+    /// implementación puede re-puntuar la posición #0 en una escala distinta al resto —
+    /// es lo que hace el ítem 4.2 para que el número que lee el gate de confianza no
+    /// dependa del TopK: el #0 sale con
+    /// <see cref="RetrievalScoreScale.CrossEncoderStable"/> y la cola con
+    /// <see cref="RetrievalScoreScale.CrossEncoderBatched"/>. En ese caso la lista
+    /// <b>no está ordenada monótonamente</b> por <c>SimilarityScore</c> y el #0 puede
+    /// puntuar por debajo del #1. El llamador debe preservar el orden recibido:
+    /// reordenarlo por score revierte 4.2 en silencio y devuelve al gate un número que
+    /// vuelve a moverse con el TopK.</para>
     /// </summary>
     /// <param name="query">The original natural-language query.</param>
     /// <param name="candidates">Candidate pool from first-stage retrieval.</param>

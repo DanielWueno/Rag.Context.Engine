@@ -1,0 +1,324 @@
+{
+  "lifecycle": [
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          2,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "status": "interrupted",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          2,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          2,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          3,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          3,
+          3
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ],
+        [
+          "b",
+          3,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": [
+        [
+          "a",
+          1,
+          "b",
+          3,
+          3
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": []
+    },
+    {
+      "status": "ok",
+      "nodes": [
+        [
+          "a",
+          1,
+          "fixture",
+          "A",
+          "alpha"
+        ]
+      ],
+      "edges": []
+    }
+  ],
+  "authorization": [
+    {
+      "status": "ok",
+      "hits": [
+        "d",
+        "e"
+      ],
+      "traversed": [
+        [
+          [
+            "a",
+            "d"
+          ]
+        ],
+        [
+          [
+            "d",
+            "e"
+          ]
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "hits": [
+        "d",
+        "e"
+      ],
+      "traversed": [
+        [
+          [
+            "a",
+            "d"
+          ]
+        ],
+        [
+          [
+            "d",
+            "e"
+          ]
+        ]
+      ]
+    },
+    {
+      "status": "denied_seed",
+      "hits": [],
+      "traversed": [
+        [],
+        []
+      ]
+    },
+    {
+      "status": "invalid_context",
+      "hits": [],
+      "traversed": []
+    },
+    {
+      "status": "ok",
+      "hits": [
+        "b",
+        "d",
+        "e",
+        "f",
+        "n",
+        "t",
+        "z"
+      ],
+      "traversed": [
+        [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "d"
+          ],
+          [
+            "a",
+            "f"
+          ],
+          [
+            "a",
+            "n"
+          ],
+          [
+            "a",
+            "t"
+          ]
+        ],
+        [
+          [
+            "b",
+            "z"
+          ],
+          [
+            "d",
+            "e"
+          ]
+        ]
+      ]
+    },
+    {
+      "status": "ok",
+      "hits": [
+        "e"
+      ],
+      "traversed": [
+        [
+          [
+            "d",
+            "e"
+          ]
+        ],
+        []
+      ]
+    },
+    {
+      "status": "denied_seed",
+      "hits": [],
+      "traversed": [
+        [],
+        []
+      ]
+    }
+  ]
+}

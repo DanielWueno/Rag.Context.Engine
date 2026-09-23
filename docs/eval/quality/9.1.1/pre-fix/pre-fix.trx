@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c1985334-93a8-4c26-ae88-72ff91d71d6a" name="@Mac-mini-de-Reyma-3 2026-09-17 12:20:32" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-17T12:20:32.6381830-06:00" queuing="2026-09-17T12:20:32.6381830-06:00" start="2026-09-17T12:20:30.9359430-06:00" finish="2026-09-17T12:20:36.1863760-06:00" />
+  <TestSettings name="default" id="c3658b33-a2ae-4e7c-b16b-b70d70180d1a">
+    <Deployment runDeploymentRoot="_Mac-mini-de-Reyma-3_2026-09-17_12_20_32" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e81bb50b-8879-4119-a135-2f8dcb86e37d" testId="fd13ac36-a8e9-4cf0-f321-c79ba68a9971" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 2)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.8104079" startTime="2026-09-17T12:20:33.7996770-06:00" endTime="2026-09-17T12:20:34.6101220-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e81bb50b-8879-4119-a135-2f8dcb86e37d">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["0000004c-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="299e23ee-5ce0-45a7-a184-52c9f279f4e0" testId="89149618-f21c-76c8-e976-857dd451558d" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.9385460" startTime="2026-09-17T12:20:31.2163990-06:00" endTime="2026-09-17T12:20:32.1607710-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="299e23ee-5ce0-45a7-a184-52c9f279f4e0">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000057-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b2e5c4ff-0727-445f-ae84-0ced91cc998b" testId="b879d989-3a63-e7c5-6fec-35e65913c422" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 0)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.8011163" startTime="2026-09-17T12:20:32.1659400-06:00" endTime="2026-09-17T12:20:32.9625280-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2e5c4ff-0727-445f-ae84-0ced91cc998b">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000030-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a08a4aaf-d9a0-450c-8086-e616364d9bd4" testId="25f8c82b-0734-6ff7-81c3-4483bf755372" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 1)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.7707599" startTime="2026-09-17T12:20:34.6104110-06:00" endTime="2026-09-17T12:20:35.3812300-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a08a4aaf-d9a0-450c-8086-e616364d9bd4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["000000ff-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="49b6b6ac-a261-4b77-b326-a89016842f87" testId="06654edf-6603-4d59-2296-48e3c85a731f" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 0)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.8366512" startTime="2026-09-17T12:20:32.9676140-06:00" endTime="2026-09-17T12:20:33.7993590-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="49b6b6ac-a261-4b77-b326-a89016842f87">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["0000001e-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="75a3b378-40a9-470a-bbac-31492bd544bb" testId="9c49b491-924b-ee57-aba9-2373e6dfabe3" testName="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 2)" computerName="Mac-mini-de-Reyma-3" duration="00:00:00.7773875" startTime="2026-09-17T12:20:35.3814720-06:00" endTime="2026-09-17T12:20:36.1591430-06:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="75a3b378-40a9-470a-bbac-31492bd544bb">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Collections differ
+                                                        ↓ (pos 0)
+Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000029-1111-4111-8111-111111111111"]
+                                                        ↑ (pos 0)</Message>
+          <StackTrace>   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 55
+   at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder) in /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs:line 62
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="89149618-f21c-76c8-e976-857dd451558d">
+      <Execution id="299e23ee-5ce0-45a7-a184-52c9f279f4e0" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 2)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="fd13ac36-a8e9-4cf0-f321-c79ba68a9971">
+      <Execution id="e81bb50b-8879-4119-a135-2f8dcb86e37d" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 0)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="06654edf-6603-4d59-2296-48e3c85a731f">
+      <Execution id="49b6b6ac-a261-4b77-b326-a89016842f87" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 2)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="9c49b491-924b-ee57-aba9-2373e6dfabe3">
+      <Execution id="75a3b378-40a9-470a-bbac-31492bd544bb" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 0)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="b879d989-3a63-e7c5-6fec-35e65913c422">
+      <Execution id="b2e5c4ff-0727-445f-ae84-0ced91cc998b" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+    <UnitTest name="RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 1)" storage="/users/devstudio/documents/projects/rag.context.engine/tests/ragengine.core.tests/bin/debug/net10.0/ragengine.core.tests.dll" id="25f8c82b-0734-6ff7-81c3-4483bf755372">
+      <Execution id="a08a4aaf-d9a0-450c-8086-e616364d9bd4" />
+      <TestMethod codeBase="/Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/bin/Debug/net10.0/RagEngine.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="RagEngine.Core.Tests.DeterministicRankingTests" name="Ties_crossing_prefetch_choose_canonical_ids" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="fd13ac36-a8e9-4cf0-f321-c79ba68a9971" executionId="e81bb50b-8879-4119-a135-2f8dcb86e37d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="89149618-f21c-76c8-e976-857dd451558d" executionId="299e23ee-5ce0-45a7-a184-52c9f279f4e0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b879d989-3a63-e7c5-6fec-35e65913c422" executionId="b2e5c4ff-0727-445f-ae84-0ced91cc998b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25f8c82b-0734-6ff7-81c3-4483bf755372" executionId="a08a4aaf-d9a0-450c-8086-e616364d9bd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06654edf-6603-4d59-2296-48e3c85a731f" executionId="49b6b6ac-a261-4b77-b326-a89016842f87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c49b491-924b-ee57-aba9-2373e6dfabe3" executionId="75a3b378-40a9-470a-bbac-31492bd544bb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Resultados sin formato de lista" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Todos los resultados cargados" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="6" executed="6" passed="0" failed="6" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.0+00ab0a9ec4 (64-bit .NET 10.0.10)
+[xUnit.net 00:00:00.03]   Discovering: RagEngine.Core.Tests
+[xUnit.net 00:00:00.07]   Discovered:  RagEngine.Core.Tests
+[xUnit.net 00:00:00.08]   Starting:    RagEngine.Core.Tests
+[xUnit.net 00:00:01.03]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:01.03]                                                               ↓ (pos 0)
+[xUnit.net 00:00:01.03]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:01.03]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000057-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:01.03]                                                               ↑ (pos 0)
+[xUnit.net 00:00:01.03]       Stack Trace:
+[xUnit.net 00:00:01.03]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:01.03]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:01.03]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.83]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:01.83]                                                               ↓ (pos 0)
+[xUnit.net 00:00:01.83]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:01.83]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000030-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:01.83]                                                               ↑ (pos 0)
+[xUnit.net 00:00:01.84]       Stack Trace:
+[xUnit.net 00:00:01.84]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:01.84]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:01.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.67]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:02.67]                                                               ↓ (pos 0)
+[xUnit.net 00:00:02.67]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:02.67]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["0000001e-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:02.67]                                                               ↑ (pos 0)
+[xUnit.net 00:00:02.67]       Stack Trace:
+[xUnit.net 00:00:02.67]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:02.67]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:02.67]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.48]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:03.48]                                                               ↓ (pos 0)
+[xUnit.net 00:00:03.48]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:03.48]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["0000004c-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:03.48]                                                               ↑ (pos 0)
+[xUnit.net 00:00:03.48]       Stack Trace:
+[xUnit.net 00:00:03.48]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:03.48]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:03.48]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:04.25]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:04.25]                                                               ↓ (pos 0)
+[xUnit.net 00:00:04.25]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:04.25]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["000000ff-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:04.25]                                                               ↑ (pos 0)
+[xUnit.net 00:00:04.25]       Stack Trace:
+[xUnit.net 00:00:04.25]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:04.25]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:04.25]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.03]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:05.03]                                                               ↓ (pos 0)
+[xUnit.net 00:00:05.03]       Expected: RangeSelectIterator&lt;int, string&gt;             ["00000001-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:05.03]       Actual:   ArraySelectIterator&lt;RetrievalResult, string&gt; ["00000029-1111-4111-8111-111111111111"]
+[xUnit.net 00:00:05.03]                                                               ↑ (pos 0)
+[xUnit.net 00:00:05.03]       Stack Trace:
+[xUnit.net 00:00:05.03]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(55,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:05.03]         /Users/DevStudio/Documents/Projects/Rag.Context.Engine/tests/RagEngine.Core.Tests/DeterministicRankingTests.cs(62,0): at RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(Boolean summary, Int32 insertionOrder)
+[xUnit.net 00:00:05.03]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.03]   Finished:    RagEngine.Core.Tests
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:32.1621050-06:00">
+        <Text>[xUnit.net 00:00:01.03]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:32.9629440-06:00">
+        <Text>[xUnit.net 00:00:01.83]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 0) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:33.7996070-06:00">
+        <Text>[xUnit.net 00:00:02.67]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 0) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:34.6103580-06:00">
+        <Text>[xUnit.net 00:00:03.48]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: False, insertionOrder: 2) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:35.3814230-06:00">
+        <Text>[xUnit.net 00:00:04.25]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Mac-mini-de-Reyma-3" outcome="Error" timestamp="2026-09-17T12:20:36.1596180-06:00">
+        <Text>[xUnit.net 00:00:05.03]     RagEngine.Core.Tests.DeterministicRankingTests.Ties_crossing_prefetch_choose_canonical_ids(summary: True, insertionOrder: 2) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

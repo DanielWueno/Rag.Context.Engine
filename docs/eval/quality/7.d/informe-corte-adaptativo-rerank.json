@@ -1,0 +1,406 @@
+{
+  "bsuite-auditorias": {
+    "n_anchored": 16,
+    "estrategias": {
+      "1_top_k_fijo": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 68.8
+        },
+        "avg_resultados_devueltos": 10.0,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 0
+      },
+      "2_min_score_global_actual_0.1": {
+        "recall_at_k_pct": {
+          "1": 50.0,
+          "3": 56.2,
+          "5": 56.2,
+          "10": 56.2
+        },
+        "avg_resultados_devueltos": 6.81,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 43
+      },
+      "3_adaptativo_relativo_0.3": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 6.19,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 35
+      },
+      "3_adaptativo_relativo_0.4": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 5.38,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 39
+      },
+      "3_adaptativo_relativo_0.5": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 4.5,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 41
+      },
+      "3_adaptativo_hueco_0.1": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 3.75,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 25
+      },
+      "3_adaptativo_hueco_0.15": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 4.19,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 25
+      },
+      "3_adaptativo_hueco_0.2": {
+        "recall_at_k_pct": {
+          "1": 56.2,
+          "3": 62.5,
+          "5": 62.5,
+          "10": 62.5
+        },
+        "avg_resultados_devueltos": 4.75,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 25
+      }
+    }
+  },
+  "bsuite-repo": {
+    "n_anchored": 76,
+    "estrategias": {
+      "1_top_k_fijo": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 39.5,
+          "5": 46.1,
+          "10": 55.3
+        },
+        "avg_resultados_devueltos": 10.0,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 0
+      },
+      "2_min_score_global_actual_0.1": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 39.5,
+          "5": 46.1,
+          "10": 50.0
+        },
+        "avg_resultados_devueltos": 5.32,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 331
+      },
+      "3_adaptativo_relativo_0.3": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 39.5,
+          "5": 44.7,
+          "10": 50.0
+        },
+        "avg_resultados_devueltos": 4.92,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 280
+      },
+      "3_adaptativo_relativo_0.4": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 39.5,
+          "5": 43.4,
+          "10": 46.1
+        },
+        "avg_resultados_devueltos": 3.88,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 7,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 298
+      },
+      "3_adaptativo_relativo_0.5": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 39.5,
+          "5": 43.4,
+          "10": 43.4
+        },
+        "avg_resultados_devueltos": 3.2,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 9,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 307
+      },
+      "3_adaptativo_hueco_0.1": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 36.8,
+          "5": 36.8,
+          "10": 38.2
+        },
+        "avg_resultados_devueltos": 2.67,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 13,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 246
+      },
+      "3_adaptativo_hueco_0.15": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 38.2,
+          "5": 38.2,
+          "10": 39.5
+        },
+        "avg_resultados_devueltos": 3.28,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 12,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 223
+      },
+      "3_adaptativo_hueco_0.2": {
+        "recall_at_k_pct": {
+          "1": 35.5,
+          "3": 38.2,
+          "5": 39.5,
+          "10": 43.4
+        },
+        "avg_resultados_devueltos": 3.99,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 9,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 193
+      }
+    }
+  },
+  "innovapp-docs": {
+    "n_anchored": 22,
+    "estrategias": {
+      "1_top_k_fijo": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 50.0,
+          "5": 54.5,
+          "10": 54.5
+        },
+        "avg_resultados_devueltos": 10.0,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 0
+      },
+      "2_min_score_global_actual_0.1": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 50.0,
+          "5": 54.5,
+          "10": 54.5
+        },
+        "avg_resultados_devueltos": 6.82,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 59
+      },
+      "3_adaptativo_relativo_0.3": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 50.0,
+          "5": 54.5,
+          "10": 54.5
+        },
+        "avg_resultados_devueltos": 6.23,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 54
+      },
+      "3_adaptativo_relativo_0.4": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 50.0,
+          "5": 50.0,
+          "10": 50.0
+        },
+        "avg_resultados_devueltos": 5.68,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 56
+      },
+      "3_adaptativo_relativo_0.5": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 45.5,
+          "5": 45.5,
+          "10": 45.5
+        },
+        "avg_resultados_devueltos": 5.41,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 57
+      },
+      "3_adaptativo_hueco_0.1": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 36.4,
+          "5": 36.4,
+          "10": 36.4
+        },
+        "avg_resultados_devueltos": 4.32,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 4,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 33
+      },
+      "3_adaptativo_hueco_0.15": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 45.5,
+          "5": 45.5,
+          "10": 45.5
+        },
+        "avg_resultados_devueltos": 5.45,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 24
+      },
+      "3_adaptativo_hueco_0.2": {
+        "recall_at_k_pct": {
+          "1": 18.2,
+          "3": 50.0,
+          "5": 50.0,
+          "10": 50.0
+        },
+        "avg_resultados_devueltos": 6.32,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 22
+      }
+    }
+  },
+  "tickets-microservice": {
+    "n_anchored": 19,
+    "estrategias": {
+      "1_top_k_fijo": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 26.3,
+          "5": 31.6,
+          "10": 31.6
+        },
+        "avg_resultados_devueltos": 10.0,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 0
+      },
+      "2_min_score_global_actual_0.1": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 26.3,
+          "5": 31.6,
+          "10": 31.6
+        },
+        "avg_resultados_devueltos": 6.37,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 65
+      },
+      "3_adaptativo_relativo_0.3": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 26.3,
+          "5": 31.6,
+          "10": 31.6
+        },
+        "avg_resultados_devueltos": 7.05,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 54
+      },
+      "3_adaptativo_relativo_0.4": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 26.3,
+          "5": 31.6,
+          "10": 31.6
+        },
+        "avg_resultados_devueltos": 6.21,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 0,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 60
+      },
+      "3_adaptativo_relativo_0.5": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 26.3,
+          "5": 26.3,
+          "10": 26.3
+        },
+        "avg_resultados_devueltos": 4.68,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 62
+      },
+      "3_adaptativo_hueco_0.1": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 21.1,
+          "5": 21.1,
+          "10": 21.1
+        },
+        "avg_resultados_devueltos": 2.95,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 55
+      },
+      "3_adaptativo_hueco_0.15": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 21.1,
+          "5": 21.1,
+          "10": 21.1
+        },
+        "avg_resultados_devueltos": 3.95,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 2,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 52
+      },
+      "3_adaptativo_hueco_0.2": {
+        "recall_at_k_pct": {
+          "1": 15.8,
+          "3": 21.1,
+          "5": 26.3,
+          "10": 26.3
+        },
+        "avg_resultados_devueltos": 4.95,
+        "ganancias_vs_top_k_fijo_at_10": 0,
+        "perdidas_vs_top_k_fijo_at_10": 1,
+        "resultados_baja_calidad_omitidos_score_lt_0.08": 44
+      }
+    }
+  }
+}

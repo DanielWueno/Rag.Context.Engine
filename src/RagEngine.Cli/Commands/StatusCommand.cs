@@ -1,6 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
-using Qdrant.Client;
-using Qdrant.Client.Grpc;
+using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -25,11 +23,13 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         public bool ShowAll { get; init; }
     }
 
-    private readonly QdrantClient _qdrant;
+    private readonly IVectorStoreAdmin _vectorStoreAdmin;
+    private readonly IVectorStoreWriter _vectorStoreWriter;
 
-    public StatusCommand(QdrantClient qdrant)
+    public StatusCommand(IVectorStoreAdmin vectorStoreAdmin, IVectorStoreWriter vectorStoreWriter)
     {
-        _qdrant = qdrant;
+        _vectorStoreAdmin = vectorStoreAdmin;
+        _vectorStoreWriter = vectorStoreWriter;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -41,7 +41,7 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         IReadOnlyList<string> allCollections;
         try
         {
-            allCollections = await _qdrant.ListCollectionsAsync();
+            allCollections = await _vectorStoreAdmin.ListCollectionsAsync();
         }
         catch (Exception ex)
         {
@@ -75,10 +75,10 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
 
     private async Task RenderCollectionStatusAsync(string collectionName)
     {
-        CollectionInfo? info;
+        CollectionHealthReport health;
         try
         {
-            info = await _qdrant.GetCollectionInfoAsync(collectionName);
+            health = await _vectorStoreAdmin.GetCollectionHealthAsync(collectionName);
         }
         catch (Exception)
         {
@@ -86,10 +86,10 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
             return;
         }
 
-        var pointCount  = info.PointsCount;
-        var status      = info.Status.ToString();
-        var statusColor = info.Status == CollectionStatus.Green ? "green"
-                        : info.Status == CollectionStatus.Yellow ? "yellow"
+        var pointCount  = health.PointsCount;
+        var status      = health.Status.ToString();
+        var statusColor = health.Status == CollectionHealthStatus.Green ? "green"
+                        : health.Status == CollectionHealthStatus.Yellow ? "yellow"
                         : "red";
 
         // Creamos una tabla sin bordes exteriores para meterla en un Panel
@@ -103,11 +103,28 @@ public sealed class StatusCommand : Command<StatusCommand.Settings>
         table.AddRow("[dim]Puntos totales[/]", $"[white]{pointCount:N0}[/]");
 
         // Extraer configuración de vectores
-        if (info.Config?.Params?.VectorsConfig?.ConfigCase == VectorsConfig.ConfigOneofCase.Params)
+        if (health.DenseVectorDimension is { } denseDimension)
         {
-            var vp = info.Config.Params.VectorsConfig.Params;
-            table.AddRow("[dim]Dimensiones vector[/]", $"[white]{vp.Size}[/]");
+            table.AddRow("[dim]Dimensiones vector[/]", $"[white]{denseDimension}[/]");
         }
+
+        // Decisión 7: observabilidad por-punto, no solo por-colección — saber que el
+        // schema tiene el tercer vector no dice si ya está poblado en todos los puntos.
+        var hasSummaryVector = await _vectorStoreAdmin.HasSummaryVectorAsync(collectionName);
+        if (hasSummaryVector)
+        {
+            var pending = await _vectorStoreWriter.CountResumenPendingAsync(collectionName);
+            var completedCount = pointCount >= pending ? pointCount - pending : 0;
+            var resumenColor = pending == 0 ? "green" : "yellow";
+            table.AddRow("[dim]Resumen de negocio[/]",
+                $"[{resumenColor}]{completedCount:N0}/{pointCount:N0} puntos ({pending:N0} pendientes)[/]");
+        }
+
+        // Ítem 5.d: observabilidad del índice de payload que habilita el filtro por
+        // símbolo del segundo salto (6.a) sin escanear la colección entera.
+        var hasSymbolIndex = await _vectorStoreAdmin.HasDefinedSymbolsIndexAsync(collectionName);
+        table.AddRow("[dim]Índice símbolos[/]",
+            hasSymbolIndex ? "[green]creado (defined_symbols)[/]" : "[dim]no creado[/]");
 
         var panel = new Panel(table)
         {

@@ -1,0 +1,62 @@
+{
+  "reviewer": "Copilot CLI / gpt-6-astra, revision directa de fuente sin resultados de brazos",
+  "corpus_revision": "8b6a06b4dd81ccf922eadd8b7b7b24df22af81ae",
+  "primary": [
+    {"query": 0, "method": "CancelarSolicitud", "reason": "ISolicitudCuentaTI.SolicitudCuenta esta tipado SolicitudCuentaTI; llamada de cancelacion y definicion con Estatus=Cancelado."},
+    {"query": 1, "method": "AprobarEqComputo", "reason": "eq proviene de RecordHelper.GetCurrentObject<SolicitudServicioEquipoComputo>; metodo de ese BO cambia Estatus a Revisado."},
+    {"query": 2, "method": "AprobarSolicitudServicio", "reason": "ObtenerDatoSolicitud devuelve tupla (SolicitudServicio, Empleado); Item1 invoca el metodo del BO, no el handler homonimo."},
+    {"query": 3, "method": "CalcularCalificacionAuditoria", "reason": "auditoria es Auditorias en ImprimirResumenResultados; metodo del BO calcula contribucion usando grupo.Ponderacion."},
+    {"query": 4, "method": "ValidarFechaAniversarioAjustada", "reason": "Llamada estatica cualificada ProgramacionPagoHelper desde PagoContratoViewController; ambos fragmentos pertenecen a la misma definicion."},
+    {"query": 5, "method": "ValidarFechaAniversarioAjustada", "reason": "Llamada estatica cualificada ProgramacionPagoHelper desde ProgramacionPago.EsFechaAniversarioValida; misma definicion, consulta independiente."},
+    {"query": 6, "method": "ValidarExpedienteFromAsignacionComputo", "reason": "AsignacionComputo.PersonalAsignado es Empleado; llamada null-conditional corresponde al metodo de Empleado."},
+    {"query": 7, "method": "CancelarSalidaComputo", "reason": "salidaDetalle viene de Query<AlmacenComputoSalidaDetalle>; su propiedad Salida es AlmacenComputoSalida, no cualquier Master."},
+    {"query": 8, "method": "CancelarSalidaComputo", "reason": "salidaComputo viene de Query<AlmacenComputoSalida>; metodo escribe FechaCancelacion/EstatusFecha."},
+    {"query": 9, "method": "CancelaTraspaso", "reason": "TraspasoActivo es XPCollection<TraspasoComputoActivo>; ActivoComputo es ActivosComputo. La definicion verifica Cancelado antes de modificar."},
+    {"query": 10, "method": "CrearDevolucionInternaProveedor", "reason": "devolucion se construye new Devolucion; metodo recibe DevolucionInternaDetalle y copia sus datos."},
+    {"query": 11, "method": "ValidarLicenciaRenovarIgualOrdencompraContratoActual", "reason": "Llamada estatica BovedaLicenciaHelper en PagoContrato.ValidacionCantidadesLicencias; definicion compara cantLicOC con cantidades."},
+    {"query": 12, "method": "ValidarLicenciaRenovarIgualBovedaLicenciasActivas", "reason": "Llamada estatica BovedaLicenciaHelper en ProgramacionPago; definicion cuenta detalles de boveda activa."},
+    {"query": 13, "method": "ValidaLicenciasProgramacion", "reason": "Llamada estatica BovedaLicenciaHelper en PagoContrato; definicion rechaza contrato/boveda null."},
+    {"query": 14, "method": "ValidarLicenciaRenovarIgualOrdencompraContratoActual", "reason": "Llamada estatica desde ProgramacionPago; mismo helper que query 11 pero otra consulta/entrada."},
+    {"query": 15, "method": "ActualizarTipoInventario", "reason": "solSerObj es OrdenCompraSolicitudServicio, Master es OrdenCompra; metodo usa SolicitudesServicio.Count para Proyectos/Stock."},
+    {"query": 16, "method": "GenerarConsulta", "reason": "Pattern matching MasterObject is ProyeccionesCompras master; definicion consulta SqlSolicitudes/SqlTickets/SqlComprasOperativas/SqlCompras."},
+    {"query": 17, "method": "ValidarCorreoEletronico", "reason": "Llamada estatica CuentaCorreoPlantillaHelper; no confundir el typo Eletronico con otro nombre. Definicion llama ExisteCorreoPlantilla."},
+    {"query": 18, "method": "CalcularFechaCandidata", "reason": "Llamada estatica ProgramacionPagoHelper; definicion divide totalMeses/periodicidadMeses con Math.Floor."},
+    {"query": 19, "method": "RegistrarBitacora", "reason": "accionCorrectiva es e.CurrentObject as AuditoriaResultadoHallazgoAccionCorrectiva; metodo de esa clase delega en AuditHelper.Add, no homonimos de Computo."}
+  ],
+  "secondary": [
+    {"query": 1, "method": "ValidaExpedienteEmpleado", "reason": "Primera llamada no cualificada interna de AprobarEqComputo, definida en la misma clase."},
+    {"query": 3, "method": "CalcularCalificacionGrupo", "reason": "Primera llamada interna de CalcularCalificacionAuditoria, calcula el subtotal que se pondera."},
+    {"query": 4, "method": "CalcularDiaAjustadoAniversario", "reason": "Primera llamada interna del helper de fechas, devuelve Min(diaBaseContrato,ultimoDiaDelMes)."},
+    {"query": 5, "method": "CalcularDiaAjustadoAniversario", "reason": "Misma dependencia interna del helper, otra consulta; no contar dos fragmentos como dos oportunidades."},
+    {"query": 6, "method": "ValidarExpedienteFromUsuario", "reason": "Primera llamada interna de ValidarExpedienteFromAsignacionComputo; TieneUsuarioTickets es posterior, no seleccionado."},
+    {"query": 9, "method": "EliminaAsignacionActivoComputo", "reason": "Primera llamada interna de CancelaTraspaso; RegistraTrazabilidad es posterior, no seleccionado."},
+    {"query": 11, "method": "ObtenerDatosLicenciaDeOrdenCompraFromRenovacion", "reason": "Primera llamada interna del comparador de licencias/OC, expande detalle.CantidadSolicitada para productos EsLicencia."},
+    {"query": 14, "method": "ObtenerDatosLicenciaDeOrdenCompraFromRenovacion", "reason": "Misma dependencia, consulta independiente con entrada ProgramacionPago."},
+    {"query": 16, "method": "SqlSolicitudes", "reason": "Primera llamada interna de GenerarConsulta; tres fragmentos de la misma definicion SQL, no tres oportunidades."},
+    {"query": 17, "method": "ExisteCorreoPlantilla", "reason": "Primera llamada interna de ValidarCorreoEletronico; definicion consulta EmpleadoCuentaCorreo activo."}
+  ],
+  "secondary_exclusions": {
+    "0": "DataHelper.ServerDateTime tiene receptor externo.",
+    "2": "eq.AprobarEqComputo y this.Employee tienen receptor; IsAprobacionValida es propiedad.",
+    "7": "Session.CurrentUser/Employee y DataHelper.ServerDateTime son externos.",
+    "8": "Misma definicion que 7, sin llamada interna no cualificada.",
+    "10": "ArgumentNullException/DevolucionDetalle son constructores; Detalles.Add tiene receptor.",
+    "12": "Session.Query, FirstOrDefault, Where, Count tienen receptor.",
+    "13": "Where/Count sobre boveda y propiedades, sin metodo interno no cualificado.",
+    "15": "SolicitudesServicio.Count tiene receptor.",
+    "18": "Math.Floor y fechaInicio.AddMonths tienen receptor.",
+    "19": "AuditHelper.Add tiene receptor externo."
+  },
+  "type_evidence": [
+    {"file": "ISolicitudCuentaTI.cs", "needle": "SolicitudCuentaTI SolicitudCuenta"},
+    {"file": "SolicitudServicioViewController.cs", "needle": "(SolicitudServicio, Empleado) ObtenerDatoSolicitud"},
+    {"file": "EjecucionAuditoriaViewController.cs", "needle": "ImprimirResumenResultados(BO.Procesos.Auditorias auditoria)"},
+    {"file": "AsignacionComputo.cs", "needle": "public Empleado PersonalAsignado"},
+    {"file": "AlmacenComputoSalidaDetalle.cs", "needle": "public AlmacenComputoSalida Salida"},
+    {"file": "TraspasoComputo.cs", "needle": "XPCollection<TraspasoComputoActivo> TraspasoActivo"},
+    {"file": "TraspasoComputoActivo.cs", "needle": "public ActivosComputo ActivoComputo"},
+    {"file": "OrdenCompraSolicitudServicio.cs", "needle": "public OrdenCompra Master"},
+    {"file": "AuditoriaResultadoHallazgoAccionCorrectivaViewController.cs", "needle": "e.CurrentObject as AuditoriaResultadoHallazgoAccionCorrectiva"}
+  ],
+  "limitations": "Precision de llamadas condicionada a semillas conocidas; no muestra aleatoria de produccion. Sin segundo revisor ni SemanticModel. Rangos de payload no fiables en chunks partidos: source_evidence conserva rangos encontrados por contenido. Homonimos fuera de los destinos exactos son errores, no equivalentes por nombre."
+}

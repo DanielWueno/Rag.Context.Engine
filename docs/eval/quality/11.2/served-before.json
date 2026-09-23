@@ -1,0 +1,52 @@
+{
+  "auditorias-micro-repo": {
+    "points_count": 735,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "00915f3bcb59e6e0e967bba7b2e73f632e1d363b1e74e5619c12bd67df9853c3"
+  },
+  "bsuite-auditorias-test": {
+    "points_count": 1677,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "80e9a2fc459e52e23ad7abcb90ccc584218d36b272273a084ea888cbdaf1d975"
+  },
+  "bsuite-repo": {
+    "points_count": 22592,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "70ab8703395fb839a410dc743de826c946817208bc6b12af2090531ee5001abe"
+  },
+  "civentor": {
+    "points_count": 17927,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "8252dd1e9e9ee98709691c0c60d0fae93b40b249b22ea534db8090997889bfbc"
+  },
+  "engine-repo": {
+    "points_count": 304,
+    "config_sha256": "92210109e0909e02d46b5dfc2e915b55a3cd2fb6206329af7cb1abeee0953e9e",
+    "all_points_payloads_vectors_sha256": "9cdfe4d5db006b6489b622d61158b46de5dc602afcae7963f808e52626152968"
+  },
+  "innovapp-app": {
+    "points_count": 1971,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "b06f9b35270f84d36b7932c6fdcc51b455432277f90089e79cf2aaa4d15b4dbc"
+  },
+  "innovapp-docs": {
+    "points_count": 743,
+    "config_sha256": "76100f2187a6d891f6a881ed1e860f40d3e8010a2eb02e20cceb9d9871cd5a0c",
+    "all_points_payloads_vectors_sha256": "16127b4f61b42ba643d4f8e5129cfd4fd1fba6f3842c52fed6bd472dcc4864c8"
+  },
+  "micro-repo": {
+    "points_count": 953,
+    "config_sha256": "91ea1f933c12c3321620f93f4f2a518daad78089435901bda4bf7d5c7be4e894",
+    "all_points_payloads_vectors_sha256": "b6271949facd8e8d4065878fe816b32669c8bd43079867673d25723bd1ea2f06"
+  },
+  "rag-engine": {
+    "points_count": 1286,
+    "config_sha256": "a05dddfcac8315a17a4fd9e9a691aa9a77de38824013a0f2c041abf6a5fd0a78",
+    "all_points_payloads_vectors_sha256": "f06392783dd931a42ef63c03e5728f29b2452d5aefa194abe0e0c786b8ab2f92"
+  },
+  "wiki-solis": {
+    "points_count": 1222,
+    "config_sha256": "91ea1f933c12c3321620f93f4f2a518daad78089435901bda4bf7d5c7be4e894",
+    "all_points_payloads_vectors_sha256": "e86923fb802e13654c67764f2283b702bdc76669ec301579dc1c60bfd482cd0b"
+  }
+}

@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+.git/
+.DS_Store
+logs/
+models/
+poc/
+docs/
+*.md

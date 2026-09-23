@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Pipeline;
@@ -40,6 +41,14 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         [CommandOption("--namespace|-n")]
         public string? Namespace { get; init; }
 
+        [CommandOption("--tenant")]
+        [System.ComponentModel.Description("Filtra por tenant explícito de payload (ítem 5.e). Sin valor: sin restricción.")]
+        public string? Tenant { get; init; }
+
+        [CommandOption("--module")]
+        [System.ComponentModel.Description("Filtra por módulo lógico derivado de namespace/ruta relativa. Sin valor: sin restricción.")]
+        public string? Module { get; init; }
+
         [CommandOption("--rerank|-r")]
         public bool Rerank { get; init; }
 
@@ -51,10 +60,14 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
     }
 
     private readonly ISemanticRetriever _retriever;
+    private readonly IAuditEventStore _auditStore;
+    private readonly IOptions<AuditOptions> _auditOptions;
 
-    public SearchCommand(ISemanticRetriever retriever)
+    public SearchCommand(ISemanticRetriever retriever, IAuditEventStore auditStore, IOptions<AuditOptions> auditOptions)
     {
         _retriever = retriever;
+        _auditStore = auditStore;
+        _auditOptions = auditOptions;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -70,15 +83,19 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
 
         var options = new RetrievalOptions
         {
+            Context = RetrievalContext.Local,
             CollectionName = settings.Collection,
             TopK = settings.TopK,
             MinimumSimilarityScore = settings.MinScore,
             FilterByLanguage = settings.Language,
             FilterByNamespace = settings.Namespace,
+            FilterByTenant = settings.Tenant,
+            FilterByModule = settings.Module,
             UseReRanking = settings.Rerank
         };
 
         IReadOnlyList<RetrievalResult> results = [];
+        var auditCorrelationId = Guid.NewGuid().ToString();
 
         try
         {
@@ -93,10 +110,13 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         }
         catch (Exception ex)
         {
+            await RecordQueryAuditAsync(settings.Collection, AuditOutcome.Failed, ex.Message);
             AnsiConsole.MarkupLine($"[red]✗ Error durante la búsqueda:[/] {Markup.Escape(ex.Message)}");
             AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
             return 1;
         }
+
+        await RecordQueryAuditAsync(settings.Collection, AuditOutcome.Success, detail: null);
 
         if (results.Count == 0)
         {
@@ -104,6 +124,30 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
             AnsiConsole.MarkupLine($"[dim]Intenta reducir [bold]--min-score[/] (actual: {settings.MinScore:F2}) " +
                                    "o ampliar la consulta.[/]");
             return 0;
+        }
+
+        async Task RecordQueryAuditAsync(string collection, AuditOutcome outcome, string? detail)
+        {
+            try
+            {
+                await _auditStore.RecordAsync(new AuditEvent
+                {
+                    EventId = Guid.NewGuid().ToString(),
+                    CorrelationId = auditCorrelationId,
+                    Operation = AuditOperations.QuerySearch,
+                    ActorType = AuditActor.TypeLocalOperator,
+                    ActorId = AuditActor.ResolveId(_auditOptions.Value),
+                    Collection = collection,
+                    Outcome = outcome,
+                    Detail = detail,
+                    Timestamp = DateTimeOffset.UtcNow,
+                    Version = AuditEvent.CurrentVersion
+                });
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[grey](auditoría no persistida: {Markup.Escape(ex.Message)})[/]");
+            }
         }
 
         switch (settings.Output)
@@ -136,16 +180,28 @@ public sealed class SearchCommand : Command<SearchCommand.Settings>
         foreach (var (result, i) in results.Select((r, idx) => (r, idx + 1)))
         {
             var m = result.Metadata;
-            var scoreColor = result.SimilarityScore >= 0.85f ? "green"
+
+            // Ítem 4.9: las bandas de color 0.85/0.70 sólo significan algo si el score es
+            // comparable entre consultas. Sin --rerank el número es RRF —función del
+            // puesto, típicamente ~0.03— y pintarlo de rojo con un "% similitud" al lado
+            // le decía al lector que el resultado era malo cuando lo que pasaba es que la
+            // escala era otra. Cuando no hay escala absoluta se muestra el número crudo
+            // con el nombre de su escala y sin semáforo.
+            var escalaEsAbsoluta = result.ScoreScale.IsComparableAcrossQueries();
+            var scoreColor = !escalaEsAbsoluta                ? "grey"
+                           : result.SimilarityScore >= 0.85f ? "green"
                            : result.SimilarityScore >= 0.70f ? "yellow"
                            : "red";
+            var scoreTexto = escalaEsAbsoluta
+                ? $"{(result.SimilarityScore * 100):F1}% similitud"
+                : $"{result.SimilarityScore:F4} {result.ScoreScale.ToDisplayName()}";
 
             // Build header rows
             var rows = new List<IRenderable>
             {
                 new Markup($"[dim]{Markup.Escape(m.RelativeFilePath)}[/] " +
                            $"[dim]L{m.StartLine}–{m.EndLine}[/]   " +
-                           $"[{scoreColor} bold]{(result.SimilarityScore * 100):F1}% similitud[/]")
+                           $"[{scoreColor} bold]{Markup.Escape(scoreTexto)}[/]")
             };
 
             if (!string.IsNullOrEmpty(m.Namespace) || !string.IsNullOrEmpty(m.ClassName))

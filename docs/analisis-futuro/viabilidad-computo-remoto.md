@@ -19,6 +19,10 @@ Fecha: 2026-09-03 · Estado: análisis previo, sin cambios en código
 > (decisión explícita, permisos, candidatos autorizados, `14.1-eval-nocturno`
 > hecho). Detalle completo en la nota `_artefactos_previos_sin_versionar` de
 > `16.1`.
+> **Decisión del 2026-09-23:** el Mac mini queda como servidor de IA dedicado
+> (la alternativa de la §7) y se organiza en el proyecto propio `Servidor.IA`,
+> con Ollama siempre en loopback y acceso por red autenticado y cifrado, construido
+> y apagado hasta la aprobación de TI. Ver `mac-mini-servidor-ia-dedicado.md`.
 
 ## 1. Pregunta
 

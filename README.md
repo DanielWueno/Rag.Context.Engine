@@ -56,6 +56,7 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 | Documento | Contenido |
 |---|---|
 | [docs/arquitectura.md](docs/arquitectura.md) | Componentes del núcleo, capas, mapa de dependencias |
+| [docs/referencias-tecnologicas.md](docs/referencias-tecnologicas.md) | Tecnologías y proyectos de referencia: qué usamos, qué aportaron y qué sigue en evaluación |
 | [docs/busqueda-hibrida.md](docs/busqueda-hibrida.md) | Rama densa multilingüe, tokenización dispersa, fusión RRF y semántica de scores |
 | [docs/pipeline-de-ingesta.md](docs/pipeline-de-ingesta.md) | Flujo scanner → chunking → vectorización → Qdrant; concurrencia y rendimiento |
 | [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |

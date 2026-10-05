@@ -26,6 +26,12 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!-- Perfil servidor (ítem 10.6.2, porte del 17.1 local): sin variable de entorno de
+         perfil, Host.CreateDefaultBuilder nunca busca este archivo, así que no cambia el
+         comportamiento por defecto. -->
+    <Content Include="appsettings.Servidor.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

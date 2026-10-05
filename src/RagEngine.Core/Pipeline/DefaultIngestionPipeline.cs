@@ -846,6 +846,22 @@ public sealed class DefaultIngestionPipeline : IIngestionPipeline
                             breakerCts.Cancel();
                         }
                     }
+                    catch (BusinessSummaryAuthenticationException ex)
+                    {
+                        // Fallo de CONFIGURACIÓN (401/403), no de contenido ni de conexión
+                        // transitoria: a diferencia de BusinessSummaryConnectionException, no
+                        // tiene sentido contarlo para el circuit breaker de arriba ni seguir
+                        // degradándose chunk a chunk — ningún reintento arregla una clave mal
+                        // configurada. Se cancela esta fase y se re-lanza para abortar TODA la
+                        // ingesta (ítem 10.6.2, porte del 17.1 local): antes esto caía al catch
+                        // genérico de abajo y dejaba Resumen=null por cada chunk restante, en
+                        // silencio.
+                        RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "resumen_auth"));
+                        _logger.LogError(ex,
+                            "Fallo de autenticación con Ollama — abortando Fase 2 y la ingesta completa.");
+                        breakerCts.Cancel();
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         RagEngineMetrics.IngestionErrorsTotal.Add(1, new KeyValuePair<string, object?>("stage", "resumen_generation"));

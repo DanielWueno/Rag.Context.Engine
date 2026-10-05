@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Polly.Retry;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
 using RagEngine.Core.Services.Generation;
+using RagEngine.Core.Infrastructure;
 using RagEngine.Core.Infrastructure.Generation;
 using RagEngine.Core.Infrastructure.Summary;
 
@@ -68,25 +70,21 @@ public static class GenerationServiceExtensions
         //  Why AddOpenAIChatCompletion and not a dedicated Ollama package?
         //    • Ollama exposes a 100% OpenAI-compatible REST API at /v1.
         //    • SK 1.78.0 ships Connectors.OpenAI; no extra packages are needed.
-        //    • The endpoint and apiKey ("ollama" is a dummy but required placeholder)
-        //      are the only differences from a real OpenAI registration.
+        //    • El HttpClient (TLS contra la CA propia si aplica) y la clave efectiva
+        //      ("ollama" dummy en local, el Bearer real en servidor) salen de
+        //      OllamaHttpClientFactory — el único punto que construye este cliente
+        //      para los dos consumidores de Ollama (ítem 10.6.2, porte del 17.1 local).
         services.AddSingleton(sp =>
         {
             var opts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
 
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(opts.Endpoint),
-                Timeout     = TimeSpan.FromSeconds(opts.TimeoutSeconds)
-            };
+            var httpClient = OllamaHttpClientFactory.Create(opts);
 
             var builder = Kernel.CreateBuilder();
 
-            // AddOpenAIChatCompletion with a custom HttpClient pointing at Ollama.
-            // "ollama" is a required-but-ignored API key for the local endpoint.
             builder.AddOpenAIChatCompletion(
                 modelId:    opts.ModelId,
-                apiKey:     "ollama",
+                apiKey:     OllamaHttpClientFactory.ResolveSdkApiKey(opts),
                 httpClient: httpClient);
 
             return builder.Build();
@@ -103,11 +101,16 @@ public static class GenerationServiceExtensions
         //  cortar en vez de seguir intentando conexión por conexión). Ver
         //  ChatAnswerStreamer.StreamAsync para por qué el pipeline sólo cubre la
         //  apertura del stream y nunca reintenta una vez que ya se emitió contenido.
+        //  Ítem 10.6.2: un 401/403 de Ollama (credencial ausente o inválida del perfil
+        //  servidor) es un fallo de CONFIGURACIÓN, no transitorio — reintentarlo o
+        //  contarlo para el circuit breaker no lo arregla nunca y solo demora el error
+        //  al usuario. Se excluye explícitamente de ambas estrategias.
         services.AddResiliencePipeline(ChatAnswerStreamer.ResiliencePipelineName, builder =>
         {
             builder.AddRetry(new RetryStrategyOptions
             {
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(ex =>
+                    ex is not HttpOperationException { StatusCode: HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden }),
                 MaxRetryAttempts = 2,
                 Delay = TimeSpan.FromSeconds(1),
                 BackoffType = DelayBackoffType.Constant
@@ -115,7 +118,8 @@ public static class GenerationServiceExtensions
 
             builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
             {
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(ex =>
+                    ex is not HttpOperationException { StatusCode: HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden }),
                 FailureRatio = 0.5,
                 SamplingDuration = TimeSpan.FromSeconds(30),
                 MinimumThroughput = 5,

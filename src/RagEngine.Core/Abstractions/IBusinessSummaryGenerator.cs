@@ -10,8 +10,13 @@ using RagEngine.Core.Domain;
 public interface IBusinessSummaryGenerator
 {
     /// <summary>
-    /// Aísla fallos: si el LLM no responde o revienta, devuelve null (el chunk
-    /// queda sin vector de resumen esta corrida, recuperable en una reanudación).
+    /// Aísla fallos de contenido/conexión: si el LLM no responde o revienta,
+    /// devuelve null (el chunk queda sin vector de resumen esta corrida, recuperable
+    /// en una reanudación). Un fallo de AUTENTICACIÓN (401/403 — credencial ausente o
+    /// inválida) NO se aísla: se propaga como
+    /// <see cref="RagEngine.Core.Infrastructure.Summary.BusinessSummaryAuthenticationException"/>
+    /// porque es un fallo de configuración, no algo que una reanudación arregle sola
+    /// (ítem 10.6.2, porte del 17.1 local).
     /// </summary>
     Task<BusinessSummaryResult?> GenerateAsync(CodeChunk chunk, CancellationToken cancellationToken = default);
 

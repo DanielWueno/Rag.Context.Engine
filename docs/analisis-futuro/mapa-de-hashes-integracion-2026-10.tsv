@@ -1,0 +1,13 @@
+hash_local	hash_integrado	tratamiento	unidad	asunto
+b66d0fb6543a3c039c39b86b41beb45b882d56a1	2468fb5701fc3e84b199e4432acc15f570203fc1	historico_no_portado	10.6.1	11.4: ratifica control post-5.h/pre-simbolos tras resultado nulo de 11.2, sin fabricar baseline de 11.3
+cee6bd4eb431f9d379d37c522fa48d2394f0b260	2468fb5701fc3e84b199e4432acc15f570203fc1	adaptado	10.6.1	docs(plan): reconcilia ola 17 (consumo de Servidor.IA) y ola 18 (ambiente dev/QA en Docker x64 hacia k8s de pruebas), reabre 3.5 con maquina x64
+04b0a30ab6629cbcb72809f0473fd9c52d09213e	2468fb5701fc3e84b199e4432acc15f570203fc1	adaptado	10.6.1	3.5: verifica seleccion de binario ONNX x64 real en DSOFT03, cierra el bloqueo con maquina
+5e825924ed7a5bd4dda93fdbf7522c8ef0985ccc	2468fb5701fc3e84b199e4432acc15f570203fc1	portado	10.6.1	docs: registra referencias tecnologicas y su estado de adopcion
+2c7323cbaa27758f9b5c7d9e3e87b45183493df4	2468fb5701fc3e84b199e4432acc15f570203fc1	adaptado	10.6.1	plan: registra 11.6 con los huecos de 11.5 frente a su criterio y protege los fixtures de calibracion de autocrlf
+0b57f01254f76c38c3fcdd48c2374ecb00b6954b	2468fb5701fc3e84b199e4432acc15f570203fc1	historico_no_portado	10.6.1	11.5: calibra el estimador de tokens por lenguaje contra el tokenizador real
+f1dc96bfb489007be12071de2af57dd23e8ebde4	12bfe448769674a68e71c3cf66eec3cc2c86ea83	adaptado	10.6.2	17.1: perfil servidor de Ollama via Servidor.IA, TLS con CA propia y abort en 401/403
+24fcdd4752dc27e97fa4de37223181a37f7104e2	e128a1cd8494b94ff7a42adbcb0face778070d33	adaptado	10.6.3	18.1: compose dev/QA portable con Qdrant propio en loopback, rag-api no root en la LAN y cache por volumen, verificado con infra/qa/verificar-ambiente.ps1
+595340a20a832fbd16a21e3471595f4abd090d97	e128a1cd8494b94ff7a42adbcb0face778070d33	portado	10.6.3	18.2: puebla rag-engine y micro-repo en Qdrant x64/fp32 de DSOFT03, recall mejora +2 vs baseline arm64
+7d5ce88c0c1da61630ad09db1b55942f567fdc5b	-	diferido		docs: propuesta de conversaciones persistentes del chat (v3, pendiente de ratificar e incorporar como ola 19)
+55b9d8726f0b6bdd598ee4e704eee1c4ce14083b	-	diferido		docs: plantea contexto operativo autorizado y plan de integracion MCP
+5cc44a56ce55640a772ae4de91448732402b1332	-	diferido		docs: incorpora conversaciones persistentes y borrado logico al plan

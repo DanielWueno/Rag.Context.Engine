@@ -1171,10 +1171,200 @@ def ejecutar_unidad_10_6_3(repo_root: Path, ruta_ledger: Path) -> None:
         shutil.rmtree(worktree_dir, ignore_errors=True)
 
 
+# ---------------------------------------------------------------------------
+# Chequeos individuales para --unidad 10.6.4 (cierre y mapa de integracion)
+# ---------------------------------------------------------------------------
+
+RUTA_TSV_INTEGRACION_10_6_4 = "docs/analisis-futuro/mapa-de-hashes-integracion-2026-10.tsv"
+RUTA_TSV_REESCRITURA_2026_09_23 = "docs/analisis-futuro/mapa-de-hashes-2026-09-23.tsv"
+
+# Los 12 commits locales posteriores a la bifurcacion (ref: _evidencia_de_partida de
+# 10.6-integrar-rama-local-en-main). Ninguno puede ser ancestro de HEAD: solo su
+# CONTENIDO se porto/adapto en commits nuevos de integracion/local-en-main, nunca el
+# commit original (eso recrearia el historial pre-reescritura, con sus Co-Authored-By).
+COMMITS_LOCALES_12 = (
+    "b66d0fb6543a3c039c39b86b41beb45b882d56a1",
+    "cee6bd4eb431f9d379d37c522fa48d2394f0b260",
+    "04b0a30ab6629cbcb72809f0473fd9c52d09213e",
+    "24fcdd4752dc27e97fa4de37223181a37f7104e2",
+    "595340a20a832fbd16a21e3471595f4abd090d97",
+    "f1dc96bfb489007be12071de2af57dd23e8ebde4",
+    "0b57f01254f76c38c3fcdd48c2374ecb00b6954b",
+    "5e825924ed7a5bd4dda93fdbf7522c8ef0985ccc",
+    "7d5ce88c0c1da61630ad09db1b55942f567fdc5b",
+    "2c7323cbaa27758f9b5c7d9e3e87b45183493df4",
+    "55b9d8726f0b6bdd598ee4e704eee1c4ce14083b",
+    "5cc44a56ce55640a772ae4de91448732402b1332",
+)
+
+RAMA_LOCAL_TIP = "feat/rag-api-selector-coleccion"
+RAMA_RESPALDO_TIP = "respaldo/local-5cc44a5"
+HASH_TIP_LOCAL_5CC44A5 = "5cc44a56ce55640a772ae4de91448732402b1332"
+
+
+def chequeo_1_origin_main_ancestro(repo_root: Path) -> None:
+    proc = ejecutar_git(repo_root, "merge-base", "--is-ancestor", "origin/main", "HEAD")
+    if proc.returncode != 0:
+        raise Falla(
+            "(1) 'git merge-base --is-ancestor origin/main HEAD' no salio 0 "
+            f"(returncode={proc.returncode}); origin/main no es ancestro de HEAD."
+        )
+    print("(1) OK: origin/main es ancestro de HEAD de integracion/local-en-main.")
+
+
+def _es_ancestro_de_head(repo_root: Path, hash_: str) -> bool:
+    proc = ejecutar_git(repo_root, "merge-base", "--is-ancestor", hash_, "HEAD")
+    return proc.returncode == 0
+
+
+def chequeo_2_sin_historial_pre_reescritura(repo_root: Path) -> None:
+    ruta_tsv_reescritura = repo_root / RUTA_TSV_REESCRITURA_2026_09_23
+    if not ruta_tsv_reescritura.exists():
+        raise Falla(f"(2) No existe el tsv de la reescritura: {ruta_tsv_reescritura}")
+    filas_reescritura = leer_tsv(ruta_tsv_reescritura)
+    hashes_originales = [f["hash_original"] for f in filas_reescritura if f.get("hash_original")]
+
+    problemas = []
+    for h in hashes_originales:
+        if _es_ancestro_de_head(repo_root, h):
+            problemas.append(f"hash_original {h} (de {RUTA_TSV_REESCRITURA_2026_09_23}) es ancestro de HEAD")
+    for h in COMMITS_LOCALES_12:
+        if _es_ancestro_de_head(repo_root, h):
+            problemas.append(f"commit local {h} es ancestro de HEAD (se habria recreado el historial pre-reescritura)")
+
+    if problemas:
+        raise Falla(
+            "(2) El historial pre-reescritura o los commits locales originales volvieron "
+            "a ser ancestros de HEAD:\n  " + "\n  ".join(problemas)
+        )
+    print(
+        f"(2) OK: ninguno de los {len(hashes_originales)} hash_original de "
+        f"{RUTA_TSV_REESCRITURA_2026_09_23} ni ninguno de los {len(COMMITS_LOCALES_12)} "
+        "commits locales es ancestro de HEAD."
+    )
+
+
+def chequeo_3_sin_coautorias(repo_root: Path) -> None:
+    proc = ejecutar_git(repo_root, "log", "origin/main..HEAD", "--format=%B")
+    if proc.returncode != 0:
+        raise Falla(f"(3) 'git log origin/main..HEAD --format=%B' fallo: {proc.stderr.strip()}")
+    if re.search(r"co-authored-by", proc.stdout, re.IGNORECASE):
+        raise Falla("(3) Se encontro 'Co-Authored-By' (sin distinguir mayusculas) en origin/main..HEAD")
+    print("(3) OK: ningun commit de origin/main..HEAD contiene 'Co-Authored-By'.")
+
+
+def chequeo_4_tsv_integracion(repo_root: Path) -> None:
+    ruta_tsv = repo_root / RUTA_TSV_INTEGRACION_10_6_4
+    if not ruta_tsv.exists():
+        raise Falla(f"(4) No existe el tsv esperado: {ruta_tsv}")
+    filas = leer_tsv(ruta_tsv)
+
+    if len(filas) != 12:
+        raise Falla(f"(4) El tsv de integracion tiene {len(filas)} fila(s); se esperaban exactamente 12.")
+
+    hashes_tsv = {f["hash_local"] for f in filas}
+    faltantes = set(COMMITS_LOCALES_12) - hashes_tsv
+    sobrantes = hashes_tsv - set(COMMITS_LOCALES_12)
+    if faltantes or sobrantes:
+        raise Falla(
+            f"(4) El conjunto de hash_local del tsv difiere de los 12 commits locales. "
+            f"Faltan: {sorted(faltantes)}. Sobran: {sorted(sobrantes)}."
+        )
+
+    tratamientos_validos = {"portado", "adaptado", "historico_no_portado", "diferido"}
+    problemas = []
+    for fila in filas:
+        tratamiento = fila.get("tratamiento")
+        hash_integrado = fila.get("hash_integrado")
+        if tratamiento not in tratamientos_validos:
+            problemas.append(f"hash_local={fila['hash_local']!r} tiene tratamiento desconocido: {tratamiento!r}")
+            continue
+        if tratamiento == "diferido":
+            if hash_integrado != "-":
+                problemas.append(
+                    f"hash_local={fila['hash_local']!r} tratamiento=diferido pero "
+                    f"hash_integrado={hash_integrado!r} (deberia ser '-')"
+                )
+            continue
+        # portado | adaptado | historico_no_portado: hash_integrado debe existir y ser
+        # ancestro de HEAD.
+        if not hash_integrado or hash_integrado == "-":
+            problemas.append(f"hash_local={fila['hash_local']!r} tratamiento={tratamiento!r} sin hash_integrado")
+            continue
+        proc_existe = ejecutar_git(repo_root, "cat-file", "-e", f"{hash_integrado}^{{commit}}")
+        if proc_existe.returncode != 0:
+            problemas.append(f"hash_local={fila['hash_local']!r}: hash_integrado={hash_integrado!r} no existe como commit")
+            continue
+        if not _es_ancestro_de_head(repo_root, hash_integrado):
+            problemas.append(f"hash_local={fila['hash_local']!r}: hash_integrado={hash_integrado!r} no es ancestro de HEAD")
+
+    if problemas:
+        raise Falla("(4) Problemas en el tsv de integracion:\n  " + "\n  ".join(problemas))
+
+    print(
+        f"(4) OK: {len(filas)} filas (una por commit local), cada hash_integrado con "
+        "tratamiento portado/adaptado/historico_no_portado existe y es ancestro de HEAD; "
+        "los diferidos llevan '-'."
+    )
+
+
+def chequeo_6_ramas_locales_sin_tocar(repo_root: Path) -> None:
+    problemas = []
+    for rama in (RAMA_LOCAL_TIP, RAMA_RESPALDO_TIP):
+        proc = ejecutar_git(repo_root, "rev-parse", rama)
+        if proc.returncode != 0:
+            problemas.append(f"no se pudo resolver la rama {rama!r}: {proc.stderr.strip()}")
+            continue
+        actual = proc.stdout.strip()
+        if actual != HASH_TIP_LOCAL_5CC44A5:
+            problemas.append(f"{rama} apunta a {actual}, no a {HASH_TIP_LOCAL_5CC44A5}")
+    if problemas:
+        raise Falla("(6) Ramas locales movidas o irresolubles:\n  " + "\n  ".join(problemas))
+    print(
+        f"(6) OK: {RAMA_LOCAL_TIP!r} y {RAMA_RESPALDO_TIP!r} siguen apuntando a "
+        f"{HASH_TIP_LOCAL_5CC44A5}."
+    )
+
+
+def ejecutar_unidad_10_6_4(repo_root: Path, ruta_ledger: Path) -> None:
+    chequeo_1_origin_main_ancestro(repo_root)
+    chequeo_2_sin_historial_pre_reescritura(repo_root)
+    chequeo_3_sin_coautorias(repo_root)
+    chequeo_4_tsv_integracion(repo_root)
+
+    # (5) dotnet build sin errores/advertencias nuevas, y suite completa con el mismo
+    # patron de subconjunto de tests fallidos que 10.6.2/10.6.3 — mismo worktree efimero
+    # de origin/main, reutilizando chequeo_1_build_sin_warnings_nuevos y
+    # chequeo_7_suite_completa_vs_origin_main (sin duplicar la logica de comparacion).
+    worktree_dir = Path(tempfile.mkdtemp(prefix="rag-origin-main-verify-1064-"))
+    try:
+        proc_worktree = ejecutar_git(repo_root, "worktree", "add", str(worktree_dir), "origin/main")
+        if proc_worktree.returncode != 0:
+            raise Falla(f"'git worktree add' de origin/main fallo: {proc_worktree.stderr.strip()}")
+
+        proc_build_origin = ejecutar_dotnet(worktree_dir, "build", timeout=300)
+        if proc_build_origin.returncode != 0:
+            raise Falla(
+                f"'dotnet build' de origin/main en el worktree no salio 0:\n"
+                f"{proc_build_origin.stdout}\n{proc_build_origin.stderr}"
+            )
+
+        chequeo_1_build_sin_warnings_nuevos(repo_root, proc_build_origin)
+        chequeo_7_suite_completa_vs_origin_main(repo_root, worktree_dir)
+    finally:
+        proc_rm = ejecutar_git(repo_root, "worktree", "remove", "--force", str(worktree_dir))
+        if proc_rm.returncode != 0:
+            print(f"AVISO: no se pudo quitar el worktree temporal {worktree_dir}: {proc_rm.stderr.strip()}", file=sys.stderr)
+        shutil.rmtree(worktree_dir, ignore_errors=True)
+
+    chequeo_6_ramas_locales_sin_tocar(repo_root)
+
+
 UNIDADES_IMPLEMENTADAS = {
     "10.6.1": ejecutar_unidad_10_6_1,
     "10.6.2": ejecutar_unidad_10_6_2,
     "10.6.3": ejecutar_unidad_10_6_3,
+    "10.6.4": ejecutar_unidad_10_6_4,
 }
 
 

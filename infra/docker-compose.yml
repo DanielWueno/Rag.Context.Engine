@@ -1,71 +1,173 @@
+# Ambiente dev/QA portable (ítem 10.6.3, que integra el ítem 21.1 de la rama local
+# — Qdrant propio en el compose — con el contrato ya publicado de main: 12.1 (clave
+# de Qdrant), 12.8 (loopback por defecto) y 20.1/Servidor.IA (perfil servidor de
+# Ollama, antes 17.1 local)). Reproducible desde el repo en cualquier máquina
+# x64/arm64, sin rutas personales ni secretos versionados — ver infra/.env.example
+# para las variables y docs/operaciones.md para el flujo completo (incluido el
+# legado de Mac con Qdrant/Ollama fuera de este compose).
+#
+# Dos piezas:
+#   - qdrant: vector store propio de este compose. La DIRECCIÓN publicada es
+#     SIEMPRE 127.0.0.1 (nunca una variable, a propósito: Qdrant nunca se publica
+#     en la LAN — ver _riesgo_aceptado de la ola 21 y _decision_de_exposicion de
+#     10.6.3-portar-ambiente-dev-qa-x64 en el ledger). El PUERTO sí es variable,
+#     para poder correr una instancia de verificación aislada en la misma máquina.
+#   - rag-api: ítem 12.8 — loopback (127.0.0.1) por defecto. Salir de loopback
+#     exige RAG_API_BIND explícito y, para que el arranque no falle,
+#     Transport__Published=true + Qdrant:ApiKey + TLS resueltos (variables del
+#     PROCESO, no de este compose) — ver docs/configuracion.md. No se activa por
+#     defecto aquí.
 services:
+  qdrant:
+    image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.14.1}
+    container_name: ${QDRANT_CONTAINER_NAME:-rag-qdrant}
+    restart: unless-stopped
+    ports:
+      # Dirección fija a 127.0.0.1 (nunca una variable): la CLI del host
+      # (rag ingest/status/search) necesita REST (6333) y gRPC (6334), pero Qdrant
+      # nunca se publica en la LAN. El puerto sí es configurable (default: el
+      # estándar de Qdrant), para convivir con otra instancia en la misma máquina.
+      - "127.0.0.1:${QDRANT_HTTP_HOST_PORT:-6333}:6333"
+      - "127.0.0.1:${QDRANT_GRPC_HOST_PORT:-6334}:6334"
+    volumes:
+      - qdrant-storage:/qdrant/storage
+    environment:
+      # Ítem 12.1: clave opcional. Vacía (default) = sin autenticación, el
+      # comportamiento previo. Nunca un valor real en infra/.env.example.
+      # QDRANT_API_KEY_INPUT (no QDRANT__SERVICE__API_KEY directamente) a
+      # propósito: ver el 'command' de abajo para el motivo.
+      QDRANT_API_KEY_INPUT: "${RAG_QDRANT_API_KEY:-}"
+    # Qdrant (confirmado empíricamente contra la imagen oficial v1.14.1, con
+    # 'docker run' directo, sin Compose de por medio, el 2026-10-06 al
+    # verificar 10.6.3) exige autenticación en CUANTO la variable
+    # QDRANT__SERVICE__API_KEY esté PRESENTE en el entorno del proceso, aunque
+    # su valor sea una cadena vacía — "ausente" y "presente pero vacía" NO son
+    # lo mismo para Qdrant, a diferencia del contrato documentado en
+    # docs/configuracion.md para Qdrant:ApiKey del lado de rag-api (que sí
+    # trata "" como sin autenticación). Por eso QDRANT__SERVICE__API_KEY nunca
+    # se declara directamente en 'environment' arriba: este wrapper de
+    # arranque solo la exporta (y por tanto solo la hace presente para el
+    # proceso qdrant) cuando QDRANT_API_KEY_INPUT no está vacía, preservando
+    # "vacío = sin autenticación" también del lado de Qdrant. El resto del
+    # comportamiento del contenedor (manejo de OOM/recovery) es exactamente
+    # el entrypoint.sh original de la imagen, solo envuelto.
+    command:
+      - sh
+      - -c
+      - |
+        if [ -n "$$QDRANT_API_KEY_INPUT" ]; then
+          export QDRANT__SERVICE__API_KEY="$$QDRANT_API_KEY_INPUT"
+        fi
+        exec ./entrypoint.sh
+    healthcheck:
+      # La imagen qdrant/qdrant (Debian slim) no trae curl ni wget, pero sí
+      # bash — se usa /dev/tcp para confirmar que el puerto REST acepta
+      # conexiones. No valida el body de /readyz (sin curl no hay forma barata de
+      # leerlo), pero un puerto cerrado SÍ hace fallar el healthcheck.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
   rag-api:
+    image: ${RAG_API_IMAGE:-rag-api:local}
     build:
       context: ..
       dockerfile: src/RagEngine.Api/Dockerfile
-    container_name: rag-api
+    container_name: ${RAG_API_CONTAINER_NAME:-rag-api}
     restart: unless-stopped
+    depends_on:
+      qdrant:
+        condition: service_healthy
     ports:
-      # Ítem 12.1: solo loopback del host, no todas las interfaces (antes "5080:5080",
-      # equivalente a 0.0.0.0:5080, alcanzable desde cualquier interfaz de red del host).
-      # Este servicio sigue pensado para LAN/VPN interna vía un proxy/túnel explícito, no
-      # para escuchar directo en todas las interfaces del host que lo corre.
-      - "127.0.0.1:5080:5080"
+      # Ítem 12.8: loopback por defecto (antes "0.0.0.0:5080" heredado del riesgo
+      # aceptado original de la rama local — ya NO vigente al portar, ver
+      # _decision_de_exposicion de 10.6.3-portar-ambiente-dev-qa-x64). Publicar más
+      # allá de 127.0.0.1 exige fijar RAG_API_BIND explícito y, para que el
+      # arranque no falle, Transport__Published=true + Qdrant:ApiKey + TLS
+      # resueltos — ver docs/configuracion.md#transportpublished--perfil-local-vs-perfil-publicado.
+      - "${RAG_API_BIND:-127.0.0.1}:${RAG_API_PORT:-5080}:5080"
     volumes:
-      # Modelos ONNX ya descargados en el host (ver download-model.sh); montados
-      # de solo lectura para no reconstruir la imagen si cambias de modelo.
-      #
-      # Ítem 12.1: la ruta absoluta es configurable vía RAG_MODELS_DIR (env var del
-      # host, no de este compose) — sin ella, cae en infra/../models relativo al repo,
-      # no en la ruta de un usuario/máquina concretos.
+      # Modelos ONNX ya descargados en el host (infra/download-model.sh), montados
+      # de solo lectura. RAG_MODELS_DIR=/models (abajo, container-interno) hace que
+      # RagEnginePaths expanda los tokens ${RAG_MODELS_DIR} de appsettings.json
+      # contra este punto de montaje; la propia librería (RagEnginePaths.
+      # SelectArchitectureBinary) elige el binario fp32 o _qint8_arm64 según la
+      # arquitectura REAL del contenedor — este compose NUNCA fuerza un binario
+      # con un ModelPath/VocabPath ya resuelto a una arquitectura concreta.
       - "${RAG_MODELS_DIR:-../models}:/models:ro"
-      # Log de consultas (pregunta + respuesta + fuentes) en el mismo logs/ del
-      # repo que ya usa el CLI — sobrevive a recrear el contenedor y se puede
-      # analizar directo desde el host sin `docker logs`.
+      # Logs estructurados (Serilog), mismo logs/ del repo que ya usa la CLI.
       - "${RAG_LOGS_DIR:-../logs}:/app/logs"
-      # Caché SQLite de resúmenes de negocio (Reto A), generada por `rag ingest
-      # --con-resumen` corriendo nativo en el host — sin este mount, SummaryCache
-      # abriría un sqlite3 vacío dentro del contenedor y Sources[].Resumen (Reto D)
-      # sería siempre null aunque la colección sí tenga resumen. Montado read-write
-      # (no :ro): el modo WAL de SQLite necesita escribir *-wal/*-shm incluso para
-      # lecturas; la API igual nunca llama a SummaryCache.SetAsync.
-      #
-      # Ítem 12.1: ruta configurable vía RAG_SUMMARY_CACHE_DIR — sin ella, cae en un
-      # volumen nombrado de Docker (persistente entre recreaciones del contenedor,
-      # pero sin depender de la ruta de perfil de ningún usuario concreto del host).
-      - "${RAG_SUMMARY_CACHE_DIR:-rag-summary-cache}:/data/rag-engine"
+      # Caché SQLite de resúmenes de negocio: por defecto SIEMPRE un volumen
+      # nombrado (rag-api-cache), NUNCA el WAL que escribe la CLI del host — ver
+      # infra/qa/cargar-cache.ps1 para cómo meterle una copia consistente (VACUUM
+      # INTO). RAG_SUMMARY_CACHE_DIR (12.1) puede seguir apuntando a una ruta del
+      # host para el flujo Mac legado (un solo escritor activo a la vez), bajo
+      # responsabilidad de quien lo configure. Vacío al primer arranque: la API
+      # crea el esquema sola y sirve sin resúmenes (Resumen=null por chunk) hasta
+      # que se cargue una copia.
+      - "${RAG_SUMMARY_CACHE_DIR:-rag-api-cache}:/data/rag-engine"
+      # Perfil servidor (ítem 20.1/Servidor.IA) únicamente: monta la CA de
+      # Servidor.IA de solo lectura en la ruta que Ollama__CaCertificatePath
+      # espera. SERVIDOR_IA_CA_HOST vacío (perfil local, default) hace que Docker
+      # monte un bind vacío inofensivo — Validate() solo falla si
+      # Ollama__CaCertificatePath (abajo) apunta a una ruta que no existe, y en
+      # perfil local esa variable también está vacía.
+      - "${SERVIDOR_IA_CA_HOST:-/dev/null}:${OLLAMA_CA_CONTAINER_PATH:-/dev/null}:ro"
     environment:
+      RAG_MODELS_DIR: /models
+      RAG_LOGS_DIR: /app/logs
       Ingestion__ResumenCachePath: /data/rag-engine/summary-cache.sqlite3
-      # NOTA: en esta máquina Qdrant corre como un contenedor standalone
-      # ("qdrant-local", fuera de este compose), no como el servicio "qdrant"
-      # de arriba. Por eso se alcanza igual que Ollama: publicado en el host.
-      # Si alguna vez migras a que el servicio "qdrant" de este archivo sea
-      # el real, cambia esto a "qdrant" y restaura el depends_on.
-      Qdrant__Host: host.docker.internal
-      # Ítem 12.1: opcional — si el Qdrant de destino exige autenticación
-      # (QDRANT__SERVICE__API_KEY en su propia configuración), fijar aquí la misma
-      # key vía variable de entorno del host (nunca hardcodeada en este archivo).
-      # Vacío conserva el comportamiento previo (sin autenticación).
+      # Nombre de servicio por defecto — lo resuelve la red interna de Compose. El
+      # flujo legado de Mac (Qdrant standalone fuera de este compose) lo
+      # sobreescribe a host.docker.internal; ver docs/operaciones.md.
+      Qdrant__Host: ${QDRANT_HOST:-qdrant}
+      Qdrant__GrpcPort: ${QDRANT_GRPC_PORT:-6334}
+      Qdrant__HttpPort: ${QDRANT_HTTP_PORT:-6333}
+      # Ítem 12.1: misma clave que QDRANT__SERVICE__API_KEY del servicio qdrant de
+      # arriba. Vacía (default) conserva el comportamiento previo, sin
+      # autenticación. Comillas deliberadas: ver el comentario equivalente en
+      # el servicio qdrant (evitan el passthrough implícito de Compose cuando
+      # el valor interpolado seria null en vez de cadena vacia).
       Qdrant__ApiKey: "${RAG_QDRANT_API_KEY:-}"
-      # Ítem 12.8: este compose sigue en el perfil LOCAL de siempre (Transport:Published
-      # no se fija, cae en false) — el binding 127.0.0.1:5080 de arriba ya es el
-      # loopback esperado para ese perfil. Publicar más allá de eso (LAN/VPN interna)
-      # exige fijar Transport__Published=true (y con ello RAG_QDRANT_API_KEY no vacío +
-      # TLS resuelto): ver docs/configuracion.md y docs/operaciones.md, sección de
-      # perfil publicado. No se activa aquí por defecto.
-      # Ollama se deja NATIVO en el host (no en Docker) para conservar la
-      # aceleración Metal de Apple Silicon — un Ollama en el contenedor Linux
-      # caería a CPU-only. host.docker.internal expone el host desde el contenedor.
-      Ollama__Endpoint: "http://host.docker.internal:11434/v1"
-      OnnxBrain__ModelPath: /models/paraphrase-multilingual-MiniLM-L12-v2/model_qint8_arm64.onnx
-      OnnxBrain__VocabPath: /models/paraphrase-multilingual-MiniLM-L12-v2/sentencepiece.bpe.model
-      CrossEncoder__ModelPath: /models/mmarco-mMiniLMv2-L12-H384-v1/model_qint8_arm64.onnx
-      CrossEncoder__VocabPath: /models/mmarco-mMiniLMv2-L12-H384-v1/sentencepiece.bpe.model
+      # Ítem 20.1/Servidor.IA (antes 17.1 local): perfil local por defecto (Ollama
+      # nativo del host, si lo hay); perfil servidor (Servidor.IA) es opt-in vía un
+      # infra/.env de ese perfil, nunca por defecto aquí. Si no hay Ollama nativo
+      # ni perfil servidor, el chequeo de LLM de /api/health sale "down" y se
+      # informa tal cual — sigue siendo cierto en ambos casos.
+      Ollama__Endpoint: ${OLLAMA_ENDPOINT:-http://host.docker.internal:11434/v1}
+      Ollama__ModelId: ${OLLAMA_MODEL_ID:-qwen2.5-coder}
+      # Perfil servidor: vacíos por defecto (perfil local, byte-equivalente al
+      # comportamiento previo a 20.1). Para Servidor.IA, un infra/.env de ese
+      # perfil fija OLLAMA_ENDPOINT a https://<host>:8443/v1, OLLAMA_MODEL_ID a
+      # qwen2.5-coder:14b, y SERVIDOR_IA_CLAVE/SERVIDOR_IA_CA_HOST en el entorno
+      # del host (NUNCA en infra/.env.example versionado) — ver
+      # docs/configuracion.md. OllamaHttpClientFactory.Validate falla rápido si
+      # Ollama__Endpoint es https y falta Ollama__ApiKey, o si
+      # Ollama__CaCertificatePath no existe en el contenedor.
+      # Comillas deliberadas en ambas (mismo motivo que Qdrant__ApiKey arriba):
+      # fuerzan cadena vacia en vez de YAML null, para que Compose nunca haga
+      # passthrough implicito de una variable de shell con el nombre literal
+      # "Ollama__ApiKey"/"Ollama__CaCertificatePath".
+      Ollama__ApiKey: "${SERVIDOR_IA_CLAVE:-}"
+      Ollama__CaCertificatePath: "${OLLAMA_CA_CONTAINER_PATH:-}"
+    healthcheck:
+      # Sin -f: un 503 de /api/health (Ollama caído, esperado en este ambiente
+      # mientras no haya Ollama nativo ni perfil servidor) cuenta como "el proceso
+      # responde" — lo que este healthcheck certifica es que el host HTTP está
+      # vivo, no que Ollama esté arriba. infra/qa/verificar-ambiente.ps1 sí lee el
+      # body completo y exige que Qdrant reporte "ok".
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:5080/api/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     extra_hosts:
-      # host.docker.internal ya funciona out-of-the-box en Docker Desktop (Mac);
-      # esta línea solo es necesaria si esto se corre alguna vez en Docker Engine/Linux.
+      # host.docker.internal ya funciona out-of-the-box en Docker Desktop
+      # (Windows/Mac); esta línea solo es necesaria en Docker Engine/Linux.
       - "host.docker.internal:host-gateway"
 
 volumes:
-  rag-summary-cache: {}
-
+  qdrant-storage:
+  rag-api-cache:

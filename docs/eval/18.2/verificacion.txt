@@ -1,0 +1,31 @@
+=== Verificacion mecanica 18.2: colecciones x64 + recall micro-repo ===
+Repo root: D:\Git\Rag.Context.Engine
+API:       http://127.0.0.1:5080
+Qdrant:    http://127.0.0.1:6333
+
+--- 1) Colecciones vía rag-api ---
+Colecciones reportadas por rag-api: rag-engine, micro-repo
+
+--- 2) Conteo de puntos vía Qdrant (http://127.0.0.1:6333) ---
+rag-engine -> 2004 puntos
+micro-repo -> 956 puntos
+
+--- 3) Baseline de recall (docs/eval/baselines/tickets-microservice.norerank.baseline.json) ---
+Baseline: 3 / 19 hits (hit_any_at_k.10)
+
+--- 4) Eval actual de 'micro-repo' (k=10) ---
+Corrida actual: 5 / 19 hits (hit_any_at_k.10)
+Modelo de embedding usado: model.onnx
+
+--- 5) Comparacion de recall ---
+Hits baseline: 3   Hits actual: 5   Delta: 2
+OK: la corrida actual no cae mas de 1 acierto por debajo del baseline
+
+=== Resumen ===
+Puntos rag-engine: 2004
+Puntos micro-repo: 956
+Hits baseline (hit_any_at_k.10): 3
+Hits actual   (hit_any_at_k.10): 5
+Delta (actual - baseline): 2
+
+RESULTADO FINAL: PASA

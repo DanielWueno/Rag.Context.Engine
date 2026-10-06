@@ -4,9 +4,10 @@
 
 Cada unidad de 10.6-integrar-rama-local-en-main anade su propio modo --unidad a este
 script. Existen --unidad 10.6.1 (preservar el historial en un bundle y reconciliar el
-ledger sin portar codigo) y --unidad 10.6.2 (portar el perfil servidor de Ollama: codigo +
-tests). Las unidades 10.6.3 y 10.6.4 deben extender este archivo cuando se ejecuten, no
-sustituirlo.
+ledger sin portar codigo), --unidad 10.6.2 (portar el perfil servidor de Ollama: codigo +
+tests) y --unidad 10.6.3 (ambiente dev/QA x64: compose con Qdrant propio, scripts de
+verificacion, evidencia historica de 18.2 portada byte a byte). La unidad 10.6.4 debe
+extender este archivo cuando se ejecute, no sustituirlo.
 
 Principio general: cualquier evidencia, cobertura o infraestructura ausente hace FALLAR
 el chequeo correspondiente (exit != 0). Nunca se convierte una omision en exito.
@@ -884,9 +885,296 @@ def ejecutar_unidad_10_6_2(repo_root: Path, ruta_ledger: Path) -> None:
         shutil.rmtree(worktree_dir, ignore_errors=True)
 
 
+# ---------------------------------------------------------------------------
+# Chequeos individuales para --unidad 10.6.3 (ambiente dev/QA x64)
+# ---------------------------------------------------------------------------
+
+# Archivos portados BYTE A BYTE desde 595340a (ítem 18.2 local, ahora
+# 21.2-poblar-colecciones-en-x64). docs/eval/18.2/README.md es nuevo (nota de
+# procedencia de esta unidad) y NO se compara contra ese commit.
+ARCHIVOS_PORTADOS_595340A = (
+    "docs/eval/18.2/collections.x64.json",
+    "docs/eval/18.2/ingest-micro-repo.x64.log",
+    "docs/eval/18.2/ingest-rag-engine.x64.log",
+    "docs/eval/18.2/micro-repo.x64.eval.json",
+    "docs/eval/18.2/micro-repo.x64.eval.txt",
+    "docs/eval/18.2/puntos-colecciones.x64.txt",
+    "docs/eval/18.2/quality-baseline.x64.json",
+    "docs/eval/18.2/quality-baseline.x64.txt",
+    "docs/eval/18.2/verificacion.txt",
+    "infra/qa/verificar-colecciones-x64.ps1",
+)
+
+# Variables de infra/.env.example que NUNCA deben llevar un valor real
+# versionado (ítem 12.1/10.6.3): deben quedar vacías en el archivo de ejemplo.
+VARIABLES_SECRETAS_ENV_EXAMPLE = (
+    "RAG_QDRANT_API_KEY",
+    "SERVIDOR_IA_CLAVE",
+    "SERVIDOR_IA_CA_HOST",
+)
+
+# Nombres de variable que, si existen en el entorno AMBIENTE de quien corre este
+# script (no en infra/.env ni en infra/.env.example), pueden contener un secreto
+# real de esta maquina (p. ej. SERVIDOR_IA_CLAVE, aprovisionada por el usuario
+# para el perfil servidor real). docker-compose.yml las sustituye por valor si
+# estan en el entorno del proceso, con precedencia sobre --env-file: 'docker
+# compose config'/'up' las volcaria en texto plano si no se sanean antes de
+# invocar Docker. Nunca se imprimen ni se escriben a ningun archivo de esta
+# unidad; solo se eliminan del entorno del subproceso.
+VARIABLES_AMBIENTE_A_SANEAR = (
+    "RAG_QDRANT_API_KEY",
+    "SERVIDOR_IA_CLAVE",
+    "SERVIDOR_IA_CA_HOST",
+    "OLLAMA_CA_CONTAINER_PATH",
+)
+
+
+def _entorno_saneado() -> dict:
+    import os
+    entorno = dict(os.environ)
+    for nombre in VARIABLES_AMBIENTE_A_SANEAR:
+        entorno.pop(nombre, None)
+    return entorno
+
+
+def chequeo_1_compose_config_10_6_3(repo_root: Path, env_file: Path) -> None:
+    # 'config' no crea ni toca contenedores, pero igual se aisla con -p: un
+    # nombre de proyecto distinto evita cualquier ambiguedad de resolucion de
+    # variables frente a un proyecto "infra" ya existente en esta maquina.
+    compose_file = repo_root / "infra/docker-compose.yml"
+    proc = subprocess.run(
+        ["docker", "compose", "-p", "rag-config-check-10-6-3", "--env-file", str(env_file), "-f", str(compose_file), "config"],
+        cwd=str(repo_root), capture_output=True, text=True, encoding="utf-8", errors="replace",
+        env=_entorno_saneado(),
+    )
+    if proc.returncode != 0:
+        raise Falla(f"(1) 'docker compose config' con el env de verificacion no salio 0:\n{proc.stdout}\n{proc.stderr}")
+    print("(1) OK: 'docker compose config' resuelve 0 con el env de verificacion.")
+
+
+def _docker_disponible() -> bool:
+    try:
+        proc = subprocess.run(
+            ["docker", "version", "--format", "{{.Server.Os}}"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15,
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
+def chequeo_2_verificar_ambiente(repo_root: Path) -> None:
+    """Corre infra/qa/verificar-ambiente.ps1 (adaptado por 10.6.3) contra Docker
+    real, en un stack COMPLETAMENTE AISLADO (nombres de contenedor y puertos
+    distintos de los de produccion) para no tocar un rag-api/rag-qdrant que ya
+    este corriendo en esta maquina. Siempre intenta 'docker compose down' del
+    stack de prueba al terminar, pase o falle.
+    """
+    if not _docker_disponible():
+        raise Falla("(2) Docker no esta disponible — no se puede correr verificar-ambiente.ps1 contra Docker real.")
+
+    modelos_dir = Path.home() / "models"
+    if not modelos_dir.exists():
+        raise Falla(f"(2) No se encontro un directorio de modelos ONNX para montar en la verificacion: {modelos_dir}")
+
+    compose_file = repo_root / "infra/docker-compose.yml"
+    script = repo_root / "infra/qa/verificar-ambiente.ps1"
+
+    sufijo = f"10-6-3-{abs(hash(str(repo_root))) % 100000}"
+    # CRITICO: el nombre de PROYECTO de Compose (-p), no solo el container_name,
+    # es lo que decide si Compose considera que un contenedor YA EXISTENTE
+    # "pertenece" a un servicio de este archivo (vía las labels
+    # com.docker.compose.project/service que Compose le pone, no por el texto
+    # del nombre). Sin esto, un 'docker compose up' sobre el project default
+    # (derivado del nombre de carpeta "infra") puede encontrar por esas labels
+    # un rag-api/rag-qdrant REAL ya corriendo y "recrearlo" (destruirlo y
+    # reemplazarlo) aunque container_name apunte a otro texto. Aislar de verdad
+    # exige un nombre de proyecto DISTINTO en cada invocacion de compose de esta
+    # verificacion (confirmado el 2026-10-06: sin esto, una corrida de esta
+    # misma funcion recreo y luego 'down' elimino los rag-api/rag-qdrant reales
+    # que ya corrian en la maquina, aunque los nombres de contenedor eran
+    # distintos; los datos sobrevivieron porque los volumenes nombrados
+    # [project]_qdrant-storage/[project]_rag-api-cache no se borran con 'down'
+    # sin '-v', pero los contenedores si se perdieron y hubo que recrearlos).
+    project_name = f"rag-verify-{sufijo}"
+    api_container = f"rag-api-verify-{sufijo}"
+    qdrant_container = f"rag-qdrant-verify-{sufijo}"
+    api_port = 15080
+    qdrant_http_port = 16333
+    qdrant_grpc_port = 16334
+
+    env_contenido = "\n".join([
+        f"RAG_MODELS_DIR={modelos_dir.as_posix()}",
+        "RAG_LOGS_DIR=./.verificar-ambiente-logs-tmp",
+        "RAG_SUMMARY_CACHE_DIR=",
+        "RAG_QDRANT_API_KEY=",
+        f"RAG_API_CONTAINER_NAME={api_container}",
+        f"QDRANT_CONTAINER_NAME={qdrant_container}",
+        f"RAG_API_PORT={api_port}",
+        f"QDRANT_HTTP_HOST_PORT={qdrant_http_port}",
+        f"QDRANT_GRPC_HOST_PORT={qdrant_grpc_port}",
+        "",
+    ])
+
+    tmp_env = Path(tempfile.mktemp(prefix="rag-verify-10-6-3-", suffix=".env"))
+    tmp_env.write_text(env_contenido, encoding="utf-8")
+
+    compose_base_args = ["docker", "compose", "-p", project_name, "--env-file", str(tmp_env), "-f", str(compose_file)]
+    entorno = _entorno_saneado()
+    try:
+        proc = subprocess.run(
+            [
+                "pwsh", "-NoProfile", "-File", str(script),
+                "-ComposeFile", str(compose_file),
+                "-EnvFile", str(tmp_env),
+                "-ProjectName", project_name,
+                "-RagApiContainerName", api_container,
+                "-QdrantContainerName", qdrant_container,
+                "-RagApiPort", str(api_port),
+                "-QdrantHttpPort", str(qdrant_http_port),
+                "-QdrantGrpcPort", str(qdrant_grpc_port),
+            ],
+            cwd=str(repo_root), capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=900, env=entorno,
+        )
+        print(proc.stdout)
+        if proc.returncode != 0:
+            raise Falla(
+                f"(2) infra/qa/verificar-ambiente.ps1 (stack aislado {api_container}/{qdrant_container}) "
+                f"no salio 0:\n{proc.stdout[-6000:]}\n{proc.stderr[-2000:]}"
+            )
+        print("(2) OK: infra/qa/verificar-ambiente.ps1 (a)-(j) pasan en un stack Docker aislado.")
+    finally:
+        proc_down = subprocess.run(
+            compose_base_args + ["down"],
+            cwd=str(repo_root), capture_output=True, text=True, encoding="utf-8", errors="replace",
+            env=entorno,
+        )
+        if proc_down.returncode != 0:
+            print(
+                f"AVISO: 'docker compose down' del stack de verificacion {api_container}/{qdrant_container} "
+                f"no salio 0: {proc_down.stderr.strip()}",
+                file=sys.stderr,
+            )
+        tmp_env.unlink(missing_ok=True)
+
+
+def _sha256_archivo(ruta: Path) -> str:
+    hasher = hashlib.sha256()
+    with ruta.open("rb") as f:
+        for bloque in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(bloque)
+    return hasher.hexdigest()
+
+
+def chequeo_3_sha256_18_2(repo_root: Path) -> None:
+    # Comparacion por hash de BLOB de git (git hash-object/rev-parse), no por
+    # sha256 de texto reconstituido: evita falsos negativos de codificacion al
+    # comparar contra el commit. El sha256 de cada archivo se calcula tambien,
+    # solo para dejarlo como evidencia legible en el log de esta corrida.
+    problemas = []
+    for rel in ARCHIVOS_PORTADOS_595340A:
+        ruta = repo_root / rel
+        if not ruta.exists():
+            problemas.append(f"falta el archivo portado: {rel}")
+            continue
+
+        proc_blob_sha = ejecutar_git(repo_root, "rev-parse", f"595340a:{rel}")
+        proc_local_sha = ejecutar_git(repo_root, "hash-object", str(ruta))
+        if proc_blob_sha.returncode != 0 or proc_local_sha.returncode != 0:
+            problemas.append(f"{rel}: no se pudo calcular el hash de blob (git hash-object/rev-parse)")
+            continue
+
+        blob_commit = proc_blob_sha.stdout.strip()
+        blob_local = proc_local_sha.stdout.strip()
+        sha_actual = _sha256_archivo(ruta)
+        if blob_commit != blob_local:
+            problemas.append(
+                f"{rel}: hash de blob distinto al de 595340a (commit={blob_commit}, actual={blob_local}, sha256_actual={sha_actual})"
+            )
+        else:
+            print(f"    {rel}: blob OK ({blob_local}), sha256={sha_actual}")
+
+    if problemas:
+        raise Falla("(3) Archivos portados de 595340a no coinciden byte a byte:\n  " + "\n  ".join(problemas))
+
+    print(f"(3) OK: {len(ARCHIVOS_PORTADOS_595340A)} archivo(s) portados coinciden byte a byte (git hash-object) con 595340a.")
+
+
+def chequeo_4_sin_secretos_env_example(repo_root: Path) -> None:
+    ruta = repo_root / "infra/.env.example"
+    if not ruta.exists():
+        raise Falla("(4) No existe infra/.env.example")
+    texto = ruta.read_text(encoding="utf-8")
+    problemas = []
+    for nombre in VARIABLES_SECRETAS_ENV_EXAMPLE:
+        patron = re.compile(rf"^{re.escape(nombre)}=(.+)$", re.MULTILINE)
+        m = patron.search(texto)
+        if m and m.group(1).strip():
+            problemas.append(f"{nombre} tiene un valor no vacio en infra/.env.example: {m.group(1)!r}")
+
+    # Heuristica adicional: ningun token largo (>=24) hex o base64-like suelto
+    # tras un '=' en una linea de variable (no en comentarios '#').
+    for linea in texto.splitlines():
+        if linea.strip().startswith("#") or "=" not in linea:
+            continue
+        clave, _, valor = linea.partition("=")
+        valor = valor.strip()
+        if re.fullmatch(r"[A-Za-z0-9+/=_-]{24,}", valor):
+            problemas.append(f"{clave}: valor con forma de secreto/token en infra/.env.example: {valor!r}")
+
+    if problemas:
+        raise Falla("(4) Posibles secretos en infra/.env.example:\n  " + "\n  ".join(problemas))
+
+    print(f"(4) OK: {len(VARIABLES_SECRETAS_ENV_EXAMPLE)} variable(s) sensibles vacias en infra/.env.example; sin tokens sueltos con forma de secreto.")
+
+
+def ejecutar_unidad_10_6_3(repo_root: Path, ruta_ledger: Path) -> None:
+    if not _docker_disponible():
+        raise Falla(
+            "Docker no esta disponible en esta maquina — 10.6.3 exige Docker real "
+            "(_condicion_de_ejecucion de la ficha); esta unidad no se cierra solo con "
+            "'docker compose config'."
+        )
+
+    modelos_dir = Path.home() / "models"
+    tmp_config_env = Path(tempfile.mktemp(prefix="rag-config-10-6-3-", suffix=".env"))
+    tmp_config_env.write_text(f"RAG_MODELS_DIR={modelos_dir.as_posix()}\n", encoding="utf-8")
+    try:
+        chequeo_1_compose_config_10_6_3(repo_root, tmp_config_env)
+    finally:
+        tmp_config_env.unlink(missing_ok=True)
+
+    chequeo_2_verificar_ambiente(repo_root)
+    chequeo_3_sha256_18_2(repo_root)
+    chequeo_4_sin_secretos_env_example(repo_root)
+
+    worktree_dir = Path(tempfile.mkdtemp(prefix="rag-origin-main-verify-1063-"))
+    try:
+        proc_worktree = ejecutar_git(repo_root, "worktree", "add", str(worktree_dir), "origin/main")
+        if proc_worktree.returncode != 0:
+            raise Falla(f"'git worktree add' de origin/main fallo: {proc_worktree.stderr.strip()}")
+
+        proc_build_origin = ejecutar_dotnet(worktree_dir, "build", timeout=300)
+        if proc_build_origin.returncode != 0:
+            raise Falla(
+                f"'dotnet build' de origin/main en el worktree no salio 0:\n"
+                f"{proc_build_origin.stdout}\n{proc_build_origin.stderr}"
+            )
+
+        chequeo_1_build_sin_warnings_nuevos(repo_root, proc_build_origin)
+        chequeo_7_suite_completa_vs_origin_main(repo_root, worktree_dir)
+    finally:
+        proc_rm = ejecutar_git(repo_root, "worktree", "remove", "--force", str(worktree_dir))
+        if proc_rm.returncode != 0:
+            print(f"AVISO: no se pudo quitar el worktree temporal {worktree_dir}: {proc_rm.stderr.strip()}", file=sys.stderr)
+        shutil.rmtree(worktree_dir, ignore_errors=True)
+
+
 UNIDADES_IMPLEMENTADAS = {
     "10.6.1": ejecutar_unidad_10_6_1,
     "10.6.2": ejecutar_unidad_10_6_2,
+    "10.6.3": ejecutar_unidad_10_6_3,
 }
 
 

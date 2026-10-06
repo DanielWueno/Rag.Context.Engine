@@ -42,3 +42,10 @@ nohup.out
 # RAG_SUMMARY_CACHE_DIR, RAG_QDRANT_API_KEY) — específicas de esta máquina, nunca
 # hardcodeadas en infra/docker-compose.yml. Ver infra/.env.example para el contrato.
 infra/.env
+# Ítem 10.6.3: perfiles adicionales de infra/.env (Mac legado, Servidor.IA) —
+# mismo contrato, nunca versionados; infra/.env.example documenta sus variables
+# como ejemplo comentado, sin valores reales.
+infra/.env.mac
+infra/.env.servidor
+infra/.env.*
+!infra/.env.example

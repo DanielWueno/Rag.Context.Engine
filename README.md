@@ -18,7 +18,10 @@
 **Requisitos:** .NET 10 SDK · Docker · ~1 GB de disco para el modelo · (opcional para `rag ask`) [Ollama](https://ollama.com) con `qwen2.5-coder`.
 
 ```bash
-# 1. Levantar Qdrant
+# 1. Levantar Qdrant (y, si lo construyes, rag-api) — infra/docker-compose.yml
+#    trae su propio Qdrant, siempre en 127.0.0.1. Para el ambiente dev/QA
+#    portable completo (ítem 10.6.3), copia infra/.env.example a infra/.env y
+#    ajusta rutas/puertos; ver docs/operaciones.md#ambiente-devqa-portable-en-docker-ítem-1063.
 docker compose -f infra/docker-compose.yml up -d
 
 # 2. Descargar el modelo de embeddings (multilingüe, por defecto)

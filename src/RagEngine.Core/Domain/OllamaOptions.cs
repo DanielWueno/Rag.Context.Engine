@@ -27,4 +27,23 @@ public sealed class OllamaOptions
 
     /// <summary>Request timeout in seconds for long LLM generations.</summary>
     public int TimeoutSeconds { get; init; } = 120;
+
+    /// <summary>
+    /// Bearer token para endpoints remotos que lo exigen (p. ej. Servidor.IA). Null/vacío
+    /// para el perfil local: Ollama nativo no valida ninguna credencial. Nunca va en un
+    /// appsettings versionado — llega solo por variable de entorno (<c>Ollama__ApiKey</c>,
+    /// alimentada en la máquina real desde <c>SERVIDOR_IA_CLAVE</c>). Ítem 10.6.2 (porte del
+    /// perfil servidor de Ollama, 17.1 local).
+    /// </summary>
+    public string? ApiKey { get; init; }
+
+    /// <summary>
+    /// Ruta a un certificado de CA (PEM/CRT) a confiar EXCLUSIVAMENTE para validar el
+    /// servidor Ollama remoto, cuando ese servidor usa una CA interna que el almacén del
+    /// sistema no conoce. Null/vacío para el perfil local (confianza TLS del sistema, sin
+    /// cambios). Llega solo por variable de entorno (<c>Ollama__CaCertificatePath</c>,
+    /// alimentada desde <c>SERVIDOR_IA_CA</c>). Ver
+    /// <see cref="RagEngine.Core.Infrastructure.OllamaHttpClientFactory"/>.
+    /// </summary>
+    public string? CaCertificatePath { get; init; }
 }

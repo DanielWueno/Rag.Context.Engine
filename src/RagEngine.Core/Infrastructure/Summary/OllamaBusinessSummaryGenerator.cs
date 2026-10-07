@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -20,6 +21,17 @@ namespace RagEngine.Core.Infrastructure.Summary;
 /// propio y abortar ordenadamente en vez de degradarse chunk a chunk.
 /// </summary>
 public sealed class BusinessSummaryConnectionException(string message, Exception inner)
+    : Exception(message, inner);
+
+/// <summary>
+/// Fallo de AUTENTICACIÓN/AUTORIZACIÓN (401/403) con el endpoint de Ollama configurado
+/// (típicamente Servidor.IA con una <c>Ollama__ApiKey</c> ausente o inválida). A
+/// diferencia de <see cref="BusinessSummaryConnectionException"/> (transitorio, cuenta
+/// para el circuit breaker de la Fase 2) esto es un fallo de CONFIGURACIÓN: reintentar
+/// chunk a chunk no lo arregla nunca, así que no se aísla ni se cuenta — se propaga y
+/// aborta toda la ingesta (ítem 10.6.2, porte del 17.1 local).
+/// </summary>
+public sealed class BusinessSummaryAuthenticationException(string message, Exception inner)
     : Exception(message, inner);
 
 /// <summary>
@@ -105,21 +117,35 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
         IOptions<OllamaOptions> options,
         ResiliencePipelineProvider<string> pipelineProvider,
         ILogger<OllamaBusinessSummaryGenerator> logger)
+        // HttpClient (TLS contra la CA propia si aplica) y clave efectiva: mismo punto
+        // compartido que usa GenerationServiceExtensions para el Kernel de conversación
+        // (ítem 10.6.2) — ver OllamaHttpClientFactory.
+        : this(options, OllamaHttpClientFactory.Create(options.Value), pipelineProvider, logger)
+    {
+    }
+
+    /// <summary>
+    /// Puerta de prueba: permite inyectar un <see cref="HttpClient"/> ya construido (p. ej.
+    /// con un transporte en memoria que simula un 401, sin tocar la red real) sin dejar de
+    /// ejercitar <see cref="OllamaHttpClientFactory.ResolveSdkApiKey"/> para la clave
+    /// efectiva que ve el conector OpenAI de Semantic Kernel. Internal — visible solo a
+    /// RagEngine.Core.Tests (ver InternalsVisibleTo en RagEngine.Core.csproj), igual que
+    /// SanitizeSimpleAnswer y ConfidenceGate.
+    /// </summary>
+    internal OllamaBusinessSummaryGenerator(
+        IOptions<OllamaOptions> options,
+        HttpClient httpClient,
+        ResiliencePipelineProvider<string> pipelineProvider,
+        ILogger<OllamaBusinessSummaryGenerator> logger)
     {
         var opts = options.Value;
         _logger = logger;
         _resiliencePipeline = pipelineProvider.GetPipeline(ResiliencePipelineName);
 
-        var httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(opts.Endpoint),
-            Timeout = TimeSpan.FromSeconds(opts.TimeoutSeconds),
-        };
-
         var builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(
             modelId: opts.ModelId,
-            apiKey: "ollama", // placeholder requerido pero ignorado por Ollama
+            apiKey: OllamaHttpClientFactory.ResolveSdkApiKey(opts),
             httpClient: httpClient);
 
         _kernel = builder.Build();
@@ -160,6 +186,27 @@ public sealed class OllamaBusinessSummaryGenerator : IBusinessSummaryGenerator
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw; // cancelación real del llamador, no un fallo de Ollama
+        }
+        catch (HttpOperationException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            // Lo lanza el ChatClient de Semantic Kernel (envuelve el ClientResultException
+            // del SDK de OpenAI/System.ClientModel subyacente en su propio tipo — verificado
+            // de forma empírica contra un handler HTTP fake que devuelve 401) cuando el
+            // servidor responde 401/403 — distinto de IsConnectionFailure (host
+            // inalcanzable/timeout): esto es una credencial mal configurada, no
+            // inestabilidad de red. Se re-lanza como un tipo propio para que NI el catch
+            // genérico de abajo (que devolvería null por chunk) NI el circuit breaker de
+            // fallos de conexión de la Fase 2 lo traten como transitorio — debe abortar la
+            // ingesta completa (ítem 10.6.2, porte del 17.1 local).
+            var statusCode = (int)ex.StatusCode.Value;
+            _logger.LogError(
+                ex,
+                "Fallo de autenticación con Ollama (HTTP {Status}) al resumir {File}. " +
+                "Revisa Ollama:ApiKey / la variable de entorno Ollama__ApiKey.",
+                statusCode, chunk.Metadata.RelativeFilePath);
+            throw new BusinessSummaryAuthenticationException(
+                $"Ollama respondió HTTP {statusCode} ({ex.StatusCode}) al resumir " +
+                $"{chunk.Metadata.RelativeFilePath}. Verifica la clave configurada.", ex);
         }
         catch (Exception ex) when (IsConnectionFailure(ex))
         {

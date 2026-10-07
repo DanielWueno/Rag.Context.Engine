@@ -5,12 +5,73 @@
 ## Infraestructura
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d    # Qdrant (gRPC 6334, REST 6333)
+docker compose -f infra/docker-compose.yml up -d    # qdrant (gRPC 6334, REST 6333) + rag-api
 curl -s http://localhost:6333/collections           # sanity check REST
 ollama serve                                        # requerido solo para `rag ask`
 ```
 
 `rag doctor` valida todo el stack en un comando (Qdrant, modelo ONNX, tokenizador, disco).
+
+## Ambiente dev/QA portable en Docker (ítem `10.6.3`)
+
+Ítem `10.6.3-portar-ambiente-dev-qa-x64`, que integra el ítem `21.1-compose-dev-qa-portable`
+de la rama local con el contrato ya publicado de main (`12.1` clave de Qdrant, `12.8`
+loopback por defecto, `20.1`/Servidor.IA). `infra/docker-compose.yml` levanta **ambos**
+servicios reproduciblemente desde el repo, sin rutas personales ni binarios ONNX forzados:
+
+```bash
+cp infra/.env.example infra/.env       # ajustar rutas/puertos de ESTA máquina
+docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+pwsh infra/qa/verificar-ambiente.ps1   # (a)-(j): config, healthy, /api/health, loopback-only
+                                       # de Qdrant y de rag-api, supervivencia a down/up,
+                                       # no-root, 401 sin API key, /metrics y caché en volumen
+```
+
+`infra/qa/verificar-ambiente.ps1` acepta `-ComposeFile`/`-EnvFile`/`-ProjectName` y los
+nombres/puertos de contenedor (`-RagApiContainerName`, `-QdrantContainerName`,
+`-RagApiPort`, `-QdrantHttpPort`, `-QdrantGrpcPort`) para poder correr una verificación
+aislada — con un `infra/.env` de prueba que fije `RAG_API_CONTAINER_NAME`,
+`QDRANT_CONTAINER_NAME`, `RAG_API_PORT` y `QDRANT_HTTP_HOST_PORT`/`QDRANT_GRPC_HOST_PORT`
+distintos — sin tocar un `rag-api`/`rag-qdrant` ya corriendo en la misma máquina. Sin
+Docker en marcha, el script falla explícitamente en los diez puntos; nunca omite una
+comprobación en silencio.
+
+### Carga de la caché de resúmenes en el volumen nombrado
+
+La caché SQLite de resúmenes de negocio de este ambiente vive **siempre** en un volumen
+Docker nombrado (`rag-api-cache`), nunca en el WAL que escribe `rag ingest --con-resumen`
+corriendo nativo en el host — montar ambos a la vez corrompe el índice WAL compartido
+(ver el aviso de la sección [Caché de resúmenes de negocio](#caché-de-resúmenes-de-negocio-sqlite)
+más arriba, que sigue aplicando al flujo nativo/Mac). `infra/qa/cargar-cache.ps1` mete una
+**copia consistente** (`VACUUM INTO`, nunca un bind mount directo) del
+`summary-cache.sqlite3` del host en ese volumen:
+
+```bash
+pwsh infra/qa/cargar-cache.ps1 -SourcePath "<ruta al summary-cache.sqlite3 del host>"
+docker compose -f infra/docker-compose.yml restart rag-api
+```
+
+### Evidencia histórica de `21.2` — no es la baseline vigente
+
+`docs/eval/18.2/` conserva, byte a byte, la evidencia de poblar `rag-engine` y
+`micro-repo` en x64/fp32 (commit local `595340a`, ahora `21.2-poblar-colecciones-en-x64`
+en el ledger). **No es la medición vigente**: compara contra una baseline de una
+generación de contrato de retrieval anterior a la actual de `main`. La medición contra
+la baseline vigente de contrato v3 (`docs/eval/quality/5.e/`) es el ítem
+`21.5-medir-recall-x64-contra-baseline-5e`, bloqueado por este ítem y deliberadamente no
+ejecutado aquí — ver `docs/eval/18.2/README.md` para el detalle completo. Este ítem
+tampoco puebla ni reingesta ninguna colección servida.
+
+### Limitaciones conocidas de este ambiente
+
+- Sin un pipeline de Azure DevOps que publique la imagen (ítem `21.3`, bloqueado),
+  `RAG_API_IMAGE` por defecto hace `docker compose up -d --build` un build local, no un
+  pull de un registry versionado.
+- El perfil servidor de Ollama (`20.1`/Servidor.IA) es opt-in: sin `infra/.env` de ese
+  perfil, `/api/health` reporta el chequeo de Ollama como `"down"` si tampoco hay un
+  Ollama nativo alcanzable en el host — comportamiento esperado, no se oculta.
+- Las bandas del gate de confianza no están calibradas para fp32 x64 en este ambiente
+  (ítem `12.10`, pendiente) — ver la nota de la ola 21 en el ledger.
 
 ### Caché de resúmenes de negocio (SQLite)
 

@@ -9,6 +9,7 @@ El plan de proyecto interno (diseño histórico, roadmap y riesgos) vive en la r
 |---|---|---|
 | [como-funciona.md](como-funciona.md) | Ingeniería (incorporación) | Recorrido explicado del sistema con diagramas: vocabulario, los tres proyectos, qué pasa en una ingesta y en una pregunta, y dónde tocar según lo que quieras cambiar |
 | [arquitectura.md](arquitectura.md) | Ingeniería | Componentes del núcleo, capas, contratos, mapa de dependencias y decisiones de diseño |
+| [referencias-tecnologicas.md](referencias-tecnologicas.md) | Ingeniería / decisiones técnicas | Tecnologías integradas, herramientas de desarrollo y proyectos de referencia: aporte, procedencia y estado real de adopción |
 | [busqueda-hibrida.md](busqueda-hibrida.md) | Ingeniería / IA | Rama densa multilingüe (ONNX/SentencePiece), rama dispersa (normalización ES/EN, TF saturado), fusión RRF y semántica de `min-score` |
 | [pipeline-de-ingesta.md](pipeline-de-ingesta.md) | Ingeniería | Flujo productor/consumidores, estrategias de chunking, filtros de calidad, características de rendimiento medidas |
 | [guia-cli.md](guia-cli.md) | Usuarios | Referencia completa de `ingest`, `search`, `ask`, `status`, `doctor` y `eval` con ejemplos |

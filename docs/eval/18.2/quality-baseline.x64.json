@@ -1,0 +1,42 @@
+{
+ "etiqueta": "baseline",
+ "base_url": "http://localhost:5080",
+ "resumen": {
+  "preguntas": 1,
+  "palabras_promedio": 93,
+  "palabras_mediana": 93,
+  "respuestas_cortas_pct": 0.0,
+  "rechazo_pleno_pct": 0.0,
+  "banda_baja_pct": 0.0,
+  "directo_pct": 100.0,
+  "directo_con_score_bajo_pct": 100.0,
+  "simple_con_tecnicismos_pct": null,
+  "simple_total": 0,
+  "optimista_promedio": 0,
+  "vago_promedio": 0,
+  "duracion_promedio_s": 2.1
+ },
+ "detalle": [
+  {
+   "coleccion": "rag-engine",
+   "pregunta": "Cómo funcionas?",
+   "respuesta": "Soy Rag.Context.Engine, un asistente RAG (Retrieval-Augmented Generation) que\r\ncorre completamente en local, sin conexión a servicios de LLM externos.\r\n\r\nCómo funciono: busco en un corpus indexado en Qdrant usando búsqueda híbrida\r\n(embeddings densos con paraphrase-multilingual-MiniLM-L12-v2 + un vector\r\ndisperso estilo BM25), fusiono los resultados con RRF y, cuando aplica,\r\nlos re-rankeo con un cross-encoder (mmarco-mMiniLMv2-L12-H384-v1) antes de\r\ngenerar la respuesta con un modelo local vía Ollama (familia Qwen2.5).\r\n\r\nSolo respondo con base en el contenido ya indexado del corpus activo — no\r\ntengo acceso a internet ni a conocimiento fuera de esa colección.",
+   "metricas": {
+    "modo": "Technical",
+    "caracteres": 669,
+    "palabras": 93,
+    "postura": "directo",
+    "fuentes": 0,
+    "score_top": null,
+    "tecnicos_total": 2,
+    "tecnicos": {
+     "dotted_pascal": 1,
+     "pascal_compuesto": 1
+    },
+    "optimista": 0,
+    "vago": 0,
+    "duracion_s": 2.09
+   }
+  }
+ ]
+}

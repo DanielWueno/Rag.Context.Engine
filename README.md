@@ -18,7 +18,10 @@
 **Requisitos:** .NET 10 SDK · Docker · ~1 GB de disco para el modelo · (opcional para `rag ask`) [Ollama](https://ollama.com) con `qwen2.5-coder`.
 
 ```bash
-# 1. Levantar Qdrant
+# 1. Levantar Qdrant (y, si lo construyes, rag-api) — infra/docker-compose.yml
+#    trae su propio Qdrant, siempre en 127.0.0.1. Para el ambiente dev/QA
+#    portable completo (ítem 10.6.3), copia infra/.env.example a infra/.env y
+#    ajusta rutas/puertos; ver docs/operaciones.md#ambiente-devqa-portable-en-docker-ítem-1063.
 docker compose -f infra/docker-compose.yml up -d
 
 # 2. Descargar el modelo de embeddings (multilingüe, por defecto)
@@ -56,6 +59,7 @@ Referencia completa de opciones: **[docs/guia-cli.md](docs/guia-cli.md)**.
 | Documento | Contenido |
 |---|---|
 | [docs/arquitectura.md](docs/arquitectura.md) | Componentes del núcleo, capas, mapa de dependencias |
+| [docs/referencias-tecnologicas.md](docs/referencias-tecnologicas.md) | Tecnologías y proyectos de referencia: qué usamos, qué aportaron y qué sigue en evaluación |
 | [docs/busqueda-hibrida.md](docs/busqueda-hibrida.md) | Rama densa multilingüe, tokenización dispersa, fusión RRF y semántica de scores |
 | [docs/pipeline-de-ingesta.md](docs/pipeline-de-ingesta.md) | Flujo scanner → chunking → vectorización → Qdrant; concurrencia y rendimiento |
 | [docs/guia-cli.md](docs/guia-cli.md) | Referencia completa de comandos y opciones |

@@ -56,6 +56,13 @@ Comprobado commit a commit, no solo por asunto:
 Los diferidos se reconcilian después, contra el código ya integrado, en un PR separado. Siguen
 disponibles en `5cc44a5`, en `respaldo/local-5cc44a5` y en el bundle de 10.6.1.
 
+**Seguimiento 2026-10-07:** `10.7-reconciliar-mcp-multiapi-y-k8s` recupera la parte
+documental de `55b9d87`, conserva el resultado original de `10.5` y ocupa la reserva de
+**ola 23** para MCP multi-API y su despliegue condicionado en `reyma-dev`. Procedencia y
+criterios actualizados en [el planteamiento](contextforge-contexto-operativo-autorizado.md).
+Es trabajo posterior a 10.6, no una ampliacion retroactiva de aquella integracion.
+Conversaciones y la reserva 22 siguen diferidas. No se afirma PR publicado ni despliegue.
+
 Nota: `5cc44a5`, `55b9d87` y `5e82592` llevan `Co-Authored-By`. Ningún commit portado puede llevarlo.
 
 ## 4. Adaptaciones técnicas de 17.1 que la fusión textual no muestra

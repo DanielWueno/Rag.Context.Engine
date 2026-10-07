@@ -35,8 +35,8 @@ no mantiene una segunda lista de versiones que pueda divergir de esas fuentes.
 | [Microsoft.ML.Tokenizers](https://github.com/dotnet/machinelearning) | Tokenizacion para los modelos, incluido SentencePiece; no confundirla con nuestro tokenizador disperso. | [Dependencia de Core](../src/RagEngine.Core/RagEngine.Core.csproj) y [OnnxVectorizationBrain](../src/RagEngine.Core/Infrastructure/Vectorization/OnnxVectorizationBrain.cs). |
 | [Qdrant](https://github.com/qdrant/qdrant) / [cliente .NET](https://github.com/qdrant/qdrant-dotnet) | Almacenamiento vectorial, consultas densas/dispersas y fusion RRF nativa. | [QdrantVectorStore](../src/RagEngine.Core/Infrastructure/VectorStore/QdrantVectorStore.cs), [QdrantSemanticRetriever](../src/RagEngine.Core/Infrastructure/VectorStore/QdrantSemanticRetriever.cs) y [Compose](../infra/docker-compose.yml). |
 | [Semantic Kernel](https://github.com/microsoft/semantic-kernel) | Cliente y abstracciones de generacion conversacional mediante el conector compatible con OpenAI. | [GenerationServiceExtensions](../src/RagEngine.Core/Extensions/GenerationServiceExtensions.cs). |
-| [Ollama](https://github.com/ollama/ollama) | Servidor de modelos para respuestas y resumenes, con perfiles local/servidor. Usar el conector OpenAI no significa consumir la nube de OpenAI. | [Configuracion de perfiles](configuracion.md) y [generador de resumenes](../src/RagEngine.Core/Services/Summary/OllamaBusinessSummaryGenerator.cs). |
-| [SQLite](https://sqlite.org/) / [Microsoft.Data.Sqlite](https://learn.microsoft.com/dotnet/standard/data/sqlite/) | Persistencia de cache de resumenes por contenido y version de prompt. | [SummaryCache](../src/RagEngine.Core/Services/Summary/SummaryCache.cs) y [dependencia de Core](../src/RagEngine.Core/RagEngine.Core.csproj). |
+| [Ollama](https://github.com/ollama/ollama) | Servidor de modelos para respuestas y resumenes, con perfiles local/servidor. Usar el conector OpenAI no significa consumir la nube de OpenAI. | [Configuracion de perfiles](configuracion.md) y [generador de resumenes](../src/RagEngine.Core/Infrastructure/Summary/OllamaBusinessSummaryGenerator.cs). |
+| [SQLite](https://sqlite.org/) / [Microsoft.Data.Sqlite](https://learn.microsoft.com/dotnet/standard/data/sqlite/) | Persistencia de cache de resumenes por contenido y version de prompt. | [SummaryCache](../src/RagEngine.Core/Infrastructure/Summary/SummaryCache.cs) y [dependencia de Core](../src/RagEngine.Core/RagEngine.Core.csproj). |
 | [Polly](https://github.com/App-vNext/Polly) | Resiliencia en caminos concretos de llamadas; su presencia no acredita cobertura de todos los endpoints o del streaming. | [QdrantSemanticRetriever](../src/RagEngine.Core/Infrastructure/VectorStore/QdrantSemanticRetriever.cs) y [dependencias de Core](../src/RagEngine.Core/RagEngine.Core.csproj). |
 | [Spectre.Console](https://github.com/spectreconsole/spectre.console) | Interfaz de terminal y despacho de comandos CLI. | [Proyecto CLI](../src/RagEngine.Cli/RagEngine.Cli.csproj). |
 | [Serilog](https://github.com/serilog/serilog) | Logs estructurados y sinks de consola/archivo. No equivale a auditoria persistente de negocio. | Arranque de [API](../src/RagEngine.Api/Program.cs) y [CLI](../src/RagEngine.Cli/Program.cs). |
@@ -110,6 +110,15 @@ concreta, fuentes autorizadas, criterio predefinido y presupuesto. Comparar una 
 solo con indice frente a la misma consulta enriquecida, distinguiendo citas, fechas,
 permisos y fallos de fuente. Empezar por herramientas de solo lectura. Este registro no
 autoriza esa prueba, no cambia prioridades y no desbloquea fichas existentes.
+
+**Actualizacion 2026-10-07:** el [planteamiento operativo](analisis-futuro/contextforge-contexto-operativo-autorizado.md)
+de `55b9d87` se recupera y reconcilia por `10.7` en la **ola 23** reservada tras integrar
+ramas. Define una base multi-API (tickets como piloto y activos como segundo dominio
+sintetico), diez fichas de capacidad y cuatro de preparacion/despliegue/aceptacion en
+`reyma-dev`. Headlamp es la interfaz del operador, no el gateway. La existencia del
+cluster es informacion del usuario, no conexion ni compatibilidad comprobadas.
+ContextForge sigue evaluado, no adoptado ni desplegado; namespace, alcance y aprobacion
+son condiciones pendientes. La migracion de RagEngine/Qdrant permanece en `21.4`.
 
 ## Mantenimiento y atribucion
 

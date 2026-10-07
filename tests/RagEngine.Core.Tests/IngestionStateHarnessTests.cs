@@ -22,6 +22,7 @@ namespace RagEngine.Core.Tests;
 /// de chunking, fallo de upsert y cancelación, más un ciclo matar/reanudar que
 /// verifique historia conservada y ausencia de duplicados.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: InitializeAsync abre un Qdrant real en localhost:6334
 public sealed class IngestionStateHarnessTests : IAsyncLifetime
 {
     private const string RepoName = "estado-fixture";

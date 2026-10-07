@@ -625,6 +625,80 @@ El prompt de confirmación exige TTY, pero la CLI ya lo detecta y aborta con un 
 (`Agrega --yes para confirmar sin preguntar`) en vez de colgarse. En automatización:
 `rag ingest ... --force --yes`. Ya no hace falta el rodeo de borrar la colección por REST.
 
+## CI de GitHub Actions (ítem `1.7-ci-minimo`, extendido por `19.6`)
+
+`.github/workflows/ci.yml` corre en `ubuntu-latest`, sin Qdrant, sin modelos ONNX
+descargados y sin Ollama. Desde el 2026-08-27 hasta el 19.6 (2026-10-07) el job único
+`build-and-test` corría TODA la suite de `RagEngine.Core.Tests` contra ese runner
+desnudo: 68 de los ~73 tests en rojo de cada corrida eran exactamente eso — infraestructura
+ausente, no una regresión — y los 5 restantes (de los que el CI nunca distinguía
+nada) eran dos defectos propios de los tests (aislamiento de trazas bajo paralelismo real
+de xUnit, y un DI roto en un fixture). Un CI permanentemente rojo no detecta una
+regresión nueva: el ítem 19.6 separó ambas cosas.
+
+**Categorías xUnit** (`tests/RagEngine.Core.Tests/TestCategories.cs`, `Trait("Category", ...)`):
+
+| Categoría | Qué exige | Ejemplos |
+|---|---|---|
+| `RequiereQdrant` | Qdrant real alcanzable (`localhost:6334` en local) | `VectorStoreResumeTests`, `TenantPayloadFilterTests`, `IngestionStateHarnessTests` |
+| `RequiereOnnx` | Modelo(s) ONNX de embeddings/cross-encoder descargados en disco | `RetrievalProfileHttpHarnessTests`, dos casos de `RetrievalScoreContractTests` |
+| `RequiereOllama` | Un servidor Ollama/OpenAI-compatible real por HTTP | `MetricsExporterHttpHarnessTests.Exportador_desactivado_por_defecto_...` (pide `/api/health`, que sondea Ollama, Qdrant y ONNX: lleva las tres categorías) |
+
+El criterio es por **método o clase con el Trait explícito**, nunca por nombre de
+archivo: muchos tests importan `Qdrant.Client`/`QdrantClient` solo para construir un
+fixture en memoria o ejercitar lógica pura sin abrir conexión (p.ej.
+`RetrievalProfileTests.BuildResolver`, documentado inline), y varios tests que SÍ
+necesitan el modelo ONNX ya traían su propio auto-skip (`OnnxModeloDisponibleFactAttribute`
+en `CrossEncoderStableGateScoreTests`/`RetrievalScoreContractTests`, o un `return;` temprano
+en `OnnxVectorizationBrainTokenizationTests`) — esos también llevan el Trait, para que el
+job sin infraestructura pueda excluirlos por filtro en vez de depender de que sigan
+auto-saltándose.
+
+**Dos pasos en el job `build-and-test`:**
+
+1. **`Tests (sin infraestructura externa)`** (bloqueante): corre
+   ```bash
+   dotnet test tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj --configuration Release \
+     --filter "Category!=RequiereQdrant&Category!=RequiereOnnx&Category!=RequiereOllama"
+   ```
+   Si algo de esto falla, el job (y el check de PR) se pone en rojo — este es el gate real.
+2. **`Resumen de tests excluidos`**: no ejecuta los tests con infraestructura (no tiene
+   sentido correrlos contra un runner desnudo solo para verlos fallar); los LISTA con
+   `--list-tests --filter "Category=..."` y publica cuántos son por categoría, en el resumen
+   del job (`$GITHUB_STEP_SUMMARY`) y como anotación `::notice::`. Deliberadamente NO se
+   levanta un `service:` de Qdrant ni se descargan modelos en el runner (costo/tiempo no
+   aprobado para este ítem): esos tests se EXCLUYEN de forma visible, nunca cuentan como
+   pasados ni quedan ocultos. Si en el futuro se aprueba pagar ese costo, este es el lugar
+   para añadir un `services: qdrant: ...` y un paso que corra `infra/download-model.sh`.
+   El conteo es de casos que enumera el descubrimiento de xUnit (un `[Theory]` sin
+   pre-enumerar aparece como una sola entrada).
+
+Reproducir el gate en Linux desde Windows (el CI es `ubuntu-latest`; en Windows nativo
+fallan, por razones ajenas al CI, los tests que borran SQLite abiertos y los goldens con
+fin de línea CRLF): copiar el árbol a un directorio temporal, normalizar a LF y correr
+`dotnet test` con el filtro de arriba dentro de `mcr.microsoft.com/dotnet/sdk:10.0`.
+
+**Aislamiento de trazas bajo paralelismo real** (`TracingGenerationTests.cs`):
+`ActivitySource.AddActivityListener` es un registro GLOBAL del proceso — el listener de
+un test también recibe las activities que genere, en paralelo, cualquier OTRA clase que
+escriba en `RagEngineTracing.SourceName` (incluida la que el propio host de ASP.NET Core
+abre para cada petición HTTP). La corrección no baja el paralelismo del ensamblado (eso
+cambiaría rendimiento por aislamiento de forma genérica): cada test manda su propio header
+`traceparent` (W3C) con un trace id generado antes de la llamada HTTP, escucha también la
+fuente `Microsoft.AspNetCore` (el ActivitySource del host; `Microsoft.AspNetCore.Hosting` es solo el
+nombre del DiagnosticListener y no activa nada) para que el host adopte ese trace id como el de la
+petición entrante, y filtra la lista capturada por ese trace id ANTES de cualquier aserción.
+
+**Control de resumen cacheado** (`GenerationHttpHarnessTests.cs`): el refactor
+`f306f51` (9.4, "extraer `ISummaryCache` como puerto") cambió el registro de producción a
+`AddSingleton<ISummaryCache>(...)`, pero el `services.Replace(...)` del fixture de este test
+se quedó sin el genérico explícito — `ServiceDescriptor.Singleton(_ => ...)` infiere el
+servicio concreto `SummaryCache` del valor de retorno del lambda, no la interfaz que los
+consumidores reales resuelven — así que dejó de interceptar la caché real en silencio
+(mismo archivo, `prompt_version` distinto ⇒ miss permanente). El golden
+`docs/eval/quality/9.3/fixtures.json` es anterior a ese commit y seguía describiendo el
+comportamiento correcto; no se tocó su valor esperado.
+
 ## Checklist de despliegue en una máquina nueva
 
 1. .NET 10 SDK + Docker + (opcional) Ollama con `qwen2.5-coder`.

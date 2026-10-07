@@ -23,6 +23,7 @@ namespace RagEngine.Core.Tests;
 /// se aplica DENTRO del puerto de retrieval en búsqueda densa, sparse, resumen,
 /// expansión two-hop y el camino HTTP que devuelve fuentes.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: InitializeAsync abre un Qdrant real en localhost:6334
 public sealed class RetrievalAuthorizationContextHttpHarnessTests : IAsyncLifetime
 {
     private const int Dimension = 4;

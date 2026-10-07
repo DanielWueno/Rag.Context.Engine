@@ -59,7 +59,11 @@ public sealed class GateCalibrationPipelineTests
         }
     }
 
+    // Ítem 19.6: a diferencia de los otros dos tests de esta clase (que usan
+    // GenerationHttpHarnessTests.GenerationFactory con un retriever fake), este construye
+    // su propio QdrantClient real en localhost:6334.
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)]
     public async Task Retrieval_reads_manifest_profile_and_rejects_mismatch_without_changing_nonrerank()
     {
         using var client = new QdrantClient("localhost", 6334);

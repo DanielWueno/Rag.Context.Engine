@@ -39,6 +39,8 @@ namespace RagEngine.Core.Tests;
 /// nunca toca ninguna colección servida — ver AGENTS.md "No tocar colecciones servidas por
 /// una prueba".
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: ver nota de la clase ("Integración real...")
+[Trait("Category", TestCategories.RequiereOnnx)]
 public sealed class CollectionAuthorizationVisibilityHttpHarnessTests : IAsyncLifetime
 {
     private const int EmbeddingDimension = 384; // debe igualar OnnxBrain:EmbeddingDimensions de appsettings.json

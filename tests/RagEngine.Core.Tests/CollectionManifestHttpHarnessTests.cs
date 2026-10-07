@@ -49,6 +49,8 @@ namespace RagEngine.Core.Tests;
 /// este ítem — es el mismo abort de proceso que ya documenta Api/Program.cs — pero
 /// conviene revisar `curl localhost:6333/collections` tras correr este archivo solo.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: ver nota de la clase ("Integración real...")
+[Trait("Category", TestCategories.RequiereOnnx)]
 public sealed class CollectionManifestHttpHarnessTests : IAsyncLifetime
 {
     private const int EmbeddingDimension = 384; // debe igualar OnnxBrain:EmbeddingDimensions de appsettings.json

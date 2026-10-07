@@ -237,14 +237,40 @@ public sealed class GenerationHttpHarnessTests
                 ["Authorization:Mode"] = "Local",
                 ["RagGeneration:EnableSimpleModeSanitizer"] = sanitizer.ToString(),
                 ["Ingestion:ResumenCachePath"] = _cachePath,
-                ["Audit:DbPath"] = _cachePath + ".audit"
+                ["Audit:DbPath"] = _cachePath + ".audit",
+                // Ítem 19.6: el golden de docs/eval/quality/9.3 (commit 3279b26) dispara hasta 36
+                // solicitudes seguidas contra un mismo actor en un mismo factory (todas las
+                // combinaciones escenario x modo x endpoint). El rate limiting por actor (ítem
+                // 12.1, commit 3a67bd9) llegó DESPUÉS de capturar ese control, con un default de
+                // PermitLimit=30/60s — justo por debajo de ese volumen, así que los últimos
+                // escenarios ("fallback"/"fallback-near") empezaban a recibir 429 una vez
+                // arreglado el defecto de ISummaryCache de más arriba (antes quedaba enmascarado
+                // porque el test fallaba en el primer escenario). Esta fixture no evalúa rate
+                // limiting — eso ya lo cubre RateLimitingHttpHarnessTests con sus propios límites
+                // explícitos — así que se sube la cuota para este harness en vez de tocar el
+                // default de producción o el contenido esperado del golden.
+                ["RateLimiting:PermitLimit"] = "1000",
+                ["RateLimiting:WindowSeconds"] = "60"
             }));
             builder.ConfigureTestServices(services =>
             {
                 var kernel = Kernel.CreateBuilder();
                 kernel.Services.AddSingleton<IChatCompletionService>(Chat);
                 services.Replace(ServiceDescriptor.Singleton(kernel.Build()));
-                services.Replace(ServiceDescriptor.Singleton(_ =>
+                // Ítem 19.6: hasta el commit f306f51 (9.4, "extraer ISummaryCache como puerto")
+                // Program.cs resolvía SummaryCache por tipo CONCRETO, así que este Replace sin
+                // generico explicito (TService inferido = SummaryCache, por el tipo de retorno
+                // del lambda) interceptaba correctamente esa resolucion. 9.4 cambio los cuatro
+                // puntos de Program.cs a `GetRequiredService<ISummaryCache>()` pero no toco este
+                // fixture ya existente: desde entonces el Replace registraba un SummaryCache
+                // concreto que nadie pedia, y la resolucion real de ISummaryCache caia en el
+                // singleton de produccion (prompt_version real via ComputePromptVersion, no
+                // "9.3-fixture"), por lo que TryGetAsync siempre fallaba el hash_cache + pv y
+                // devolvia null. El golden de docs/eval/quality/9.3/fixtures.json nunca estuvo
+                // mal: el fixture de este test dejo de interceptar el servicio correcto. Fijar
+                // el generico explicito restaura el comportamiento con el que se capturo el
+                // control (commit 3279b26, anterior a f306f51 en la misma tarde).
+                services.Replace(ServiceDescriptor.Singleton<ISummaryCache>(_ =>
                 {
                     var cache = SummaryCache.Open(_cachePath, "9.3-fixture");
                     cache.SetAsync("hash-code", "Resumen cacheado del codigo.").GetAwaiter().GetResult();

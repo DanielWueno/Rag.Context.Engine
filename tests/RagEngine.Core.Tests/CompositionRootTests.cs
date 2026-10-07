@@ -19,8 +19,15 @@ namespace RagEngine.Core.Tests;
 /// <c>/api/ask</c>. Este test devuelve esa red, y encima cubre lo que
 /// <c>ValidateOnBuild</c> nunca cubrió: resolver de verdad el nodo raíz.
 ///
-/// No necesita Qdrant, ni Ollama, ni los modelos ONNX en disco: las sesiones de
-/// inferencia se cargan perezosamente, así que los constructores resuelven sin ficheros.
+/// No necesita Qdrant ni Ollama vivos: el cliente de Qdrant no abre conexión de red al
+/// construirse, y Ollama solo se usa vía HttpClient perezoso. Corrección del ítem 19.6: a
+/// diferencia de lo que decía esta nota antes, SÍ necesita los modelos ONNX en disco para
+/// <see cref="LaGeneracionSeResuelveDesdeUnScope"/> y <see cref="LaIngestionSeResuelveDesdeUnScope"/>
+/// (ver <see cref="TestCategories.RequiereOnnx"/> en cada uno) — el constructor de
+/// OnnxVectorizationBrain valida con <c>File.Exists</c> que el modelo esté en disco antes
+/// de diferir la sesión de inferencia, así que "perezoso" solo aplica a la sesión, no al
+/// chequeo del archivo. <see cref="ElGrafoDeDiSeConstruyeYValida"/> sí es ONNX-free: solo
+/// construye el <see cref="ServiceProvider"/>, nunca resuelve un scope.
 /// </summary>
 public class CompositionRootTests
 {
@@ -61,7 +68,14 @@ public class CompositionRootTests
     /// fábricas. Si a un colaborador le falta una dependencia, o si alguno pasara a
     /// depender de algo Scoped siendo Singleton, esto falla aquí y no en producción.
     /// </summary>
+    // Ítem 19.6: a pesar de lo que dice la nota de arriba, resolver desde un scope SÍ
+    // ejecuta las fábricas reales (ActivatorUtilities no mira constructores perezosos
+    // "de mentira") y el constructor de OnnxVectorizationBrain valida con File.Exists que
+    // el .onnx declarado esté en disco ANTES de diferir la sesión de inferencia en sí —
+    // confirmado en la corrida de CI 35894801007 (System.IO.FileNotFoundException, no un
+    // error de red). Sin el modelo descargado (infra/download-model.sh), este test falla.
     [Fact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public void LaGeneracionSeResuelveDesdeUnScope()
     {
         using var proveedor = Construir();
@@ -81,7 +95,10 @@ public class CompositionRootTests
     /// archivo temporal: el default apunta a la caché SQLite real compartida entre
     /// colecciones, y este test no debe abrirla ni tocar su WAL.
     /// </summary>
+    // Ítem 19.6: mismo motivo que LaGeneracionSeResuelveDesdeUnScope — el pipeline de
+    // ingesta también resuelve el brain ONNX real desde el scope.
     [Fact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public void LaIngestionSeResuelveDesdeUnScope()
     {
         var rutaTemporal = Path.Combine(

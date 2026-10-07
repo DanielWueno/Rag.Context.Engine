@@ -5,10 +5,14 @@
 # es detectar que algo dejó de compilar o que un test se puso rojo — no imponer
 # ceremonia. Ver docs/analisis-futuro/ejecucion-plan.estado.json, ítem 1.7.
 #
-# Por qué esto puede correr en un runner x64 sin modelos ONNX ni servicios:
-# tests/RagEngine.Core.Tests no toca ONNX, Qdrant ni Ollama. Ejercita el
-# tokenizador sparse, el sanitizador del modo Simple y los chunkers, que son
-# código administrado puro. La suite tarda ~30 ms.
+# Ítem 19.6: el runner NO tiene Qdrant, modelos ONNX descargados ni Ollama. Los tests
+# que los necesitan declaran un Trait("Category", ...) explícito (RequiereQdrant,
+# RequiereOnnx, RequiereOllama; ver tests/RagEngine.Core.Tests/TestCategories.cs).
+# El paso "Tests" corre todo lo demás y es el gate real. Los tests con infraestructura
+# se EXCLUYEN por filtro (no se ejecutan contra un runner desnudo para que fallen) y el
+# paso "Resumen de tests excluidos" publica cuántos son: nunca cuentan como pasados.
+# Si algún día se aprueba levantar Qdrant/descargar modelos en CI, es este el lugar
+# donde ejecutarlos.
 
 name: CI
 
@@ -44,12 +48,32 @@ jobs:
       - name: Compilar
         run: dotnet build RagEngine.slnx --configuration Release --no-restore
 
-      - name: Tests
+      - name: Tests (sin infraestructura externa)
         run: >
           dotnet test tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj
           --configuration Release
           --no-build
+          --filter "Category!=RequiereQdrant&Category!=RequiereOnnx&Category!=RequiereOllama"
           --logger "console;verbosity=normal"
+
+      - name: Resumen de tests excluidos (requieren infraestructura que este runner no tiene)
+        run: |
+          set -euo pipefail
+          {
+            echo "### Tests excluidos de este CI (NO cuentan como pasados)"
+            echo
+            echo "| Categoría | Casos descubiertos |"
+            echo "|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for categoria in RequiereQdrant RequiereOnnx RequiereOllama; do
+            n=$(dotnet test tests/RagEngine.Core.Tests/RagEngine.Core.Tests.csproj \
+                  --configuration Release --no-build --list-tests \
+                  --filter "Category=$categoria" \
+                | sed -n '/^The following Tests are available:/,$p' | tail -n +2 \
+                | grep -c '[^[:space:]]' || true)
+            echo "| $categoria | $n |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Tests excluidos::$categoria: $n tests no ejecutados en este runner (sin infraestructura)"
+          done
 
       # Solo fixtures: nunca ejecutar el job local contra corpus/modelos privados
       # desde pull_request, ni usar un runner self-hosted para este workflow.

@@ -120,6 +120,17 @@ cluster es informacion del usuario, no conexion ni compatibilidad comprobadas.
 ContextForge sigue evaluado, no adoptado ni desplegado; namespace, alcance y aprobacion
 son condiciones pendientes. La migracion de RagEngine/Qdrant permanece en `21.4`.
 
+**Separacion posterior, `10.8`:** creado el proyecto local hermano
+`D:\git\Mcp.ContextForge` con instrucciones, documentacion y ledger propios; no fork IBM,
+sin remote ni despliegue. Las tareas operativas `23.11`/`23.12`/`23.13` se transfieren a
+`1.1`/`1.2`/`1.3` en su `docs\plan\ejecucion-plan.estado.json`; aqui quedan solo como
+referencias historicas bloqueadas, no ejecutables ni marcadas hechas por el traslado.
+El destino define acceso privado/TLS remoto, dos consumidores y G01-G12.
+`23.4` sigue gobernando adopcion **por RagEngine**, no disponibilidad para otros.
+`23.14` exige contrato/evidencia externa, no cerrar el despliegue en este ledger.
+Consumo RAG y APIs empresariales quedan para despues; autenticacion, permisos,
+persistencia y recuperacion son requisitos de la entrega del servidor independiente.
+
 ## Mantenimiento y atribucion
 
 Al incorporar una referencia, registrar fuente oficial, aporte, estado, evidencia local

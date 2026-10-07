@@ -2,6 +2,7 @@
 
 > Analisis original del 2026-10-05, commit `55b9d87`, ficha `10.5`.
 > Reconciliacion del 2026-10-07: `10.7-reconciliar-mcp-multiapi-y-k8s`, **ola 23**.
+> Prioridad posterior del usuario: `10.8-separar-servidor-contextforge-del-consumo-rag`.
 > **No hay integracion implementada, despliegue comprobado ni adopcion de ContextForge.**
 
 La [integracion de ramas](integracion-rama-local-2026-10-05.md) habia diferido este
@@ -12,6 +13,20 @@ El resultado historico de `10.5` no se reescribe; este documento actualiza el pl
 no acredita haber ejecutado las pruebas que propone.
 
 ## 1. Decision y alcance
+
+**Entrega inmediata acordada:** dejar ContextForge servido en `reyma-dev` como gateway
+MCP compartido y utilizable por clientes autorizados de otros equipos/personas,
+independientemente de RagEngine, en el proyecto hermano **Mcp.ContextForge**.
+La secuencia propietaria es `1.1` -> `1.2` -> `1.3` en su ledger; las referencias
+`23.11` -> `23.12` -> `23.13` de este repositorio quedan solo como trazabilidad.
+La autenticacion, permisos, acceso privado con TLS, persistencia, respaldo y operacion
+son parte de esa entrega; no se posponen junto con las configuraciones de consumo.
+La instalacion no queda autorizada por esta decision de prioridad.
+
+**Entrega posterior:** integrar el consumo en RagEngine, seleccionar APIs de negocio
+y medir su aporte. Los siguientes apartados 3-9 conservan ese planteamiento y sus
+criterios; no son prerrequisitos del servidor compartido. Un gateway disponible
+no supone que RagEngine ya lo consuma ni que cualquier API este conectada.
 
 Ampliar RagEngine para responder preguntas con **evidencia del indice, de APIs autorizadas
 o de ambas**, sin sustituir su retrieval ni convertir cada pregunta en un agente autonomo.
@@ -301,8 +316,13 @@ no rendimiento garantizado. Medir ambos brazos si cambia version/instrumento.
 Ausencia del contenedor o pruebas omitidas es fallo, no resultado nulo.
 
 Si ContextForge preserva contratos y aporta controles/catalogo utiles dentro del presupuesto,
-queda elegible, no desplegado. Si no aporta o incumple, conservar HTTP directo y registrar
-el resultado negativo sin frenar las capacidades operativas. No hacer un fork por defecto.
+queda elegible **para el consumo de RagEngine**; no es la puerta de instalacion del servicio
+compartido. Si no aporta o incumple, conservar HTTP directo para RagEngine y registrar
+el resultado negativo sin frenar las capacidades operativas. Un resultado negativo de
+rendimiento/valor para RAG no obliga a retirar el servicio a otros consumidores.
+Un defecto real de aislamiento/autorizacion se registra y bloquea la capacidad afectada;
+no se ignora por separar las entregas ni autoriza a detener servicios ajenos sin aprobacion.
+No hacer un fork por defecto.
 Si resulta elegible, `23.8` verifica tambien las 48 preguntas pasando por el gateway; una
 regresion impide promover ese transporte. No transferir al gateway todo el prompt/historial.
 Se ejecutan tambien los ocho D y los riesgos parametrizados en ambos brazos. No se usa
@@ -315,14 +335,18 @@ reingestas ni regeneracion de resumenes.
 
 ## 8. Correspondencia con el ledger
 
-La ola 23 ocupa la reserva de la integracion, al final y sin adelantar prioridades previas.
+La ola 23 ocupa la reserva de la integracion, sin adelantar prioridades de otras olas.
+El servidor se ejecuta en el proyecto independiente Mcp.ContextForge (`1.1` -> `1.2` ->
+`1.3`); aqui `23.11`-`23.13` quedan bloqueados como referencias externas no ejecutables.
+El consumo RAG, incluido `23.14`, se retoma despues. El arranque del proyecto externo
+no requiere cerrar el CI `19.6` de este repo; no se cambia ese trabajo ni se mezclan commits.
 La ola 22 sigue reservada para conversaciones. `bloqueado_por` sigue siendo un solo ID. Cuando hay requisitos
 independientes, el estado es `bloqueado` y su reentrada exige comprobarlos todos: las notas
 `_dependencias_adicionales` no son un planificador ni desbloquean automaticamente.
 
 | Capacidad / entrega | Ficha que la gobierna |
 |---|---|
-| Analisis original / reconciliacion actual | `10.5-planteamiento-contexto-operativo-mcp` / `10.7-reconciliar-mcp-multiapi-y-k8s` |
+| Analisis original / recuperacion / separacion de entregas | `10.5-planteamiento-contexto-operativo-mcp` / `10.7-reconciliar-mcp-multiapi-y-k8s` / `10.8-separar-servidor-contextforge-del-consumo-rag` |
 | Oraculo E/P/M/L/R mas D, dos fuentes sinteticas y expectativas | `23.1-oraculo-operativo-local` |
 | Puerto multi-API de solo lectura, identidad sintetica y resultado tipado | `23.2-puerto-y-adaptador-operativo-local` |
 | Ruta opt-in, respuesta determinista/mixta y superficies API/SSE/UI/CLI | `23.3-rutas-operativas-y-evidencia-mixta` |
@@ -333,9 +357,9 @@ independientes, el estado es `bloqueado` y su reentrada exige comprobarlos todos
 | Evaluacion funcional con fuentes vivas simuladas | `23.8-evaluar-complemento-operativo` |
 | Piloto real autorizado, reversible y de solo lectura | `23.9-piloto-operativo-autorizado` |
 | Exponer retrieval propio a un cliente MCP autorizado, si hay demanda | `23.10-publicar-busqueda-como-mcp` |
-| Paquete Kubernetes reproducible y verificable offline | `23.11-preparar-paquete-k8s` |
-| Confirmar entorno, namespace, permisos y recursos sin desplegar | `23.12-habilitar-entorno-reyma-dev` |
-| Desplegar gateway aislado con datos sinteticos y probar recuperacion | `23.13-desplegar-contextforge-en-reyma-dev` |
+| Paquete Kubernetes del servidor, trasladado | Referencia `23.11-preparar-paquete-k8s`; propietario Mcp.ContextForge/1.1. |
+| Contrato de entorno del servidor, trasladado | Referencia `23.12-habilitar-entorno-reyma-dev`; propietario Mcp.ContextForge/1.2. |
+| Servir gateway compartido y probar recuperacion, trasladado | Referencia `23.13-desplegar-contextforge-en-reyma-dev`; propietario Mcp.ContextForge/1.3. |
 | Validar RAG + MCP + dos APIs sinteticas en el entorno de pruebas | `23.14-validar-rag-mcp-en-reyma-dev` |
 | Migracion de RagEngine/Qdrant a Kubernetes, si se decide | `21.4-k8s-de-pruebas`; no se duplica en la ola 23. |
 | ACL de colecciones y contexto obligatorio de retrieval | `5.f-revivir-collection-manifest`, `7.b-validar-coleccion-en-la-api`, `9.1-puertos-del-vector-store` |
@@ -386,115 +410,58 @@ de herramientas, A2A y acciones de escritura quedan como posibilidades no habili
 requieren evidencia de necesidad y fichas especificas, no se activan por estar en el catalogo
 de ContextForge. La primera meta es **responder mejor con informacion permitida y vigente**,
 no convertir RagEngine en una plataforma general de agentes.
+Esta es la meta de la integracion posterior de RAG; la entrega inmediata del servicio
+compartido tiene aceptacion independiente en la seccion 10.
 
-## 10. Destino de pruebas: reyma-dev, administrado con Headlamp
+## 10. Servidor compartido: proyecto independiente Mcp.ContextForge
 
-**Hechos aportados por el usuario:** existe el cluster/contexto `reyma-dev`, dispone de
-una sola credencial indicada como administrativa y tiene Headlamp Desktop instalado.
-No se ha comprobado conexion, permisos efectivos, namespace, recursos o compatibilidad.
-Headlamp es una interfaz local: no es el servidor MCP, una identidad nueva ni un permiso
-para que la IA acceda al cluster. El gateway de APIs no necesita administrar Kubernetes.
+Por peticion del usuario del 2026-10-07, la preparacion, configuracion y operacion
+del gateway pertenecen al repositorio local hermano **Mcp.ContextForge**, no a
+RagEngine. Se creo en `D:\\git\\Mcp.ContextForge`, sin remote/publicacion ni despliegue.
+No es un fork de IBM: fijara una version/digest upstream y mantendra su paquete operativo.
 
-La preparacion puede empezar offline. La conexion y cualquier cambio requieren alcance
-autorizado; no se pide el contenido del kubeconfig. Su ruta solo viene del usuario o de
-`REYMA_DEV_KUBECONFIG` si esta configurada. La credencial administrativa no se copia al
-repositorio, al contenedor, al chart, a un pipeline ni a argumentos de una herramienta MCP.
-Separar accesos en el futuro no es un requisito ficticiamente satisfecho ni autoriza a
-crear identidades. Los secretos propios de ContextForge/DB necesitan gestion y autorizacion
-distintas de esa credencial del operador.
+| Referencia de origen, no ejecutable aqui | Propietario en Mcp.ContextForge |
+|---|---|
+| `23.11-preparar-paquete-k8s` | `1.1-preparar-paquete-k8s` |
+| `23.12-habilitar-entorno-reyma-dev` | `1.2-habilitar-entorno-reyma-dev` |
+| `23.13-desplegar-contextforge-en-reyma-dev` | `1.3-servir-contextforge-compartido` |
 
-### Fuentes de despliegue y decisiones pendientes
+El avance operativo vive exclusivamente en `docs\\plan\\ejecucion-plan.estado.json`
+del nuevo proyecto. Las fichas de origen se conservan bloqueadas y senaladas como
+trazabilidad, sin fingir que el traslado las implemento ni duplicar la ejecucion.
+Su foto previa se conserva en `05b57ff` y su transferencia se registra en `10.8`.
+La definicion normativa del servidor, fuentes upstream y G01-G12 estan en
+`docs\\servicio-compartido.md` del destino; aqui no se mantiene otra copia operativa.
 
-Fuentes de la revision investigada, consultadas el 2026-10-07:
+El destino gobierna paquete, namespace/recursos, red/TLS, identidad del gateway,
+catalogos, persistencia, respaldo/restauracion, actualizaciones y soporte. Debe
+probar G01-G12 con clientes reales desde otro equipo y dos consumidores autorizados,
+mas los controles de recursos/red; no basta una UI o pods Ready. Su cierre no requiere
+RAG, corpus, LLM, contratos de Tickets ni comparacion `23.4`.
 
-- [Chart mcp-stack v1.0.11](https://github.com/IBM/mcp-context-forge/blob/v1.0.11/charts/mcp-stack/Chart.yaml):
-  empaqueta gateway, PostgreSQL y Redis; incluye UIs opcionales.
-- [Guia Helm fijada](https://github.com/IBM/mcp-context-forge/blob/v1.0.11/docs/docs/deployment/helm.md):
-  configuracion, migraciones, persistencia, restricciones SSRF y rollout.
-- [Guia Kubernetes fijada](https://github.com/IBM/mcp-context-forge/blob/v1.0.11/docs/docs/deployment/kubernetes.md):
-  ejemplos de manifiestos y probes, no especificacion aprobada para nuestro entorno.
+### Contrato que recibe RagEngine
 
-No copiar los ejemplos sin revision: incluyen `latest`, secretos en ConfigMaps y operaciones
-de alcance amplio incompatibles con este contrato. Tampoco afirmar compatibilidad a partir
-de un numero: Chart.yaml declara >=1.21 y la guia Helm >=1.23; `23.11` debe resolverlo contra
-la version mantenida elegida, APIs realmente renderizadas y version del destino.
-No imponer RWX por una frase de la guia: verificar access modes y semantica de un escritor
-del almacenamiento elegido. No instalar un ingress controller, cert-manager, CRDs ni
-RBAC global como efecto lateral de un chart.
+Antes de habilitar `23.14`, el mantenedor RAG y operador MCP deben comprobar:
 
-| Etapa | Resultado exigido | Lo que no acredita |
-|---|---|---|
-| `23.11`, offline | Revision/digests fijados; configuracion sin secretos; inventario de recursos/hooks y dependencias; validador con positivos y mutantes. | No confirma namespace ni recursos disponibles, no instala nada. |
-| `23.12`, entorno | Contrato aprobado de namespace, capacidad, almacenamiento, red, identidad de aplicacion, secretos y rollback; lecturas minimas autorizadas. | No habilita consultas empresariales ni autoriza el despliegue automaticamente. |
-| `23.13`, despliegue sintetico | Recursos aislados saludables, estado persistente y recuperable, controles y catalogos probados con un cliente MCP real. | Un pod Ready o la UI visible no prueban integracion con RagEngine. |
-| `23.14`, integracion sintetica | RagEngine consume el gateway y dos APIs simuladas; paridad, evidencia, permisos, fallos y apagado comprobados. | No acredita permisos/datos reales de una API. |
-| `23.9`, piloto de negocio | Contratos, identidades y datos autorizados de `23.5/23.6`; utilidad y negativas reales. | No autoriza otros dominios, usuarios ni produccion. |
+- Repositorio/ID/commit de entrega y evidencia G01-G12/recuperacion del destino.
+- Version/digest del gateway, endpoint/transporte MCP, TLS/confianza y ruta privada
+  autorizada, sin publicar direcciones internas innecesariamente.
+- Identidad y catalogos/capacidades autorizados al consumidor RAG; mecanismo seguro
+  de credenciales, expiracion/revocacion, limites y responsable de altas/soporte.
+- Topologia de pruebas y autorizacion de carga/fallos: instancia/release/estado
+  aislados cuando se prueben caidas, nunca apagar el gateway de otros consumidores.
 
-El paquete se configura por entorno sin namespace por defecto. Postgres/Redis propios
-solo si son necesarios para el perfil elegido; nunca reutilizar bases empresariales por
-comodidad. PgAdmin, Redis Commander, ejemplos de registro automatico y plugins no necesarios
-quedan apagados. No exigir Kubernetes para ejecutar las fichas locales ni exigir mover
-Qdrant al cluster para instalar ContextForge. RagEngine puede seguir local si una ruta
-privada aprobada lo conecta; si se decide moverlo, se exige `21.4` y no se duplica su trabajo.
+`bloqueado_por` sigue usando IDs de este ledger; el arnes no resuelve estados entre
+repositorios. `23.14` depende de `23.8` y las capacidades RAG, y sigue bloqueado hasta
+comprobar manualmente el contrato externo. No se exige marcar `23.13` hecho aqui.
+La evaluacion de consumo conserva sus 56 escenarios, subcasos y umbrales.
 
-En `23.12` faltan, al menos:
+Retirar el consumo de RagEngine revoca solo sus concesiones/configuracion, no el
+servicio compartido. Un resultado negativo en `23.4` no promueve MCP para RAG pero
+no decide el servicio a otros proyectos. Un defecto real de autorizacion/aislamiento
+se notifica al operador y bloquea la capacidad afectada sin ocultarlo.
 
-- Namespace y propietario autorizados; aislamiento respecto a otras aplicaciones.
-- Version/arquitectura y capacidad autorizada para el footprint del paquete; requests,
-  limits, cuotas, replicas y tiempos de espera fijados antes del despliegue.
-- StorageClass/access mode/capacidad, escritor unico, respaldo recuperable, custodia de
-  claves de cifrado del estado y compatibilidad de migraciones/rollback.
-- Registry y descarga de imagenes verificables; referencias de secretos de aplicacion,
-  DB y pull gestionadas sin mostrar valores al asistente.
-- Ruta privada entre RagEngine, gateway y APIs sinteticas; forma de acceso del operador.
-  Ingress/TLS, DNS, egress, streaming HTTP y timeouts si se usan; `port-forward` tambien
-  necesita aprobacion, no es un atajo automatico.
-- Aplicacion efectiva de NetworkPolicy por el CNI y allowlist SSRF precisa para los
-  destinos previstos; nunca desactivar SSRF o habilitar todas las redes privadas para
-  hacer pasar el piloto. Sin evidencia, no afirmar aislamiento.
-- Autenticacion propia del gateway, separacion de catalogos/administracion, auditoria
-  sin payloads/secretos, responsables y plazo de conservacion del experimento.
-
-La preparacion no inventa valores para resolver esas carencias. Puede usar valores
-sinteticos claramente marcados en tests offline, nunca presentarlos como configuracion real.
-Una version distinta a la comparada en `23.4` exige repetir ambos brazos, no heredar
-elegibilidad por conservar el nombre del producto.
-
-### Aceptacion y rollback del despliegue
-
-`23.11` fija un inventario cerrado de recursos namespaced y valida que no aparecen
-Secrets con valores, recursos cluster-scoped, montajes de kubeconfig/host, privilegios,
-imagen mutable, endpoints publicos, extras activados o namespace omitido. El positivo
-debe renderizar; mutantes de cada prohibicion deben fallar. No ejecutar `lookup` o
-validaciones contra Kubernetes como si fueran operaciones offline.
-
-`23.13` requiere consentimiento sobre manifiestos/comandos renderizados sin secretos,
-hooks, impacto, coste, disponibilidad y rollback. Cada invocacion indica kubeconfig,
-contexto y namespace; Helm usa tambien kube-context explicito. Lecturas acotadas de
-estado y metadatos; no `get all`, `-A`, `describe`, dumps, Secrets, valores de releases
-ni logs indiscriminados. No tocar otros namespaces, nodos, RBAC o almacenamiento.
-Ante error de autenticacion, permisos o TLS, detenerse sin elevar privilegios.
-
-Pruebas con catalogo y registros sinteticos exclusivos: una llamada MCP valida, rechazo
-sin autenticacion y rechazo entre catalogos; persistencia del catalogo tras reinicio
-aprobado del workload propio; respaldo/restauracion en instancia aislada con los mismos
-IDs/contenido sintetico; una caida simulada de upstream no dispara reinicios en cadena.
-Las comprobaciones fallan si falta evidencia; Headlamp puede mostrar el estado, pero
-una captura no sustituye estas pruebas ni debe revelar secretos/datos ajenos.
-
-`23.14` ejecuta los 56 escenarios y subcasos, misma procedencia que `23.8`, en la topologia
-aprobada. Conserva 48/48 contratos, E/P/M >=22/24 y >=8 mas que indice solo, L 8/8, R 16/16,
-D 8/8 y cero filtraciones/causas inventadas/errores como exito. Para coste del gateway
-repite control HTTP y MCP por rutas equivalentes en ese entorno: 20 calentamientos y
-200 llamadas por brazo, concurrencia 4, p95 adicional <=250 ms y cero errores adicionales.
-No comparar el HTTP local contra una ruta remota distinta y atribuir toda la red al gateway.
-Revision humana de afirmaciones mixtas obligatoria. Fallos se inyectan solo en fixtures
-y recursos aislados previamente autorizados, nunca derribando dependencias compartidas.
-
-Rollback no destructivo: apagar la ruta operativa y retirar de servicio solo workloads
-del experimento mediante acciones aprobadas; conservar namespace, PVC/PV, estado y
-auditoria. Una vuelta de imagen no deshace migraciones de DB: primero compatibilidad o
-restauracion comprobada con claves correspondientes, nunca `helm rollback` a ciegas.
-No `uninstall`, borrado de namespace/volumen ni limpieza general como arreglo automatico.
-No tocar el indice o la cache SQLite servidos; no ingestar datos operativos en esta ola.
-El coste >1 hora de cualquier ficha se confirma de nuevo antes de ejecutarla.
+La creacion del proyecto no acredita servicio disponible. No se ha conectado al
+cluster ni leido kubeconfig/Secrets. Namespace, alcance, recursos e identidades
+permanecen por confirmar en el destino. La unica credencial administrativa del
+operador no se comparte con consumidores; Headlamp no es dependencia del servicio.

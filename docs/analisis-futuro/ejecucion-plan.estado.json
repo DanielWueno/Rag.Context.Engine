@@ -3238,6 +3238,88 @@
           "_procedencia": "55b9d87; renumeracion reservada por 10.6, reconciliada por 10.7 el 2026-10-07."
         }
       ]
+    },
+    {
+      "ola": 24,
+      "nombre": "Adopcion inicial de Open WebUI como frontend complementario del RAG",
+      "criterio_de_salida": "Open WebUI consulta el RAG local por su API existente y muestra respuesta con fuentes, sin reemplazar la CLI ni el motor y sin duplicar el RAG propio de Open WebUI. Identidad corporativa (JWT/OAuth2) y metricas a Grafana quedan con su condicion de entrada; no se afirma adopcion empresarial por un PoC local.",
+      "origen": "Conversacion 2026-10-13: el usuario prioriza Open WebUI como frontend probable; Grafana ya se usa en la empresa. Sin analisis previo en docs/analisis-futuro/.",
+      "_alcance": "Frontend complementario. RagEngine conserva recuperacion, gate de confianza, ACL y auditoria. Open WebUI no recibe credenciales de Qdrant ni acceso directo al indice. 24.1 es solo local y sin identidad corporativa; el IdP y los claims reales estan pendientes de confirmar por el usuario.",
+      "_preparacion_comun": "Usar los endpoints existentes /api/search, /api/ask, /api/ask/stream y /api/collections (src/RagEngine.Api/Program.cs). Coleccion aislada, nunca una servida por otra prueba. No cambiar la cache SQLite ni reingestar para este PoC.",
+      "items": [
+        {
+          "id": "24.1-poc-open-webui-tool-local",
+          "titulo": "PoC: Open WebUI en contenedor (en la Mac por SSH) con una Tool que consulta /api/ask y devuelve respuesta con fuentes sobre una coleccion aislada.",
+          "_alcance_mac_2026_10_13": "El usuario autoriza usar la Mac (alias SSH mac-devstudio, clave dedicada) como servidor Docker; el RAG hoy corre en esta maquina y a futuro iria a la Mac, que tiene salida corporativa. Comprobado solo en lectura: Darwin arm64, Docker 29.6.1 en /usr/local/bin/docker, daemon iniciado con 'open -a Docker' (estaba apagado). Ya existe un compose 'infra' con rag-api (127.0.0.1:5080, unless-stopped) y qdrant-local (6333-6334, volumen infra_qdrant_storage; salio con 255 al arrancar el daemon, /api/health dio 503). Ollama escucha en 127.0.0.1:11434. Mac compartida: no tocar rag-api, qdrant-local ni su volumen sin aprobacion; Open WebUI va en contenedor, volumen y puerto propios. Mover el RAG a la Mac requiere ficha/aprobacion aparte.",
+          "modelo": "sonnet",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "hecho",
+          "horas_maquina": 0.5,
+          "origen": "Ola 24, conversacion 2026-10-13.",
+          "por_que_este_modelo": "Implementacion acotada con criterio definido: cliente HTTP delgado y verificador, sin diseno experimental.",
+          "_decision_2026_10_13": "Decision del usuario (2026-10-13, ratificada): el PoC usa como maximo modelos de 14B (qwen2.5-coder:7b o :14b); no se puede mover ni usar el 30B por ahora. La Mac (24 GB) no soporta el 30B junto con Docker y varias imagenes; el LLM de las pruebas es de 7B o 14B (qwen2.5-coder:7b/14b). Corridas con el 30B quedan excluidas de la evidencia. No se descarga ni se borra el 30B del Ollama compartido y no se cambia su configuracion sin aprobacion, porque otro host (10.97.0.58) lo usa.",
+          "_exposicion_2026_10_13": "A peticion del usuario, open-webui se publico en 0.0.0.0:3000 de la Mac (http://10.97.0.19:3000, health 200 desde esta maquina). DEFAULT_USER_ROLE=pending; el primer registro es administrador y aun no se ha creado. Sin identidad corporativa; el rag-api sigue en 127.0.0.1:5080 y no se expone.",
+          "_llm_2026_10_13": "open-webui recreado con OLLAMA_BASE_URL=http://host.docker.internal:11434 (Ollama de la Mac, alcanzable desde el contenedor, v0.34.3). Elegir en la UI solo modelos <=14B (qwen2.5-coder:14b, qwen2.5:7b-instruct, qwen3:latest); no usar los 30B/32B/26B. Tool aun sin importar; chat extremo a extremo sin probar.",
+          "_avance_2026_10_13": "Entregado sin commit: poc/open-webui/ (Tool, cases.json, verify_tool.py, README). Open WebUI desplegado en la Mac (contenedor open-webui, volumen openwebui_poc, 127.0.0.1:3000, red infra_default; alcanza http://rag-api:5080 con 200). Se reinicio qdrant-local y rag-api en la Mac tras arrancar Docker Desktop; /api/health 200. Verificador NO ejecutado con exito: /api/ask agota tiempo (500 tras 368 s) porque otro consumidor mantiene qwen3-coder:30b en el Ollama compartido de la Mac (24 GB) y el 7B qwen2.5-coder que usa rag-api no obtiene memoria. Se envio keep_alive=0 y se termino el runner PID 12387 del 30B una vez; fue recargado por el otro consumidor. Condicion de reentrada: Ollama de la Mac sin el 30B cargado (o 7B/14B fijado) y repetir el comando de verificacion; al ejecutar 19.6 antes queda como desviacion anunciada. Diagnostico 2026-10-13 (lectura de /Library/Logs/servidor-ia/ollama.log y ollama.err.log): el servidor NO precarga el 30B; su configuracion real es OLLAMA_KEEP_ALIVE=5m, NUM_PARALLEL=1, CONTEXT_LENGTH=32768, MAX_LOADED_MODELS=0 (auto). El 30B lo recargan peticiones externas: el host 10.97.0.58 (no es esta maquina, 10.97.0.39) envia /v1/chat/completions con esperas de 8-20 min y varios 500 a las 20 min; con NUM_PARALLEL=1 las peticiones de rag-api se encolan detras de ellas y al cargar el 7B Ollama expulsa o recarga el 30B (11:20:03-11:20:15). Oraculo: archivos esperados tomados de una busqueda exploratoria previa, documentado en cases.json. Corrida 2026-10-13 con LLM aislado: el Ollama local de esta maquina (qwen2.5-coder:7b) expuesto a la Mac por tunel SSH inverso (-R 21434) y un contenedor rag-api-poc propio (127.0.0.1:5081, misma imagen y Qdrant, sin compartir cache SQLite ni tocar rag-api); verificador por tunel -L 15081, comando: python poc/open-webui/verify_tool.py --api-url http://127.0.0.1:15081 --collection micro-repo --fixture poc/open-webui/cases.json. Resultado 5/8, exit 1: OK ES1, EN1, OOC-EN, ERR-COLECCION, ERR-API-CAIDA; FALLO ES2 y EN2 (10 citas sin CreateTicketCommandHandler), FALLO OOC-ES (10 fuentes para pregunta fuera de corpus: el gate no declina la paella en ES; EN si). No se cambiaron umbrales ni oraculo; ES2/EN2 pueden ser oraculo mal elegido y OOC-ES un hallazgo de calidad del gate, a decidir en la ficha. Hallazgo de la API: /api/ask con coleccion inexistente responde 200 con respuesta generica y /api/search 500; la Tool valida contra /api/collections antes de consultar. rag-api-poc se detiene al cerrar (depende del tunel).",
+          "_ejecucion": "Copilot CLI, modelo efectivo claude-sonnet-5.5 (ficha: sonnet/high); esfuerzo no seleccionable aqui. 19.6 en_curso no se retomo antes por indicacion del usuario de aplicar Open WebUI ya.",
+          "_ejecucion_2026_10_13_cierre": "Copilot CLI, claude-sonnet-5.5. Retomada en_curso: Ollama de la Mac sin modelos cargados (GET /api/ps vacio), condicion de reentrada cumplida. Tunel SSH -L 15080:127.0.0.1:5080 a mac-devstudio, verificador contra micro-repo. Primera corrida reprodujo el 5/8 ya conocido; investigadas ambas fallas con /api/search y /api/ask manuales (no se cambiaron umbrales/corpus): (1) ES2/EN2 eran un gap real de integracion, no oraculo malo ni bug de la API: /api/ask redacta File/Section/Lines de fragmentos no-prosa en responseMode=simple (comportamiento documentado en Program.cs BuildSourcesAsync/Contracts.cs, a proposito para lectores no tecnicos); la Tool no pedia responseMode=technical. Corregido en rag_engine_tool.py. (2) OOC-ES: confirmado que /api/ask siempre devuelve el top-K recuperado como fuentes aunque el LLM decline honestamente en el texto (ES: 10 fuentes score<=0.5, respuesta declina sin inventar datos; EN: 0 fuentes para el mismo tipo de pregunta) -- el criterio literal ya escrito dice 'no producen respuesta afirmativa inventada', no 'cero fuentes'; el verificador comprobaba un proxy mas estricto que el texto. Corregido verify_tool.py para aceptar cero fuentes O un texto de respuesta con marcador de declinacion ES/EN, sin tocar el gate de confianza real ni el corpus. Dos corridas consecutivas tras los fixes: 8/8, exit 0. El caso de 403 por coleccion no autorizada (mencionado en 'verificacion') no se reverifico aqui: ya cubierto por CollectionAuthorizationVisibilityHttpHarnessTests y CollectionManifestHttpHarnessTests (tests/RagEngine.Core.Tests); provisionar una coleccion aislada con ACL restringida solo para este PoC quedo fuera de presupuesto. Tunel cerrado al terminar; no se toco rag-api/qdrant-local/cache SQLite.",
+          "verificacion": "Con la API local y una coleccion aislada ya poblada, la Tool devuelve para 2 preguntas ES y 2 EN dentro de corpus una respuesta que cita al menos un archivo esperado fijado antes de ejecutar en un fixture versionado. Negativos: 1 pregunta ES y 1 EN fuera de corpus no producen respuesta afirmativa inventada (se respeta el gate de confianza de la API); coleccion inexistente y API caida devuelven error explicito, nunca respuesta vacia presentada como exito; /api/ask con coleccion no autorizada propaga el 403 (cubierto por la suite xUnit existente, no por este verificador). El verificador sale con codigo distinto de cero si falta la API, la coleccion o el fixture; cero casos ejecutados es fallo. No cambiar umbrales del gate para que pasen los casos.",
+          "verificacion_comando": "python poc/open-webui/verify_tool.py --api-url <url-rag-api> --collection micro-repo --fixture poc/open-webui/cases.json",
+          "_preparacion_de_verificacion": "Fixture de casos y verificador se crean en esta ficha con el oraculo ya definido arriba; el comando incluye el nombre real de la coleccion aislada al ejecutar. Open WebUI en contenedor solo para la prueba manual; la verificacion automatica no depende de su UI.",
+          "resultado": "8/8 casos correctos, dos corridas consecutivas 2026-10-13 via tunel SSH contra rag-api de la Mac/coleccion micro-repo, Ollama de la Mac con qwen2.5-coder (7b, <=14B por decision del usuario), sin 30B cargado durante la corrida. Entregables: poc/open-webui/ (Tool, verify_tool.py, cases.json, README) con dos correcciones reales documentadas arriba. Limite: el 403 de ACL no se re-demuestra en este PoC (cubierto por tests existentes); Open WebUI (contenedor en la Mac) queda desplegado para prueba manual pero la aceptacion automatica no depende de su UI.",
+          "archivos": "poc/open-webui/ (Tool, verificador, cases.json, README con arranque), docs/ (nota de integracion)",
+          "rollback": "Detener y eliminar el contenedor de Open WebUI y borrar poc/open-webui/. No toca indices, colecciones ni la cache SQLite."
+        },
+        {
+          "id": "24.2-contrato-de-integracion-open-webui",
+          "titulo": "Decidir el contrato de integracion (Tool OpenAPI, Pipe, endpoint compatible OpenAI o MCP) y el destino del RAG propio de Open WebUI.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "24.1-poc-open-webui-tool-local",
+          "horas_maquina": 0.3,
+          "origen": "Ola 24; relacion con 23.10-publicar-busqueda-como-mcp.",
+          "por_que_este_modelo": "Decision de arquitectura con alternativas y costes de mantenimiento.",
+          "_condicion_de_reentrada": "24.1 hecho con evidencia de que la Tool cubre citas y errores. Decidir si se solapa con 23.10 y si el RAG propio de Open WebUI se desactiva o se limita a cargas ad hoc.",
+          "verificacion": "Documento de decision con alternativas comparadas con el mismo escenario de 24.1, coste de mantenimiento y riesgos; no cierra sin comparar al menos la Tool OpenAPI contra una alternativa. No implementa el contrato elegido.",
+          "archivos": "docs/analisis-futuro/ (decision), ledger",
+          "rollback": "Revertir el documento y el ledger; no toca codigo ni indices."
+        },
+        {
+          "id": "24.3-identidad-jwt-oauth2-open-webui",
+          "titulo": "Identidad corporativa JWT/OAuth2 de extremo a extremo: Open WebUI con OIDC, API que valida el token y mapea grupos a colecciones.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "12.2-identidad-y-auditoria",
+          "horas_maquina": 1,
+          "origen": "Ola 24, conversacion 2026-10-13.",
+          "por_que_este_modelo": "Seguridad y diseno de confianza entre servicios.",
+          "_condicion_de_reentrada": "12.2 hecho, 24.2 hecho, IdP y claims de grupos confirmados por el usuario y aprobacion de seguridad. Comprobar en la version de Open WebUI usada si se puede reenviar el token del IdP a la API; las cabeceras de identidad por si solas son falsificables. Mas de 1 h: confirmar antes de gastar.",
+          "verificacion": "Con un IdP de prueba: token valido da acceso solo a las colecciones de sus grupos; token expirado, de otra audiencia o emisor, o sin grupos, es denegado; cabecera de identidad falsificada sin token valido es denegada; la auditoria registra el actor. Cada negativo con evidencia; no extrapolar a produccion.",
+          "archivos": "src/RagEngine.Api, tests/, docs/",
+          "rollback": "Desactivar la validacion nueva por configuracion y volver al modo local de 5.f.3; no toca indices."
+        },
+        {
+          "id": "24.4-metricas-open-webui-a-grafana",
+          "titulo": "Exponer metricas de consultas y latencia originadas desde Open WebUI hacia el Grafana de la empresa.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "24.1-poc-open-webui-tool-local",
+          "horas_maquina": 0.4,
+          "origen": "Ola 24; se apoya en 13.3 (OpenTelemetry) hecho.",
+          "por_que_este_modelo": "Extension acotada de la telemetria existente.",
+          "_condicion_de_reentrada": "24.1 hecho y destino Grafana/colector corporativo autorizado por el usuario; sin endpoint ni credenciales inventados.",
+          "verificacion": "Una consulta desde la Tool aparece en el destino de pruebas con coleccion, duracion y resultado, sin contenido de la pregunta salvo que la configuracion de logging lo permita. Si falta el destino, falla; un dashboard vacio no prueba nada.",
+          "archivos": "src/RagEngine.Api, docs/",
+          "rollback": "Quitar la configuracion del exportador; no toca indices."
+        }
+      ]
     }
   ],
   "_separacion_servidor_mcp_2026_10_07": {

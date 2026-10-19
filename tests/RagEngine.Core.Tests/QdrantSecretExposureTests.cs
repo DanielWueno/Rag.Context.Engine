@@ -20,7 +20,11 @@ public sealed class QdrantSecretExposureTests
 {
     private const string SyntheticApiKey = "clave-sintetica-12-8-nunca-debe-aparecer-en-logs";
 
+    // Ítem 19.6: a diferencia de Fallo_de_conexion (abajo), que conecta deliberadamente a
+    // un puerto muerto y pasa con o sin Qdrant vivo, este caso sí necesita un Qdrant real
+    // en localhost:6334 para que CollectionExistsAsync complete sin error de red.
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)]
     public async Task Operacion_exitosa_contra_qdrant_real_no_expone_la_api_key_en_los_logs()
     {
         var capturingLogger = new CapturingLogger<QdrantVectorStore>();

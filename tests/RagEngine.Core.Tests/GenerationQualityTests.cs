@@ -4,6 +4,8 @@ using static RagEngine.Core.Tests.GenerationHttpHarnessTests;
 
 namespace RagEngine.Core.Tests;
 
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: GenerationFactory(realRetrieval: true) usa QdrantSemanticRetriever real
+[Trait("Category", TestCategories.RequiereOnnx)]
 public sealed class GenerationQualityTests
 {
     [Fact]

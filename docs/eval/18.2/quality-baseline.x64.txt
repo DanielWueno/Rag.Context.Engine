@@ -1,0 +1,55 @@
+
+=== micro-repo: 1 preguntas ===
+  [1/1] ERROR: HTTP Error 500: Internal Server Error
+
+=== rag-engine: 1 preguntas ===
+  [1/1]   93p tec= 2 directo      score=None Cómo funcionas?
+
+respuestas completas en: docs/eval/18.2/quality-baseline.x64.json
+
+{
+ "preguntas": 1,
+ "palabras_promedio": 93,
+ "palabras_mediana": 93,
+ "respuestas_cortas_pct": 0.0,
+ "rechazo_pleno_pct": 0.0,
+ "banda_baja_pct": 0.0,
+ "directo_pct": 100.0,
+ "directo_con_score_bajo_pct": 100.0,
+ "simple_con_tecnicismos_pct": null,
+ "simple_total": 0,
+ "optimista_promedio": 0,
+ "vago_promedio": 0,
+ "duracion_promedio_s": 2.1
+}
+
+=== Diagnostico del error 500 en micro-repo (docker logs rag-api --tail 80) ===
+
+Causa raiz real (confirmada en logs, NO es el problema de tag de Ollama
+anticipado en el briefing): las 3 preguntas del bundle rag-engine.json tienen
+"rerank": true, igual que la pregunta de micro-repo.json. Para rag-engine la
+busqueda no encontro candidatos ("fuentes": 0, "score_top": null), asi que el
+pipeline nunca llego a invocar el cross-encoder y la llamada no fallo. Para
+micro-repo la busqueda SI encontro candidatos (956 puntos indexados, pregunta
+semanticamente relevante al corpus), por lo que intento re-rankear y choco con
+el modelo de re-ranking ausente en esta maquina:
+
+  System.IO.FileNotFoundException: Cross-encoder ONNX model not found at
+  '/models/mmarco-mMiniLMv2-L12-H384-v1/model.onnx'. Run
+  'bash infra/download-model.sh reranker' first.
+    at RagEngine.Core.Infrastructure.Reranking.OnnxCrossEncoderReRanker.LoadModel()
+    at RagEngine.Core.Infrastructure.Reranking.OnnxCrossEncoderReRanker.ScorePairs(...)
+    at RagEngine.Core.Infrastructure.Reranking.OnnxCrossEncoderReRanker.ReRankAsync(...)
+    at RagEngine.Core.Infrastructure.VectorStore.QdrantSemanticRetriever.SearchAsync(...)
+    at RagEngine.Core.Services.Generation.RagGenerationService.RetrieveChunksAsync(...)
+  [18:53:44 ERR] Excepcion no manejada en /api/ask
+
+Esto coincide con lo que ya reporto 'rag doctor' antes de ingestar:
+  "Re-Ranker  .../mmarco-mMiniLMv2-L12-H384-v1/model.onnx (Not Found -
+  '--rerank' fallara; ejecuta 'bash infra/download-model.sh reranker')"
+
+No es un defecto de esta ficha (18.2): el reranker nunca se descargo en esta
+maquina (eso es trabajo de ola 17/18.1, descarga de modelos). No se cambio
+configuracion de produccion/QA ni se descargo el modelo para maquillar este
+resultado -- se documenta tal cual, siguiendo la instruccion del briefing de
+no inventar un workaround.

@@ -149,8 +149,15 @@ public class OnnxVectorizationBrainTokenizationTests
         yield return ["encabezado+csharp", CuerpoConEncabezado(CuerpoCSharp)];
     }
 
+    // Ítem 19.6: el Trait permite que el job "sin infra" de CI excluya este test SIN
+    // tener que descubrirlo y ejecutar el early-return de ModeloWordPieceDisponible — a
+    // diferencia de OnnxModeloDisponibleFactAttribute (otros archivos), este test no
+    // reporta "Skipped": si el modelo falta, el método retorna sin aserciones y xUnit lo
+    // cuenta como "Passed". Preexistente a este ítem y fuera de su alcance arreglarlo,
+    // pero el Trait evita que la ausencia de modelo dependa de ese detalle para excluirse.
     [Theory]
     [MemberData(nameof(CasosDeContenido))]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task WordPiece_TripletaLMenosUnoLYLMasUno_DaDescartadosYTruncadoExactos(
         string _, string cuerpoBase)
     {
@@ -178,6 +185,7 @@ public class OnnxVectorizationBrainTokenizationTests
 
     [Theory]
     [MemberData(nameof(CasosDeContenido))]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task SentencePiece_TripletaLMenosUnoLYLMasUno_DaDescartadosYTruncadoExactos(
         string _, string cuerpoBase)
     {

@@ -122,6 +122,18 @@ Ajustar esta politica con resultados comparables:
 mismo criterio, errores, retrabajo, latencia y consumo observado. No organizar un
 panel de modelos por defecto; comparar solo cuando aporte evidencia al item.
 
+## Autoria de commits y PRs
+
+Vale para cualquier agente y cualquier sesion, y prevalece sobre las plantillas por
+defecto de cada herramienta (p. ej. el trailer `Co-authored-by` de Copilot).
+
+- Un commit lleva un unico autor y committer: el de este git (DWeno). Sin trailers
+  `Co-authored-by`/`Co-Authored-By` ni firmas de herramienta, en commits nuevos o reescritos.
+- Descripciones y comentarios de PR, issues y cualquier texto publicado tampoco mencionan
+  la herramienta ("Generated with...", "Copilot", etc.).
+- Antes de commitear, no copiar trailers de commits previos; tras commitear, comprobar con
+  `git log -1 --format=%B` que no quedo ninguno.
+
 ## Reglas locales de datos
 
 - Tests/builds: usar los comandos existentes y el alcance minimo que cubra el

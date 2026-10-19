@@ -14,6 +14,7 @@ using Xunit;
 
 namespace RagEngine.Core.Tests;
 
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: InitializeAsync abre un Qdrant real en localhost:6334
 public sealed class VectorStoreResumeTests : IAsyncLifetime
 {
     private readonly string _collection = $"rag-engine-test-resume-{Guid.NewGuid():N}";

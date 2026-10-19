@@ -23,6 +23,7 @@ namespace RagEngine.Core.Tests;
 /// conexión real (no se marcan skip): la ausencia de infraestructura no debe disfrazarse
 /// de éxito.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: ver nota de la clase ("Integración real...")
 public sealed class CollectionManifestPersistenceTests : IAsyncLifetime
 {
     private const int TestDimension = 8;

@@ -155,7 +155,11 @@ public class CrossEncoderStableGateScoreTests
     /// (pool=5) vs. 0.999258 (pool=20) — una diferencia de ~0.0002, bien por encima de
     /// la tolerancia de esta prueba. Ver el resumen final de la tarea.
     /// </summary>
+    // Ítem 19.6: el Trait es ADEMÁS del self-skip de OnnxModeloDisponibleFact (ver ese
+    // atributo más abajo) — el runner de CI puede excluir este test por categoría sin
+    // tener que descubrirlo primero y leer su Skip en tiempo de ejecución.
     [OnnxModeloDisponibleFact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task ElScoreDelGanadorEsInvarianteAlTamanoDelPool()
     {
         var reranker = ConstruirReRanker(stableGateScore: true);
@@ -178,6 +182,7 @@ public class CrossEncoderStableGateScoreTests
     }
 
     [OnnxModeloDisponibleFact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task GateCalibration_identity_describes_loaded_bytes_not_a_replaced_file()
     {
         var options = OpcionesModeloReal(stableGateScore: true);

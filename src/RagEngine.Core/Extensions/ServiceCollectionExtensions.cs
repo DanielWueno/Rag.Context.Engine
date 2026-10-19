@@ -1,13 +1,16 @@
+using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using Qdrant.Client;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure;
 using RagEngine.Core.Infrastructure.Audit;
 using RagEngine.Core.Infrastructure.Authorization;
 using RagEngine.Core.Infrastructure.Chunking;
@@ -106,6 +109,19 @@ public static class ServiceCollectionExtensions
         services.Configure<OllamaOptions>(
             configuration.GetSection(OllamaOptions.SectionName));
 
+        // Ítem 10.6.2 (porte del perfil servidor de Ollama): fail-fast de arranque si el
+        // perfil queda a medias (https sin Ollama:ApiKey, o CaCertificatePath que no existe
+        // en disco) — mismo patrón que TransportOptionsValidator arriba. Se registra aquí
+        // (no en Program.cs de la Api) para que el mismo chequeo se pueda ejercitar vía
+        // IStartupValidator sin levantar un host HTTP (ver OllamaOptionsStartupValidationTests,
+        // calcado de TransportProfileTests) y para que el CLI también lo tenga disponible sin
+        // duplicar el registro — el CLI no llama a IStartupValidator.Validate() (no arranca un
+        // host), así que esto no le exige nada nuevo; su fail-fast real sigue siendo
+        // `rag doctor` (DoctorCommand.CheckOllamaProfileAsync) y la construcción perezosa del
+        // Kernel/generador, ambos ya cubiertos sin esto.
+        services.AddSingleton<IValidateOptions<OllamaOptions>, OllamaOptionsValidator>();
+        services.AddOptions<OllamaOptions>().ValidateOnStart();
+
         // ── 1b. Resolución de rutas de modelo ──────────────────────────────────────
         // Las rutas de appsettings admiten ~ y ${RAG_MODELS_DIR} para que el archivo
         // versionado no lleve la ruta absoluta de la máquina de nadie. Se resuelven
@@ -186,7 +202,13 @@ public static class ServiceCollectionExtensions
         {
             builder.AddRetry(new RetryStrategyOptions
             {
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                // Ítem 10.6.2: un 401/403 (credencial ausente o inválida del perfil
+                // servidor) es un fallo de CONFIGURACIÓN — reintentar 2 veces una clave
+                // mal configurada solo demora el aborto de toda la ingesta (ver
+                // OllamaBusinessSummaryGenerator.GenerateAsync y
+                // DefaultIngestionPipeline, catch de BusinessSummaryAuthenticationException).
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(ex =>
+                    ex is not HttpOperationException { StatusCode: HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden }),
                 MaxRetryAttempts = 2,
                 Delay = TimeSpan.FromSeconds(1),
                 BackoffType = DelayBackoffType.Constant

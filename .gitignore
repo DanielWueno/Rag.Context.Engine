@@ -20,6 +20,12 @@ logs/
 # Secrets (never commit)
 appsettings.*.json
 !appsettings.json
+# Ítem 10.6.2 (porte del 17.1 local): perfil servidor (Endpoint https + ModelId de
+# Servidor.IA) — SIN secretos (la clave y la ruta de la CA llegan solo por
+# Ollama__ApiKey / Ollama__CaCertificatePath, variables de entorno, nunca por este
+# archivo). Debe versionarse para que el perfil servidor exista out-of-the-box tras
+# `git pull`, igual que appsettings.json del perfil local.
+!appsettings.Servidor.json
 
 # nohup: salida de terminales desatendidas / scripts sin redireccion explicita.
 # Mismo genero que 1.12 (artefactos en la raiz del repo).
@@ -36,3 +42,10 @@ nohup.out
 # RAG_SUMMARY_CACHE_DIR, RAG_QDRANT_API_KEY) — específicas de esta máquina, nunca
 # hardcodeadas en infra/docker-compose.yml. Ver infra/.env.example para el contrato.
 infra/.env
+# Ítem 10.6.3: perfiles adicionales de infra/.env (Mac legado, Servidor.IA) —
+# mismo contrato, nunca versionados; infra/.env.example documenta sus variables
+# como ejemplo comentado, sin valores reales.
+infra/.env.mac
+infra/.env.servidor
+infra/.env.*
+!infra/.env.example

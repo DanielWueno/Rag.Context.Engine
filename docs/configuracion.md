@@ -148,26 +148,50 @@ local con Qdrant sin `QDRANT__SERVICE__API_KEY`. Con la clave configurada en amb
 recibe `Unauthenticated`. No hay revocación ni rotación automática: cambiar la clave
 exige reiniciar Qdrant y el host con el nuevo valor en ambos.
 
-### Binding a loopback y rutas en `infra/docker-compose.yml`
+### Binding a loopback, Qdrant propio y rutas en `infra/docker-compose.yml`
 
-El puerto de la API se publica como `127.0.0.1:5080:5080` (antes `5080:5080`, alcanzable
-desde cualquier interfaz). Acceder desde otra máquina de la LAN requiere un proxy
-explícito o cambiar el binding, no es el default.
+Ítem `10.6.3-portar-ambiente-dev-qa-x64`: el compose trae su **propio** servicio
+`qdrant` (antes dependía de un Qdrant standalone creado a mano fuera del archivo),
+con healthcheck y un volumen nombrado `qdrant-storage`. Su dirección publicada es
+**siempre** `127.0.0.1` (nunca una variable, a propósito: Qdrant nunca se publica en
+la LAN); solo el número de puerto es configurable. `rag-api` lo alcanza por el nombre
+de servicio (`Qdrant__Host=qdrant` por defecto) con `depends_on: condition:
+service_healthy`.
 
-Las rutas de host antes fijas a `/Users/...` ahora son variables de entorno con
-defaults relativos al repo, documentadas en `infra/.env.example`:
+El puerto de `rag-api` se publica como `127.0.0.1:5080:5080` por defecto (ítem
+`12.8`, antes `5080:5080` alcanzable desde cualquier interfaz). Acceder desde otra
+máquina de la LAN requiere fijar `RAG_API_BIND` explícito y, para que el arranque no
+falle, `Transport__Published=true` + `Qdrant:ApiKey` + TLS resueltos — ver
+[`Transport:Published`](#transportpublished--perfil-local-vs-perfil-publicado) más
+abajo. El riesgo aceptado originalmente por la rama local que trajo este compose
+(`0.0.0.0` sin autenticación) **no** se hereda: la ola 21 del ledger registra esa
+decisión de exposición como histórica, no vigente.
+
+Las rutas de host antes fijas a `/Users/...` son variables de entorno con defaults
+relativos al repo o volúmenes nombrados, documentadas en `infra/.env.example`:
 
 | Variable | Default si no se define | Uso |
 |---|---|---|
-| `RAG_MODELS_DIR` | `../models` | Modelos ONNX montados en el contenedor |
+| `RAG_MODELS_DIR` | `../models` | Modelos ONNX montados en el contenedor (solo lectura) |
 | `RAG_LOGS_DIR` | `../logs` | Logs de la API |
-| `RAG_SUMMARY_CACHE_DIR` | volumen nombrado `rag-summary-cache` | Caché SQLite de resúmenes |
-| `RAG_QDRANT_API_KEY` | vacío (sin auth) | Clave de `Qdrant:ApiKey` propagada al contenedor |
+| `RAG_SUMMARY_CACHE_DIR` | volumen nombrado `rag-api-cache` | Caché SQLite de resúmenes — ver [carga de caché](operaciones.md#carga-de-la-cache-de-resumenes-en-el-volumen-nombrado) |
+| `RAG_QDRANT_API_KEY` | vacío (sin auth) | Clave de `Qdrant:ApiKey`/`QDRANT__SERVICE__API_KEY` propagada a ambos contenedores |
+| `QDRANT_IMAGE` | `qdrant/qdrant:v1.14.1` | Imagen del servicio `qdrant` propio del compose |
+| `QDRANT_HOST` | `qdrant` | Host que usa `rag-api` para alcanzar Qdrant (perfil Mac legado: `host.docker.internal`) |
+| `QDRANT_HTTP_HOST_PORT` / `QDRANT_GRPC_HOST_PORT` | `6333` / `6334` | Puerto de HOST publicado (siempre en `127.0.0.1`) — cambiarlo solo para convivir con otra instancia en la misma máquina |
+| `RAG_API_BIND` / `RAG_API_PORT` | `127.0.0.1` / `5080` | Binding publicado de `rag-api` (ítem `12.8`) |
+| `RAG_API_CONTAINER_NAME` / `QDRANT_CONTAINER_NAME` | `rag-api` / `rag-qdrant` | Nombres de contenedor — parametrizados para poder levantar un stack de verificación aislado |
+| `RAG_API_IMAGE` | `rag-api:local` (build local) | Imagen de `rag-api`; el ítem `21.3` solo cambia este valor al tag del registry |
+| `OLLAMA_ENDPOINT` / `OLLAMA_MODEL_ID` | Ollama nativo del host / `qwen2.5-coder` | Perfil local; el perfil servidor (`20.1`/Servidor.IA) los sobreescribe vía un `infra/.env` aparte |
+| `SERVIDOR_IA_CLAVE` / `SERVIDOR_IA_CA_HOST` / `OLLAMA_CA_CONTAINER_PATH` | vacíos | Perfil servidor únicamente — clave y CA de Servidor.IA, nunca en un archivo versionado |
 
 Copiar `infra/.env.example` a `infra/.env` (git-ignorado) y ajustar los valores reales
 de cada máquina; sin ese archivo, `docker compose config` resuelve a rutas relativas al
 repo y no falla. Verificado con `docker compose config`: ningún `/Users/` literal en
-`docker-compose.yml`, y `host_ip: 127.0.0.1` en el binding del puerto.
+`docker-compose.yml`, y `host_ip: 127.0.0.1` en el binding de ambos puertos (API y
+Qdrant). Runbook completo del ambiente dev/QA x64 (verificación mecánica, carga de
+caché, limitaciones) en
+[docs/operaciones.md](operaciones.md#ambiente-devqa-portable-en-docker-ítem-1063).
 
 ## Perfil de transporte y secretos (ítem `12.8-secretos-y-tls`)
 

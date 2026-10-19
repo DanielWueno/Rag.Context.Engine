@@ -28,6 +28,7 @@ namespace RagEngine.Core.Tests;
 ///     invariante que CollectionManifest.Tenants vacío ("sin restricción" nunca "sin
 ///     acceso", pero un valor concreto exige coincidencia exacta).
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: InitializeAsync abre un Qdrant real en localhost:6334
 public sealed class TenantPayloadFilterTests : IAsyncLifetime
 {
     private const int TestDimension = 8;

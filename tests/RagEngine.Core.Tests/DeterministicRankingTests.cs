@@ -19,6 +19,7 @@ public sealed class DeterministicRankingTests
     private const int CandidateCount = 257; // Exceeds both 40 and the reranked prefetch limit of 120.
 
     [Theory]
+    [Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: QdrantClient real en localhost:6334
     [InlineData(false, 0)]
     [InlineData(false, 1)]
     [InlineData(false, 2)]
@@ -129,6 +130,7 @@ public sealed class DeterministicRankingTests
     }
 
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: QdrantClient real en localhost:6334
     public async Task Non_tied_scores_preserve_native_rrf_and_empty_is_not_failure()
     {
         using var client = new QdrantClient("localhost", 6334);

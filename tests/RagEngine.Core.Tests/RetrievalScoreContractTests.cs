@@ -232,7 +232,10 @@ public class RetrievalScoreContractTests : IDisposable
     /// Se salta si el modelo no está en disco, igual que
     /// <see cref="CrossEncoderStableGateScoreTests"/> (ítem 1.7, CI sin modelos).
     /// </summary>
+    // Ítem 19.6: Trait además del self-skip de OnnxModeloDisponibleFact (clase anidada de
+    // este archivo, mismo patrón que CrossEncoderStableGateScoreTests) — ver TestCategories.
     [OnnxModeloDisponibleFact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task ReRank_LaRepuntuacionDelCeroCambiaElScorePeroNoElOrden()
     {
         var sinEstable = await ConstruirReRanker(stableGateScore: false)
@@ -321,6 +324,7 @@ public class RetrievalScoreContractTests : IDisposable
     /// batcheado, que depende del tamaño del pool y por tanto del TopK.
     /// </summary>
     [OnnxModeloDisponibleFact]
+    [Trait("Category", TestCategories.RequiereOnnx)]
     public async Task ReRank_ConEmpateEnCabeza_DevuelveListaNoMonotonaYNoLaReordena()
     {
         var conEstable = await ConstruirReRanker(stableGateScore: true)

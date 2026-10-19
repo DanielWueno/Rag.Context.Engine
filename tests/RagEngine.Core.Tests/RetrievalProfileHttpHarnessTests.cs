@@ -31,6 +31,8 @@ namespace RagEngine.Core.Tests;
 /// Cada test crea sus propias colecciones (prefijo "rag-engine-test-profile-"), nunca
 /// toca ninguna colección servida.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: ver nota de la clase ("Integración real...")
+[Trait("Category", TestCategories.RequiereOnnx)]
 public sealed class RetrievalProfileHttpHarnessTests : IAsyncLifetime
 {
     private const int EmbeddingDimension = 384; // debe igualar OnnxBrain:EmbeddingDimensions de appsettings.json

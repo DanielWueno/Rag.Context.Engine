@@ -21,7 +21,15 @@ namespace RagEngine.Core.Tests;
 /// </summary>
 public sealed class MetricsExporterHttpHarnessTests
 {
+    // Ítem 19.6: a diferencia de los otros tres tests de esta clase (que solo tocan
+    // /metrics), este también pide /api/health, que ejercita los tres chequeos reales de
+    // Program.cs (Qdrant vía IVectorStoreAdmin.ListCollectionsAsync, Ollama vía HTTP a
+    // /models, y el brain ONNX vía IVectorizationBrain.EmbeddingDimensions) y responde 503
+    // si cualquiera falla — confirmado por la corrida de CI 35894801007 (503 sin los tres).
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)]
+    [Trait("Category", TestCategories.RequiereOnnx)]
+    [Trait("Category", TestCategories.RequiereOllama)]
     public async Task Exportador_desactivado_por_defecto_no_expone_metrics_ni_cambia_el_servicio()
     {
         using var factory = new MetricsWebApplicationFactory(enabled: false, exporter: "Prometheus");

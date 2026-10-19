@@ -22,6 +22,7 @@ namespace RagEngine.Core.Tests;
 public sealed class TracingRetrievalTests
 {
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: EnsureCollectionAsync/UpsertBatchAsync reales
     public async Task Rerank_activo_produce_span_anidado_bajo_retrieval_y_bajo_un_padre_externo()
     {
         using var client = new QdrantClient("localhost", 6334);
@@ -68,6 +69,7 @@ public sealed class TracingRetrievalTests
     }
 
     [Fact]
+    [Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: EnsureCollectionAsync/UpsertBatchAsync reales
     public async Task Rerank_apagado_declara_el_paso_omitido_sin_crear_un_span()
     {
         using var client = new QdrantClient("localhost", 6334);
@@ -104,6 +106,9 @@ public sealed class TracingRetrievalTests
         }
     }
 
+    // Ítem 19.6: deliberadamente SIN categoría — espera Grpc.Core.RpcException, que Qdrant
+    // real produce ("not found") y un Qdrant inalcanzable TAMBIÉN produce ("Unavailable"),
+    // así que este caso pasa igual con o sin infraestructura viva.
     [Fact]
     public async Task Fallo_de_retrieval_cierra_el_span_con_estado_de_error()
     {

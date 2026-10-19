@@ -29,6 +29,7 @@ namespace RagEngine.Core.Tests;
 /// crea — igual que el resto de harnesses HTTP de este proyecto — pero eso ocurre
 /// DESPUÉS del filtro de rate limiting, así que no lo confunde con el conteo de retrieval.
 /// </summary>
+[Trait("Category", TestCategories.RequiereQdrant)] // ítem 19.6: ver nota de la clase ("La autorización ... sí sigue tocando Qdrant local real")
 public sealed class RateLimitingHttpHarnessTests
 {
     [Fact]

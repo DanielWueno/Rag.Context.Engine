@@ -1,0 +1,7 @@
+{
+  "collections": [
+    "rag-engine",
+    "micro-repo"
+  ],
+  "default": "innovapp-docs"
+}

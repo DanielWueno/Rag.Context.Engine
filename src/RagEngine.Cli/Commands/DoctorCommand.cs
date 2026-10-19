@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RagEngine.Core.Abstractions;
 using RagEngine.Core.Domain;
+using RagEngine.Core.Infrastructure;
 using RagEngine.Core.Infrastructure.VectorStore;
 using RagEngine.Core.Utilities;
 using Spectre.Console;
@@ -20,6 +23,7 @@ public sealed class DoctorCommand : AsyncCommand
 {
     private readonly IVectorStoreAdmin _vectorStoreAdmin;
     private readonly IConfiguration _config;
+    private readonly IHostEnvironment _hostEnvironment;
 
     // El brain se resuelve de forma perezosa, NO por constructor. Inyectarlo hacía
     // que el contenedor construyera la InferenceSession antes de ejecutar el
@@ -28,10 +32,15 @@ public sealed class DoctorCommand : AsyncCommand
     // justo en el caso que el doctor existe para diagnosticar.
     private readonly IServiceProvider _services;
 
-    public DoctorCommand(IVectorStoreAdmin vectorStoreAdmin, IConfiguration config, IServiceProvider services)
+    public DoctorCommand(
+        IVectorStoreAdmin vectorStoreAdmin,
+        IConfiguration config,
+        IHostEnvironment hostEnvironment,
+        IServiceProvider services)
     {
         _vectorStoreAdmin = vectorStoreAdmin;
         _config = config;
+        _hostEnvironment = hostEnvironment;
         _services = services;
     }
 
@@ -51,6 +60,9 @@ public sealed class DoctorCommand : AsyncCommand
 
         // 2b. Cross-Encoder re-ranker (optional — warning only)
         CheckCrossEncoderModel();
+
+        // 2c. Perfil de Ollama (local/servidor) — ítem 10.6.2 (porte del 17.1 local)
+        allClear &= await CheckOllamaProfileAsync();
 
         // 3. Disk Space Check
         allClear &= CheckDiskSpace();
@@ -180,6 +192,106 @@ public sealed class DoctorCommand : AsyncCommand
         else
             AnsiConsole.MarkupLine($"[yellow]⚠️ Re-Ranker[/]      {modelPath}   " +
                                    "[yellow](Not Found — '--rerank' fallará; ejecuta 'bash infra/download-model.sh reranker')[/]");
+    }
+
+    /// <summary>
+    /// Reporta el perfil de Ollama activo (local o servidor, según DOTNET_ENVIRONMENT),
+    /// el endpoint y el modelo configurados, y SOLO si la clave está "definida" o "no
+    /// definida" — nunca su valor (ítem 10.6.2, porte del 17.1 local). Primero reusa la
+    /// misma validación local de <see cref="OllamaHttpClientFactory"/> que usan los dos
+    /// clientes reales (https sin clave, o una CaCertificatePath que no existe); si esa
+    /// pasa, hace un ping real y corto (GET /models, mismo patrón que /api/health en
+    /// RagEngine.Api) para distinguir una clave INVÁLIDA (401/403) de un fallo de
+    /// CONEXIÓN genérico — una CaCertificatePath coherente pero que no es la CA real del
+    /// servidor también cae aquí, como fallo de conexión (TLS).
+    /// </summary>
+    private async Task<bool> CheckOllamaProfileAsync()
+    {
+        var endpoint = _config["Ollama:Endpoint"] ?? "http://localhost:11434/v1";
+        var modelId = _config["Ollama:ModelId"] ?? "qwen2.5-coder";
+        var apiKey = _config["Ollama:ApiKey"];
+        var caCertificatePath = _config["Ollama:CaCertificatePath"];
+
+        var environmentName = _hostEnvironment.EnvironmentName;
+        var esPerfilServidor = string.Equals(environmentName, "Servidor", StringComparison.OrdinalIgnoreCase);
+        var perfil = esPerfilServidor ? "Servidor" : "Local";
+        var claveEstado = string.IsNullOrWhiteSpace(apiKey) ? "no definida" : "definida";
+
+        var opts = new OllamaOptions
+        {
+            Endpoint = endpoint,
+            ModelId = modelId,
+            ApiKey = apiKey,
+            CaCertificatePath = caCertificatePath,
+        };
+
+        try
+        {
+            OllamaHttpClientFactory.Validate(opts);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine(
+                $"[red]❌ Ollama[/]         {Markup.Escape(endpoint)}   " +
+                $"[red](Perfil {Markup.Escape(perfil)} | {Markup.Escape(ex.Message)})[/]");
+            return false;
+        }
+
+        try
+        {
+            using var httpClient = OllamaHttpClientFactory.Create(opts);
+            httpClient.Timeout = TimeSpan.FromSeconds(5);
+            using var response = await httpClient.GetAsync("models");
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[red]❌ Ollama[/]         {Markup.Escape(endpoint)}   " +
+                    $"[red](Perfil: {Markup.Escape(perfil)} | Fallo de AUTENTICACIÓN: HTTP {(int)response.StatusCode} " +
+                    $"{response.StatusCode} — revisa Ollama:ApiKey / Ollama__ApiKey)[/]");
+                return false;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[yellow]⚠️ Ollama[/]         {Markup.Escape(endpoint)}   " +
+                    $"[yellow](Perfil: {Markup.Escape(perfil)} | HTTP {(int)response.StatusCode} {response.StatusCode} " +
+                    "en /models — revisa el servidor)[/]");
+                return true; // responde, pero con un estado inesperado: advertencia, no fallo duro.
+            }
+        }
+        catch (Exception ex)
+        {
+            // Advertencia, no fallo duro: el propio README documenta Ollama como
+            // dependencia OPCIONAL (".NET 10 SDK, Docker, Ollama (opcional)") — un
+            // perfil local sin Ollama arrancado todavía no debe tumbar `rag doctor`.
+            // Un 401/403 (arriba) sí es un fallo duro: ahí el servidor respondió y la
+            // credencial está mal, que es justo lo que este punto del ítem 10.6.2 pide
+            // distinguir de un simple "Ollama no está arriba".
+            AnsiConsole.MarkupLine(
+                $"[yellow]⚠️ Ollama[/]         {Markup.Escape(endpoint)}   " +
+                $"[yellow](Perfil: {Markup.Escape(perfil)} | Fallo de CONEXIÓN: {Markup.Escape(ex.Message)})[/]");
+            return true;
+        }
+
+        AnsiConsole.MarkupLine(
+            $"[green]✅ Ollama[/]         {Markup.Escape(endpoint)}   " +
+            $"[dim](Perfil: {Markup.Escape(perfil)} | Modelo: {Markup.Escape(modelId)} | Clave: {claveEstado})[/]");
+
+        if (esPerfilServidor)
+        {
+            // No se actúa sobre la caché aquí (fuera de alcance de este ítem): solo se
+            // advierte, porque ComputePromptVersion(modelId) cambia con el ModelId del
+            // perfil servidor y los resúmenes cacheados en perfil local no se reutilizan
+            // contra ese modelo — una advertencia, no un fallo.
+            AnsiConsole.MarkupLine(
+                "[yellow]⚠️ Caché de resúmenes[/]  perfil servidor activo: el ModelId distinto cambia " +
+                "prompt_version (ver OllamaBusinessSummaryGenerator.ComputePromptVersion) — los resúmenes " +
+                "cacheados en perfil local no se reutilizan contra este modelo. No se toca la caché aquí.");
+        }
+
+        return true;
     }
 
     private bool CheckDiskSpace()

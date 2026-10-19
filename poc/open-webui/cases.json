@@ -1,0 +1,16 @@
+{
+  "_procedencia": "Oraculo fijado antes de la verificacion. Los archivos esperados salen de una busqueda exploratoria sobre la coleccion micro-repo el 2026-10-13 y se justifican por el nombre del archivo, no por el resultado del LLM.",
+  "in_corpus": [
+    {"id": "ES1", "lang": "es", "query": "Que roles existen para la seccion de tickets?", "expected_file_contains": "Asignaci"},
+    {"id": "ES2", "lang": "es", "query": "Como se crea un ticket? Muestra el manejador del comando de creacion.", "expected_file_contains": "CreateTicketCommandHandler"},
+    {"id": "EN1", "lang": "en", "query": "Which roles exist for the tickets section?", "expected_file_contains": "Asignaci"},
+    {"id": "EN2", "lang": "en", "query": "How is a ticket created? Show the create ticket command handler.", "expected_file_contains": "CreateTicketCommandHandler"}
+  ],
+  "out_of_corpus": [
+    {"id": "OOC-ES", "lang": "es", "query": "Cual es la receta de la paella valenciana?"},
+    {"id": "OOC-EN", "lang": "en", "query": "What is the capital city of Australia?"}
+  ],
+  "errors": {
+    "missing_collection": "coleccion-que-no-existe-24-1"
+  }
+}

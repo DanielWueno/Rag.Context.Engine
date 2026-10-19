@@ -1,0 +1,57 @@
+[38;5;14m(1/19)[0m ¿Cómo levanto un ticket?
+[38;5;14m(3/19)[0m ¿Qué se necesita para cerrar un ticket?
+[38;5;14m(4/19)[0m ¿Cómo reasigno un ticket a otra persona?
+[38;5;14m(6/19)[0m ¿Cómo registro el avance o una actividad en un ticket?
+[38;5;14m(7/19)[0m ¿Cómo paso un ticket a Mesa de Ayuda?
+[38;5;14m(9/19)[0m ¿Cómo cambio el tipo de servicio de un ticket?
+[38;5;14m(10/19)[0m ¿Cómo actualizo o subo el documento de cierre de un ticket?
+[38;5;14m(12/19)[0m ¿En qué casos un ticket necesita autorización digital?
+[38;5;14m(14/19)[0m ¿Cuándo puedo mandar un ticket a Mesa de Ayuda?
+[38;5;14m(15/19)[0m ¿Cómo consulto mis solicitudes de servicio?
+[38;5;14m(16/19)[0m ¿Dónde veo a quién se han asignado los tickets?
+[38;5;14m(17/19)[0m ¿Qué tipos de servicio corresponden a un departamento?
+[38;5;14m(18/19)[0m ¿Qué información se guarda de un ticket?
+[38;5;14m(19/19)[0m ¿Cómo se registra el seguimiento y las actividades de un ticket?
+[2mEval-set:[0m [38;5;15mdocs/eval/tickets-microservice.eval-set.json[0m  [2mColección:[0m [38;5;15mmicro-repo[0m  
+[2mTop-K:[0m [38;5;15m10[0m  [2mRerank:[0m [38;5;15mFalse[0m
+
+╭─────────────────┬────┬──────────┬──────────┬──────────┬───────────╮
+│ Categoría       │ N  │ recall@1 │ recall@3 │ recall@5 │ recall@10 │
+├─────────────────┼────┼──────────┼──────────┼──────────┼───────────┤
+│ bsuite-codigo   │ 19 │ 0%       │ 16%      │ 16%      │ 26%       │
+│ [1mTOTAL (hit-any)[0m │ 19 │ 0%       │ 16%      │ 16%      │ 26%       │
+╰─────────────────┴────┴──────────┴──────────┴──────────┴───────────╯
+
+[38;5;11m⚠ 14 pregunta(s) sin hit dentro de top-10:[0m
+  [2m•[0m [bsuite-codigo] ¿Cómo levanto un ticket?
+  [2m•[0m [bsuite-codigo] ¿Qué datos son obligatorios para crear un ticket?
+  [2m•[0m [bsuite-codigo] ¿Qué se necesita para cerrar un ticket?
+  [2m•[0m [bsuite-codigo] ¿Cómo reasigno un ticket a otra persona?
+  [2m•[0m [bsuite-codigo] ¿Cómo adjunto un documento o evidencia a un ticket?
+  [2m•[0m [bsuite-codigo] ¿Cómo recibo un ticket que me asignaron?
+  [2m•[0m [bsuite-codigo] ¿Cómo cambio el tipo de servicio de un ticket?
+  [2m•[0m [bsuite-codigo] ¿Qué condiciones deben cumplirse para poder reasignar un 
+ticket?
+  [2m•[0m [bsuite-codigo] ¿Por qué a veces me piden llenar el campo Módulo al cerrar 
+un ticket?
+  [2m•[0m [bsuite-codigo] ¿Cómo consulto mis solicitudes de servicio?
+  [2m•[0m [bsuite-codigo] ¿Dónde veo a quién se han asignado los tickets?
+  [2m•[0m [bsuite-codigo] ¿Qué tipos de servicio corresponden a un departamento?
+  [2m•[0m [bsuite-codigo] ¿Qué información se guarda de un ticket?
+  [2m•[0m [bsuite-codigo] ¿Cómo se registra el seguimiento y las actividades de un 
+ticket?
+
+[38;5;11mAviso: esta corrida se hizo con cambios sin commitear, asi que no es [0m
+[38;5;11mreproducible tal cual.[0m
+[38;5;11m────────────────── INCOMPARABLE: 5 diferencias de procedencia ──────────────────[0m
+[38;5;11m╭───────────────────────────────┬────────────────────────┬──────────────╮[0m
+[38;5;11m│[0m [38;5;11mCampo[0m                         [38;5;11m│[0m [2mBaseline[0m               [38;5;11m│[0m [38;5;15mAhora[0m        [38;5;11m│[0m
+[38;5;11m├───────────────────────────────┼────────────────────────┼──────────────┤[0m
+[38;5;11m│[0m eval_set_hash                 [38;5;11m│[0m 2ae380bb02df           [38;5;11m│[0m d961a14a3dc0 [38;5;11m│[0m
+[38;5;11m│[0m embedding_model               [38;5;11m│[0m model_qint8_arm64.onnx [38;5;11m│[0m model.onnx   [38;5;11m│[0m
+[38;5;11m│[0m chunking_contract_version     [38;5;11m│[0m 2                      [38;5;11m│[0m 3            [38;5;11m│[0m
+[38;5;11m│[0m index_short_type_declarations [38;5;11m│[0m (no declarado)         [38;5;11m│[0m False        [38;5;11m│[0m
+[38;5;11m│[0m resumen_prompt_version        [38;5;11m│[0m 210d3e35               [38;5;11m│[0m f4d8c2d0     [38;5;11m│[0m
+[38;5;11m╰───────────────────────────────┴────────────────────────┴──────────────╯[0m
+[38;5;11mCualquier diferencia de recall contra este baseline puede venir de estos [0m
+[38;5;11mcambios, no del retrieval.[0m

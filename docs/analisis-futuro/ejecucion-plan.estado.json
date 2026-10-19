@@ -3327,6 +3327,132 @@
           "rollback": "Quitar la configuracion del exportador; no toca indices."
         }
       ]
+    },
+    {
+      "ola": 25,
+      "nombre": "Motor de embeddings/ingesta como servicio independiente para el equipo",
+      "criterio_de_entrada": "Decision del usuario del 2026-10-19 de exponer el motor de embeddings/ingesta como servicio de plataforma para todo el equipo, en un repositorio independiente (patron Mcp.ContextForge), distinto de Servidor.IA (acotado a Ollama) y de la migracion del rag-api completo que ya gobierna la ola 21. Servidor destino: otro servidor de la empresa, sin ficha previa, con acceso SSH anunciado pero no otorgado. Interjeccion del mismo dia: decidir Qdrant o Milvus antes de formalizar.",
+      "criterio_de_salida": "Vector store decidido con evidencia (25.2), repositorio independiente creado localmente sin remote ni publicacion (25.3), contrato de API y autenticacion definidos (25.4), codigo portado y verificado contra colecciones de prueba aisladas (25.5), y despliegue preparado sin tocar el servidor real (25.6). El despliegue efectivo en el servidor de la empresa queda fuera de esta ola hasta acceso SSH confirmado y aprobacion de TI.",
+      "origen": "Peticion del usuario del 2026-10-19, ampliada en la misma conversacion con la comparacion Qdrant/Milvus. Analisis en docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md.",
+      "items": [
+        {
+          "id": "25.1-analizar-separacion-motor-embeddings-ingesta",
+          "titulo": "Analizar separar el motor de embeddings/ingesta en un servicio independiente para el equipo, con fork propio, distinto de Servidor.IA y de la ola 21/reyma-dev.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "hecho",
+          "fecha": "2026-10-19",
+          "horas_maquina": 0.15,
+          "por_que_este_modelo": "Reconciliar alcance, decisiones previas (Servidor.IA, ola 21, puertos 9.1/9.2) y preguntas abiertas de producto antes de tocar codigo o crear un repositorio.",
+          "origen": "Peticion del usuario del 2026-10-19: aprovechar al 100% embeddings e ingesta como API para todo el equipo, con fork si hace falta para no mezclar vista/analiticas. Aclarado en la misma conversacion: servidor nuevo de la empresa sin ficha previa, SSH pendiente; fork = repositorio independiente (patron Mcp.ContextForge). Interjeccion posterior del usuario sobre Qdrant vs Milvus incorporada al mismo documento antes de cerrar esta ficha.",
+          "archivos": "docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md, docs/analisis-futuro/ejecucion-plan.estado.json",
+          "verificacion": "El documento contrasta el codigo actual (endpoints de RagEngine.Api sin ingesta de red, pipeline de ingesta solo por CLI, OnnxBrain en proceso, puertos ISemanticRetriever/IVectorStoreWriter/IVectorStoreAdmin ya existentes) contra la peticion; distingue la ola 21 (traslado del rag-api completo a reyma-dev) de este fork (solo embeddings/ingesta como servicio de plataforma); deja listadas, sin resolver por el analisis, las preguntas de arquitectura del servidor, relacion con la ola 21, multi-tenencia, contrato de API, autenticacion, nombre del repositorio y eleccion de vector store. Cada ficha nueva de la ola tiene origen, rollback y condicion de reentrada; ninguna implica codigo movido, repositorio creado, cambio de vector store ni conexion a un servidor.",
+          "rollback": "git revert del commit documental; no hay codigo, servicios, credenciales ni repositorios creados.",
+          "_ejecucion": "Claude Code, Sonnet 5 (xhigh), 2026-10-19. Trabajo documental/analisis pedido explicitamente por el usuario, sin ejecucion de producto ni acceso a servidores. Sin item en_curso previo; rama integracion/local-en-main, arbol de trabajo limpio al iniciar.",
+          "resultado": "Creado docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md. Confirma con el usuario: fork = repositorio independiente nuevo (patron Mcp.ContextForge); servidor destino = otro servidor de la empresa aun no documentado, acceso SSH anunciado pero no otorgado (distinto de Servidor.IA y de reyma-dev); siguiente paso = redactar la ficha del ledger antes de tocar codigo. Evidencia de codigo: RagEngine.Api hoy solo expone /api/health, /api/collections, /api/search, /api/ask, /api/ask/stream (sin ingesta de red); la ingesta es exclusivamente CLI (RagEngine.Cli); OnnxBrain corre en proceso y ya tiene seleccion de binario por arquitectura resuelta (3.5-portabilidad-x64, hecho); los puertos de vector store ya estan extraidos (9.1, 9.2, hechos) detras de un unico adaptador Qdrant. Documenta que la ola 21 ya es el vehiculo para trasladar el rag-api COMPLETO a reyma-dev (21.4 bloqueado) y que este fork es una separacion distinta, solo de embeddings/ingesta, con RagEngine como un consumidor mas si asi se decide. Deja seis preguntas abiertas explicitas (arquitectura del servidor, relacion con ola 21, multi-tenencia, contrato de API, autenticacion, nombre/ubicacion del repo) mas la comparacion Qdrant/Milvus anadida por el usuario durante esta misma conversacion. Agrega a la ola 25 las fichas 25.2 a 25.6, todas pendientes/bloqueadas; ninguna ejecutada. No se creo repositorio, no se escribio codigo de produccion, no se conecto a ningun servidor ni se cambio el vector store vigente (Qdrant)."
+        },
+        {
+          "id": "25.2-comparar-qdrant-vs-milvus",
+          "titulo": "[TRAZABILIDAD EXTERNA] Comparar Qdrant con Milvus; ejecucion transferida a Vector.Space.Engine/1.2.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "_condicion_de_reentrada": "No ejecutar aqui: propiedad operacional transferida a Vector.Space.Engine/1.2-comparar-qdrant-vs-milvus. Conservar esta referencia bloqueada como historia; no marcar hecho/descarte por traslado. Reabrir aqui solo tras nueva decision explicita de reasignacion de propiedad.",
+          "_traslado_externo": {"repositorio_local": "D:\\git\\Vector.Space.Engine", "ledger": "docs/plan/ejecucion-plan.estado.json", "id": "1.2-comparar-qdrant-vs-milvus", "tipo": "Referencia historica, no ejecutable ni sincronizada automaticamente", "trazabilidad": "25.7 y _separacion_motor_embeddings_2026_10_19"},
+          "horas_maquina": 1.5,
+          "por_que_este_modelo": "Decision de arquitectura con migracion de colecciones ya en uso; ver el detalle completo en Vector.Space.Engine/1.2.",
+          "origen": "Interjeccion del usuario durante la redaccion de 25.1, 2026-10-19: el administrador del servidor nuevo usa Milvus en sus pruebas; criterios de comparacion y evidencia de codigo quedan descritos integramente en el destino.",
+          "archivos": "En Vector.Space.Engine: diseño del adaptador si se decide medir. No crear artefactos operativos de esta comparacion aqui.",
+          "verificacion": "Comprobar en Vector.Space.Engine/1.2-comparar-qdrant-vs-milvus: decision registrada con evidencia de paridad funcional, costo de migracion, operacion/respaldo y licencia/madurez del cliente, no por preferencia declarada. Esta referencia no se cierra por un resultado obtenido en el destino.",
+          "rollback": "Revertir solo la referencia documental de este item; la decision y cualquier adaptador de prueba viven en Vector.Space.Engine."
+        },
+        {
+          "id": "25.3-crear-repositorio-independiente-motor-embeddings",
+          "titulo": "[TRAZABILIDAD EXTERNA] Crear el repositorio independiente; ejecucion transferida a Vector.Space.Engine/1.1.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "25.2-comparar-qdrant-vs-milvus",
+          "_condicion_de_reentrada": "No ejecutar aqui: repositorio ya creado como Vector.Space.Engine/1.1-arranque-del-proyecto (hecho). Esta referencia queda bloqueada como historia; no marcar hecho/descarte por traslado.",
+          "_traslado_externo": {"repositorio_local": "D:\\git\\Vector.Space.Engine", "ledger": "docs/plan/ejecucion-plan.estado.json", "id": "1.1-arranque-del-proyecto", "tipo": "Referencia historica, no ejecutable ni sincronizada automaticamente", "trazabilidad": "25.7 y _separacion_motor_embeddings_2026_10_19"},
+          "horas_maquina": 0.1,
+          "por_que_este_modelo": "Scaffolding de repositorio con criterio mecanico, igual que 10.8-separar-servidor-contextforge-del-consumo-rag.",
+          "origen": "Decision del usuario del 2026-10-19 de usar un repositorio independiente nuevo, nombrado Vector.Space.Engine; ver 25.1 y 25.7.",
+          "archivos": "En Vector.Space.Engine: README.md, docs/plan/ejecucion-plan.estado.json.",
+          "verificacion": "Ya cumplido por 25.7: repositorio local independiente, sin remote ni publicacion, con README y ledger propio (Vector.Space.Engine/0.1-arranque-del-proyecto, hecho). No es subcarpeta de RagEngine.",
+          "rollback": "Borrar la carpeta local D:\\git\\Vector.Space.Engine; no afecta a RagEngine ni a ningun servicio en marcha."
+        },
+        {
+          "id": "25.4-definir-contrato-api-y-autenticacion",
+          "titulo": "[TRAZABILIDAD EXTERNA] Contrato de API y autenticacion; ejecucion transferida a Vector.Space.Engine/1.3.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "25.3-crear-repositorio-independiente-motor-embeddings",
+          "_condicion_de_reentrada": "No ejecutar aqui: propiedad operacional transferida a Vector.Space.Engine/1.3-definir-contrato-api-y-autenticacion. Esta referencia queda bloqueada como historia; no marcar hecho/descarte por traslado.",
+          "_traslado_externo": {"repositorio_local": "D:\\git\\Vector.Space.Engine", "ledger": "docs/plan/ejecucion-plan.estado.json", "id": "1.3-definir-contrato-api-y-autenticacion", "tipo": "Referencia historica, no ejecutable ni sincronizada automaticamente", "trazabilidad": "25.7 y _separacion_motor_embeddings_2026_10_19"},
+          "horas_maquina": 0.3,
+          "por_que_este_modelo": "Diseno de contrato y control de acceso sin IdP corporativo disponible (12.2-identidad-y-auditoria sigue bloqueado); ver el detalle completo en Vector.Space.Engine/1.3.",
+          "origen": "Preguntas 3 y 4 de la seccion 4 de docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md; detalle completo en el destino.",
+          "archivos": "En Vector.Space.Engine: contrato de API, modelo de autenticacion.",
+          "verificacion": "Comprobar en Vector.Space.Engine/1.3-definir-contrato-api-y-autenticacion: contrato con autenticacion probada, sin exponer el servicio sin algun control de acceso.",
+          "rollback": "Revertir solo la referencia documental de este item; el contrato vive en Vector.Space.Engine."
+        },
+        {
+          "id": "25.5-portar-codigo-motor-a-repositorio",
+          "titulo": "[TRAZABILIDAD EXTERNA] Portar el codigo del motor; ejecucion transferida a Vector.Space.Engine/1.4.",
+          "modelo": "opus",
+          "esfuerzo": "high",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "25.4-definir-contrato-api-y-autenticacion",
+          "_condicion_de_reentrada": "No ejecutar aqui: propiedad operacional transferida a Vector.Space.Engine/1.4-portar-codigo-del-motor. Esta referencia queda bloqueada como historia; no marcar hecho/descarte por traslado. Si RagEngine deja su pipeline propio, ese cambio en este repo necesita su propia ficha aqui cuando llegue el momento, no se da por hecho ahora.",
+          "_traslado_externo": {"repositorio_local": "D:\\git\\Vector.Space.Engine", "ledger": "docs/plan/ejecucion-plan.estado.json", "id": "1.4-portar-codigo-del-motor", "tipo": "Referencia historica, no ejecutable ni sincronizada automaticamente", "trazabilidad": "25.7 y _separacion_motor_embeddings_2026_10_19"},
+          "horas_maquina": 2,
+          "por_que_este_modelo": "Mueve codigo que hoy sirve colecciones reales; ver el detalle completo en Vector.Space.Engine/1.4.",
+          "origen": "Resultado acumulado de 25.1 y del destino; detalle completo en Vector.Space.Engine.",
+          "archivos": "Origen (solo lectura aqui): src/RagEngine.Core/Infrastructure/Vectorization/, src/RagEngine.Core/Infrastructure/VectorStore/, src/RagEngine.Core/Pipeline/DefaultIngestionPipeline.cs. Destino: Vector.Space.Engine.",
+          "verificacion": "Comprobar en Vector.Space.Engine/1.4-portar-codigo-del-motor: equivalencia de content_hash/IDs deterministicos y, si RagEngine pasa a cliente, recall/baseline sin degradar (docs/eval/quality/5.e/).",
+          "rollback": "RagEngine mantiene su pipeline local actual hasta que el servicio nuevo pase su propia verificacion en Vector.Space.Engine."
+        },
+        {
+          "id": "25.6-preparar-acceso-ssh-y-despliegue-offline",
+          "titulo": "[TRAZABILIDAD EXTERNA] Preparar despliegue offline; ejecucion transferida a Vector.Space.Engine/1.5.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "estado": "bloqueado",
+          "bloqueado_por": "25.5-portar-codigo-motor-a-repositorio",
+          "_condicion_de_reentrada": "No ejecutar aqui: propiedad operacional transferida a Vector.Space.Engine/1.5-preparar-acceso-ssh-y-despliegue-offline. Esta referencia queda bloqueada como historia; no marcar hecho/descarte por traslado. Acceso SSH y aprobacion de TI siguen sin otorgarse.",
+          "_traslado_externo": {"repositorio_local": "D:\\git\\Vector.Space.Engine", "ledger": "docs/plan/ejecucion-plan.estado.json", "id": "1.5-preparar-acceso-ssh-y-despliegue-offline", "tipo": "Referencia historica, no ejecutable ni sincronizada automaticamente", "trazabilidad": "25.7 y _separacion_motor_embeddings_2026_10_19"},
+          "horas_maquina": 0.3,
+          "por_que_este_modelo": "Preparacion de empaquetado y runbook con criterio mecanico, sin acceso real al servidor todavia; ver el detalle completo en Vector.Space.Engine/1.5.",
+          "origen": "El usuario pide adelantar trabajo para no llegar en cero cuando el acceso SSH exista; detalle completo en el destino.",
+          "archivos": "En Vector.Space.Engine: Dockerfile, runbook, configuracion por entorno sin secretos.",
+          "verificacion": "Comprobar en Vector.Space.Engine/1.5-preparar-acceso-ssh-y-despliegue-offline: artefacto construye y corre localmente contra una coleccion de prueba, sin conexion al servidor real hasta la aprobacion.",
+          "rollback": "Revertir solo la referencia documental de este item; nada desplegado que revertir aqui."
+        },
+        {
+          "id": "25.7-separar-motor-en-proyecto-independiente",
+          "titulo": "Separar el motor de embeddings/ingesta en el proyecto operativo independiente Vector.Space.Engine y dejar en RagEngine solo esta trazabilidad historica.",
+          "modelo": "sonnet",
+          "esfuerzo": "medium",
+          "multiagente": false,
+          "estado": "hecho",
+          "fecha": "2026-10-19",
+          "horas_maquina": 0.1,
+          "por_que_este_modelo": "Reconciliacion acotada de propiedad y referencias entre proyectos, igual que 10.8-separar-servidor-contextforge-del-consumo-rag; sin diseno de producto nuevo.",
+          "origen": "Peticion explicita del usuario del 2026-10-19: 'esto deberia tener su propio ledger sin que este sucio con todas las demas decisiones para que sea su propio desarrollo'. Repositorio y nombre confirmados por el usuario en esta conversacion: Vector.Space.Engine, carpeta Git padre.",
+          "archivos": "Aqui: docs/analisis-futuro/ejecucion-plan.estado.json, docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md. Repositorio hermano D:\\git\\Vector.Space.Engine: README.md, docs/plan/ejecucion-plan.estado.json, commit inicial separado.",
+          "verificacion": "Repositorio independiente local Vector.Space.Engine, sin remote, no subcarpeta de RagEngine; README y ledger propio con 0.1 hecho y 1.1-1.4 bloqueadas con su propia condicion de reentrada. Items 25.2-25.6 de este ledger conservados como trazabilidad bloqueada, con _traslado_externo e id de destino; ninguno marcado hecho ni descartado por el traslado. 25.1 (analisis) se conserva integro como historia de la decision. Ambos ledgers validos con arnes.",
+          "rollback": "Revertir trazablemente este commit documental; si se decide retirar la separacion, coordinar la reversion documental sin borrar Vector.Space.Engine ni duplicar ejecucion. No hay recursos, credenciales, datos ni codigo de producto que revertir.",
+          "resultado": "Creado repositorio independiente D:\\git\\Vector.Space.Engine, rama main, sin remote, commit inicial 4a3767a0369e6aa88e48131535c125ecc6133b28 (README.md + docs/plan/ejecucion-plan.estado.json), autor DWeno (heredado de la configuracion git de este repo). Ledger propio con una sola ola (ola 1, 'Arranque y preparacion del servicio de embeddings/ingesta'): 1.1-arranque-del-proyecto (hecho), 1.2-comparar-qdrant-vs-milvus, 1.3-definir-contrato-api-y-autenticacion, 1.4-portar-codigo-del-motor, 1.5-preparar-acceso-ssh-y-despliegue-offline (las cuatro bloqueadas). NOTA TECNICA: el primer intento uso una 'ola 0' para el arranque; 'arnes validar' en el destino no resolvio su bloqueado_por entre olas (probable tratamiento especial del numero de ola 0), asi que se corrigio fusionando el arranque dentro de la ola 1 antes de cerrar esta ficha; el commit inicial se enmendo una vez (no publicado, sin remote, sin impacto en terceros). Transferidas 25.2 -> 1.2, 25.3 -> 1.1, 25.4 -> 1.3, 25.5 -> 1.4, 25.6 -> 1.5; aqui quedan bloqueadas como trazabilidad no ejecutable, con mapeo y commit de destino. 25.1-analizar-separacion-motor-embeddings-ingesta se conserva intacto como historia del analisis original, igual que 10.5 en la separacion de ContextForge. docs/analisis-futuro/motor-embeddings-ingesta-servicio-compartido.md no se reescribio: sigue siendo el analisis original, sin duplicarse en el repo nuevo (el README de Vector.Space.Engine lo referencia). Validacion: 'arnes validar' en ambos repos sin errores; este repo paso de 24 a 24 olas (25.7 se agrego dentro de la ola 25 existente) y de 161 a 162 items; Vector.Space.Engine valida con 1 ola y 6 items (1 hecho, 1 pendiente, 4 bloqueado): se agrego 1.6-decidir-estrategia-de-modelos-de-embeddings (tambien dependencia adicional de 1.4) a partir de un mensaje del usuario con una comparacion externa de modelos de embeddings y una propuesta de usar un modelo distinto por tipo de proyecto. Esa ficha corrigio una premisa: Rag.Context.Engine NO tiene hoy una 'dupla bge-m3+MiniLM' en codigo (OnnxBrainOptions.cs solo configura MiniLM 384d). El usuario aclaro la historia real el mismo dia: bge-m3 se uso al inicio del proyecto, despues se empezo a probar MiniLM como candidato y hoy es el unico en uso; bge-m3 no esta en uso actualmente. El usuario pide explicitamente no casarse con MiniLM por inercia y evaluar/probar alternativas antes de formalizar el servicio en un ambiente real, y advierte que la comparacion de candidatos la genero otra IA y puede tener informacion desactualizada -- se toma como punto de partida para investigar, no como hecho verificado (ver _fiabilidad_de_la_fuente de 1.6). 1.6 quedo 'pendiente' (ya no bloqueada: las dos condiciones originales --si bge-m3 seguia en uso y si modelo-por-tipo-de-proyecto era decision tomada-- quedaron resueltas por el usuario); sigue exigiendo confirmar presupuesto de horas antes de gastar, por superar 1 h de maquina. Sin codigo de produccion movido, sin despliegue, sin conexion a ningun servidor, sin cambio de modelo o vector store vigente (MiniLM 384d, Qdrant) todavia."
+        }
+      ]
     }
   ],
   "_separacion_servidor_mcp_2026_10_07": {
@@ -3336,6 +3462,13 @@
     "traslado": "23.11 -> Mcp.ContextForge/1.1-preparar-paquete-k8s, 23.12 -> 1.2-habilitar-entorno-reyma-dev, 23.13 -> 1.3-servir-contextforge-compartido. Origen bloqueado como trazabilidad no ejecutable, destino unica fuente del avance. No marcar hecho/descarte por traslado ni borrar historial. 19.6 y otras olas intactos.",
     "cambio_de_puerta": "Retirada 23.13 -> 23.4: servidor independiente exige G01-G12, no evaluacion RAG. 23.14 depende de 23.8 y capacidades RAG, mas contrato externo con evidencia/version/acceso aprobado; no depende de que 23.13 se cierre en este repo. arnes no resuelve dependencias entre repos: bloqueo y reentrada manual, no ID externo ficticio.",
     "limites": "No difiere controles esenciales: autenticacion/TLS, permisos, persistencia/respaldo/recuperacion. Evidencia de disponibilidad externa no se fabrica con un archivo o repo creado. Sin cluster, credenciales ni identidades nuevas. Configuraciones RAG/negocio para despues, sin afectar otros consumidores."
+  },
+  "_separacion_motor_embeddings_2026_10_19": {
+    "procedencia": "Usuario pide exponer embeddings/ingesta como API para el equipo (25.1), luego pide explicitamente que ese desarrollo tenga su propio ledger sin mezclarse con el resto de decisiones de RagEngine. Confirma nombre y ubicacion: Vector.Space.Engine, carpeta Git padre. 25.7 transfiere el gobierno operativo; 25.1 y su resultado historico no se reescriben. No remote/publicacion ni despliegue.",
+    "propiedad": "Repositorio independiente local D:\\git\\Vector.Space.Engine, ledger docs/plan/ejecucion-plan.estado.json, para vector store, contrato de API, autenticacion, codigo portado, empaquetado y despliegue. RagEngine conserva solamente el analisis original (25.1) y, si en el futuro se decide, su rol de cliente del servicio.",
+    "commit_destino": "4a3767a0369e6aa88e48131535c125ecc6133b28",
+    "traslado": "25.2 -> Vector.Space.Engine/1.2-comparar-qdrant-vs-milvus, 25.3 -> 1.1-arranque-del-proyecto, 25.4 -> 1.3-definir-contrato-api-y-autenticacion, 25.5 -> 1.4-portar-codigo-del-motor, 25.6 -> 1.5-preparar-acceso-ssh-y-despliegue-offline. Origen bloqueado como trazabilidad no ejecutable, destino unica fuente del avance. No marcar hecho/descarte por traslado ni borrar historial.",
+    "limites": "No se decide aqui ni en el destino el vector store, el contrato de API ni el alcance exacto de lo que se porta: eso lo mide/decide 1.1-1.4 del destino. Sin acceso SSH ni aprobacion de TI para el servidor nuevo, que sigue siendo distinto de reyma-dev y de Servidor.IA. Sin codigo de produccion movido ni cambio del vector store vigente (Qdrant) en RagEngine."
   },
   "_reconciliacion_mcp_2026_10_07": {
     "procedencia": "10.7 recupera 55b9d87 tras 10.6, contra c0357d1; no fusiona historial ni ejecuta producto. Resultado de 10.5 intacto; conversaciones y reserva 22 siguen diferidas. 19.6 en_curso y cambios concurrentes preservados.",
